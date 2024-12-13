@@ -3,19 +3,41 @@ import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
+import { useToast } from "@/components/ui/use-toast"
 
 const Login = () => {
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session }, error } = await supabase.auth.getSession()
       if (session) {
         navigate('/')
       }
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'authentification",
+          description: error.message
+        })
+      }
     }
     checkAuth()
-  }, [navigate])
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        navigate('/')
+      }
+      if (event === 'SIGNED_OUT') {
+        navigate('/login')
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [navigate, toast])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
