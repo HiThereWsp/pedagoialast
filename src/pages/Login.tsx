@@ -30,8 +30,17 @@ const Login = () => {
         </div>
         <Auth
           supabaseClient={supabase}
-          appearance={{ theme: ThemeSupa }}
-          providers={["google"]}
+          appearance={{ 
+            theme: ThemeSupa,
+            variables: {
+              default: {
+                colors: {
+                  brand: '#10b981',
+                  brandAccent: '#059669'
+                }
+              }
+            }
+          }}
           theme="light"
           localization={{
             variables: {
@@ -40,7 +49,6 @@ const Login = () => {
                 password_label: "Mot de passe",
                 button_label: "Se connecter",
                 loading_button_label: "Connexion en cours...",
-                social_provider_text: "Continuer avec {{provider}}",
                 link_text: "Vous avez déjà un compte ? Connectez-vous",
               },
               sign_up: {
@@ -48,7 +56,6 @@ const Login = () => {
                 password_label: "Mot de passe",
                 button_label: "S'inscrire",
                 loading_button_label: "Inscription en cours...",
-                social_provider_text: "Continuer avec {{provider}}",
                 link_text: "Vous n'avez pas de compte ? Inscrivez-vous",
               },
             },
