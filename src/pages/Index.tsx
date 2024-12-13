@@ -17,7 +17,6 @@ const Index = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check authentication status
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
@@ -29,7 +28,6 @@ const Index = () => {
 
     checkAuth()
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) {
         navigate('/login')
@@ -51,11 +49,9 @@ const Index = () => {
     const userMessage = message.trim()
     setMessage("")
 
-    // Add user message to the UI
     setMessages(prev => [...prev, { role: 'user', content: userMessage }])
 
     try {
-      // Save message to Supabase
       const { error: dbError } = await supabase
         .from('chats')
         .insert([
@@ -64,12 +60,11 @@ const Index = () => {
 
       if (dbError) throw dbError
 
-      // Get AI response
       const response = await fetch('/functions/v1/chat-with-gemini', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ message: userMessage }),
       })
@@ -81,7 +76,6 @@ const Index = () => {
       const data = await response.json()
       const aiResponse = data.response
 
-      // Save AI response to Supabase
       await supabase
         .from('chats')
         .insert([
@@ -92,7 +86,6 @@ const Index = () => {
           }
         ])
 
-      // Add AI response to the UI
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }])
 
       toast({
@@ -111,7 +104,6 @@ const Index = () => {
     }
   }
 
-  // If no userId is set yet, show loading or return null
   if (!userId) return null;
 
   return (
