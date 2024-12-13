@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Send, UserCircle, Zap } from "lucide-react"
+import { Send, UserCircle } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { useState, useEffect } from "react"
@@ -13,7 +13,7 @@ import { QuickActions } from "@/components/QuickActions"
 
 const Index = () => {
   const [message, setMessage] = useState("")
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
+  const [messages, setMessages] = useState<Array<ChatMessage>>([])
   const [isLoading, setIsLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const { toast } = useToast()
@@ -63,7 +63,6 @@ const Index = () => {
 
       if (dbError) throw dbError
 
-      // Using supabase.functions.invoke instead of fetch
       const { data, error } = await supabase.functions.invoke('chat-with-gemini', {
         body: { message: userMessage }
       })
@@ -127,51 +126,8 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="mb-8 space-y-4">
-              {messages.map((msg, index) => (
-                <div
-                  key={index}
-                  className={`rounded-lg p-4 ${
-                    msg.role === 'user' 
-                      ? 'bg-emerald-50 ml-auto max-w-[80%]' 
-                      : 'bg-gray-50 mr-auto max-w-[80%]'
-                  }`}
-                >
-                  <p className="text-gray-800 whitespace-pre-wrap">{msg.content}</p>
-                </div>
-              ))}
-              {isLoading && (
-                <div className="bg-gray-50 rounded-lg p-4 mr-auto max-w-[80%]">
-                  <p className="text-gray-500">En train d'écrire...</p>
-                </div>
-              )}
-            </div>
-
-            <div className="mb-8 rounded-lg bg-emerald-50 p-6">
-              <div className="mb-6 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-emerald-500" />
-                <h3 className="text-lg font-semibold">Actions rapides</h3>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {[
-                  "Créer un exercice",
-                  "Générer une séquence",
-                  "Rechercher dans le programme scolaire officiel",
-                  "Créer une progression",
-                  "Adapter un exercice",
-                  "Planifier une séance",
-                  "Créer un plan de différenciation",
-                ].map((action) => (
-                  <div
-                    key={action}
-                    className="cursor-pointer rounded-lg border bg-white p-4 transition-colors hover:bg-gray-50"
-                  >
-                    <span className="text-gray-900">{action}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ChatHistory messages={messages} isLoading={isLoading} />
+            <QuickActions />
           </div>
 
           <div className="fixed bottom-0 left-0 right-0 border-t bg-white p-4">
