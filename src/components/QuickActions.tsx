@@ -1,4 +1,5 @@
 import { Zap } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 const quickActions = [
   "Créer un exercice",
@@ -10,22 +11,31 @@ const quickActions = [
   "Créer un plan de différenciation",
 ]
 
-export const QuickActions = () => {
+interface QuickActionsProps {
+  onActionClick: (action: string) => Promise<void>
+  visible: boolean
+}
+
+export const QuickActions = ({ onActionClick, visible }: QuickActionsProps) => {
+  if (!visible) return null
+
   return (
-    <div className="mb-8 rounded-lg bg-emerald-50 p-6">
+    <div className="mb-8 rounded-lg bg-emerald-50/50 p-6 shadow-sm">
       <div className="mb-6 flex items-center gap-2">
         <Zap className="h-5 w-5 text-emerald-500" />
-        <h3 className="text-lg font-semibold">Actions rapides</h3>
+        <h3 className="text-lg font-semibold text-gray-900">Actions rapides</h3>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {quickActions.map((action) => (
-          <div
+          <Button
             key={action}
-            className="cursor-pointer rounded-lg border bg-white p-4 transition-colors hover:bg-gray-50"
+            variant="outline"
+            className="h-auto w-full justify-start bg-white px-4 py-3 text-left text-gray-900 hover:bg-gray-50"
+            onClick={() => onActionClick(action)}
           >
-            <span className="text-gray-900">{action}</span>
-          </div>
+            <span>{action}</span>
+          </Button>
         ))}
       </div>
     </div>
