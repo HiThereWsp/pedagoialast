@@ -3,8 +3,42 @@ import { Input } from "@/components/ui/input"
 import { Send, UserCircle, Zap } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
+import { useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/components/ui/use-toast"
 
 const Index = () => {
+  const [message, setMessage] = useState("")
+  const { toast } = useToast()
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!message.trim()) return
+
+    try {
+      const { error } = await supabase
+        .from('chats')
+        .insert([
+          { message: message, user_id: (await supabase.auth.getUser()).data.user?.id }
+        ])
+
+      if (error) throw error
+
+      setMessage("")
+      toast({
+        title: "Message envoyé",
+        description: "Votre message a été envoyé avec succès.",
+      })
+    } catch (error) {
+      console.error("Error sending message:", error)
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du message.",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
@@ -59,12 +93,17 @@ const Index = () => {
 
           <div className="fixed bottom-0 left-0 right-0 border-t bg-white p-4">
             <div className="mx-auto max-w-7xl">
-              <div className="flex gap-2">
-                <Input placeholder="Comment puis-je vous aider ?" className="flex-1" />
-                <Button className="bg-emerald-500 hover:bg-emerald-600">
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <Input 
+                  placeholder="Comment puis-je vous aider ?" 
+                  className="flex-1"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600">
                   <Send className="h-4 w-4" />
                 </Button>
-              </div>
+              </form>
             </div>
           </div>
         </div>

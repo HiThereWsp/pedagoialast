@@ -12,6 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar"
 
 export function AppSidebar() {
@@ -23,7 +24,8 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon" variant="floating">
+      <SidebarRail />
       <SidebarHeader className="p-2">
         <Button className="w-full bg-emerald-500 hover:bg-emerald-600" size="lg">
           <MessageSquarePlus className="mr-2 h-5 w-5" />
