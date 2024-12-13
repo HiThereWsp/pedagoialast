@@ -9,33 +9,75 @@ import { useToast } from "@/components/ui/use-toast"
 
 const Index = () => {
   const [message, setMessage] = useState("")
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
+  const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!message.trim()) return
+    if (!message.trim() || isLoading) return
+
+    setIsLoading(true)
+    const userMessage = message.trim()
+    setMessage("")
+
+    // Add user message to the UI
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
 
     try {
-      const { error } = await supabase
+      // Save message to Supabase
+      const { error: dbError } = await supabase
         .from('chats')
         .insert([
-          { message: message, user_id: (await supabase.auth.getUser()).data.user?.id }
+          { message: userMessage, user_id: (await supabase.auth.getUser()).data.user?.id, message_type: 'user' }
         ])
 
-      if (error) throw error
+      if (dbError) throw dbError
 
-      setMessage("")
+      // Get AI response
+      const response = await fetch('/functions/v1/chat-with-gemini', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ message: userMessage }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get AI response')
+      }
+
+      const data = await response.json()
+      const aiResponse = data.response
+
+      // Save AI response to Supabase
+      await supabase
+        .from('chats')
+        .insert([
+          { 
+            message: aiResponse, 
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            message_type: 'assistant'
+          }
+        ])
+
+      // Add AI response to the UI
+      setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }])
+
       toast({
         title: "Message envoyé",
         description: "Votre message a été envoyé avec succès.",
       })
     } catch (error) {
-      console.error("Error sending message:", error)
+      console.error("Error:", error)
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'envoi du message.",
         variant: "destructive",
       })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -62,6 +104,26 @@ const Index = () => {
               <p className="text-gray-600">
                 Je peux vous aider sur tous les aspects de votre métier. Posez simplement votre question !
               </p>
+            </div>
+
+            <div className="mb-8 space-y-4">
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`rounded-lg p-4 ${
+                    msg.role === 'user' 
+                      ? 'bg-emerald-50 ml-auto max-w-[80%]' 
+                      : 'bg-gray-50 mr-auto max-w-[80%]'
+                  }`}
+                >
+                  <p className="text-gray-800 whitespace-pre-wrap">{msg.content}</p>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="bg-gray-50 rounded-lg p-4 mr-auto max-w-[80%]">
+                  <p className="text-gray-500">En train d'écrire...</p>
+                </div>
+              )}
             </div>
 
             <div className="mb-8 rounded-lg bg-emerald-50 p-6">
@@ -99,8 +161,13 @@ const Index = () => {
                   className="flex-1"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  disabled={isLoading}
                 />
-                <Button type="submit" className="bg-emerald-500 hover:bg-emerald-600">
+                <Button 
+                  type="submit" 
+                  className="bg-emerald-500 hover:bg-emerald-600"
+                  disabled={isLoading}
+                >
                   <Send className="h-4 w-4" />
                 </Button>
               </form>
