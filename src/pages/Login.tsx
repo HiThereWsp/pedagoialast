@@ -3,84 +3,61 @@ import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
-import { useToast } from "@/components/ui/use-toast"
 
 const Login = () => {
   const navigate = useNavigate()
-  const { toast } = useToast()
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate('/')
-      }
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: error.message
-        })
-      }
-    }
-    checkAuth()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        navigate('/')
-      }
-      if (event === 'SIGNED_OUT') {
-        navigate('/login')
+        navigate('/')  // Redirect to the chat interface at root path
       }
     })
 
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [navigate, toast])
+    return () => subscription.unsubscribe()
+  }, [navigate])
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Assistant Pédagogique IA
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Connectez-vous pour accéder à votre assistant
-          </p>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Assistant Pédagogique IA</h2>
+          <p className="mt-2 text-sm text-gray-600">Connectez-vous pour continuer</p>
         </div>
+
         <Auth
           supabaseClient={supabase}
-          appearance={{ 
+          appearance={{
             theme: ThemeSupa,
             variables: {
               default: {
                 colors: {
                   brand: '#10b981',
-                  brandAccent: '#059669'
-                }
-              }
-            }
+                  brandAccent: '#059669',
+                },
+              },
+            },
           }}
-          theme="light"
           providers={[]}
-          view="sign_in"
           localization={{
             variables: {
               sign_in: {
-                email_label: "Email",
-                password_label: "Mot de passe",
-                button_label: "Se connecter",
-                loading_button_label: "Connexion en cours...",
-                link_text: "Vous avez déjà un compte ? Connectez-vous",
+                email_label: 'Adresse email',
+                password_label: 'Mot de passe',
+                button_label: 'Se connecter',
+                loading_button_label: 'Connexion en cours...',
+                email_input_placeholder: 'Votre adresse email',
+                password_input_placeholder: 'Votre mot de passe',
+                link_text: 'Déjà inscrit ? Connectez-vous',
               },
               sign_up: {
-                email_label: "Email",
-                password_label: "Mot de passe",
+                email_label: 'Adresse email',
+                password_label: 'Mot de passe',
                 button_label: "S'inscrire",
-                loading_button_label: "Inscription en cours...",
-                link_text: "Vous n'avez pas de compte ? Inscrivez-vous",
+                loading_button_label: 'Inscription en cours...',
+                email_input_placeholder: 'Votre adresse email',
+                password_input_placeholder: 'Votre mot de passe',
+                link_text: 'Pas encore de compte ? Inscrivez-vous',
               },
             },
           }}
