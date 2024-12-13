@@ -3,19 +3,49 @@ import { Input } from "@/components/ui/input"
 import { Send, UserCircle, Zap } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/components/ui/use-toast"
+import { useNavigate } from "react-router-dom"
 
 const Index = () => {
   const [message, setMessage] = useState("")
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
   const { toast } = useToast()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // Check authentication status
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        navigate('/login')
+        return
+      }
+      setUserId(session.user.id)
+    }
+
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate('/login')
+        return
+      }
+      setUserId(session.user.id)
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [navigate])
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!message.trim() || isLoading) return
+    if (!message.trim() || isLoading || !userId) return
 
     setIsLoading(true)
     const userMessage = message.trim()
@@ -29,7 +59,7 @@ const Index = () => {
       const { error: dbError } = await supabase
         .from('chats')
         .insert([
-          { message: userMessage, user_id: (await supabase.auth.getUser()).data.user?.id, message_type: 'user' }
+          { message: userMessage, user_id: userId, message_type: 'user' }
         ])
 
       if (dbError) throw dbError
@@ -57,7 +87,7 @@ const Index = () => {
         .insert([
           { 
             message: aiResponse, 
-            user_id: (await supabase.auth.getUser()).data.user?.id,
+            user_id: userId,
             message_type: 'assistant'
           }
         ])
@@ -80,6 +110,9 @@ const Index = () => {
       setIsLoading(false)
     }
   }
+
+  // If no userId is set yet, show loading or return null
+  if (!userId) return null;
 
   return (
     <SidebarProvider>
