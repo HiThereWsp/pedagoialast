@@ -42,6 +42,8 @@ const Login = () => {
             }
           }}
           theme="light"
+          providers={[]}
+          view="sign_in"
           localization={{
             variables: {
               sign_in: {
