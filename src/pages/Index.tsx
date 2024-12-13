@@ -7,6 +7,9 @@ import { useState, useEffect } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/components/ui/use-toast"
 import { useNavigate } from "react-router-dom"
+import { ChatMessage } from "@/types/chat"
+import { ChatHistory } from "@/components/ChatHistory"
+import { QuickActions } from "@/components/QuickActions"
 
 const Index = () => {
   const [message, setMessage] = useState("")
@@ -60,20 +63,13 @@ const Index = () => {
 
       if (dbError) throw dbError
 
-      const response = await fetch('/functions/v1/chat-with-gemini', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({ message: userMessage }),
+      // Using supabase.functions.invoke instead of fetch
+      const { data, error } = await supabase.functions.invoke('chat-with-gemini', {
+        body: { message: userMessage }
       })
 
-      if (!response.ok) {
-        throw new Error('Failed to get AI response')
-      }
+      if (error) throw error
 
-      const data = await response.json()
       const aiResponse = data.response
 
       await supabase
