@@ -30,9 +30,12 @@ export function AppSidebar() {
       <SidebarHeader className="p-2">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button className="w-full bg-emerald-500 hover:bg-emerald-600" size="lg">
+            <Button 
+              className="group-data-[collapsible=icon]:!p-2 group-data-[collapsible=icon]:aspect-square bg-emerald-500 hover:bg-emerald-600 w-full transition-all duration-200" 
+              size="lg"
+            >
               <MessageSquarePlus className="h-5 w-5" />
-              <span className="ml-2 truncate">Nouvelle conversation</span>
+              <span className="ml-2 truncate group-data-[collapsible=icon]:hidden">Nouvelle conversation</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right">
