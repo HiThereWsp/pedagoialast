@@ -1,4 +1,3 @@
-// Version corrigée du composant Login
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
@@ -11,23 +10,39 @@ const Login = () => {
   const { toast } = useToast()
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        navigate('/chat')
-      } else if (event === 'SIGNED_OUT') {
-        navigate('/login')
-      } else if (event === 'PASSWORD_RECOVERY') {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      try {
+        if (event === 'SIGNED_IN' && session) {
+          navigate('/chat')
+        } else if (event === 'SIGNED_OUT') {
+          navigate('/login')
+        } else if (event === 'PASSWORD_RECOVERY') {
+          toast({
+            title: "Réinitialisation du mot de passe",
+            description: "Suivez les instructions envoyées par email pour réinitialiser votre mot de passe.",
+          })
+        } else if (event === 'USER_UPDATED') {
+          toast({
+            title: "Compte mis à jour",
+            description: "Vos informations ont été mises à jour avec succès.",
+          })
+        } else if (event === 'USER_EXISTS') {
+          toast({
+            variant: "destructive",
+            title: "Erreur d'inscription",
+            description: "Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.",
+          })
+        }
+      } catch (error) {
+        console.error('Error in auth state change:', error)
         toast({
-          title: "Réinitialisation du mot de passe",
-          description: "Suivez les instructions envoyées par email pour réinitialiser votre mot de passe.",
-        })
-      } else if (event === 'USER_UPDATED') {
-        toast({
-          title: "Compte mis à jour",
-          description: "Vos informations ont été mises à jour avec succès.",
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue. Veuillez réessayer.",
         })
       }
     })
+    
     return () => subscription.unsubscribe()
   }, [navigate, toast])
 
@@ -63,7 +78,6 @@ const Login = () => {
                 email_input_placeholder: 'Votre adresse email',
                 password_input_placeholder: 'Votre mot de passe',
                 link_text: 'Déjà inscrit ? Connectez-vous',
-                // Ne pas inclure email_input_error ici
               },
               sign_up: {
                 email_label: 'Adresse email',
@@ -74,11 +88,19 @@ const Login = () => {
                 password_input_placeholder: 'Votre mot de passe',
                 link_text: 'Pas encore de compte ? Inscrivez-vous',
                 confirmation_text: 'Vérifiez vos emails pour confirmer votre inscription',
-                // Ne pas inclure email_input_error ici
               },
             },
           }}
           view="sign_up"
+          onError={(error) => {
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: error.message === "User already registered" 
+                ? "Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse."
+                : "Une erreur est survenue. Veuillez réessayer.",
+            })
+          }}
           additionalData={{
             first_name: {
               label: 'Prénom',
