@@ -28,7 +28,7 @@ const PricingPage = () => {
           <h1 className="text-4xl font-bold tracking-tight mb-4">
             Découvrez la puissance de 
             <span className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 bg-clip-text text-transparent">
-              Pédagoia
+               Pédagoia
             </span>
           </h1>
           <p className="text-xl text-muted-foreground mb-6">
