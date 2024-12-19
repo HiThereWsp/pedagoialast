@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
-import { LoginForm } from '../Auth/LoginForm';
+import { LoginForm } from './LoginForm';
 import { Dialog, DialogContent } from '../ui/dialog';
 import { DynamicText } from './DynamicText';
 
