@@ -8,6 +8,7 @@ import { QuickActions } from "@/components/QuickActions"
 import { WelcomeBanner } from "@/components/WelcomeBanner"
 import { ChatInput } from "@/components/ChatInput"
 import { useChat } from "@/hooks/useChat"
+import { Loader2 } from "lucide-react"
 
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
@@ -50,22 +51,26 @@ const Index = () => {
     await sendMessage(action)
   }
 
-  if (!userId) return null
+  if (!userId) return (
+    <div className="flex h-screen items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  )
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-white">
+      <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
         <AppSidebar />
         
         <div className="flex flex-1 flex-col overflow-hidden">
-          <nav className="flex-shrink-0 border-b bg-white">
+          <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
             <div className="flex h-16 items-center px-4">
-              <h1 className="text-xl font-semibold text-gray-900">Assistant Pédagogique IA</h1>
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Assistant Pédagogique IA</h1>
             </div>
           </nav>
 
           <main className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-7xl px-4 py-8">
+            <div className="mx-auto max-w-4xl px-4 py-8">
               <WelcomeBanner />
               <ChatHistory messages={messages} isLoading={isLoading} />
               <QuickActions onActionClick={handleQuickAction} visible={showQuickActions} />
