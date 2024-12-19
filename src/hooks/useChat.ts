@@ -1,12 +1,10 @@
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
-import { useToast } from "@/components/ui/use-toast"
 import { ChatMessage } from "@/types/chat"
 
 export const useChat = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
   const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
 
   const sendMessage = async (message: string) => {
     if (!message.trim() || isLoading || !userId) return
@@ -44,18 +42,8 @@ export const useChat = (userId: string | null) => {
         ])
 
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }])
-
-      toast({
-        title: "Message envoyé",
-        description: "Votre message a été envoyé avec succès.",
-      })
     } catch (error) {
       console.error("Error:", error)
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du message.",
-        variant: "destructive",
-      })
     } finally {
       setIsLoading(false)
     }
