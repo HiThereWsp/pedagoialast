@@ -74,7 +74,7 @@ export const useChat = (userId: string | null) => {
         ? "Generate a very short and concise title (max 5 words) for a conversation that starts with this message: "
         : "Génère un titre très court et concis (maximum 5 mots) en français pour une conversation qui commence par ce message : ";
 
-      const { data, error } = await supabase.functions.invoke('chat-with-gemini', {
+      const { data, error } = await supabase.functions.invoke('chat-with-openai', {
         body: { 
           message: prompt + message,
           type: 'title-generation'
@@ -124,7 +124,7 @@ export const useChat = (userId: string | null) => {
         }])
 
       // Get AI response
-      const { data, error } = await supabase.functions.invoke('chat-with-gemini', {
+      const { data, error } = await supabase.functions.invoke('chat-with-openai', {
         body: { message: userMessage }
       })
 
