@@ -44,7 +44,7 @@ const PricingPage = () => {
           {/* Plan Mensuel */}
           <Card className="p-8 relative hover:shadow-lg transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <Badge className="bg-gradient-to-r from-yellow-400/20 to-coral-400/20 text-primary">
+              <Badge className="bg-gradient-to-r from-[#FEF7CD]/60 to-[#FFDEE2]/60 text-primary/90">
                 <MessageSquareText className="w-4 h-4 mr-1" />
                 Plan Flexible
               </Badge>
