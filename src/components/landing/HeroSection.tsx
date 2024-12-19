@@ -18,11 +18,6 @@ export const HeroSection = () => {
             <span className="text-foreground">qui vous aide à </span>
             <DynamicText />
           </h1>
-
-          {/* Sous-titre */}
-          <p className="text-xl md:text-2xl text-emerald-600">
-            L'IA pensée pour simplifier votre métier.
-          </p>
         </div>
       </div>
 
