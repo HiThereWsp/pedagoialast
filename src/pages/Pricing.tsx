@@ -42,7 +42,7 @@ const PricingPage = () => {
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Plan Mensuel */}
-          <Card className="p-8 relative hover:shadow-lg transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
+          <Card className="p-8 relative hover:shadow-xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm shadow-lg">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <Badge className="bg-gradient-to-r from-[#FEF7CD]/60 to-[#FFDEE2]/60 text-primary/90">
                 <MessageSquareText className="w-4 h-4 mr-1" />
@@ -87,7 +87,7 @@ const PricingPage = () => {
           </Card>
 
           {/* Plan Annuel */}
-          <Card className="p-8 relative border-2 border-coral-400/20 shadow-premium hover:shadow-premium-lg transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
+          <Card className="p-8 relative border-2 border-coral-400/20 shadow-xl hover:shadow-2xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <Badge className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white">
                 <Crown className="w-4 h-4 mr-1" />
@@ -150,7 +150,7 @@ const PricingPage = () => {
 
             <Button 
               onClick={handleStartTrial} 
-              className="w-full mt-8 bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:opacity-90"
+              className="w-full mt-8 bg-secondary hover:bg-secondary/90 text-secondary-foreground transition-colors"
             >
               Commencer l'essai gratuit
             </Button>
@@ -177,7 +177,7 @@ const PricingPage = () => {
                 description: "De nouvelles fonctionnalités chaque mois"
               }
             ].map((item, index) => (
-              <div key={index} className="text-center p-6 rounded-lg bg-white/50 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
+              <div key={index} className="text-center p-6 rounded-lg bg-white/50 backdrop-blur-sm hover:shadow-xl transition-all duration-300 shadow-lg">
                 <div className="flex justify-center">{item.icon}</div>
                 <h5 className="font-medium mb-2 text-foreground">{item.title}</h5>
                 <p className="text-sm text-muted-foreground">
