@@ -17,11 +17,6 @@ const Index = () => {
   const [showQuickActions, setShowQuickActions] = useState(true)
 
   useEffect(() => {
-    // Redirect to chat page
-    navigate('/chat')
-  }, [navigate])
-
-  useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
