@@ -145,6 +145,7 @@ export const useChat = (userId: string | null) => {
 
   return {
     messages,
+    setMessages,
     isLoading,
     sendMessage,
     conversations,

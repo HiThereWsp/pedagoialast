@@ -15,6 +15,7 @@ const Index = () => {
   const navigate = useNavigate()
   const { 
     messages, 
+    setMessages,
     isLoading, 
     sendMessage, 
     conversations,
