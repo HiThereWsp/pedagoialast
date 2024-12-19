@@ -25,46 +25,69 @@ const Settings = () => {
         return
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('first_name')
-        .eq('id', session.user.id)
-        .single()
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', session.user.id)
+          .maybeSingle()
 
-      if (profile) {
-        setFirstName(profile.first_name)
+        if (error) throw error
+
+        // Si le profil n'existe pas, on le crée
+        if (!profile) {
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert([{ id: session.user.id, first_name: 'Anonymous' }])
+          
+          if (insertError) throw insertError
+          
+          setFirstName('Anonymous')
+        } else {
+          setFirstName(profile.first_name)
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error)
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger votre profil."
+        })
       }
     }
 
     getProfile()
-  }, [navigate])
+  }, [navigate, toast])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
 
-    const { error } = await supabase
-      .from('profiles')
-      .update({ first_name: firstName })
-      .eq('id', session.user.id)
+      const { error } = await supabase
+        .from('profiles')
+        .update({ first_name: firstName })
+        .eq('id', session.user.id)
 
-    if (error) {
+      if (error) throw error
+
+      toast({
+        title: "Succès",
+        description: "Votre profil a été mis à jour avec succès."
+      })
+    } catch (error) {
+      console.error('Error updating profile:', error)
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Une erreur est survenue lors de la mise à jour de votre profil."
       })
-    } else {
-      toast({
-        title: "Succès",
-        description: "Votre profil a été mis à jour avec succès."
-      })
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -81,26 +104,29 @@ const Settings = () => {
       return
     }
 
-    const { error } = await supabase.auth.updateUser({
-      password: newPassword
-    })
-
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du mot de passe."
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
       })
-    } else {
+
+      if (error) throw error
+
       toast({
         title: "Succès",
         description: "Votre mot de passe a été mis à jour avec succès."
       })
       setNewPassword("")
       setConfirmPassword("")
+    } catch (error) {
+      console.error('Error updating password:', error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour du mot de passe."
+      })
+    } finally {
+      setPasswordLoading(false)
     }
-
-    setPasswordLoading(false)
   }
 
   return (
