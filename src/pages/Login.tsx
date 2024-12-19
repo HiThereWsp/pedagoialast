@@ -28,12 +28,6 @@ const Login = () => {
             title: "Compte mis à jour",
             description: "Vos informations ont été mises à jour avec succès.",
           })
-        } else if (event === 'USER_EXISTS') {
-          toast({
-            variant: "destructive",
-            title: "Erreur d'inscription",
-            description: "Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.",
-          })
         }
       } catch (error) {
         console.error('Error in auth state change:', error)
@@ -154,10 +148,11 @@ const Login = () => {
                   }}
                   additionalData={{
                     first_name: {
+                      type: "text",
                       label: "Prénom",
                       placeholder: "Votre prénom",
-                      type: "text",
                       required: true,
+                      order: 1, // Pour s'assurer qu'il apparaît en premier
                     },
                   }}
                 />

@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
@@ -28,6 +27,7 @@ export const LoginForm = () => {
             button: "w-full",
             divider: "my-4",
             message: "text-sm text-red-500 mt-2",
+            input: "bg-background",
           },
         }}
         providers={[]}
@@ -42,9 +42,6 @@ export const LoginForm = () => {
               email_input_placeholder: "Votre adresse email",
               password_input_placeholder: "Votre mot de passe",
               link_text: "Déjà inscrit ? Connectez-vous",
-              email_input_error: "Veuillez entrer une adresse email valide",
-              password_input_error: "Mot de passe incorrect",
-              confirmation_text: "",
             },
             sign_up: {
               email_label: "Adresse email",
@@ -55,18 +52,17 @@ export const LoginForm = () => {
               password_input_placeholder: "Votre mot de passe",
               link_text: "Pas encore de compte ? Inscrivez-vous",
               confirmation_text: "Vérifiez vos emails pour confirmer votre inscription",
-              email_input_error: "Cette adresse email est déjà utilisée. Essayez de vous connecter ou utilisez une autre adresse.",
-              password_input_error: "Le mot de passe doit contenir au moins 6 caractères",
             },
           },
         }}
         view="sign_up"
         additionalData={{
           first_name: {
+            type: "text",
             label: "Prénom",
             placeholder: "Votre prénom",
-            type: "text",
             required: true,
+            order: 1, // Pour s'assurer qu'il apparaît en premier
           },
         }}
       />
