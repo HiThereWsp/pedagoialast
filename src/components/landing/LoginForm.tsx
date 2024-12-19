@@ -22,6 +22,13 @@ export const LoginForm = () => {
               },
             },
           },
+          className: {
+            container: "space-y-4",
+            label: "text-foreground",
+            button: "w-full",
+            divider: "my-4",
+            message: "text-sm text-red-500 mt-2",
+          },
         }}
         providers={[]}
         redirectTo={`${window.location.origin}/chat`}
@@ -35,6 +42,9 @@ export const LoginForm = () => {
               email_input_placeholder: "Votre adresse email",
               password_input_placeholder: "Votre mot de passe",
               link_text: "Déjà inscrit ? Connectez-vous",
+              email_input_error: "Veuillez entrer une adresse email valide",
+              password_input_error: "Mot de passe incorrect",
+              confirmation_text: "",
             },
             sign_up: {
               email_label: "Adresse email",
@@ -44,6 +54,9 @@ export const LoginForm = () => {
               email_input_placeholder: "Votre adresse email",
               password_input_placeholder: "Votre mot de passe",
               link_text: "Pas encore de compte ? Inscrivez-vous",
+              confirmation_text: "Vérifiez vos emails pour confirmer votre inscription",
+              email_input_error: "Cette adresse email est déjà utilisée. Essayez de vous connecter ou utilisez une autre adresse.",
+              password_input_error: "Le mot de passe doit contenir au moins 6 caractères",
             },
           },
         }}
@@ -57,6 +70,11 @@ export const LoginForm = () => {
           },
         }}
       />
+      <div className="mt-4 text-sm text-muted-foreground">
+        <p className="text-center">
+          En vous inscrivant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
+        </p>
+      </div>
     </>
   )
 }
