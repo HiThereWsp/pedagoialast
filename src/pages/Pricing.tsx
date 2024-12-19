@@ -26,7 +26,7 @@ const PricingPage = () => {
             Essai gratuit de 7 jours
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Découvrez la puissance de
+            Découvrez la puissance de 
             <span className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 bg-clip-text text-transparent">
               Pédagoia
             </span>
