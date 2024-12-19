@@ -12,19 +12,6 @@ export const LoginForm = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
 
-  const handleSignUp = (e: React.FormEvent) => {
-    if (!acceptedTerms) {
-      e.preventDefault()
-      toast({
-        variant: "destructive",
-        title: "Conditions d'utilisation",
-        description: "Veuillez accepter les conditions d'utilisation pour continuer.",
-      })
-      return false
-    }
-    return true
-  }
-
   return (
     <>
       <DialogHeader>
@@ -86,14 +73,22 @@ export const LoginForm = () => {
             order: 1,
           },
         }}
-        onSubmit={handleSignUp}
       />
       <div className="mt-4 space-y-4">
         <div className="flex items-start space-x-2">
           <Checkbox 
             id="terms" 
             checked={acceptedTerms}
-            onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+            onCheckedChange={(checked) => {
+              setAcceptedTerms(checked as boolean)
+              if (!checked) {
+                toast({
+                  variant: "destructive",
+                  title: "Conditions d'utilisation",
+                  description: "Veuillez accepter les conditions d'utilisation pour continuer.",
+                })
+              }
+            }}
             className="mt-1"
           />
           <div className="grid gap-1.5 leading-none">

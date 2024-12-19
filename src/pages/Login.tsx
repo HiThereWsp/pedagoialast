@@ -1,9 +1,9 @@
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
-import { supabase } from "@/lib/supabase"
+import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 export default function Login() {
   const navigate = useNavigate()
@@ -101,15 +101,6 @@ export default function Login() {
               type: 'text',
               required: true,
             },
-          }}
-          onError={(error) => {
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: error.message === "User already registered" 
-                ? "Cette adresse email est déjà utilisée. Veuillez vous connecter."
-                : "Une erreur est survenue. Veuillez réessayer.",
-            })
           }}
         />
       </div>
