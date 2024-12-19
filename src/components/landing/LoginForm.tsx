@@ -41,7 +41,7 @@ export const LoginForm = () => {
               loading_button_label: "Connexion en cours...",
               email_input_placeholder: "Votre adresse email",
               password_input_placeholder: "Votre mot de passe",
-              link_text: "Déjà inscrit ? Connectez-vous",
+              link_text: "",
             },
             sign_up: {
               email_label: "Adresse email",
@@ -50,7 +50,7 @@ export const LoginForm = () => {
               loading_button_label: "Inscription en cours...",
               email_input_placeholder: "Votre adresse email",
               password_input_placeholder: "Votre mot de passe",
-              link_text: "Pas encore de compte ? Inscrivez-vous",
+              link_text: "",
               confirmation_text: "Vérifiez vos emails pour confirmer votre inscription",
             },
           },
@@ -62,7 +62,7 @@ export const LoginForm = () => {
             label: "Prénom",
             placeholder: "Votre prénom",
             required: true,
-            order: 1, // Pour s'assurer qu'il apparaît en premier
+            order: 1,
           },
         }}
       />
