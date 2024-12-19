@@ -17,7 +17,19 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useEffect, useState } from "react"
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  conversations?: Array<{id: string, title: string}>;
+  onConversationSelect?: (id: string) => void;
+  currentConversationId?: string | null;
+  onNewConversation?: () => void;
+}
+
+export function AppSidebar({ 
+  conversations = [], 
+  onConversationSelect,
+  currentConversationId,
+  onNewConversation
+}: AppSidebarProps) {
   const navigate = useNavigate()
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
@@ -56,6 +68,7 @@ export function AppSidebar() {
             <Button 
               className="group-data-[collapsible=icon]:!p-2 group-data-[collapsible=icon]:aspect-square bg-emerald-500 hover:bg-emerald-600 w-full transition-all duration-200" 
               size="lg"
+              onClick={onNewConversation}
             >
               <MessageSquarePlus className="h-5 w-5" />
               <span className="ml-2 truncate group-data-[collapsible=icon]:hidden">Nouvelle conversation</span>
@@ -71,21 +84,27 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton className="w-full justify-between">
-                      <div className="flex items-center min-w-0">
-                        <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">Nouvelle conversation</span>
-                      </div>
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    Nouvelle conversation
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
+              {conversations.map((conversation) => (
+                <SidebarMenuItem key={conversation.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton 
+                        className="w-full justify-between"
+                        onClick={() => onConversationSelect?.(conversation.id)}
+                        data-active={currentConversationId === conversation.id}
+                      >
+                        <div className="flex items-center min-w-0">
+                          <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{conversation.title}</span>
+                        </div>
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    <TooltipContent side="right">
+                      {conversation.title}
+                    </TooltipContent>
+                  </Tooltip>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

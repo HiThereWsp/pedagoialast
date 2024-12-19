@@ -14,6 +14,7 @@ export type Database = {
           action_type: string | null
           completion_status: boolean | null
           conversation_id: string | null
+          conversation_title: string | null
           created_at: string | null
           feedback_score: number | null
           id: number
@@ -25,6 +26,7 @@ export type Database = {
           action_type?: string | null
           completion_status?: boolean | null
           conversation_id?: string | null
+          conversation_title?: string | null
           created_at?: string | null
           feedback_score?: number | null
           id?: never
@@ -36,6 +38,7 @@ export type Database = {
           action_type?: string | null
           completion_status?: boolean | null
           conversation_id?: string | null
+          conversation_title?: string | null
           created_at?: string | null
           feedback_score?: number | null
           id?: never

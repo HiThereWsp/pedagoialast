@@ -13,7 +13,14 @@ import { Loader2 } from "lucide-react"
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
   const navigate = useNavigate()
-  const { messages, isLoading, sendMessage } = useChat(userId)
+  const { 
+    messages, 
+    isLoading, 
+    sendMessage, 
+    conversations,
+    loadConversationMessages,
+    currentConversationId
+  } = useChat(userId)
   const [showQuickActions, setShowQuickActions] = useState(true)
 
   useEffect(() => {
@@ -51,6 +58,11 @@ const Index = () => {
     await sendMessage(action)
   }
 
+  const handleNewConversation = () => {
+    setMessages([])
+    setShowQuickActions(true)
+  }
+
   if (!userId) return (
     <div className="flex h-screen items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -60,7 +72,12 @@ const Index = () => {
   return (
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
-        <AppSidebar />
+        <AppSidebar 
+          conversations={conversations}
+          onConversationSelect={loadConversationMessages}
+          currentConversationId={currentConversationId}
+          onNewConversation={handleNewConversation}
+        />
         
         <div className="flex flex-1 flex-col overflow-hidden">
           <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
@@ -71,7 +88,7 @@ const Index = () => {
 
           <main className="flex-1 overflow-y-auto">
             <div className="mx-auto max-w-4xl px-4 py-8">
-              <WelcomeBanner />
+              {!currentConversationId && <WelcomeBanner />}
               <ChatHistory messages={messages} isLoading={isLoading} />
               <QuickActions onActionClick={handleQuickAction} visible={showQuickActions} />
             </div>
