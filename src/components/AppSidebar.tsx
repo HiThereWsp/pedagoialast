@@ -1,5 +1,5 @@
 import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User, Trash2 } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,6 +33,7 @@ export function AppSidebar({
   onDeleteConversation
 }: AppSidebarProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const [userEmail, setUserEmail] = useState<string | null>(null)
 
   useEffect(() => {
@@ -62,7 +63,7 @@ export function AppSidebar({
   }
 
   const handleDelete = (e: React.MouseEvent, conversationId: string) => {
-    e.stopPropagation() // Prevent triggering conversation selection
+    e.stopPropagation()
     onDeleteConversation?.(conversationId)
   }
 
@@ -143,7 +144,10 @@ export function AppSidebar({
               <SidebarMenuItem>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton 
+                      onClick={() => navigate('/settings')}
+                      data-active={location.pathname === '/settings'}
+                    >
                       <Settings className="mr-2 h-4 w-4 flex-shrink-0" />
                       <span className="truncate">Paramètres</span>
                     </SidebarMenuButton>

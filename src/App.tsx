@@ -7,6 +7,7 @@ import Index from "./pages/Index"
 import Login from "./pages/Login"
 import Landing from "./pages/Landing"
 import Pricing from "./pages/Pricing"
+import Settings from "./pages/Settings"
 
 const queryClient = new QueryClient()
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/chat" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
