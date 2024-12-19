@@ -55,12 +55,12 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full">
+      <div className="flex h-screen w-full overflow-hidden bg-white">
         <AppSidebar />
         
-        <div className="flex-1 bg-background">
-          <nav className="border-b bg-white">
-            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <nav className="flex-shrink-0 border-b bg-white">
+            <div className="flex h-16 items-center justify-between px-4">
               <h1 className="text-xl font-semibold text-gray-900">Assistant Pédagogique IA</h1>
               <button className="rounded-full p-2 hover:bg-gray-100">
                 <UserCircle className="h-6 w-6 text-gray-600" />
@@ -68,13 +68,17 @@ const Index = () => {
             </div>
           </nav>
 
-          <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 pb-24">
-            <WelcomeBanner />
-            <ChatHistory messages={messages} isLoading={isLoading} />
-            <QuickActions onActionClick={handleQuickAction} visible={showQuickActions} />
-          </div>
+          <main className="flex-1 overflow-y-auto">
+            <div className="mx-auto max-w-7xl px-4 py-8">
+              <WelcomeBanner />
+              <ChatHistory messages={messages} isLoading={isLoading} />
+              <QuickActions onActionClick={handleQuickAction} visible={showQuickActions} />
+            </div>
+          </main>
 
-          <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
+          <div className="flex-shrink-0">
+            <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
+          </div>
         </div>
       </div>
     </SidebarProvider>

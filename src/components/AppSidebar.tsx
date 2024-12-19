@@ -1,4 +1,4 @@
-import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, Trash2, User } from "lucide-react"
+import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -14,6 +14,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 export function AppSidebar() {
   const navigate = useNavigate()
@@ -27,10 +28,17 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" variant="floating">
       <SidebarRail />
       <SidebarHeader className="p-2">
-        <Button className="w-full bg-emerald-500 hover:bg-emerald-600" size="lg">
-          <MessageSquarePlus className="mr-2 h-5 w-5" />
-          <span className="truncate">Nouvelle conversation</span>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button className="w-full bg-emerald-500 hover:bg-emerald-600" size="lg">
+              <MessageSquarePlus className="h-5 w-5" />
+              <span className="ml-2 truncate">Nouvelle conversation</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            Nouvelle conversation
+          </TooltipContent>
+        </Tooltip>
       </SidebarHeader>
 
       <SidebarContent>
@@ -38,13 +46,19 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className="w-full justify-between">
-                  <div className="flex items-center min-w-0">
-                    <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">Nouvelle conversation</span>
-                  </div>
-                  <Trash2 className="h-4 w-4 text-gray-500 hover:text-red-500 flex-shrink-0" />
-                </SidebarMenuButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton className="w-full justify-between">
+                      <div className="flex items-center min-w-0">
+                        <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">Nouvelle conversation</span>
+                      </div>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    Nouvelle conversation
+                  </TooltipContent>
+                </Tooltip>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -54,22 +68,43 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Lightbulb className="mr-2 h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">Faire des suggestions</span>
-                </SidebarMenuButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton>
+                      <Lightbulb className="mr-2 h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">Faire des suggestions</span>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    Faire des suggestions
+                  </TooltipContent>
+                </Tooltip>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Settings className="mr-2 h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">Paramètres</span>
-                </SidebarMenuButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton>
+                      <Settings className="mr-2 h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">Paramètres</span>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    Paramètres
+                  </TooltipContent>
+                </Tooltip>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleLogout} className="text-red-500 hover:text-red-600">
-                  <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">Déconnexion</span>
-                </SidebarMenuButton>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SidebarMenuButton onClick={handleLogout} className="text-red-500 hover:text-red-600">
+                      <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">Déconnexion</span>
+                    </SidebarMenuButton>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    Déconnexion
+                  </TooltipContent>
+                </Tooltip>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
