@@ -19,7 +19,7 @@ export const DynamicText = () => {
   }, [])
 
   return (
-    <span className="text-primary block h-[1.5em] transition-all duration-500">
+    <span className="block h-[1.5em] bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text transition-all duration-500">
       {phrases[currentIndex]}
     </span>
   )

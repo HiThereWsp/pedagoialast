@@ -25,14 +25,14 @@ export const HeroSection = () => {
           <Button 
             size="lg"
             onClick={() => setShowLoginForm(true)}
-            className="bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 mb-6"
+            className="bg-emerald-500 hover:bg-emerald-600 text-white transition-all duration-200 text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 mb-8"
           >
             Je m'inscris maintenant
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
 
           {/* Sous-titre */}
-          <p className="text-xl md:text-2xl text-muted-foreground">
+          <p className="text-xl md:text-2xl text-emerald-600">
             L'IA pensée pour simplifier votre métier.
           </p>
         </div>
