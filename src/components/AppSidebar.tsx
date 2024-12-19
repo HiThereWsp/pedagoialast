@@ -15,9 +15,32 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useEffect, useState } from "react"
 
 export function AppSidebar() {
   const navigate = useNavigate()
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+
+  useEffect(() => {
+    const getUserEmail = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.email) {
+        setUserEmail(session.user.email)
+      }
+    }
+
+    getUserEmail()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user?.email) {
+        setUserEmail(session.user.email)
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -117,7 +140,7 @@ export function AppSidebar() {
       <SidebarFooter className="border-t p-4">
         <div className="flex items-center gap-3 min-w-0">
           <User className="h-6 w-6 flex-shrink-0" />
-          <span className="text-sm font-medium truncate">andyguittaud</span>
+          <span className="text-sm font-medium truncate">{userEmail || 'Chargement...'}</span>
         </div>
       </SidebarFooter>
     </Sidebar>
