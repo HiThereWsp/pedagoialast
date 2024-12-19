@@ -21,18 +21,13 @@ const PricingPage = () => {
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <Badge variant="secondary" className="mb-4 bg-secondary text-primary">
-            <MessageSquareText className="w-4 h-4 mr-1" />
-            Essai gratuit de 7 jours
-          </Badge>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
             Découvrez la puissance de l'intelligence artificielle dans votre métier grâce à Pédagoia
           </h1>
-          <p className="text-xl text-muted-foreground mb-6">
-            Testez toutes les fonctionnalités pendant 7 jours, sans engagement
-          </p>
-        </div>
-
+<Badge variant="secondary" className="mb-4 bg-secondary text-primary">
+            <MessageSquareText className="w-4 h-4 mr-1" />
+            Essai gratuit de 7 jours
+          </Badge>
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Plan Mensuel */}
           <Card className="p-8 relative hover:shadow-xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm shadow-lg">
