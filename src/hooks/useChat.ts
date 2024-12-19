@@ -65,11 +65,11 @@ export const useChat = (userId: string | null) => {
   }
 
   const generateTitle = async (message: string) => {
-    try {
-      // Detect if the message is in English using a simple heuristic
-      const commonEnglishWords = /\b(the|is|are|was|were|have|has|had|been|will|would|could|should|may|might|must|can|a|an|and|or|but|in|on|at|to|for|of|with)\b/i;
-      const isEnglish = commonEnglishWords.test(message.toLowerCase());
+    // Detect if the message is in English using a simple heuristic
+    const commonEnglishWords = /\b(the|is|are|was|were|have|has|had|been|will|would|could|should|may|might|must|can|a|an|and|or|but|in|on|at|to|for|of|with)\b/i;
+    const isEnglish = commonEnglishWords.test(message.toLowerCase());
 
+    try {
       const prompt = isEnglish
         ? "Generate a very short and concise title (max 5 words) for a conversation that starts with this message: "
         : "Génère un titre très court et concis (maximum 5 mots) en français pour une conversation qui commence par ce message : ";
