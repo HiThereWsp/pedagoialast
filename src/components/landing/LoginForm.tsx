@@ -24,6 +24,7 @@ export const LoginForm = () => {
           },
         }}
         providers={[]}
+        redirectTo={`${window.location.origin}/chat`}
         localization={{
           variables: {
             sign_in: {
@@ -44,6 +45,15 @@ export const LoginForm = () => {
               password_input_placeholder: "Votre mot de passe",
               link_text: "Pas encore de compte ? Inscrivez-vous",
             },
+          },
+        }}
+        view="sign_up"
+        additionalData={{
+          first_name: {
+            label: "Prénom",
+            placeholder: "Votre prénom",
+            type: "text",
+            required: true,
           },
         }}
       />
