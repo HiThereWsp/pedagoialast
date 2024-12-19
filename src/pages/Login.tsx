@@ -3,14 +3,18 @@ import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
+import { useToast } from "@/components/ui/use-toast"
 
 const Login = () => {
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate('/')  // Redirect to the chat interface at root path
+      if (event === 'SIGNED_IN' && session) {
+        navigate('/chat')
+      } else if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+        navigate('/login')
       }
     })
 
@@ -32,13 +36,21 @@ const Login = () => {
             variables: {
               default: {
                 colors: {
-                  brand: '#10b981',
-                  brandAccent: '#059669',
+                  brand: 'hsl(var(--primary))',
+                  brandAccent: 'hsl(var(--primary))',
                 },
               },
             },
           }}
           providers={[]}
+          redirectTo={`${window.location.origin}/chat`}
+          onError={(error) => {
+            toast({
+              title: "Erreur d'authentification",
+              description: error.message,
+              variant: "destructive",
+            })
+          }}
           localization={{
             variables: {
               sign_in: {
