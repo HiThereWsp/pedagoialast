@@ -24,10 +24,12 @@ const PricingPage = () => {
           <h1 className="text-4xl font-bold tracking-tight mb-4">
             Découvrez la puissance de l'intelligence artificielle dans votre métier grâce à Pédagoia
           </h1>
-<Badge variant="secondary" className="mb-4 bg-secondary text-primary">
+          <Badge variant="secondary" className="mb-4 bg-secondary text-primary">
             <MessageSquareText className="w-4 h-4 mr-1" />
             Essai gratuit de 7 jours
           </Badge>
+        </div>
+
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Plan Mensuel */}
           <Card className="p-8 relative hover:shadow-xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm shadow-lg">
@@ -68,7 +70,7 @@ const PricingPage = () => {
 
             <Button 
               onClick={handleStartTrial} 
-              className="w-full mt-8 bg-secondary hover:bg-secondary/90 text-secondary-foreground transition-colors"
+              className="w-full mt-8 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
             >
               Commencer l'essai gratuit
             </Button>
