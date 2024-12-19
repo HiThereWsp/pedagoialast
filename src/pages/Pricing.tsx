@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, Crown, Info, MessageSquareText, Shield, Sparkles, Star, Timer, Trophy } from "lucide-react"
+import { Check, Crown, Info, MessageSquareText, Star } from "lucide-react"
 import {
   Tooltip,
   TooltipProvider,
@@ -18,18 +18,15 @@ const PricingPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FEF7CD]/30 to-[#FFDEE2]/20">
+    <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <Badge variant="secondary" className="mb-4 bg-gradient-to-r from-yellow-400/20 to-coral-400/20 text-primary">
-            <Sparkles className="w-4 h-4 mr-1" />
+          <Badge variant="secondary" className="mb-4 bg-secondary text-primary">
+            <MessageSquareText className="w-4 h-4 mr-1" />
             Essai gratuit de 7 jours
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Découvrez la puissance de{' '}
-            <span className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 bg-clip-text text-transparent">
-              Pédagoia
-            </span>
+            Découvrez la puissance de Pédagoia
           </h1>
           <p className="text-xl text-muted-foreground mb-6">
             Testez toutes les fonctionnalités pendant 7 jours, sans engagement
@@ -40,7 +37,7 @@ const PricingPage = () => {
           {/* Plan Mensuel */}
           <Card className="p-8 relative hover:shadow-xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm shadow-lg">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-              <Badge className="bg-gradient-to-r from-[#FEF7CD]/60 to-[#FFDEE2]/60 text-primary/90">
+              <Badge className="bg-secondary text-primary/90">
                 <MessageSquareText className="w-4 h-4 mr-1" />
                 Plan Flexible
               </Badge>
@@ -49,7 +46,7 @@ const PricingPage = () => {
             <div>
               <h3 className="text-2xl font-bold mb-2">Plan Mensuel</h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 bg-clip-text text-transparent">8,99€</span>
+                <span className="text-4xl font-bold">8,99€</span>
                 <span className="text-muted-foreground">/mois</span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
@@ -67,7 +64,7 @@ const PricingPage = () => {
                   "+ 10h économisées/semaine",
                 ].map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-coral-400 mt-0.5" />
+                    <Check className="w-5 h-5 text-primary mt-0.5" />
                     <span className="text-muted-foreground">{feature}</span>
                   </li>
                 ))}
@@ -83,7 +80,7 @@ const PricingPage = () => {
           </Card>
 
           {/* Plan Annuel */}
-          <Card className="p-8 relative border-2 border-coral-400/20 shadow-xl hover:shadow-2xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
+          <Card className="p-8 relative border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2">
               <Badge className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white">
                 <Crown className="w-4 h-4 mr-1" />
@@ -94,13 +91,13 @@ const PricingPage = () => {
             <div>
               <h3 className="text-2xl font-bold mb-2">Plan Annuel</h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 bg-clip-text text-transparent">4,99€</span>
+                <span className="text-4xl font-bold">4,99€</span>
                 <span className="text-muted-foreground">/mois</span>
               </div>
-              <p className="text-sm text-coral-400 mt-2">
+              <p className="text-sm text-primary mt-2">
                 Facturé annuellement (59,99€/an)
               </p>
-              <p className="text-sm font-medium text-coral-400 mt-1">
+              <p className="text-sm font-medium text-primary mt-1">
                 Économisez plus de 45€ par an !
               </p>
             </div>
@@ -108,7 +105,7 @@ const PricingPage = () => {
             <div className="mt-8">
               <ul className="space-y-4">
                 <li className="flex items-start gap-3">
-                  <Star className="w-5 h-5 text-coral-400 mt-0.5 fill-coral-400" />
+                  <Star className="w-5 h-5 text-primary mt-0.5 fill-primary" />
                   <span className="text-muted-foreground">Tous les avantages du plan mensuel</span>
                 </li>
                 {[
@@ -124,7 +121,7 @@ const PricingPage = () => {
                   "Vote prioritaire sur les futures fonctionnalités"
                 ].map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <Star className="w-5 h-5 text-coral-400 mt-0.5 fill-coral-400" />
+                    <Star className="w-5 h-5 text-primary mt-0.5 fill-primary" />
                     <span className="text-muted-foreground">
                       {typeof feature === 'string' ? (
                         feature
@@ -149,7 +146,7 @@ const PricingPage = () => {
 
             <Button 
               onClick={handleStartTrial} 
-              className="w-full mt-8 bg-secondary hover:bg-secondary/90 text-secondary-foreground transition-colors"
+              className="w-full mt-8 bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:opacity-90 transition-opacity"
             >
               Commencer l'essai gratuit
             </Button>
@@ -157,21 +154,21 @@ const PricingPage = () => {
         </div>
 
         <div className="mt-16 max-w-2xl mx-auto text-center">
-          <h4 className="font-semibold mb-8 text-coral-400">Notre engagement qualité</h4>
+          <h4 className="font-semibold mb-8 text-primary">Notre engagement qualité</h4>
           <div className="grid gap-8 md:grid-cols-3">
             {[
               {
-                icon: <Timer className="w-8 h-8 mb-4 text-coral-400" />,
+                icon: <MessageSquareText className="w-8 h-8 mb-4 text-primary" />,
                 title: "Support réactif",
                 description: "Une équipe dédiée à votre réussite"
               },
               {
-                icon: <Shield className="w-8 h-8 mb-4 text-coral-400" />,
+                icon: <Crown className="w-8 h-8 mb-4 text-primary" />,
                 title: "Satisfaction garantie",
                 description: "30 jours pour essayer sans risque"
               },
               {
-                icon: <Trophy className="w-8 h-8 mb-4 text-coral-400" />,
+                icon: <Star className="w-8 h-8 mb-4 text-primary" />,
                 title: "Mises à jour régulières",
                 description: "De nouvelles fonctionnalités chaque mois"
               }
