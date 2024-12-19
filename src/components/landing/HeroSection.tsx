@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { DynamicText } from "./DynamicText"
 import { LoginForm } from "./LoginForm"
@@ -20,16 +18,6 @@ export const HeroSection = () => {
             <span className="text-foreground">qui vous aide à </span>
             <DynamicText />
           </h1>
-
-          {/* Bouton d'action principal */}
-          <Button 
-            size="lg"
-            onClick={() => setShowLoginForm(true)}
-            className="mt-16 bg-emerald-500 hover:bg-emerald-600 text-white transition-all duration-200 text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 mb-8"
-          >
-            Je m'inscris maintenant
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
 
           {/* Sous-titre */}
           <p className="text-xl md:text-2xl text-emerald-600">
