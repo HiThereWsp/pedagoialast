@@ -25,7 +25,7 @@ export const HeroSection = () => {
           <Button 
             size="lg"
             onClick={() => setShowLoginForm(true)}
-            className="mt-8 bg-emerald-500 hover:bg-emerald-600 text-white transition-all duration-200 text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 mb-8"
+            className="mt-16 bg-emerald-500 hover:bg-emerald-600 text-white transition-all duration-200 text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 mb-8"
           >
             Je m'inscris maintenant
             <ArrowRight className="ml-2 h-5 w-5" />
