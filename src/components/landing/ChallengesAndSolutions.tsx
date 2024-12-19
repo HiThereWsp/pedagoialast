@@ -85,10 +85,10 @@ export const ChallengesAndSolutions = () => {
             {solutions.map((solution, index) => (
               <div key={index} className="flex items-start gap-3">
                 {solution.icon}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-1">
                   <p className="text-gray-700">{solution.text}</p>
                   {solution.comingSoon && (
-                    <Badge variant="outline" className="bg-purple-50 text-purple-600 text-xs">
+                    <Badge variant="outline" className="bg-purple-50 text-purple-600 text-xs whitespace-nowrap">
                       à venir
                     </Badge>
                   )}
