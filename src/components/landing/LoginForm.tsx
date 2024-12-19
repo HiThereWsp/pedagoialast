@@ -2,8 +2,29 @@ import { DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
+import { TermsDialog } from "../terms/TermsDialog"
+import { Label } from "../ui/label"
+import { Checkbox } from "../ui/checkbox"
+import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 export const LoginForm = () => {
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const { toast } = useToast()
+
+  const handleSignUp = (e: React.FormEvent) => {
+    if (!acceptedTerms) {
+      e.preventDefault()
+      toast({
+        variant: "destructive",
+        title: "Conditions d'utilisation",
+        description: "Veuillez accepter les conditions d'utilisation pour continuer.",
+      })
+      return false
+    }
+    return true
+  }
+
   return (
     <>
       <DialogHeader>
@@ -65,11 +86,25 @@ export const LoginForm = () => {
             order: 1,
           },
         }}
+        onSubmit={handleSignUp}
       />
-      <div className="mt-4 text-sm text-muted-foreground">
-        <p className="text-center">
-          En vous inscrivant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
-        </p>
+      <div className="mt-4 space-y-4">
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="terms" 
+            checked={acceptedTerms}
+            onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <Label
+              htmlFor="terms"
+              className="text-sm text-muted-foreground leading-relaxed"
+            >
+              J'accepte les <TermsDialog /> et la politique de confidentialité de Pedagoia
+            </Label>
+          </div>
+        </div>
       </div>
     </>
   )

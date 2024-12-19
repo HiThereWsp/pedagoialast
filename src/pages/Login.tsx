@@ -2,14 +2,31 @@ import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TermsDialog } from "@/components/terms/TermsDialog"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const Login = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
+
+  const handleSignUp = (e: React.FormEvent) => {
+    if (!acceptedTerms) {
+      e.preventDefault()
+      toast({
+        variant: "destructive",
+        title: "Conditions d'utilisation",
+        description: "Veuillez accepter les conditions d'utilisation pour continuer.",
+      })
+      return false
+    }
+    return true
+  }
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -155,11 +172,25 @@ const Login = () => {
                       order: 1,
                     },
                   }}
+                  onSubmit={handleSignUp}
                 />
-                <div className="mt-4 text-sm text-muted-foreground">
-                  <p className="text-center">
-                    En vous inscrivant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
-                  </p>
+                <div className="mt-4 space-y-4">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="terms" 
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label
+                        htmlFor="terms"
+                        className="text-sm text-muted-foreground leading-relaxed"
+                      >
+                        J'accepte les <TermsDialog /> et la politique de confidentialité de Pedagoia
+                      </Label>
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
             </Tabs>
