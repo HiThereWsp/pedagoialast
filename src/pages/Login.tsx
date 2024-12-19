@@ -1,3 +1,4 @@
+// Version corrigée du composant Login
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
@@ -27,7 +28,6 @@ const Login = () => {
         })
       }
     })
-
     return () => subscription.unsubscribe()
   }, [navigate, toast])
 
@@ -38,7 +38,6 @@ const Login = () => {
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">Assistant Pédagogique IA</h2>
           <p className="mt-2 text-sm text-gray-600">Connectez-vous pour continuer</p>
         </div>
-
         <Auth
           supabaseClient={supabase}
           appearance={{
@@ -64,6 +63,7 @@ const Login = () => {
                 email_input_placeholder: 'Votre adresse email',
                 password_input_placeholder: 'Votre mot de passe',
                 link_text: 'Déjà inscrit ? Connectez-vous',
+                // Ne pas inclure email_input_error ici
               },
               sign_up: {
                 email_label: 'Adresse email',
@@ -74,6 +74,7 @@ const Login = () => {
                 password_input_placeholder: 'Votre mot de passe',
                 link_text: 'Pas encore de compte ? Inscrivez-vous',
                 confirmation_text: 'Vérifiez vos emails pour confirmer votre inscription',
+                // Ne pas inclure email_input_error ici
               },
             },
           }}
