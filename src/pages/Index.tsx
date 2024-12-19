@@ -1,4 +1,3 @@
-import { UserCircle } from "lucide-react"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { useEffect, useState } from "react"
@@ -60,11 +59,8 @@ const Index = () => {
         
         <div className="flex flex-1 flex-col overflow-hidden">
           <nav className="flex-shrink-0 border-b bg-white">
-            <div className="flex h-16 items-center justify-between px-4">
+            <div className="flex h-16 items-center px-4">
               <h1 className="text-xl font-semibold text-gray-900">Assistant Pédagogique IA</h1>
-              <button className="rounded-full p-2 hover:bg-gray-100">
-                <UserCircle className="h-6 w-6 text-gray-600" />
-              </button>
             </div>
           </nav>
 
