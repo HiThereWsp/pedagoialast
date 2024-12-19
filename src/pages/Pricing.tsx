@@ -80,7 +80,7 @@ const PricingPage = () => {
 
             <Button 
               onClick={handleStartTrial} 
-              className="w-full mt-8 bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:opacity-90"
+              className="w-full mt-8 bg-secondary hover:bg-secondary/90 text-secondary-foreground transition-colors"
             >
               Commencer l'essai gratuit
             </Button>
