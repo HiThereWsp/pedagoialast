@@ -7,6 +7,7 @@ import Index from "./pages/Index"
 import Login from "./pages/Login"
 import Landing from "./pages/Landing"
 import Pricing from "./pages/Pricing"
+import { SuggestionsPage } from "./pages/suggestiontool"
 
 const queryClient = new QueryClient()
 
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/chat" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/suggestions" element={<SuggestionsPage />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
