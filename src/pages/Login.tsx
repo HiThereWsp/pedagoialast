@@ -13,7 +13,7 @@ const Login = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/chat')
-      } else if (event === 'USER_DELETED' || event === 'SIGNED_OUT') {
+      } else if (event === 'SIGNED_OUT') {
         navigate('/login')
       }
     })
@@ -44,13 +44,6 @@ const Login = () => {
           }}
           providers={[]}
           redirectTo={`${window.location.origin}/chat`}
-          onError={(error) => {
-            toast({
-              title: "Erreur d'authentification",
-              description: error.message,
-              variant: "destructive",
-            })
-          }}
           localization={{
             variables: {
               sign_in: {
