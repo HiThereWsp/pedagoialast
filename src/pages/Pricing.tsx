@@ -26,7 +26,7 @@ const PricingPage = () => {
             Essai gratuit de 7 jours
           </Badge>
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Découvrez la puissance de Pédagoia
+            Découvrez la puissance de l'intelligence artificielle dans votre métier grâce à Pédagoia
           </h1>
           <p className="text-xl text-muted-foreground mb-6">
             Testez toutes les fonctionnalités pendant 7 jours, sans engagement
