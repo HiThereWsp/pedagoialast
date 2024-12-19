@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
 import { useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const Login = () => {
   const navigate = useNavigate()
@@ -47,69 +49,127 @@ const Login = () => {
   }, [navigate, toast])
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-background to-muted/20 px-4 py-12">
       <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Assistant Pédagogique IA</h2>
-          <p className="mt-2 text-sm text-gray-600">Connectez-vous pour continuer</p>
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+            Assistant Pédagogique IA
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Connectez-vous pour continuer votre apprentissage
+          </p>
         </div>
-        <Auth
-          supabaseClient={supabase}
-          appearance={{
-            theme: ThemeSupa,
-            variables: {
-              default: {
-                colors: {
-                  brand: 'hsl(var(--primary))',
-                  brandAccent: 'hsl(var(--primary))',
-                },
-              },
-            },
-          }}
-          providers={[]}
-          redirectTo={`${window.location.origin}/chat`}
-          localization={{
-            variables: {
-              sign_in: {
-                email_label: 'Adresse email',
-                password_label: 'Mot de passe',
-                button_label: 'Se connecter',
-                loading_button_label: 'Connexion en cours...',
-                email_input_placeholder: 'Votre adresse email',
-                password_input_placeholder: 'Votre mot de passe',
-                link_text: 'Déjà inscrit ? Connectez-vous',
-              },
-              sign_up: {
-                email_label: 'Adresse email',
-                password_label: 'Mot de passe',
-                button_label: "S'inscrire",
-                loading_button_label: 'Inscription en cours...',
-                email_input_placeholder: 'Votre adresse email',
-                password_input_placeholder: 'Votre mot de passe',
-                link_text: 'Pas encore de compte ? Inscrivez-vous',
-                confirmation_text: 'Vérifiez vos emails pour confirmer votre inscription',
-              },
-            },
-          }}
-          view="sign_up"
-          onError={(error) => {
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: error.message === "User already registered" 
-                ? "Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse."
-                : "Une erreur est survenue. Veuillez réessayer.",
-            })
-          }}
-          additionalData={{
-            first_name: {
-              label: 'Prénom',
-              placeholder: 'Votre prénom',
-              type: 'text',
-              required: true,
-            },
-          }}
-        />
+
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>Bienvenue</CardTitle>
+            <CardDescription>
+              Choisissez une option pour continuer
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="sign_up" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="sign_in">Connexion</TabsTrigger>
+                <TabsTrigger value="sign_up">Inscription</TabsTrigger>
+              </TabsList>
+              <TabsContent value="sign_in">
+                <Auth
+                  supabaseClient={supabase}
+                  view="sign_in"
+                  appearance={{
+                    theme: ThemeSupa,
+                    variables: {
+                      default: {
+                        colors: {
+                          brand: 'hsl(var(--primary))',
+                          brandAccent: 'hsl(var(--primary))',
+                        },
+                      },
+                    },
+                    className: {
+                      container: "space-y-4",
+                      label: "text-foreground",
+                      button: "w-full bg-primary text-primary-foreground hover:bg-primary/90",
+                      divider: "my-4",
+                      message: "text-sm text-destructive mt-2",
+                      input: "bg-background",
+                    },
+                  }}
+                  providers={[]}
+                  redirectTo={`${window.location.origin}/chat`}
+                  localization={{
+                    variables: {
+                      sign_in: {
+                        email_label: "Adresse email",
+                        password_label: "Mot de passe",
+                        button_label: "Se connecter",
+                        loading_button_label: "Connexion en cours...",
+                        email_input_placeholder: "Votre adresse email",
+                        password_input_placeholder: "Votre mot de passe",
+                        link_text: "Pas encore de compte ? Inscrivez-vous",
+                      }
+                    }
+                  }}
+                />
+              </TabsContent>
+              <TabsContent value="sign_up">
+                <Auth
+                  supabaseClient={supabase}
+                  view="sign_up"
+                  appearance={{
+                    theme: ThemeSupa,
+                    variables: {
+                      default: {
+                        colors: {
+                          brand: 'hsl(var(--primary))',
+                          brandAccent: 'hsl(var(--primary))',
+                        },
+                      },
+                    },
+                    className: {
+                      container: "space-y-4",
+                      label: "text-foreground",
+                      button: "w-full bg-primary text-primary-foreground hover:bg-primary/90",
+                      divider: "my-4",
+                      message: "text-sm text-destructive mt-2",
+                      input: "bg-background",
+                    },
+                  }}
+                  providers={[]}
+                  redirectTo={`${window.location.origin}/chat`}
+                  localization={{
+                    variables: {
+                      sign_up: {
+                        email_label: "Adresse email",
+                        password_label: "Mot de passe",
+                        button_label: "S'inscrire",
+                        loading_button_label: "Inscription en cours...",
+                        email_input_placeholder: "Votre adresse email",
+                        password_input_placeholder: "Votre mot de passe",
+                        link_text: "Déjà inscrit ? Connectez-vous",
+                        confirmation_text: "Vérifiez vos emails pour confirmer votre inscription",
+                      }
+                    }
+                  }}
+                  additionalData={{
+                    first_name: {
+                      label: "Prénom",
+                      placeholder: "Votre prénom",
+                      type: "text",
+                      required: true,
+                    },
+                  }}
+                />
+                <div className="mt-4 text-sm text-muted-foreground">
+                  <p className="text-center">
+                    En vous inscrivant, vous acceptez nos conditions d'utilisation et notre politique de confidentialité.
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
