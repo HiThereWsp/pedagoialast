@@ -4,9 +4,9 @@ import { Badge } from "@/components/ui/badge"
 import { Check, Crown, Info, MessageSquareText, Shield, Sparkles, Star, Timer, Trophy } from "lucide-react"
 import {
   Tooltip,
-  TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  TooltipContent,
 } from "@/components/ui/tooltip"
 import { useNavigate } from "react-router-dom"
 
@@ -111,8 +111,11 @@ const PricingPage = () => {
 
             <div className="mt-8">
               <ul className="space-y-4">
+                <li className="flex items-start gap-3">
+                  <Star className="w-5 h-5 text-coral-400 mt-0.5 fill-coral-400" />
+                  <span className="text-muted-foreground">Tous les avantages du plan mensuel</span>
+                </li>
                 {[
-                  "Tous les bénéfices de l'abonnement mensuel",
                   "Prix réduit garanti à vie (-45€/an)",
                   "Accès prioritaire aux nouvelles fonctionnalités",
                   "Stockage plus élevé de l'historique",
@@ -125,7 +128,7 @@ const PricingPage = () => {
                   "Vote prioritaire sur les futures fonctionnalités"
                 ].map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
-                    <Star className="w-5 h-5 text-coral-400 mt-0.5" />
+                    <Star className="w-5 h-5 text-coral-400 mt-0.5 fill-coral-400" />
                     <span className="text-muted-foreground">
                       {typeof feature === 'string' ? (
                         feature
