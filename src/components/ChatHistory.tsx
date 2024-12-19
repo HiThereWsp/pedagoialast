@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils"
 import { Loader2, ThumbsDown, Heart, Copy } from "lucide-react"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import ReactMarkdown from 'react-markdown'
 
 interface ChatHistoryProps {
   messages: ChatMessage[]
@@ -36,6 +37,13 @@ export const ChatHistory = ({ messages, isLoading }: ChatHistoryProps) => {
     })
   }
 
+  const formatMessage = (content: string) => {
+    return content
+      .replace(/###/g, "")
+      .replace(/\*\*/g, "**")  // Préserve les marqueurs de gras
+      .trim()
+  }
+
   return (
     <div className="mb-8 space-y-6">
       {messages.map((msg, index) => (
@@ -48,9 +56,16 @@ export const ChatHistory = ({ messages, isLoading }: ChatHistoryProps) => {
               : 'mr-auto max-w-[80%] bg-white shadow-sm border border-gray-100'
           )}
         >
-          <p className="text-foreground whitespace-pre-wrap leading-relaxed">
-            {msg.content.replace(/###/g, "").trim()}
-          </p>
+          <div className="text-foreground whitespace-pre-wrap leading-relaxed">
+            <ReactMarkdown
+              components={{
+                strong: ({ children }) => <span className="font-bold">{children}</span>,
+                p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>
+              }}
+            >
+              {formatMessage(msg.content)}
+            </ReactMarkdown>
+          </div>
 
           {msg.role === 'assistant' && (
             <div className="mt-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
