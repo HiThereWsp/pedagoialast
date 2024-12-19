@@ -151,6 +151,32 @@ export const useChat = (userId: string | null) => {
     }
   }
 
+  const deleteConversation = async (conversationId: string) => {
+    if (!userId) return
+
+    try {
+      // Delete all messages from this conversation
+      const { error } = await supabase
+        .from('chats')
+        .delete()
+        .eq('conversation_id', conversationId)
+        .eq('user_id', userId)
+
+      if (error) throw error
+
+      // Update the conversations list
+      setConversations(prev => prev.filter(conv => conv.id !== conversationId))
+      
+      // If the deleted conversation was the current one, clear messages
+      if (currentConversationId === conversationId) {
+        setMessages([])
+        setCurrentConversationId(null)
+      }
+    } catch (error) {
+      console.error("Error deleting conversation:", error)
+    }
+  }
+
   return {
     messages,
     setMessages,
@@ -158,6 +184,7 @@ export const useChat = (userId: string | null) => {
     sendMessage,
     conversations,
     loadConversationMessages,
-    currentConversationId
+    currentConversationId,
+    deleteConversation
   }
 }

@@ -1,4 +1,4 @@
-import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User } from "lucide-react"
+import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User, Trash2 } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -22,13 +22,15 @@ interface AppSidebarProps {
   onConversationSelect?: (id: string) => void;
   currentConversationId?: string | null;
   onNewConversation?: () => void;
+  onDeleteConversation?: (id: string) => void;
 }
 
 export function AppSidebar({ 
   conversations = [], 
   onConversationSelect,
   currentConversationId,
-  onNewConversation
+  onNewConversation,
+  onDeleteConversation
 }: AppSidebarProps) {
   const navigate = useNavigate()
   const [userEmail, setUserEmail] = useState<string | null>(null)
@@ -57,6 +59,11 @@ export function AppSidebar({
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate("/login")
+  }
+
+  const handleDelete = (e: React.MouseEvent, conversationId: string) => {
+    e.stopPropagation() // Prevent triggering conversation selection
+    onDeleteConversation?.(conversationId)
   }
 
   return (
@@ -89,14 +96,22 @@ export function AppSidebar({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <SidebarMenuButton 
-                        className="w-full justify-between"
+                        className="w-full justify-between group"
                         onClick={() => onConversationSelect?.(conversation.id)}
                         data-active={currentConversationId === conversation.id}
                       >
-                        <div className="flex items-center min-w-0">
+                        <div className="flex items-center min-w-0 flex-1">
                           <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
                           <span className="truncate">{conversation.title}</span>
                         </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => handleDelete(e, conversation.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500 hover:text-red-600" />
+                        </Button>
                       </SidebarMenuButton>
                     </TooltipTrigger>
                     <TooltipContent side="right">

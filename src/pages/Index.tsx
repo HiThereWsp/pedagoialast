@@ -20,7 +20,8 @@ const Index = () => {
     sendMessage, 
     conversations,
     loadConversationMessages,
-    currentConversationId
+    currentConversationId,
+    deleteConversation
   } = useChat(userId)
   const [showQuickActions, setShowQuickActions] = useState(true)
 
@@ -78,6 +79,7 @@ const Index = () => {
           onConversationSelect={loadConversationMessages}
           currentConversationId={currentConversationId}
           onNewConversation={handleNewConversation}
+          onDeleteConversation={deleteConversation}
         />
         
         <div className="flex flex-1 flex-col overflow-hidden">
