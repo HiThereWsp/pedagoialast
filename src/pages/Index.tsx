@@ -82,23 +82,23 @@ const Index = () => {
           onDeleteConversation={deleteConversation}
         />
         
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
-            <div className="h-16 flex items-center px-4">
+            <div className="h-16 flex items-center px-6">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Assistant Pédagogique IA</h1>
             </div>
           </nav>
 
-          <main className="flex-1 overflow-y-auto relative">
-            <div className="container mx-auto max-w-4xl p-4 pb-24">
+          <main className="flex-1 overflow-y-auto relative px-6">
+            <div className="max-w-5xl mx-auto w-full py-6 pb-32">
               {!currentConversationId && <WelcomeBanner />}
               <ChatHistory messages={messages} isLoading={isLoading} />
               <QuickActions onActionClick={handleQuickAction} visible={showQuickActions} />
             </div>
           </main>
 
-          <div className="absolute bottom-0 left-0 right-0 border-t bg-white dark:bg-gray-900 dark:border-gray-800">
-            <div className="container mx-auto max-w-4xl p-4">
+          <div className="fixed bottom-0 left-0 right-0 border-t bg-white dark:bg-gray-900 dark:border-gray-800">
+            <div className="max-w-5xl mx-auto px-6 py-4">
               <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
             </div>
           </div>
