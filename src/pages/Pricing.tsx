@@ -34,10 +34,6 @@ const PricingPage = () => {
           <p className="text-xl text-muted-foreground mb-6">
             Testez toutes les fonctionnalités pendant 7 jours, sans engagement
           </p>
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Shield className="w-4 h-4 text-coral-400" />
-            <span>Pas de carte bancaire requise pour l'essai</span>
-          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
