@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { ArrowLeft } from "lucide-react"
 
 const Settings = () => {
   const navigate = useNavigate()
@@ -132,6 +133,15 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-2xl mx-auto space-y-6">
+        <Button 
+          variant="ghost" 
+          className="mb-4"
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Retour
+        </Button>
+
         <Card>
           <CardHeader>
             <CardTitle>Paramètres du profil</CardTitle>
