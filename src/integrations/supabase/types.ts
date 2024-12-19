@@ -16,6 +16,7 @@ export type Database = {
           conversation_id: string | null
           conversation_title: string | null
           created_at: string | null
+          deleted_at: string | null
           feedback_score: number | null
           id: number
           message: string
@@ -28,6 +29,7 @@ export type Database = {
           conversation_id?: string | null
           conversation_title?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           feedback_score?: number | null
           id?: never
           message: string
@@ -40,6 +42,7 @@ export type Database = {
           conversation_id?: string | null
           conversation_title?: string | null
           created_at?: string | null
+          deleted_at?: string | null
           feedback_score?: number | null
           id?: never
           message?: string

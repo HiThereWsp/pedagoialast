@@ -22,6 +22,7 @@ export const useChat = (userId: string | null) => {
       .from('chats')
       .select('conversation_id, conversation_title')
       .eq('user_id', userId)
+      .is('deleted_at', null)  // Only get non-deleted conversations
       .not('conversation_id', 'is', null)
       .order('created_at', { ascending: false })
 
@@ -50,6 +51,7 @@ export const useChat = (userId: string | null) => {
       .from('chats')
       .select('*')
       .eq('conversation_id', conversationId)
+      .is('deleted_at', null)  // Only get non-deleted messages
       .order('created_at', { ascending: true })
 
     if (error) {
@@ -155,10 +157,10 @@ export const useChat = (userId: string | null) => {
     if (!userId) return
 
     try {
-      // Delete all messages from this conversation
+      // Soft delete all messages from this conversation
       const { error } = await supabase
         .from('chats')
-        .delete()
+        .update({ deleted_at: new Date().toISOString() })
         .eq('conversation_id', conversationId)
         .eq('user_id', userId)
 
