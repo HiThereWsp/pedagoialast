@@ -1,4 +1,4 @@
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
@@ -16,7 +16,6 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
   
-  // Déterminer l'URL de redirection en fonction de l'environnement
   const redirectTo = window.location.hostname === 'localhost' || window.location.hostname.includes('lovableproject.com')
     ? `${window.location.origin}/chat`
     : 'https://pedagoia.fr/chat'
@@ -41,12 +40,13 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   }, [redirectTo])
 
   return (
-    <>
-      <DialogHeader>
-        <DialogTitle>
+    <div className="space-y-6">
+      <div className="space-y-2 text-center">
+        <h2 className="text-2xl font-semibold tracking-tight">
           {defaultView === "sign_up" ? "Inscription" : "Connexion"}
-        </DialogTitle>
-      </DialogHeader>
+        </h2>
+      </div>
+
       <Auth
         supabaseClient={supabase}
         appearance={{
@@ -133,6 +133,6 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
