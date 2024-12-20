@@ -1,11 +1,10 @@
-import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User, Trash2 } from "lucide-react"
+import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -34,21 +33,29 @@ export function AppSidebar({
 }: AppSidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
-  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const [firstName, setFirstName] = useState<string | null>(null)
 
   useEffect(() => {
-    const getUserEmail = async () => {
+    const getUserProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user?.email) {
-        setUserEmail(session.user.email)
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', session.user.id)
+          .single()
+        
+        if (profile?.first_name) {
+          setFirstName(profile.first_name)
+        }
       }
     }
 
-    getUserEmail()
+    getUserProfile()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user?.email) {
-        setUserEmail(session.user.email)
+      if (session?.user) {
+        getUserProfile()
       }
     })
 
@@ -71,6 +78,14 @@ export function AppSidebar({
     <Sidebar collapsible="icon" variant="floating">
       <SidebarRail />
       <SidebarHeader className="p-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            <span className="truncate group-data-[collapsible=icon]:hidden">
+              {firstName || 'Chargement...'}
+            </span>
+          </div>
+        </div>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button 
@@ -174,13 +189,6 @@ export function AppSidebar({
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter className="border-t p-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <User className="h-6 w-6 flex-shrink-0" />
-          <span className="text-sm font-medium truncate">{userEmail || 'Chargement...'}</span>
-        </div>
-      </SidebarFooter>
     </Sidebar>
   )
 }
