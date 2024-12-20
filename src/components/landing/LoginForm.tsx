@@ -15,29 +15,30 @@ interface LoginFormProps {
 export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
-  const SITE_URL = "https://pedagoia.fr"
+  
+  // Déterminer l'URL de redirection en fonction de l'environnement
+  const redirectTo = window.location.hostname === 'localhost' || window.location.hostname.includes('lovableproject.com')
+    ? `${window.location.origin}/chat`
+    : 'https://pedagoia.fr/chat'
 
   useEffect(() => {
-    // Log l'URL de redirection pour debug
     console.log("Current URL:", window.location.href)
-    console.log("Production URL:", SITE_URL)
-    console.log("Redirect URL:", `${SITE_URL}/chat`)
+    console.log("Redirect URL:", redirectTo)
 
-    // Écouteur d'événements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth event:", event)
       console.log("Session:", session)
       
       if (event === 'SIGNED_IN') {
         console.log("Utilisateur connecté, redirection vers /chat")
-        window.location.href = `${SITE_URL}/chat`
+        window.location.href = redirectTo
       }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [])
+  }, [redirectTo])
 
   return (
     <>
@@ -68,7 +69,7 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
           },
         }}
         providers={[]}
-        redirectTo={`${SITE_URL}/chat`}
+        redirectTo={redirectTo}
         localization={{
           variables: {
             sign_in: {
