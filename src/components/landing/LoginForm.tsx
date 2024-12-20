@@ -6,7 +6,7 @@ import { Label } from "../ui/label"
 import { Checkbox } from "../ui/checkbox"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 interface LoginFormProps {
   defaultView?: "sign_in" | "sign_up"
@@ -16,36 +16,39 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   
   const redirectTo = window.location.hostname === 'localhost' || window.location.hostname.includes('lovableproject.com')
     ? `${window.location.origin}/chat`
     : 'https://pedagoia.fr/chat'
 
   useEffect(() => {
-    console.log("Current URL:", window.location.href)
-    console.log("Redirect URL:", redirectTo)
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth event:", event)
-      console.log("Session:", session)
-      
-      if (event === 'SIGNED_IN') {
-        console.log("Utilisateur connecté, redirection vers /chat")
+      if (event === 'SIGNED_IN' && session) {
         window.location.href = redirectTo
       }
     })
 
-    return () => {
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [redirectTo])
+
+  const handleViewChange = (newView: 'sign_in' | 'sign_up') => {
+    navigate(`/login?view=${newView}`)
+  }
+
+  const currentView = searchParams.get('view') as 'sign_in' | 'sign_up' || defaultView
 
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
         <h2 className="text-2xl font-semibold tracking-tight">
-          {defaultView === "sign_up" ? "Inscription" : "Connexion"}
+          {currentView === "sign_up" ? "Inscription" : "Connexion"}
         </h2>
+        <p className="text-sm text-muted-foreground">
+          {currentView === "sign_up" 
+            ? "Créez votre compte pour commencer"
+            : "Connectez-vous à votre compte"}
+        </p>
       </div>
 
       <Auth
@@ -69,8 +72,6 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
             input: "bg-background",
           },
         }}
-        providers={[]}
-        redirectTo={redirectTo}
         localization={{
           variables: {
             sign_in: {
@@ -94,9 +95,10 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
             },
           },
         }}
-        view={defaultView}
+        view={currentView}
       />
-      {defaultView === "sign_up" && (
+
+      {currentView === "sign_up" && (
         <div className="mt-4 space-y-4">
           <div className="flex items-start space-x-2">
             <Checkbox 
