@@ -1,45 +1,65 @@
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Send, Loader2 } from "lucide-react"
+import { Textarea } from "@/components/ui/textarea"
+import { SendHorizontal } from "lucide-react"
+import { KeyboardEvent, useState, useEffect } from "react"
 
 interface ChatInputProps {
   onSendMessage: (message: string) => Promise<void>
-  isLoading: boolean
+  isLoading?: boolean
+  value?: string
+  onChange?: (value: string) => void
 }
 
-export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
+export const ChatInput = ({ onSendMessage, isLoading, value, onChange }: ChatInputProps) => {
   const [message, setMessage] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!message.trim() || isLoading) return
+  useEffect(() => {
+    if (value !== undefined) {
+      setMessage(value)
+    }
+  }, [value])
 
-    await onSendMessage(message)
+  const handleSubmit = async () => {
+    if (!message.trim() || isLoading) return
+    
+    const currentMessage = message
     setMessage("")
+    if (onChange) {
+      onChange("")
+    }
+    await onSendMessage(currentMessage)
+  }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSubmit()
+    }
+  }
+
+  const handleChange = (value: string) => {
+    setMessage(value)
+    if (onChange) {
+      onChange(value)
+    }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 w-full max-w-full">
-      <Input 
-        placeholder="Comment puis-je vous aider ?" 
-        className="flex-1"
+    <div className="flex items-end gap-4">
+      <Textarea
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        disabled={isLoading}
+        onChange={(e) => handleChange(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="Écrivez votre message ici..."
+        className="min-h-[80px]"
       />
-      <Button 
-        type="submit" 
-        size="icon"
-        className="bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
-        disabled={isLoading}
+      <Button
+        onClick={handleSubmit}
+        disabled={!message.trim() || isLoading}
+        className="mb-2"
       >
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <Send className="h-4 w-4" />
-        )}
+        <SendHorizontal className="h-4 w-4" />
       </Button>
-    </form>
+    </div>
   )
 }

@@ -24,6 +24,7 @@ const Index = () => {
     deleteConversation
   } = useChat(userId)
   const [showQuickActions, setShowQuickActions] = useState(true)
+  const [inputValue, setInputValue] = useState("")
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -65,6 +66,10 @@ const Index = () => {
     setShowQuickActions(true)
   }
 
+  const handlePromptSelect = (prompt: string) => {
+    setInputValue(prompt)
+  }
+
   if (!userId) return (
     <div className="flex h-screen items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -93,13 +98,22 @@ const Index = () => {
             <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
               {!currentConversationId && <WelcomeBanner />}
               <ChatHistory messages={messages} isLoading={isLoading} />
-              <QuickActions onActionClick={handleQuickAction} visible={showQuickActions} />
+              <QuickActions 
+                onActionClick={handleQuickAction} 
+                visible={showQuickActions}
+                onPromptSelect={handlePromptSelect}
+              />
             </div>
           </main>
 
           <div className="fixed bottom-0 left-0 right-0 border-t bg-white dark:bg-gray-900 dark:border-gray-800 z-10">
             <div className="max-w-5xl mx-auto px-6 py-4">
-              <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
+              <ChatInput 
+                onSendMessage={sendMessage} 
+                isLoading={isLoading}
+                value={inputValue}
+                onChange={setInputValue}
+              />
             </div>
           </div>
         </div>
