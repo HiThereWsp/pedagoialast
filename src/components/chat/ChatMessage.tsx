@@ -19,10 +19,10 @@ export const ChatMessage = ({ role, content, index }: ChatMessageProps) => {
   return (
     <div
       className={cn(
-        "group relative rounded-lg p-4 transition-all shadow-premium hover:shadow-premium-lg",
+        "group relative rounded-lg p-4 transition-all backdrop-blur-sm",
         role === 'user' 
-          ? 'ml-auto max-w-[80%] bg-premium-gradient' 
-          : 'mr-auto max-w-[80%] bg-white/80 backdrop-blur-sm'
+          ? 'ml-auto max-w-[80%] bg-gradient-to-r from-[#FEF7CD]/40 to-[#FFDEE2]/40 border border-[#FEF7CD]/20' 
+          : 'mr-auto max-w-[80%] bg-white/80 shadow-sm border border-gray-100/50'
       )}
     >
       <div className="text-foreground whitespace-pre-wrap leading-relaxed">
