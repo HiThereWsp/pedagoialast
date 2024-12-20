@@ -7,8 +7,6 @@ import { Label } from "../ui/label"
 import { Checkbox } from "../ui/checkbox"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
-import { Eye, EyeOff } from "lucide-react"
-import { Button } from "../ui/button"
 
 interface LoginFormProps {
   defaultView?: "sign_in" | "sign_up"
@@ -16,7 +14,6 @@ interface LoginFormProps {
 
 export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
   const { toast } = useToast()
   
   // Déterminer l'URL de redirection en fonction de l'environnement

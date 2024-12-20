@@ -11,7 +11,7 @@ export function Header() {
           <div className="text-xl font-bold text-primary">Pedagoia</div>
           <Button 
             variant="ghost"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/login?view=sign_in')}
             className="text-primary hover:text-primary/90"
           >
             Se connecter
