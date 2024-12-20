@@ -45,18 +45,18 @@ export const ChatInput = ({ onSendMessage, isLoading, value, onChange }: ChatInp
   }
 
   return (
-    <div className="flex items-end gap-4 bg-white/80 backdrop-blur-sm p-4 rounded-lg shadow-premium">
+    <div className="flex items-end gap-4">
       <Textarea
         value={message}
         onChange={(e) => handleChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Écrivez votre message ici..."
-        className="min-h-[80px] bg-white/50 backdrop-blur-sm"
+        className="min-h-[80px]"
       />
       <Button
         onClick={handleSubmit}
         disabled={!message.trim() || isLoading}
-        className="mb-2 premium-button text-foreground"
+        className="mb-2"
       >
         <SendHorizontal className="h-4 w-4" />
       </Button>
