@@ -1,11 +1,8 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
-import { useNavigate } from 'react-router-dom';
 
 export function CTASection() {
-  const navigate = useNavigate();
-
   return (
     <section className="py-20">
       <div className="container mx-auto px-4">
@@ -18,7 +15,6 @@ export function CTASection() {
           </p>
           <Button 
             size="lg"
-            onClick={() => navigate('/login?view=sign_up')}
             className="bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105"
           >
             Je m'inscris gratuitement
