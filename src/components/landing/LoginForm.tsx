@@ -40,8 +40,8 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
     }
   }, [redirectTo])
 
-  const handleViewChange = (newView: "sign_in" | "sign_up") => {
-    navigate(`/login?view=${newView}`)
+  const handleViewChange = (view: "sign_in" | "sign_up") => {
+    navigate(`/login?view=${view}`)
   }
 
   return (
@@ -99,7 +99,7 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
           },
         }}
         view={defaultView}
-        onViewChange={handleViewChange}
+        viewChange={handleViewChange}
       />
       {defaultView === "sign_up" && (
         <div className="mt-4 space-y-4">
