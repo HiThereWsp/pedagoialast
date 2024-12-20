@@ -1,11 +1,10 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent } from '../ui/dialog';
-import { LoginForm } from './LoginForm';
+import { useNavigate } from 'react-router-dom';
 
 export function CTASection() {
-  const [showLoginForm, setShowLoginForm] = React.useState(false);
+  const navigate = useNavigate();
 
   return (
     <section className="py-20">
@@ -19,7 +18,7 @@ export function CTASection() {
           </p>
           <Button 
             size="lg"
-            onClick={() => setShowLoginForm(true)}
+            onClick={() => navigate('/login')}
             className="bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105"
           >
             Je m'inscris gratuitement
@@ -27,11 +26,6 @@ export function CTASection() {
           </Button>
         </div>
       </div>
-      <Dialog open={showLoginForm} onOpenChange={setShowLoginForm}>
-        <DialogContent className="sm:max-w-[425px]">
-          <LoginForm defaultView="sign_up" />
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }
