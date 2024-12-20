@@ -8,14 +8,20 @@ import { Checkbox } from "../ui/checkbox"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
 
-export const LoginForm = () => {
+interface LoginFormProps {
+  defaultView?: "sign_in" | "sign_up"
+}
+
+export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Connexion / Inscription</DialogTitle>
+        <DialogTitle>
+          {defaultView === "sign_up" ? "Inscription" : "Connexion"}
+        </DialogTitle>
       </DialogHeader>
       <Auth
         supabaseClient={supabase}
@@ -49,7 +55,7 @@ export const LoginForm = () => {
               loading_button_label: "Connexion en cours...",
               email_input_placeholder: "Votre adresse email",
               password_input_placeholder: "Votre mot de passe",
-              link_text: "",
+              link_text: "Vous n'avez pas de compte ? Inscrivez-vous",
             },
             sign_up: {
               email_label: "Adresse email",
@@ -58,12 +64,12 @@ export const LoginForm = () => {
               loading_button_label: "Inscription en cours...",
               email_input_placeholder: "Votre adresse email",
               password_input_placeholder: "Votre mot de passe",
-              link_text: "",
+              link_text: "Déjà inscrit ? Connectez-vous",
               confirmation_text: "Vérifiez vos emails pour confirmer votre inscription",
             },
           },
         }}
-        view="sign_up"
+        view={defaultView}
         additionalData={{
           first_name: {
             type: "text",
@@ -74,33 +80,35 @@ export const LoginForm = () => {
           },
         }}
       />
-      <div className="mt-4 space-y-4">
-        <div className="flex items-start space-x-2">
-          <Checkbox 
-            id="terms" 
-            checked={acceptedTerms}
-            onCheckedChange={(checked) => {
-              setAcceptedTerms(checked as boolean)
-              if (!checked) {
-                toast({
-                  variant: "destructive",
-                  title: "Conditions d'utilisation",
-                  description: "Veuillez accepter les conditions d'utilisation pour continuer.",
-                })
-              }
-            }}
-            className="mt-1"
-          />
-          <div className="grid gap-1.5 leading-none">
-            <Label
-              htmlFor="terms"
-              className="text-sm text-muted-foreground leading-relaxed"
-            >
-              J'accepte les <TermsDialog /> et la politique de confidentialité de Pedagoia
-            </Label>
+      {defaultView === "sign_up" && (
+        <div className="mt-4 space-y-4">
+          <div className="flex items-start space-x-2">
+            <Checkbox 
+              id="terms" 
+              checked={acceptedTerms}
+              onCheckedChange={(checked) => {
+                setAcceptedTerms(checked as boolean)
+                if (!checked) {
+                  toast({
+                    variant: "destructive",
+                    title: "Conditions d'utilisation",
+                    description: "Veuillez accepter les conditions d'utilisation pour continuer.",
+                  })
+                }
+              }}
+              className="mt-1"
+            />
+            <div className="grid gap-1.5 leading-none">
+              <Label
+                htmlFor="terms"
+                className="text-sm text-muted-foreground leading-relaxed"
+              >
+                J'accepte les <TermsDialog /> et la politique de confidentialité de Pedagoia
+              </Label>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </>
   )
 }

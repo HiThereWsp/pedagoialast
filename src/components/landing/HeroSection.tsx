@@ -32,7 +32,7 @@ export function HeroSection() {
       </div>
       <Dialog open={showLoginForm} onOpenChange={setShowLoginForm}>
         <DialogContent className="sm:max-w-[425px]">
-          <LoginForm />
+          <LoginForm defaultView="sign_up" />
         </DialogContent>
       </Dialog>
     </section>
