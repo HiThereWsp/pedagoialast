@@ -8,10 +8,12 @@ import { useToast } from "@/hooks/use-toast"
 export default function Login() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const SITE_URL = "https://pedagoia.fr"
 
   useEffect(() => {
     console.log("Login page mounted")
     console.log("Current URL:", window.location.href)
+    console.log("Production URL:", SITE_URL)
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth event in Login page:", event)
@@ -19,7 +21,7 @@ export default function Login() {
 
       if (event === 'SIGNED_IN' && session) {
         console.log("Redirecting to /chat")
-        navigate('/chat')
+        window.location.href = `${SITE_URL}/chat`
       } else if (event === 'SIGNED_OUT') {
         console.log("User signed out")
         navigate('/login')
@@ -70,7 +72,7 @@ export default function Login() {
             },
           }}
           providers={[]}
-          redirectTo={window.location.origin + '/chat'}
+          redirectTo={`${SITE_URL}/chat`}
           localization={{
             variables: {
               sign_in: {

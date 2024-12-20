@@ -15,11 +15,13 @@ interface LoginFormProps {
 export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
+  const SITE_URL = "https://pedagoia.fr"
 
   useEffect(() => {
     // Log l'URL de redirection pour debug
-    console.log("Current URL:", window.location.origin)
-    console.log("Redirect URL:", `${window.location.origin}/chat`)
+    console.log("Current URL:", window.location.href)
+    console.log("Production URL:", SITE_URL)
+    console.log("Redirect URL:", `${SITE_URL}/chat`)
 
     // Écouteur d'événements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -28,7 +30,7 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
       
       if (event === 'SIGNED_IN') {
         console.log("Utilisateur connecté, redirection vers /chat")
-        window.location.href = '/chat'
+        window.location.href = `${SITE_URL}/chat`
       }
     })
 
@@ -66,7 +68,7 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
           },
         }}
         providers={[]}
-        redirectTo={window.location.origin + '/chat'}
+        redirectTo={`${SITE_URL}/chat`}
         localization={{
           variables: {
             sign_in: {
