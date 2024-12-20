@@ -75,7 +75,7 @@ export function AppSidebar({
   }
 
   return (
-    <Sidebar collapsible="icon" variant="floating">
+    <Sidebar collapsible="offcanvas" variant="floating" className="z-50">
       <SidebarRail />
       <SidebarHeader className="p-2">
         <div className="flex items-center justify-between mb-2">
@@ -105,7 +105,7 @@ export function AppSidebar({
 
       <SidebarContent>
         <div className="flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto min-h-0 mb-16">
+          <div className="flex-1 overflow-y-auto min-h-0 mb-20">
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
