@@ -7,6 +7,8 @@ import { Label } from "../ui/label"
 import { Checkbox } from "../ui/checkbox"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { Eye, EyeOff } from "lucide-react"
+import { Button } from "../ui/button"
 
 interface LoginFormProps {
   defaultView?: "sign_in" | "sign_up"
@@ -14,6 +16,7 @@ interface LoginFormProps {
 
 export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const { toast } = useToast()
   
   // Déterminer l'URL de redirection en fonction de l'environnement
@@ -65,7 +68,27 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
             button: "w-full",
             divider: "my-4",
             message: "text-sm text-red-500 mt-2",
-            input: "bg-background",
+            input: "bg-background pr-10", // Ajout de padding à droite pour l'icône
+            password: "relative", // Pour positionner le bouton
+          },
+          extend: {
+            password: {
+              afterContent: (props) => (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              ),
+            },
           },
         }}
         providers={[]}
@@ -101,6 +124,11 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
             placeholder: "Votre prénom",
             required: true,
             order: 1,
+          },
+        }}
+        customizations={{
+          passwordInputProps: {
+            type: showPassword ? "text" : "password",
           },
         }}
       />
