@@ -18,7 +18,7 @@ export function CTASection() {
           </p>
           <Button 
             size="lg"
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/login?view=sign_up')}
             className="bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105"
           >
             Je m'inscris gratuitement

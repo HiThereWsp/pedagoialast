@@ -1,4 +1,3 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
@@ -7,6 +6,7 @@ import { Label } from "../ui/label"
 import { Checkbox } from "../ui/checkbox"
 import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { useNavigate } from "react-router-dom"
 
 interface LoginFormProps {
   defaultView?: "sign_in" | "sign_up"
@@ -15,6 +15,7 @@ interface LoginFormProps {
 export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
+  const navigate = useNavigate()
   
   const redirectTo = window.location.hostname === 'localhost' || window.location.hostname.includes('lovableproject.com')
     ? `${window.location.origin}/chat`
@@ -38,6 +39,10 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
       subscription.unsubscribe()
     }
   }, [redirectTo])
+
+  const handleViewChange = (newView: "sign_in" | "sign_up") => {
+    navigate(`/login?view=${newView}`)
+  }
 
   return (
     <div className="space-y-6">
@@ -94,15 +99,7 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
           },
         }}
         view={defaultView}
-        additionalData={{
-          first_name: {
-            type: "text",
-            label: "Prénom",
-            placeholder: "Votre prénom",
-            required: true,
-            order: 1,
-          },
-        }}
+        onViewChange={handleViewChange}
       />
       {defaultView === "sign_up" && (
         <div className="mt-4 space-y-4">
