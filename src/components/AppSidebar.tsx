@@ -105,7 +105,7 @@ export function AppSidebar({
 
       <SidebarContent>
         <div className="flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto min-h-0">
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -143,7 +143,7 @@ export function AppSidebar({
             </SidebarGroup>
           </div>
 
-          <div className="mt-auto border-t border-gray-200 pt-4 dark:border-gray-800">
+          <div className="border-t border-gray-200 dark:border-gray-800 mt-2 pt-2 pb-2 px-2 flex flex-col gap-1">
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
