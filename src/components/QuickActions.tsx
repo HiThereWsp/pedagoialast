@@ -1,11 +1,3 @@
-import {
-
-Je vais modifier le composant QuickActions pour copier le prompt dans la zone de texte au lieu de l'envoyer directement, et je vais ajouter des variables à remplir dans les prompts.
-
-<lov-code>
-First, let's update the QuickActions component to handle this new behavior:
-
-<lov-write file_path="src/components/QuickActions.tsx">
 import { Zap, ChevronDown, ChevronUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
