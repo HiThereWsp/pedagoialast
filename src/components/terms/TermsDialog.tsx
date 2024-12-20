@@ -15,7 +15,7 @@ export function TermsDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold mb-4">
+          <DialogTitle>
             Conditions Générales d'Utilisation - Pedagoia
           </DialogTitle>
         </DialogHeader>
