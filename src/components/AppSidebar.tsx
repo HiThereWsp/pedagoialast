@@ -104,90 +104,96 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {conversations.map((conversation) => (
-                <SidebarMenuItem key={conversation.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton 
-                        className="w-full justify-between group"
-                        onClick={() => onConversationSelect?.(conversation.id)}
-                        data-active={currentConversationId === conversation.id}
-                      >
-                        <div className="flex items-center min-w-0 flex-1">
-                          <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
-                          <span className="truncate">{conversation.title}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden"
-                          onClick={(e) => handleDelete(e, conversation.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500 hover:text-red-600" />
-                        </Button>
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    <TooltipContent side="right">
-                      {conversation.title}
-                    </TooltipContent>
-                  </Tooltip>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        <div className="flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto">
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {conversations.map((conversation) => (
+                    <SidebarMenuItem key={conversation.id}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton 
+                            className="w-full justify-between group"
+                            onClick={() => onConversationSelect?.(conversation.id)}
+                            data-active={currentConversationId === conversation.id}
+                          >
+                            <div className="flex items-center min-w-0 flex-1">
+                              <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">{conversation.title}</span>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden"
+                              onClick={(e) => handleDelete(e, conversation.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-500 hover:text-red-600" />
+                            </Button>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          {conversation.title}
+                        </TooltipContent>
+                      </Tooltip>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </div>
 
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton>
-                      <Lightbulb className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">Faire des suggestions</span>
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    Faire des suggestions
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton 
-                      onClick={() => navigate('/settings')}
-                      data-active={location.pathname === '/settings'}
-                    >
-                      <Settings className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">Paramètres</span>
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    Paramètres
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton onClick={handleLogout} className="text-red-500 hover:text-red-600">
-                      <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">Déconnexion</span>
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    Déconnexion
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+          <div className="mt-auto border-t border-gray-200 pt-4 dark:border-gray-800">
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton>
+                          <Lightbulb className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">Faire des suggestions</span>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        Faire des suggestions
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton 
+                          onClick={() => navigate('/settings')}
+                          data-active={location.pathname === '/settings'}
+                        >
+                          <Settings className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">Paramètres</span>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        Paramètres
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton onClick={handleLogout} className="text-red-500 hover:text-red-600">
+                          <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">Déconnexion</span>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        Déconnexion
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </div>
+        </div>
       </SidebarContent>
     </Sidebar>
   )
