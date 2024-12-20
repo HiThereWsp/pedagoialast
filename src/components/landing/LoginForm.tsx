@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { TermsDialog } from "../terms/TermsDialog"
 import { Label } from "../ui/label"
 import { Checkbox } from "../ui/checkbox"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/hooks/use-toast"
 
 interface LoginFormProps {
@@ -15,6 +15,27 @@ interface LoginFormProps {
 export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
+
+  useEffect(() => {
+    // Log l'URL de redirection pour debug
+    console.log("Current URL:", window.location.origin)
+    console.log("Redirect URL:", `${window.location.origin}/chat`)
+
+    // Écouteur d'événements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth event:", event)
+      console.log("Session:", session)
+      
+      if (event === 'SIGNED_IN') {
+        console.log("Utilisateur connecté, redirection vers /chat")
+        window.location.href = '/chat'
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   return (
     <>
@@ -45,7 +66,7 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
           },
         }}
         providers={[]}
-        redirectTo={`${window.location.origin}/chat`}
+        redirectTo={window.location.origin + '/chat'}
         localization={{
           variables: {
             sign_in: {
