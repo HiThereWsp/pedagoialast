@@ -68,27 +68,7 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
             button: "w-full",
             divider: "my-4",
             message: "text-sm text-red-500 mt-2",
-            input: "bg-background pr-10", // Ajout de padding à droite pour l'icône
-            password: "relative", // Pour positionner le bouton
-          },
-          extend: {
-            password: {
-              afterContent: (props) => (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-2 top-1/2 -translate-y-1/2"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              ),
-            },
+            input: "bg-background",
           },
         }}
         providers={[]}
@@ -124,11 +104,6 @@ export const LoginForm = ({ defaultView = "sign_up" }: LoginFormProps) => {
             placeholder: "Votre prénom",
             required: true,
             order: 1,
-          },
-        }}
-        customizations={{
-          passwordInputProps: {
-            type: showPassword ? "text" : "password",
           },
         }}
       />
