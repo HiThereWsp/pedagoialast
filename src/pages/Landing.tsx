@@ -5,10 +5,12 @@ import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection"
 import { FAQSection } from "@/components/landing/FAQSection"
 import { CTASection } from "@/components/landing/CTASection"
+import { Header } from "@/components/landing/Header"
 
 const Landing = () => {
   return (
     <div className="min-h-screen">
+      <Header />
       <HeroSection />
       <ChallengesSection />
       <MetricsSection />
