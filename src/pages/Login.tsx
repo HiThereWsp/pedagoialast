@@ -8,6 +8,16 @@ export default function Login() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    // Vérifier si l'utilisateur est déjà connecté
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        navigate('/chat')
+      }
+    }
+    checkUser()
+
+    // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         navigate('/chat')
