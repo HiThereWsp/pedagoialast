@@ -42,11 +42,11 @@ const PricingPage = () => {
   }
 
   const handleMonthlySubscription = () => {
-    handleSubscription('price_1OvCYXIqXQKnGj4mJHYz8j9Q') // À remplacer par votre ID de prix mensuel
+    handleSubscription('price_1QYUKDIqXQKnGj4mKGx80HJP')
   }
 
   const handleYearlySubscription = () => {
-    handleSubscription('price_1OvCZ3IqXQKnGj4mzpVrXkUx') // À remplacer par votre ID de prix annuel
+    handleSubscription('price_1QYUKAIqXQKnGj4meN7G9nPH')
   }
 
   return (
