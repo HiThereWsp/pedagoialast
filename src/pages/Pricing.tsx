@@ -10,16 +10,43 @@ import {
 } from "@/components/ui/tooltip"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
+import { supabase } from "@/integrations/supabase/client"
 
 const PricingPage = () => {
   const navigate = useNavigate()
 
+  const handleSubscription = async (priceId: string) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    
+    if (!session) {
+      toast.error("Vous devez être connecté pour souscrire à un abonnement")
+      navigate("/login")
+      return
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { priceId }
+      })
+
+      if (error) throw error
+      if (data.error) throw new Error(data.error)
+      
+      if (data.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      toast.error(error.message || "Une erreur est survenue")
+    }
+  }
+
   const handleMonthlySubscription = () => {
-    window.location.href = "https://buy.stripe.com/9AQaHW0hQd2tbp6eUU"
+    handleSubscription('price_1OvCYXIqXQKnGj4mJHYz8j9Q')
   }
 
   const handleYearlySubscription = () => {
-    window.location.href = "https://buy.stripe.com/28o4jy9Sq2nP3WE145"
+    handleSubscription('price_1OvCZ3IqXQKnGj4mzpVrXkUx')
   }
 
   return (
