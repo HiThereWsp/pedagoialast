@@ -12,7 +12,7 @@ export const LoginForm = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
 
-  const handleAuthError = (error: Error) => {
+  const handleError = (error: Error) => {
     if (error.message.includes("User already registered")) {
       toast({
         variant: "destructive",
@@ -56,7 +56,6 @@ export const LoginForm = () => {
         }}
         providers={[]}
         redirectTo={`${window.location.origin}/chat`}
-        onError={handleAuthError}
         localization={{
           variables: {
             sign_in: {
