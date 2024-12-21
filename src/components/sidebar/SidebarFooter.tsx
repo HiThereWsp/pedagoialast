@@ -19,12 +19,12 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
   const navigate = useNavigate()
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-800 bg-sidebar">
-      <div className="p-2">
+    <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border bg-sidebar">
+      <div className="px-2">
         <Button
           onClick={() => navigate('/pricing')}
           size="sm"
-          className="w-full mb-2 bg-gradient-to-r from-[#FEF7CD] via-[#FFDEE2] to-[#FEC6A1] text-gray-700 hover:from-[#FEF7CD]/90 hover:via-[#FFDEE2]/90 hover:to-[#FEC6A1]/90 transition-all duration-300 shadow-sm"
+          className="w-full bg-gradient-to-r from-[#FEF7CD] via-[#FFDEE2] to-[#FEC6A1] text-gray-700 hover:from-[#FEF7CD]/90 hover:via-[#FFDEE2]/90 hover:to-[#FEC6A1]/90 transition-all duration-300 shadow-sm my-2"
         >
           <CreditCard className="mr-2 h-4 w-4" />
           <span className="truncate">Passer Premium</span>
