@@ -48,7 +48,7 @@ export default function Login() {
             },
           }}
           providers={[]}
-          redirectTo={`${window.location.origin}/chat`}
+          redirectTo="https://pedagoia.fr/chat"
           localization={{
             variables: {
               sign_in: {
