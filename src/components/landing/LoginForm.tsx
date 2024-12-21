@@ -56,7 +56,7 @@ export const LoginForm = () => {
         }}
         providers={[]}
         redirectTo={`${window.location.origin}/chat`}
-        onAuthError={handleAuthError}
+        onError={handleAuthError}
         localization={{
           variables: {
             sign_in: {
