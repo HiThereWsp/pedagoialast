@@ -12,6 +12,22 @@ export const LoginForm = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const { toast } = useToast()
 
+  const handleAuthError = (error: Error) => {
+    if (error.message.includes("User already registered")) {
+      toast({
+        variant: "destructive",
+        title: "Compte existant",
+        description: "Un compte existe déjà avec cette adresse email. Veuillez vous connecter.",
+      })
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: error.message,
+      })
+    }
+  }
+
   return (
     <>
       <DialogHeader>
@@ -40,6 +56,7 @@ export const LoginForm = () => {
         }}
         providers={[]}
         redirectTo={`${window.location.origin}/chat`}
+        onError={handleAuthError}
         localization={{
           variables: {
             sign_in: {
