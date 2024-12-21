@@ -3,14 +3,28 @@ import { Badge } from "@/components/ui/badge"
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { QualityFeatures } from "@/components/pricing/QualityFeatures"
 import { handleSubscription } from "@/utils/subscription"
+import { useEffect } from "react"
+import { pricingEvents } from "@/integrations/posthog/client"
 
 const PricingPage = () => {
+  useEffect(() => {
+    // Capture la vue de la page de tarification
+    pricingEvents.viewPricing()
+  }, [])
+
   const handleMonthlySubscription = () => {
+    pricingEvents.selectPlan('premium')
     handleSubscription('price_1QYUKDIqXQKnGj4mKGx80HJP')
   }
 
   const handleYearlySubscription = () => {
+    pricingEvents.selectPlan('premium')
     handleSubscription('price_1QYUKAIqXQKnGj4meN7G9nPH')
+  }
+
+  const handleFreeTrial = () => {
+    pricingEvents.startTrial('premium')
+    console.log('Free trial selected');
   }
 
   return (
