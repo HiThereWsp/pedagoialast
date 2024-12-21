@@ -19,6 +19,7 @@ serve(async (req) => {
 
   try {
     const { priceId } = await req.json()
+    console.log('Received request with priceId:', priceId)
     
     if (!priceId) {
       throw new Error('Price ID is required')
@@ -30,18 +31,28 @@ serve(async (req) => {
     )
 
     const authHeader = req.headers.get('Authorization')!
+    console.log('Auth header present:', !!authHeader)
+    
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user } } = await supabaseClient.auth.getUser(token)
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
+
+    if (userError) {
+      console.error('Error getting user:', userError)
+      throw new Error('Authentication failed')
+    }
 
     if (!user?.email) {
+      console.error('No user email found')
       throw new Error('User email not found')
     }
+
+    console.log('Found user email:', user.email)
 
     const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
       apiVersion: '2023-10-16',
     })
 
-    console.log('Creating checkout session with:', {
+    console.log('Creating checkout session for:', {
       priceId,
       userEmail: user.email,
     })
@@ -53,13 +64,16 @@ serve(async (req) => {
     })
 
     let customerId = customers.data[0]?.id
+    console.log('Existing customer ID:', customerId)
 
     // Créer un nouveau client si nécessaire
     if (!customerId) {
+      console.log('Creating new customer')
       const customer = await stripe.customers.create({
         email: user.email,
       })
       customerId = customer.id
+      console.log('New customer created:', customerId)
     }
 
     // Créer la session de paiement
@@ -76,6 +90,8 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/pricing`,
     })
 
+    console.log('Checkout session created:', session.id)
+
     return new Response(
       JSON.stringify({ url: session.url }),
       { 
@@ -84,7 +100,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in create-checkout-session:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
