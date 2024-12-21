@@ -89,8 +89,9 @@ const Index = () => {
         
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
-            <div className="h-16 flex items-center px-6">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Assistant Pédagogique IA</h1>
+            <div className="h-16 flex items-center px-6 gap-2">
+              <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
             </div>
           </nav>
 
