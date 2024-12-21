@@ -9,12 +9,17 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 const PricingPage = () => {
   const navigate = useNavigate()
 
-  const handleStartTrial = () => {
-    navigate("/login")
+  const handleMonthlySubscription = () => {
+    window.location.href = "https://buy.stripe.com/9AQaHW0hQd2tbp6eUU"
+  }
+
+  const handleYearlySubscription = () => {
+    window.location.href = "https://buy.stripe.com/28o4jy9Sq2nP3WE145"
   }
 
   return (
@@ -22,7 +27,7 @@ const PricingPage = () => {
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Découvrez la puissance de l'intelligence artificielle dans votre métier grâce à Pédagoia
+            Découvrez la puissance de l'intelligence artificielle dans votre métier grâce à PedagoIA
           </h1>
           <Badge variant="secondary" className="mb-4 bg-secondary text-primary">
             <MessageSquareText className="w-4 h-4 mr-1" />
@@ -43,7 +48,7 @@ const PricingPage = () => {
             <div>
               <h3 className="text-2xl font-bold mb-2">Plan Mensuel</h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold">8,99€</span>
+                <span className="text-4xl font-bold">7,99€</span>
                 <span className="text-muted-foreground">/mois</span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
@@ -69,7 +74,7 @@ const PricingPage = () => {
             </div>
 
             <Button 
-              onClick={handleStartTrial} 
+              onClick={handleMonthlySubscription} 
               className="w-full mt-8 bg-primary hover:bg-primary/90 text-primary-foreground transition-colors"
             >
               Commencer l'essai gratuit
@@ -88,14 +93,14 @@ const PricingPage = () => {
             <div>
               <h3 className="text-2xl font-bold mb-2">Plan Annuel</h3>
               <div className="flex items-baseline gap-2">
-                <span className="text-4xl font-bold">4,99€</span>
-                <span className="text-muted-foreground">/mois</span>
+                <span className="text-4xl font-bold">59,99€</span>
+                <span className="text-muted-foreground">/an</span>
               </div>
               <p className="text-sm text-primary mt-2">
-                Facturé annuellement (59,99€/an)
+                Soit 5€/mois
               </p>
               <p className="text-sm font-medium text-primary mt-1">
-                Économisez plus de 45€ par an !
+                Économisez plus de 35€ par an !
               </p>
             </div>
 
@@ -106,7 +111,7 @@ const PricingPage = () => {
                   <span className="text-muted-foreground">Tous les avantages du plan mensuel</span>
                 </li>
                 {[
-                  "Prix réduit garanti à vie (-45€/an)",
+                  "Prix réduit garanti à vie (-35€/an)",
                   "Accès prioritaire aux nouvelles fonctionnalités",
                   "Stockage plus élevé de l'historique",
                   "Support client téléphonique",
@@ -142,10 +147,10 @@ const PricingPage = () => {
             </div>
 
             <Button 
-              onClick={handleStartTrial} 
+              onClick={handleYearlySubscription} 
               className="w-full mt-8 bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:opacity-90 transition-opacity"
             >
-              Commencer l'essai gratuit
+              Souscrire à l'offre annuelle
             </Button>
           </Card>
         </div>
