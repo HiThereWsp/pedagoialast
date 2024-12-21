@@ -18,11 +18,14 @@ export const handleSubscription = async (priceId: string) => {
     if (data.error) throw new Error(data.error)
     
     if (data.url) {
+      // Utiliser window.location.href pour une redirection complète
       window.location.href = data.url
+    } else {
+      throw new Error("L'URL de paiement n'a pas été générée")
     }
   } catch (error) {
     console.error('Error:', error)
-    toast.error(error.message || "Une erreur est survenue")
+    toast.error("Une erreur est survenue lors de la création de la session de paiement")
     return null
   }
 }
