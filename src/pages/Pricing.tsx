@@ -14,15 +14,12 @@ const PricingPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+    <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight mb-4">
             Découvrez la puissance de l'intelligence artificielle dans votre métier grâce à PedagoIA
           </h1>
-          <p className="text-xl text-muted-foreground mb-6">
-            Des outils d'IA adaptés à vos besoins, avec un accès illimité à notre assistant intelligent
-          </p>
           <Badge variant="secondary" className="mb-4 bg-secondary text-primary">
             <MessageSquareText className="w-4 h-4 mr-1" />
             Essai gratuit de 7 jours
@@ -33,7 +30,6 @@ const PricingPage = () => {
           <PricingCard
             title="Plan Mensuel"
             price="7,99€"
-            period="/mois"
             badge="Plan Flexible"
             badgeIcon={<MessageSquareText className="w-4 h-4 mr-1" />}
             features={[

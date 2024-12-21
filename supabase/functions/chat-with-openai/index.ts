@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
-const MONTHLY_TOKEN_LIMIT = 50000 // Nouvelle limite de 50k tokens par mois
+const MONTHLY_TOKEN_LIMIT = 100000 // Limite de 100k tokens par mois
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,6 +22,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured')
     }
 
+    // Si c'est une génération de titre, on utilise un prompt système spécifique
     const systemPrompt = type === 'title-generation'
       ? "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
       : "Tu es un assistant pédagogique français qui aide les utilisateurs à apprendre et à comprendre des concepts. Tu es amical et encourageant."
@@ -35,9 +36,8 @@ serve(async (req) => {
     if (estimatedTokens > MONTHLY_TOKEN_LIMIT) {
       return new Response(
         JSON.stringify({
-          error: "Limite mensuelle de tokens atteinte",
-          details: "Vous avez atteint votre limite mensuelle de 50 000 tokens. Pour continuer à utiliser notre service sans interruption, nous vous invitons à passer à un forfait supérieur.",
-          type: "UPGRADE_REQUIRED"
+          error: "Limite mensuelle de tokens dépassée",
+          details: "Vous avez atteint votre limite mensuelle de tokens. Réessayez le mois prochain ou passez à un forfait supérieur."
         }), {
           status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -81,7 +81,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: 'Une erreur est survenue lors du traitement de votre demande'
+        details: 'An error occurred while processing your request'
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

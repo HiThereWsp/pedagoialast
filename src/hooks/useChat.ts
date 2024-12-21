@@ -2,16 +2,12 @@ import { useState, useEffect } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { ChatMessage } from "@/types/chat"
 import { v4 as uuidv4 } from 'uuid'
-import { useToast } from "@/hooks/use-toast"
-import { useNavigate } from "react-router-dom"
 
 export const useChat = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
   const [isLoading, setIsLoading] = useState(false)
   const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
-  const { toast } = useToast()
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (userId) {
@@ -35,6 +31,7 @@ export const useChat = (userId: string | null) => {
       return
     }
 
+    // Group by conversation_id and get unique conversations with their titles
     const uniqueConversations = data.reduce((acc: Array<{id: string, title: string}>, curr) => {
       if (curr.conversation_id && curr.conversation_title && 
           !acc.some(conv => conv.id === curr.conversation_id)) {
@@ -70,6 +67,7 @@ export const useChat = (userId: string | null) => {
   }
 
   const generateTitle = async (message: string) => {
+    // Detect if the message is in English using a simple heuristic
     const commonEnglishWords = /\b(the|is|are|was|were|have|has|had|been|will|would|could|should|may|might|must|can|a|an|and|or|but|in|on|at|to|for|of|with)\b/i;
     const isEnglish = commonEnglishWords.test(message.toLowerCase());
 
@@ -101,18 +99,22 @@ export const useChat = (userId: string | null) => {
     const conversationId = currentConversationId || uuidv4()
 
     try {
+      // If this is the first message in a new conversation, generate a title
       if (!currentConversationId) {
         const title = await generateTitle(userMessage)
         setCurrentConversationId(conversationId)
         
+        // Add the new conversation to the list
         setConversations(prev => [{
           id: conversationId,
           title
         }, ...prev])
       }
 
+      // Add user message to UI
       setMessages(prev => [...prev, { role: 'user', content: userMessage }])
 
+      // Save user message to database
       await supabase
         .from('chats')
         .insert([{
@@ -123,31 +125,16 @@ export const useChat = (userId: string | null) => {
           conversation_title: !currentConversationId ? await generateTitle(userMessage) : undefined
         }])
 
+      // Get AI response
       const { data, error } = await supabase.functions.invoke('chat-with-openai', {
         body: { message: userMessage }
       })
 
       if (error) throw error
 
-      if (data.error && data.type === "UPGRADE_REQUIRED") {
-        toast({
-          title: "Limite d'utilisation atteinte",
-          description: "Vous avez atteint votre limite mensuelle de messages. Passez à un forfait supérieur pour continuer à utiliser notre service sans interruption.",
-          variant: "destructive",
-          action: (
-            <button
-              onClick={() => navigate('/pricing')}
-              className="bg-white text-red-600 px-3 py-2 rounded-md text-sm font-medium hover:bg-red-50 transition-colors"
-            >
-              Voir les forfaits
-            </button>
-          ),
-        })
-        return
-      }
-
       const aiResponse = data.response
 
+      // Save AI response to database
       await supabase
         .from('chats')
         .insert([{
@@ -157,14 +144,10 @@ export const useChat = (userId: string | null) => {
           conversation_id: conversationId
         }])
 
+      // Add AI response to UI
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }])
     } catch (error) {
       console.error("Error:", error)
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi de votre message. Veuillez réessayer.",
-        variant: "destructive",
-      })
     } finally {
       setIsLoading(false)
     }
@@ -174,6 +157,7 @@ export const useChat = (userId: string | null) => {
     if (!userId) return
 
     try {
+      // Soft delete all messages from this conversation
       const { error } = await supabase
         .from('chats')
         .update({ deleted_at: new Date().toISOString() })
@@ -182,8 +166,10 @@ export const useChat = (userId: string | null) => {
 
       if (error) throw error
 
+      // Update the conversations list
       setConversations(prev => prev.filter(conv => conv.id !== conversationId))
       
+      // If the deleted conversation was the current one, clear messages
       if (currentConversationId === conversationId) {
         setMessages([])
         setCurrentConversationId(null)
