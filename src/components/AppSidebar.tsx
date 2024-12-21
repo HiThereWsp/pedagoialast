@@ -1,4 +1,4 @@
-import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User, Trash2 } from "lucide-react"
+import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User, Trash2, CreditCard } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -144,6 +144,13 @@ export function AppSidebar({
           </div>
 
           <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-800 bg-sidebar pt-2 pb-2 px-2">
+            <Button
+              onClick={() => navigate('/pricing')}
+              className="w-full mb-2 bg-gradient-to-r from-[#FEF7CD] to-[#FFDEE2] text-gray-700 hover:from-[#FEF7CD]/90 hover:to-[#FFDEE2]/90 transition-all duration-300"
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              <span className="truncate">Passer Premium</span>
+            </Button>
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
