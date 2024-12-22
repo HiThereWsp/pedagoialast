@@ -51,6 +51,30 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_contexts: {
+        Row: {
+          context: string
+          conversation_id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context?: string
+          conversation_id: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context?: string
+          conversation_id?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
