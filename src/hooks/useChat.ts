@@ -48,7 +48,7 @@ export const useChat = (userId: string | null) => {
 
     if (!currentId) {
       const newConversation = await createNewConversation(message)
-      currentId = newConversation.id
+      currentId = newConversation.conversationId
       title = newConversation.title
     }
 
