@@ -30,10 +30,13 @@ export const useConversationContext = (userId: string | null) => {
       .from('conversation_contexts')
       .select('context')
       .eq('conversation_id', conversationId)
-      .single()
+      .maybeSingle()
 
     if (!error && data) {
       setConversationContext(data.context)
+    } else {
+      // If no context exists yet, start with an empty context
+      setConversationContext("")
     }
   }
 
