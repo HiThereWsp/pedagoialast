@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
-const MONTHLY_TOKEN_LIMIT = 100000 // Limite de 100k tokens par mois
+const MONTHLY_TOKEN_LIMIT = 100000
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -10,29 +10,26 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { message, type } = await req.json()
+    const { message, context, type } = await req.json()
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured')
     }
 
-    // Si c'est une génération de titre, on utilise un prompt système spécifique
     const systemPrompt = type === 'title-generation'
       ? "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
-      : "Tu es un assistant pédagogique français qui aide les utilisateurs à apprendre et à comprendre des concepts. Tu es amical et encourageant."
+      : `Tu es un assistant pédagogique français qui aide les utilisateurs à apprendre et à comprendre des concepts. Tu es amical et encourageant. 
+         ${context ? "Voici le contexte de la conversation précédente :\n\n" + context : ""}`
 
     console.log('Calling OpenAI API with message:', message)
 
-    // Calculer une estimation approximative des tokens pour ce message
     const estimatedTokens = Math.ceil((message.length + systemPrompt.length) / 4)
 
-    // Vérifier si le message dépasserait la limite mensuelle
     if (estimatedTokens > MONTHLY_TOKEN_LIMIT) {
       return new Response(
         JSON.stringify({
@@ -58,7 +55,7 @@ serve(async (req) => {
           { role: 'user', content: message }
         ],
         temperature: 0.7,
-        max_tokens: Math.min(1000, MONTHLY_TOKEN_LIMIT - estimatedTokens), // S'assurer de ne pas dépasser la limite
+        max_tokens: Math.min(1000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
       }),
     })
 

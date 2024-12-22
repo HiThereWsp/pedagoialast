@@ -8,6 +8,7 @@ export const useChat = (userId: string | null) => {
   const [isLoading, setIsLoading] = useState(false)
   const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
+  const [conversationContext, setConversationContext] = useState<string>("")
 
   useEffect(() => {
     if (userId) {
@@ -22,7 +23,7 @@ export const useChat = (userId: string | null) => {
       .from('chats')
       .select('conversation_id, conversation_title')
       .eq('user_id', userId)
-      .is('deleted_at', null)  // Only get non-deleted conversations
+      .is('deleted_at', null)
       .not('conversation_id', 'is', null)
       .order('created_at', { ascending: false })
 
@@ -31,7 +32,6 @@ export const useChat = (userId: string | null) => {
       return
     }
 
-    // Group by conversation_id and get unique conversations with their titles
     const uniqueConversations = data.reduce((acc: Array<{id: string, title: string}>, curr) => {
       if (curr.conversation_id && curr.conversation_title && 
           !acc.some(conv => conv.id === curr.conversation_id)) {
@@ -47,19 +47,30 @@ export const useChat = (userId: string | null) => {
   }
 
   const loadConversationMessages = async (conversationId: string) => {
-    const { data, error } = await supabase
+    const { data: messagesData, error: messagesError } = await supabase
       .from('chats')
       .select('*')
       .eq('conversation_id', conversationId)
-      .is('deleted_at', null)  // Only get non-deleted messages
+      .is('deleted_at', null)
       .order('created_at', { ascending: true })
 
-    if (error) {
-      console.error("Error loading messages:", error)
+    if (messagesError) {
+      console.error("Error loading messages:", messagesError)
       return
     }
 
-    setMessages(data.map(msg => ({
+    // Récupérer le contexte de la conversation
+    const { data: contextData, error: contextError } = await supabase
+      .from('conversation_contexts')
+      .select('context')
+      .eq('conversation_id', conversationId)
+      .single()
+
+    if (!contextError && contextData) {
+      setConversationContext(contextData.context)
+    }
+
+    setMessages(messagesData.map(msg => ({
       role: msg.message_type as 'user' | 'assistant',
       content: msg.message
     })))
@@ -67,7 +78,6 @@ export const useChat = (userId: string | null) => {
   }
 
   const generateTitle = async (message: string) => {
-    // Detect if the message is in English using a simple heuristic
     const commonEnglishWords = /\b(the|is|are|was|were|have|has|had|been|will|would|could|should|may|might|must|can|a|an|and|or|but|in|on|at|to|for|of|with)\b/i;
     const isEnglish = commonEnglishWords.test(message.toLowerCase());
 
@@ -99,12 +109,10 @@ export const useChat = (userId: string | null) => {
     const conversationId = currentConversationId || uuidv4()
 
     try {
-      // If this is the first message in a new conversation, generate a title
       if (!currentConversationId) {
         const title = await generateTitle(userMessage)
         setCurrentConversationId(conversationId)
         
-        // Add the new conversation to the list
         setConversations(prev => [{
           id: conversationId,
           title
@@ -125,14 +133,30 @@ export const useChat = (userId: string | null) => {
           conversation_title: !currentConversationId ? await generateTitle(userMessage) : undefined
         }])
 
-      // Get AI response
+      // Get AI response with context
       const { data, error } = await supabase.functions.invoke('chat-with-openai', {
-        body: { message: userMessage }
+        body: { 
+          message: userMessage,
+          context: conversationContext 
+        }
       })
 
       if (error) throw error
 
       const aiResponse = data.response
+
+      // Update conversation context
+      const updatedContext = `${conversationContext}\nUser: ${userMessage}\nAssistant: ${aiResponse}`.trim()
+      setConversationContext(updatedContext)
+
+      // Save context to database
+      await supabase
+        .from('conversation_contexts')
+        .upsert([{
+          conversation_id: conversationId,
+          user_id: userId,
+          context: updatedContext
+        }])
 
       // Save AI response to database
       await supabase
@@ -166,6 +190,13 @@ export const useChat = (userId: string | null) => {
 
       if (error) throw error
 
+      // Delete conversation context
+      await supabase
+        .from('conversation_contexts')
+        .delete()
+        .eq('conversation_id', conversationId)
+        .eq('user_id', userId)
+
       // Update the conversations list
       setConversations(prev => prev.filter(conv => conv.id !== conversationId))
       
@@ -173,6 +204,7 @@ export const useChat = (userId: string | null) => {
       if (currentConversationId === conversationId) {
         setMessages([])
         setCurrentConversationId(null)
+        setConversationContext("")
       }
     } catch (error) {
       console.error("Error deleting conversation:", error)
