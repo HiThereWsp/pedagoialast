@@ -10,6 +10,8 @@ import { ChatInput } from "@/components/ChatInput"
 import { useChat } from "@/hooks/useChat"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { testSupabaseConnection } from "@/utils/testSupabase"
+import { Button } from "@/components/ui/button"
 
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
@@ -94,6 +96,10 @@ const Index = () => {
     setInputValue(prompt)
   }
 
+  const handleTestConnection = async () => {
+    await testSupabaseConnection()
+  }
+
   if (!userId) return (
     <div className="flex h-screen items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -116,6 +122,14 @@ const Index = () => {
             <div className="h-16 flex items-center px-6 gap-2">
               <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleTestConnection}
+                className="ml-auto"
+              >
+                Tester Supabase
+              </Button>
             </div>
           </nav>
 
