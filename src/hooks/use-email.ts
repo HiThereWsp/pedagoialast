@@ -15,24 +15,16 @@ export const useEmail = () => {
         throw new Error("User must be authenticated to send emails")
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ to, subject, html }),
-        }
-      )
+      const { data, error } = await supabase.functions.invoke('send-email', {
+        body: { to, subject, html }
+      })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || "Failed to send email")
+      if (error) {
+        console.error("Error sending email:", error)
+        throw error
       }
 
-      return await response.json()
+      return data
     } catch (error: any) {
       console.error("Error sending email:", error)
       throw error

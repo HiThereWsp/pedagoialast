@@ -35,7 +35,7 @@ serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Pedagoia <onboarding@resend.dev>",
+        from: "onboarding@resend.dev", // Using Resend's testing email address
         to: emailRequest.to,
         subject: emailRequest.subject,
         html: emailRequest.html,
