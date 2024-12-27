@@ -3,7 +3,6 @@ import { Header } from "@/components/landing/Header"
 import { HeroSection } from "@/components/landing/HeroSection"
 import { MetricsSection } from "@/components/landing/MetricsSection"
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
-import { FAQSection } from "@/components/landing/FAQSection"
 import { ChallengesSection } from "@/components/landing/ChallengesSection"
 
 const WaitlistLanding = () => {
@@ -18,7 +17,6 @@ const WaitlistLanding = () => {
       <ChallengesSection />
       <MetricsSection />
       <HowItWorksSection />
-      <FAQSection />
     </div>
   )
 }
