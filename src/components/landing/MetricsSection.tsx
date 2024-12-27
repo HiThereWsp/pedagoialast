@@ -64,7 +64,7 @@ export function MetricsSection() {
               size="lg"
               className="bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105"
             >
-              J'essaye l'outil
+              Je rejoins la liste d'attente
             </Button>
           </div>
         </div>
