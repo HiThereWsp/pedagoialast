@@ -4,6 +4,7 @@ import { HeroSection } from "@/components/landing/HeroSection"
 import { MetricsSection } from "@/components/landing/MetricsSection"
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
 import { FAQSection } from "@/components/landing/FAQSection"
+import { ChallengesSection } from "@/components/landing/ChallengesSection"
 
 const WaitlistLanding = () => {
   return (
@@ -14,6 +15,7 @@ const WaitlistLanding = () => {
       />
       <Header />
       <HeroSection />
+      <ChallengesSection />
       <MetricsSection />
       <HowItWorksSection />
       <FAQSection />
