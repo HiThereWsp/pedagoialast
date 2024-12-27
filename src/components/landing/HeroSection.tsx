@@ -1,5 +1,5 @@
 import React from 'react'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, Star } from 'lucide-react'
 import { Button } from '../ui/button'
 import { Dialog, DialogContent } from '../ui/dialog'
 import { WaitlistForm } from './WaitlistForm'
@@ -20,13 +20,14 @@ export function HeroSection() {
           <Button 
             size="lg"
             onClick={() => setShowWaitlistForm(true)}
-            className="bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 mb-6"
+            className="bg-primary text-white hover:bg-primary/90 transition-all duration-200 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 mb-6 group"
           >
-            Je m'inscris maintenant
-            <ArrowRight className="ml-2 h-5 w-5" />
+            <Star className="w-5 h-5 mr-2 group-hover:rotate-45 transition-transform" />
+            Rejoindre les pionniers
+            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </Button>
           <p className="text-xl md:text-2xl text-muted-foreground">
-            L'IA pensée pour simplifier votre métier.
+            Accès prioritaire et tarif exclusif pour les premiers inscrits
           </p>
         </div>
       </div>
