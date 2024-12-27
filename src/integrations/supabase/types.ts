@@ -129,6 +129,30 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          teaching_level: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          teaching_level: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          teaching_level?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       conversation_analytics: {
