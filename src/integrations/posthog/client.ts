@@ -19,8 +19,10 @@ export const initPostHog = () => {
           disable_session_recording: false,
           persistence: 'localStorage',
           cross_subdomain_cookie: false,
-          request_timeout: 5000, // 5 second timeout
-          on_request_error: (error) => {
+          xhr_headers: {
+            'timeout': '5000' // 5 second timeout
+          },
+          on_xhr_error: (error) => {
             // Log the error but don't break the application
             console.warn('PostHog request failed:', error)
           }
