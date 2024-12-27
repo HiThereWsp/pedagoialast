@@ -7,7 +7,7 @@ export const initPostHog = () => {
       posthog.init(
         import.meta.env.VITE_POSTHOG_KEY,
         {
-          api_host: import.meta.env.VITE_POSTHOG_HOST,
+          api_host: 'https://eu.posthog.com', // Changement de l'URL de l'API
           loaded: (posthog) => {
             if (process.env.NODE_ENV === 'development') {
               console.log('PostHog loaded:', posthog)
@@ -20,16 +20,14 @@ export const initPostHog = () => {
           persistence: 'localStorage',
           cross_subdomain_cookie: false,
           xhr_headers: {
-            'timeout': '5000' // 5 second timeout
+            'timeout': '5000'
           },
           on_xhr_error: (error) => {
-            // Log the error but don't break the application
             console.warn('PostHog request failed:', error)
           }
         }
       )
     } catch (error) {
-      // Log initialization error but don't break the application
       console.warn('PostHog initialization failed:', error)
     }
   }
