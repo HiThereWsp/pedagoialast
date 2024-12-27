@@ -9,6 +9,7 @@ import Login from "./pages/Login"
 import Landing from "./pages/Landing"
 import Pricing from "./pages/Pricing"
 import Settings from "./pages/Settings"
+import WaitlistLanding from "./pages/WaitlistLanding"
 
 const queryClient = new QueryClient()
 
@@ -21,7 +22,9 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Landing />} />
+              <Route path="/" element={<Navigate to="/waitlist" replace />} />
+              <Route path="/waitlist" element={<WaitlistLanding />} />
+              <Route path="/old-landing" element={<Landing />} />
               <Route path="/chat" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/pricing" element={<Pricing />} />
