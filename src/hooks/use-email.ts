@@ -4,10 +4,11 @@ interface SendEmailParams {
   to: string[]
   subject: string
   html: string
+  replyTo?: string
 }
 
 export const useEmail = () => {
-  const sendEmail = async ({ to, subject, html }: SendEmailParams) => {
+  const sendEmail = async ({ to, subject, html, replyTo }: SendEmailParams) => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -16,7 +17,7 @@ export const useEmail = () => {
       }
 
       const { data, error } = await supabase.functions.invoke('send-email', {
-        body: { to, subject, html }
+        body: { to, subject, html, replyTo }
       })
 
       if (error) {

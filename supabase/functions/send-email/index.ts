@@ -11,6 +11,7 @@ interface EmailRequest {
   to: string[]
   subject: string
   html: string
+  replyTo?: string
 }
 
 serve(async (req) => {
@@ -39,6 +40,7 @@ serve(async (req) => {
         to: emailRequest.to,
         subject: emailRequest.subject,
         html: emailRequest.html,
+        reply_to: emailRequest.replyTo || "support@pedagoia.fr"
       }),
     })
 
