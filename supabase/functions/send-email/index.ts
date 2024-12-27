@@ -23,6 +23,11 @@ serve(async (req) => {
     const emailRequest: EmailRequest = await req.json()
     console.log("Sending email with request:", emailRequest)
 
+    if (!RESEND_API_KEY) {
+      console.error("RESEND_API_KEY is not set")
+      throw new Error("RESEND_API_KEY is not configured")
+    }
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
