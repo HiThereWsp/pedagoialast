@@ -44,7 +44,7 @@ export const ChallengesSection = () => {
 
   return (
     <>
-      <section className="py-20 bg-secondary/30">
+      <section className="py-20 bg-[#F1F0FB]">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
             Les conditions de travail des enseignants sont de plus en plus exigeantes
@@ -53,9 +53,11 @@ export const ChallengesSection = () => {
             {challenges.map((challenge, index) => (
               <div 
                 key={index}
-                className="bg-white p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-200 text-center"
+                className="bg-white p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-200 text-center flex flex-col items-center"
               >
-                {challenge.icon}
+                <div className="flex justify-center">
+                  {challenge.icon}
+                </div>
                 <h3 className="text-xl font-semibold mb-2">{challenge.title}</h3>
                 <p className="text-muted-foreground">{challenge.description}</p>
               </div>
@@ -73,9 +75,11 @@ export const ChallengesSection = () => {
             {solutions.map((solution, index) => (
               <div 
                 key={index}
-                className="p-8 rounded-xl text-center hover:scale-105 transition-all duration-200"
+                className="p-8 rounded-xl text-center hover:scale-105 transition-all duration-200 flex flex-col items-center"
               >
-                {solution.icon}
+                <div className="flex justify-center">
+                  {solution.icon}
+                </div>
                 <h3 className="text-xl font-semibold mb-2">{solution.title}</h3>
                 <p className="text-muted-foreground">{solution.description}</p>
               </div>
