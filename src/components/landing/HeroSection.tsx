@@ -13,7 +13,7 @@ export function HeroSection() {
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
-            <span className="text-foreground block mb-4">Votre assistant pédagogique</span>
+            <span className="text-foreground block mb-4">L'assistant pédagogique</span>
             <span className="text-foreground">qui vous aide à </span>
             <DynamicText />
           </h1>
