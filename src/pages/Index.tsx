@@ -8,15 +8,17 @@ import { QuickActions } from "@/components/QuickActions"
 import { WelcomeBanner } from "@/components/WelcomeBanner"
 import { ChatInput } from "@/components/ChatInput"
 import { useChat } from "@/hooks/useChat"
-import { Loader2 } from "lucide-react"
+import { Loader2, Mail } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { testSupabaseConnection } from "@/utils/testSupabase"
 import { Button } from "@/components/ui/button"
+import { useEmail } from "@/hooks/use-email"
 
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { sendEmail } = useEmail()
   const { 
     messages, 
     setMessages,
@@ -29,6 +31,28 @@ const Index = () => {
   } = useChat(userId)
   const [showQuickActions, setShowQuickActions] = useState(true)
   const [inputValue, setInputValue] = useState("")
+
+  const handleTestEmail = async () => {
+    try {
+      await sendEmail({
+        to: ["andyguitteaud@gmail.com"],
+        subject: "Test Email from PedagoIA",
+        html: "<h1>Test Email</h1><p>This is a test email from PedagoIA!</p>"
+      })
+      
+      toast({
+        title: "Email envoyé",
+        description: "L'email de test a été envoyé avec succès",
+      })
+    } catch (error) {
+      console.error("Erreur d'envoi d'email:", error)
+      toast({
+        variant: "destructive",
+        title: "Erreur d'envoi",
+        description: "L'email n'a pas pu être envoyé. Vérifiez la console pour plus de détails.",
+      })
+    }
+  }
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -122,14 +146,23 @@ const Index = () => {
             <div className="h-16 flex items-center px-6 gap-2">
               <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleTestConnection}
-                className="ml-auto"
-              >
-                Tester Supabase
-              </Button>
+              <div className="ml-auto flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleTestEmail}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Tester Email
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleTestConnection}
+                >
+                  Tester Supabase
+                </Button>
+              </div>
             </div>
           </nav>
 

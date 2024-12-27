@@ -183,14 +183,19 @@ export type Database = {
         }
         Returns: undefined
       }
-      send_email: {
-        Args: {
-          recipient: string
-          subject: string
-          body: string
-        }
-        Returns: undefined
-      }
+      send_email:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: undefined
+          }
+        | {
+            Args: {
+              recipient: string
+              subject: string
+              body: string
+            }
+            Returns: undefined
+          }
       send_password_reset_email: {
         Args: {
           email: string
