@@ -16,14 +16,15 @@ export const testSupabaseConnection = async () => {
     if (session) {
       const { data, error } = await supabase.functions.invoke('send-email', {
         body: {
-          to: "votre@email.com",
+          to: ["votre@email.com"],  // Notez que 'to' doit être un tableau
           subject: "Test Email",
-          text: "Ceci est un email de test"
+          html: "<p>Ceci est un email de test</p>"  // Utilisation de 'html' au lieu de 'text'
         }
       })
       
       if (error) {
         console.error("Erreur d'envoi d'email:", error)
+        console.error("Message d'erreur complet:", error.message)
         return
       }
       
@@ -31,5 +32,9 @@ export const testSupabaseConnection = async () => {
     }
   } catch (error) {
     console.error("Erreur générale:", error)
+    if (error instanceof Error) {
+      console.error("Message d'erreur complet:", error.message)
+      console.error("Stack trace:", error.stack)
+    }
   }
 }
