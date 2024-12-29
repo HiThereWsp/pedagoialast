@@ -19,23 +19,9 @@ export const WaitlistForm = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<WaitlistFormData>()
 
   const onSubmit = async (data: WaitlistFormData) => {
-    console.log('Début de la soumission du formulaire avec les données:', data)
+    console.log('Submitting form with data:', data)
     setIsLoading(true)
     try {
-      // Test de la connexion à Supabase
-      const { data: testData, error: testError } = await supabase
-        .from('waitlist')
-        .select('*')
-        .limit(1)
-      
-      if (testError) {
-        console.error('Erreur de test de connexion Supabase:', testError)
-        throw new Error('Erreur de connexion à la base de données')
-      }
-      
-      console.log('Test de connexion réussi:', testData)
-
-      // Tentative d'insertion
       const { error } = await supabase
         .from('waitlist')
         .insert([
@@ -47,7 +33,7 @@ export const WaitlistForm = () => {
         ])
 
       if (error) {
-        console.error('Détails de l\'erreur Supabase:', error)
+        console.error('Supabase error details:', error)
         if (error.code === '23505') {
           toast({
             variant: "destructive",
@@ -57,25 +43,25 @@ export const WaitlistForm = () => {
         } else {
           toast({
             variant: "destructive",
-            title: "Erreur lors de l'inscription",
-            description: `Une erreur est survenue: ${error.message}`,
+            title: "Erreur",
+            description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
           })
         }
         return
       }
 
-      console.log('Formulaire soumis avec succès')
+      console.log('Form submitted successfully')
       toast({
         title: "Inscription réussie !",
         description: "Nous vous contacterons dès que la plateforme sera disponible.",
       })
       reset()
     } catch (error) {
-      console.error('Erreur lors de la soumission du formulaire:', error)
+      console.error('Error submitting form:', error)
       toast({
         variant: "destructive",
-        title: "Erreur lors de l'inscription",
-        description: error instanceof Error ? error.message : "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
       })
     } finally {
       setIsLoading(false)
