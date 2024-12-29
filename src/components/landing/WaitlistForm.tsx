@@ -22,6 +22,17 @@ export const WaitlistForm = () => {
     console.log('Submitting form with data:', data)
     setIsLoading(true)
     try {
+      // Vérifier si l'utilisateur est authentifié
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session?.user) {
+        toast({
+          variant: "destructive",
+          title: "Erreur d'authentification",
+          description: "Vous devez être connecté pour vous inscrire à la liste d'attente.",
+        })
+        return
+      }
+
       const { error } = await supabase
         .from('waitlist')
         .insert([
