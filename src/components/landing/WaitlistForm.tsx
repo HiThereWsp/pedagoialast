@@ -1,11 +1,9 @@
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2, CheckCircle } from "lucide-react"
+import { WaitlistFormFields } from "./waitlist/WaitlistFormFields"
+import { SuccessToast } from "./waitlist/SuccessToast"
 
 interface WaitlistFormData {
   email: string
@@ -60,18 +58,7 @@ export const WaitlistForm = () => {
       toast({
         duration: 3000,
         className: "bg-white dark:bg-gray-800",
-        description: (
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-2">
-              <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
-              <CheckCircle className="h-6 w-6 text-green-500" />
-            </div>
-            <p className="font-semibold text-lg">Inscription réussie !</p>
-            <p className="text-center text-muted-foreground">
-              Nous avons hâte de pouvoir vous aider avec vos classes. Nous vous contacterons dès que la plateforme sera disponible.
-            </p>
-          </div>
-        )
+        description: <SuccessToast />
       })
       reset()
     } catch (error) {
@@ -88,63 +75,11 @@ export const WaitlistForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full max-w-md mx-auto">
-      <div>
-        <Input
-          placeholder="Votre prénom"
-          {...register("firstName", { required: "Le prénom est requis" })}
-          className="w-full"
-          disabled={isLoading}
-        />
-        {errors.firstName && (
-          <p className="text-sm text-red-500 mt-1">{errors.firstName.message}</p>
-        )}
-      </div>
-
-      <div>
-        <Input
-          type="email"
-          placeholder="Votre email"
-          {...register("email", { 
-            required: "L'email est requis",
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "Email invalide"
-            }
-          })}
-          className="w-full"
-          disabled={isLoading}
-        />
-        {errors.email && (
-          <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
-        )}
-      </div>
-
-      <div>
-        <Textarea
-          placeholder="Votre niveau d'enseignement"
-          {...register("teachingLevel", { required: "Le niveau d'enseignement est requis" })}
-          className="w-full"
-          disabled={isLoading}
-        />
-        {errors.teachingLevel && (
-          <p className="text-sm text-red-500 mt-1">{errors.teachingLevel.message}</p>
-        )}
-      </div>
-
-      <Button 
-        type="submit" 
-        className="w-full bg-primary hover:bg-primary/90 text-white"
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Inscription en cours...
-          </>
-        ) : (
-          "Je m'inscris à la liste d'attente"
-        )}
-      </Button>
+      <WaitlistFormFields 
+        register={register}
+        errors={errors}
+        isLoading={isLoading}
+      />
     </form>
   )
 }
