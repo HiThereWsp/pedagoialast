@@ -70,7 +70,7 @@ export const WaitlistForm = () => {
       // Find and close the dialog
       const dialog = document.querySelector('[role="dialog"]')
       if (dialog) {
-        const closeButton = dialog.querySelector('button[aria-label="Close"]')
+        const closeButton = dialog.querySelector('button[aria-label="Close"]') as HTMLButtonElement | null
         if (closeButton) {
           closeButton.click()
         }
