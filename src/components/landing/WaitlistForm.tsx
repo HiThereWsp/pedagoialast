@@ -52,8 +52,7 @@ export const WaitlistForm = () => {
 
       console.log('Form submitted successfully')
       toast({
-        duration: 3000,
-        className: "bg-white dark:bg-gray-800",
+        className: "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 w-96",
         description: (
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-2">
@@ -68,6 +67,14 @@ export const WaitlistForm = () => {
         )
       })
       reset()
+      // Find and close the dialog
+      const dialog = document.querySelector('[role="dialog"]')
+      if (dialog) {
+        const closeButton = dialog.querySelector('button[aria-label="Close"]')
+        if (closeButton) {
+          closeButton.click()
+        }
+      }
     } catch (error) {
       console.error('Error submitting form:', error)
       toast({
