@@ -8,6 +8,15 @@ import { DynamicText } from './DynamicText'
 export function HeroSection() {
   const [showWaitlistForm, setShowWaitlistForm] = React.useState(false)
 
+  React.useEffect(() => {
+    const handleClose = () => {
+      setShowWaitlistForm(false)
+    }
+
+    window.addEventListener('close', handleClose)
+    return () => window.removeEventListener('close', handleClose)
+  }, [])
+
   return (
     <section className="relative py-20 overflow-hidden bg-gradient-to-b from-white to-secondary/5">
       <div className="absolute inset-0 bg-grid-black/[0.02] -z-10" />
