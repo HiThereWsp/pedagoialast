@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
+import { Loader2, CheckCircle } from "lucide-react"
 
 interface WaitlistFormData {
   email: string
@@ -22,17 +22,6 @@ export const WaitlistForm = () => {
     console.log('Submitting form with data:', data)
     setIsLoading(true)
     try {
-      // Vérifier si l'utilisateur est authentifié
-      const { data: session } = await supabase.auth.getSession()
-      if (!session?.session?.user) {
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: "Vous devez être connecté pour vous inscrire à la liste d'attente.",
-        })
-        return
-      }
-
       const { error } = await supabase
         .from('waitlist')
         .insert([
@@ -63,8 +52,20 @@ export const WaitlistForm = () => {
 
       console.log('Form submitted successfully')
       toast({
-        title: "Inscription réussie !",
-        description: "Nous vous contacterons dès que la plateforme sera disponible.",
+        duration: 3000,
+        className: "bg-white dark:bg-gray-800",
+        description: (
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2">
+              <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
+              <CheckCircle className="h-6 w-6 text-green-500" />
+            </div>
+            <p className="font-semibold text-lg">Inscription réussie !</p>
+            <p className="text-center text-muted-foreground">
+              Nous avons hâte de pouvoir vous aider avec vos classes. Nous vous contacterons dès que la plateforme sera disponible.
+            </p>
+          </div>
+        )
       })
       reset()
     } catch (error) {
