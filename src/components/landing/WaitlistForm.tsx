@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2, CheckCircle } from "lucide-react"
+import { useRef } from "react"
 
 interface WaitlistFormData {
   email: string
@@ -17,6 +18,7 @@ export const WaitlistForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const { register, handleSubmit, reset, formState: { errors } } = useForm<WaitlistFormData>()
+  const dialogRef = useRef<HTMLDialogElement>(null)
 
   const onSubmit = async (data: WaitlistFormData) => {
     console.log('Submitting form with data:', data)
@@ -51,6 +53,14 @@ export const WaitlistForm = () => {
       }
 
       console.log('Form submitted successfully')
+      
+      // Fermer la popup immédiatement
+      const closeButton = document.querySelector('[data-radix-dialog-close]') as HTMLButtonElement
+      if (closeButton) {
+        closeButton.click()
+      }
+
+      // Afficher le toast de succès
       toast({
         duration: 3000,
         className: "bg-white dark:bg-gray-800",
