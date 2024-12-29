@@ -2,12 +2,18 @@ import posthog from 'posthog-js'
 
 // Initialisation de PostHog
 export const initPostHog = () => {
-  if (typeof window !== 'undefined') { // Vérification que nous sommes côté client
+  // Ne pas initialiser PostHog en développement
+  if (process.env.NODE_ENV === 'development') {
+    console.log('PostHog disabled in development')
+    return
+  }
+
+  if (typeof window !== 'undefined') {
     try {
       posthog.init(
         import.meta.env.VITE_POSTHOG_KEY,
         {
-          api_host: 'https://eu.posthog.com', // Changement de l'URL de l'API
+          api_host: import.meta.env.VITE_POSTHOG_HOST,
           loaded: (posthog) => {
             if (process.env.NODE_ENV === 'development') {
               console.log('PostHog loaded:', posthog)
@@ -18,13 +24,7 @@ export const initPostHog = () => {
           capture_pageleave: true,
           disable_session_recording: false,
           persistence: 'localStorage',
-          cross_subdomain_cookie: false,
-          xhr_headers: {
-            'timeout': '5000'
-          },
-          on_xhr_error: (error) => {
-            console.warn('PostHog request failed:', error)
-          }
+          cross_subdomain_cookie: false
         }
       )
     } catch (error) {

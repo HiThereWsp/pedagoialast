@@ -19,6 +19,7 @@ export const WaitlistForm = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<WaitlistFormData>()
 
   const onSubmit = async (data: WaitlistFormData) => {
+    console.log('Submitting form with data:', data)
     setIsLoading(true)
     try {
       const { error } = await supabase
@@ -32,26 +33,31 @@ export const WaitlistForm = () => {
         ])
 
       if (error) {
-        if (error.code === '23505') { // Code pour violation de contrainte unique
+        console.error('Supabase error details:', error)
+        if (error.code === '23505') {
           toast({
             variant: "destructive",
             title: "Email déjà inscrit",
             description: "Cette adresse email est déjà inscrite à la liste d'attente.",
           })
         } else {
-          console.error('Error details:', error)
-          throw error
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+          })
         }
         return
       }
 
+      console.log('Form submitted successfully')
       toast({
         title: "Inscription réussie !",
         description: "Nous vous contacterons dès que la plateforme sera disponible.",
       })
       reset()
     } catch (error) {
-      console.error('Error:', error)
+      console.error('Error submitting form:', error)
       toast({
         variant: "destructive",
         title: "Erreur",

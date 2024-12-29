@@ -1,7 +1,7 @@
 import React from 'react'
 import { ArrowRight, Star } from 'lucide-react'
 import { Button } from '../ui/button'
-import { Dialog, DialogContent } from '../ui/dialog'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../ui/dialog'
 import { WaitlistForm } from './WaitlistForm'
 import { DynamicText } from './DynamicText'
 
@@ -49,6 +49,10 @@ export function HeroSection() {
       </div>
       <Dialog open={showWaitlistForm} onOpenChange={setShowWaitlistForm}>
         <DialogContent className="sm:max-w-[425px]">
+          <DialogTitle>Rejoignez la liste d'attente</DialogTitle>
+          <DialogDescription>
+            Inscrivez-vous pour être parmi les premiers à tester PedagoIA
+          </DialogDescription>
           <WaitlistForm />
         </DialogContent>
       </Dialog>
