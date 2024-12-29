@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 interface WaitlistFormData {
   email: string
@@ -30,7 +31,19 @@ export const WaitlistForm = () => {
           }
         ])
 
-      if (error) throw error
+      if (error) {
+        if (error.code === '23505') { // Code pour violation de contrainte unique
+          toast({
+            variant: "destructive",
+            title: "Email déjà inscrit",
+            description: "Cette adresse email est déjà inscrite à la liste d'attente.",
+          })
+        } else {
+          console.error('Error details:', error)
+          throw error
+        }
+        return
+      }
 
       toast({
         title: "Inscription réussie !",
@@ -56,6 +69,7 @@ export const WaitlistForm = () => {
           placeholder="Votre prénom"
           {...register("firstName", { required: "Le prénom est requis" })}
           className="w-full"
+          disabled={isLoading}
         />
         {errors.firstName && (
           <p className="text-sm text-red-500 mt-1">{errors.firstName.message}</p>
@@ -74,6 +88,7 @@ export const WaitlistForm = () => {
             }
           })}
           className="w-full"
+          disabled={isLoading}
         />
         {errors.email && (
           <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
@@ -85,6 +100,7 @@ export const WaitlistForm = () => {
           placeholder="Votre niveau d'enseignement"
           {...register("teachingLevel", { required: "Le niveau d'enseignement est requis" })}
           className="w-full"
+          disabled={isLoading}
         />
         {errors.teachingLevel && (
           <p className="text-sm text-red-500 mt-1">{errors.teachingLevel.message}</p>
@@ -96,7 +112,14 @@ export const WaitlistForm = () => {
         className="w-full bg-primary hover:bg-primary/90 text-white"
         disabled={isLoading}
       >
-        {isLoading ? "Inscription en cours..." : "Je m'inscris à la liste d'attente"}
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Inscription en cours...
+          </>
+        ) : (
+          "Je m'inscris à la liste d'attente"
+        )}
       </Button>
     </form>
   )
