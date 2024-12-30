@@ -146,22 +146,7 @@ const Index = () => {
             <div className="h-16 flex items-center px-6 gap-2">
               <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
-              <div className="ml-auto flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleTestEmail}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  Tester Email
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleTestConnection}
-                >
-                  Tester Supabase
-                </Button>
+              <div className="ml-auto">
               </div>
             </div>
           </nav>
