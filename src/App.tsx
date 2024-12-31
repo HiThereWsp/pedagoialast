@@ -28,6 +28,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/waitlist" element={<WaitlistLanding />} />
               <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/chat" element={<Landing />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
