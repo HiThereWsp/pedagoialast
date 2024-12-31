@@ -39,9 +39,23 @@ export const WaitlistForm = () => {
         // Check if it's a duplicate email error
         if (supabaseError.code === '23505') {
           toast({
-            variant: "destructive",
-            title: "Email déjà inscrit",
-            description: "Cette adresse email est déjà inscrite à la liste d'attente.",
+            variant: "default",
+            className: "bg-primary/10 border-primary/20",
+            title: "Vous êtes déjà inscrit ! 🎉",
+            description: (
+              <div className="space-y-2">
+                <p>Merci pour votre enthousiasme ! Nous avons bien noté votre intérêt.</p>
+                <p className="text-sm text-muted-foreground">
+                  Une question ? Contactez-nous à{" "}
+                  <a 
+                    href="mailto:bonjour@pedagoia.fr" 
+                    className="text-primary hover:underline"
+                  >
+                    bonjour@pedagoia.fr
+                  </a>
+                </p>
+              </div>
+            ),
           })
           setIsLoading(false)
           return
