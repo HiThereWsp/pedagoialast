@@ -2,18 +2,28 @@ import React from 'react';
 import { LogIn } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
 
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogin = () => {
-    // Store the current location to redirect back after login
+  const handleLogin = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+      // Si déjà connecté, rediriger vers /chat
+      navigate('/chat');
+      return;
+    }
+
+    // Si non connecté, stocker la page actuelle et rediriger vers login
     const currentPath = location.pathname;
+    // Ne pas rediriger vers login ou waitlist après authentification
+    const returnUrl = ['/login', '/waitlist'].includes(currentPath) ? '/chat' : currentPath;
+    
     navigate('/login', { 
-      state: { 
-        returnUrl: currentPath === '/login' ? '/chat' : currentPath 
-      } 
+      state: { returnUrl } 
     });
   };
 

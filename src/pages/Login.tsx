@@ -9,21 +9,19 @@ export default function Login() {
   const location = useLocation()
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
         const returnUrl = location.state?.returnUrl || '/chat'
-        navigate(returnUrl)
+        navigate(returnUrl, { replace: true })
       }
     }
     checkUser()
 
-    // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
         const returnUrl = location.state?.returnUrl || '/chat'
-        navigate(returnUrl)
+        navigate(returnUrl, { replace: true })
       }
     })
 
