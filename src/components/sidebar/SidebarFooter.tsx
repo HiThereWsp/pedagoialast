@@ -26,7 +26,10 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
               <SidebarMenuItem>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton 
+                      onClick={() => navigate('/suggestions')}
+                      data-active={currentPath === '/suggestions'}
+                    >
                       <Lightbulb className="mr-2 h-4 w-4 flex-shrink-0" />
                       <span className="truncate">Faire des suggestions</span>
                     </SidebarMenuButton>
