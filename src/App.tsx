@@ -31,6 +31,8 @@ const App = () => {
               <Route path="/settings" element={<Settings />} />
               {/* Redirect /index to /chat */}
               <Route path="/index" element={<Navigate to="/chat" replace />} />
+              {/* Catch all route - redirect to waitlist */}
+              <Route path="*" element={<Navigate to="/waitlist" replace />} />
             </Routes>
           </BrowserRouter>
         </TooltipProvider>
