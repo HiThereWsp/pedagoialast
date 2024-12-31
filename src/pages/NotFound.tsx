@@ -4,6 +4,14 @@ import { useNavigate } from "react-router-dom"
 const NotFound = () => {
   const navigate = useNavigate()
 
+  const handleGoBack = () => {
+    if (window.history.length > 2) {
+      navigate(-1)
+    } else {
+      navigate('/')
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary/30 to-background flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8 text-center">
@@ -33,7 +41,7 @@ const NotFound = () => {
           </Button>
           <Button
             variant="outline"
-            onClick={() => navigate(-1)}
+            onClick={handleGoBack}
             className="w-full"
           >
             Revenir en arrière

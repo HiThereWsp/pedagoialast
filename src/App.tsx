@@ -9,6 +9,7 @@ import Login from "@/pages/Login"
 import Settings from "@/pages/Settings"
 import WaitlistLanding from "@/pages/WaitlistLanding"
 import NotFound from "@/pages/NotFound"
+import PricingPage from "@/pages/Pricing"
 import "./App.css"
 
 const queryClient = new QueryClient()
@@ -26,6 +27,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/waitlist" element={<WaitlistLanding />} />
+              <Route path="/pricing" element={<PricingPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
