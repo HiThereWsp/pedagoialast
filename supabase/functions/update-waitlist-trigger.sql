@@ -4,6 +4,10 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 BEGIN
+  -- Log the attempt to call the function
+  RAISE NOTICE 'Attempting to send welcome email for new signup: %', NEW.email;
+  
+  -- Call the Edge Function
   PERFORM extensions.http_post(
     'https://jpelncawdaounkidvymu.supabase.co/functions/v1/send-waitlist-welcome',
     json_build_object(
@@ -13,6 +17,14 @@ BEGIN
     )::text,
     'application/json'
   );
+  
+  -- Log successful execution
+  RAISE NOTICE 'Welcome email function called successfully for: %', NEW.email;
+  
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  -- Log any errors that occur
+  RAISE WARNING 'Error in handle_new_waitlist_signup for %: %', NEW.email, SQLERRM;
   RETURN NEW;
 END;
 $$;

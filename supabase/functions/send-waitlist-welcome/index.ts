@@ -14,16 +14,16 @@ interface WelcomeEmailRequest {
 }
 
 serve(async (req) => {
+  console.log("🚀 Starting send-waitlist-welcome function...")
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log("Starting send-waitlist-welcome function...")
-    
     const { email, firstName, teachingLevel }: WelcomeEmailRequest = await req.json()
-    console.log("Request data:", { email, firstName, teachingLevel })
+    console.log("📧 Request data:", { email, firstName, teachingLevel })
 
     if (!RESEND_API_KEY) {
       console.error("❌ RESEND_API_KEY is not set")
@@ -52,9 +52,9 @@ serve(async (req) => {
         </div>
       `
     }
-    console.log("Email data prepared:", emailData)
+    console.log("📧 Email data prepared:", emailData)
 
-    console.log("Sending request to Resend API...")
+    console.log("🚀 Sending request to Resend API...")
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -65,11 +65,11 @@ serve(async (req) => {
     })
 
     const responseText = await res.text()
-    console.log("Resend API response status:", res.status)
-    console.log("Resend API response body:", responseText)
+    console.log("📫 Resend API response status:", res.status)
+    console.log("📫 Resend API response body:", responseText)
 
     if (res.ok) {
-      console.log("✓ Email sent successfully")
+      console.log("✅ Email sent successfully")
       return new Response(responseText, {
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
