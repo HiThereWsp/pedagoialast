@@ -32,15 +32,6 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6">
-          <div className="mb-8 text-center">
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Assistant Pédagogique IA
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Connectez-vous pour continuer
-            </p>
-          </div>
-          
           <LoginForm />
         </CardContent>
       </Card>

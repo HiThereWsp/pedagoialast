@@ -1,4 +1,4 @@
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { supabase } from "@/integrations/supabase/client"
 import { TermsDialog } from "../terms/TermsDialog"
 import { Label } from "../ui/label"
@@ -82,14 +82,12 @@ export const LoginForm = () => {
   }
 
   return (
-    <>
-      <DialogHeader>
-        <DialogTitle>
-          {isSignUp ? "Inscription" : "Connexion"}
-        </DialogTitle>
-      </DialogHeader>
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-center">
+        {isSignUp ? "Inscription" : "Connexion"}
+      </h2>
       
-      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {isSignUp && (
           <div className="space-y-2">
             <Label htmlFor="firstName">Prénom</Label>
@@ -164,6 +162,6 @@ export const LoginForm = () => {
             : "Pas encore de compte ? S'inscrire"}
         </Button>
       </form>
-    </>
+    </div>
   )
 }
