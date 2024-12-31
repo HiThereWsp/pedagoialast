@@ -22,7 +22,7 @@ export const WaitlistForm = () => {
     console.log('Submitting form with data:', data)
     setIsLoading(true)
     try {
-      // D'abord, on inscrit dans Supabase
+      // First, try to insert into Supabase
       const { error: supabaseError } = await supabase
         .from('waitlist')
         .insert([
@@ -32,26 +32,26 @@ export const WaitlistForm = () => {
             teaching_level: data.teachingLevel
           }
         ])
+        .select()
 
       if (supabaseError) {
         console.error('Supabase error details:', supabaseError)
+        
+        // Check if it's a duplicate email error
         if (supabaseError.code === '23505') {
           toast({
             variant: "destructive",
             title: "Email déjà inscrit",
             description: "Cette adresse email est déjà inscrite à la liste d'attente.",
           })
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
-          })
+          setIsLoading(false)
+          return
         }
-        return
+        
+        throw supabaseError
       }
 
-      // Ensuite, on inscrit dans MailerLite
+      // If Supabase insertion was successful, subscribe to MailerLite
       await subscribeToMailerLite({
         email: data.email,
         firstName: data.firstName,
@@ -60,11 +60,11 @@ export const WaitlistForm = () => {
 
       console.log('Form submitted successfully')
       
-      // Fermer la popup immédiatement en utilisant l'API Dialog de Radix
+      // Close the popup immediately using the Dialog API
       const closeEvent = new Event('close')
       window.dispatchEvent(closeEvent)
 
-      // Afficher le toast de succès
+      // Show success toast
       toast({
         duration: 3000,
         className: "bg-white dark:bg-gray-800",
