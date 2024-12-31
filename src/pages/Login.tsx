@@ -1,18 +1,20 @@
 import { Auth } from "@supabase/auth-ui-react"
 import { ThemeSupa } from "@supabase/auth-ui-shared"
 import { supabase } from "@/integrations/supabase/client"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { useEffect } from "react"
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        navigate('/chat')
+        const returnUrl = location.state?.returnUrl || '/chat'
+        navigate(returnUrl)
       }
     }
     checkUser()
@@ -20,12 +22,13 @@ export default function Login() {
     // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate('/chat')
+        const returnUrl = location.state?.returnUrl || '/chat'
+        navigate(returnUrl)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [navigate])
+  }, [navigate, location.state])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
@@ -58,7 +61,7 @@ export default function Login() {
             },
           }}
           providers={[]}
-          redirectTo="https://pedagoia.fr/chat"
+          redirectTo={window.location.origin + "/chat"}
           localization={{
             variables: {
               sign_in: {
