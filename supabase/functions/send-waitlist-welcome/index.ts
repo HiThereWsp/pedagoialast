@@ -21,13 +21,14 @@ serve(async (req) => {
 
   try {
     const { email, firstName, teachingLevel }: WelcomeEmailRequest = await req.json()
-    console.log("Sending waitlist welcome email to:", email, "firstName:", firstName, "teachingLevel:", teachingLevel)
+    console.log("Received request to send welcome email:", { email, firstName, teachingLevel })
 
     if (!RESEND_API_KEY) {
       console.error("RESEND_API_KEY is not set")
       throw new Error("RESEND_API_KEY is not configured")
     }
 
+    console.log("Attempting to send email via Resend API...")
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -67,7 +68,7 @@ serve(async (req) => {
       })
     } else {
       const error = await res.text()
-      console.error("Error sending welcome email:", error)
+      console.error("Error response from Resend API:", error)
       
       return new Response(JSON.stringify({ error }), {
         status: 400,
