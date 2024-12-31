@@ -8,17 +8,13 @@ import { QuickActions } from "@/components/QuickActions"
 import { WelcomeBanner } from "@/components/WelcomeBanner"
 import { ChatInput } from "@/components/ChatInput"
 import { useChat } from "@/hooks/useChat"
-import { Loader2, Mail } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { testSupabaseConnection } from "@/utils/testSupabase"
-import { Button } from "@/components/ui/button"
-import { useEmail } from "@/hooks/use-email"
 
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { sendEmail } = useEmail()
   const { 
     messages, 
     setMessages,
@@ -31,28 +27,6 @@ const Index = () => {
   } = useChat(userId)
   const [showQuickActions, setShowQuickActions] = useState(true)
   const [inputValue, setInputValue] = useState("")
-
-  const handleTestEmail = async () => {
-    try {
-      await sendEmail({
-        to: ["andyguitteaud@gmail.com"],
-        subject: "Test Email from PedagoIA",
-        html: "<h1>Test Email</h1><p>This is a test email from PedagoIA!</p>"
-      })
-      
-      toast({
-        title: "Email envoyé",
-        description: "L'email de test a été envoyé avec succès",
-      })
-    } catch (error) {
-      console.error("Erreur d'envoi d'email:", error)
-      toast({
-        variant: "destructive",
-        title: "Erreur d'envoi",
-        description: "L'email n'a pas pu être envoyé. Vérifiez la console pour plus de détails.",
-      })
-    }
-  }
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -118,10 +92,6 @@ const Index = () => {
 
   const handlePromptSelect = (prompt: string) => {
     setInputValue(prompt)
-  }
-
-  const handleTestConnection = async () => {
-    await testSupabaseConnection()
   }
 
   if (!userId) return (
