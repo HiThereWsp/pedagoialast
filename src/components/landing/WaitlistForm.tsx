@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { WaitlistFormFields } from "./waitlist/WaitlistFormFields"
 import { SuccessToast } from "./waitlist/SuccessToast"
-import { useMailerLite } from "@/hooks/use-mailerlite"
 
 interface WaitlistFormData {
   email: string
@@ -15,14 +14,12 @@ interface WaitlistFormData {
 export const WaitlistForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
-  const { subscribeToMailerLite } = useMailerLite()
   const { register, handleSubmit, reset, formState: { errors } } = useForm<WaitlistFormData>()
 
   const onSubmit = async (data: WaitlistFormData) => {
     console.log('Submitting form with data:', data)
     setIsLoading(true)
     try {
-      // First, try to insert into Supabase
       const { error: supabaseError } = await supabase
         .from('waitlist')
         .insert([
@@ -63,13 +60,6 @@ export const WaitlistForm = () => {
         
         throw supabaseError
       }
-
-      // If Supabase insertion was successful, subscribe to MailerLite
-      await subscribeToMailerLite({
-        email: data.email,
-        firstName: data.firstName,
-        teachingLevel: data.teachingLevel
-      })
 
       console.log('Form submitted successfully')
       
