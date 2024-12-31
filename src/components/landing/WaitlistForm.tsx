@@ -32,7 +32,6 @@ export const WaitlistForm = () => {
             teaching_level: data.teachingLevel
           }
         ])
-        .select()
 
       if (supabaseError) {
         console.error('Supabase error details:', supabaseError)
