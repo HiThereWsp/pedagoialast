@@ -1,6 +1,5 @@
-import { Lightbulb, Settings, LogOut, CreditCard } from "lucide-react"
+import { Lightbulb, Settings, LogOut } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { Button } from "@/components/ui/button"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -21,14 +20,6 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
   return (
     <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border bg-sidebar">
       <div className="px-2">
-        <Button
-          onClick={() => navigate('/pricing')}
-          size="sm"
-          className="w-full bg-gradient-to-r from-[#FEF7CD] via-[#FFDEE2] to-[#FEC6A1] text-gray-700 hover:from-[#FEF7CD]/90 hover:via-[#FFDEE2]/90 hover:to-[#FEC6A1]/90 transition-all duration-300 shadow-sm my-2"
-        >
-          <CreditCard className="mr-2 h-4 w-4" />
-          <span className="truncate">Passer Premium</span>
-        </Button>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
