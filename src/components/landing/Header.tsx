@@ -9,8 +9,12 @@ export function Header() {
 
   const handleLogin = () => {
     // Store the current location to redirect back after login
-    const returnUrl = location.pathname;
-    navigate('/login', { state: { returnUrl } });
+    const currentPath = location.pathname;
+    navigate('/login', { 
+      state: { 
+        returnUrl: currentPath === '/login' ? '/chat' : currentPath 
+      } 
+    });
   };
 
   return (
