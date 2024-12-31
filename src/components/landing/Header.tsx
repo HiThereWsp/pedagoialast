@@ -1,10 +1,17 @@
 import React from 'react';
 import { LogIn } from 'lucide-react';
 import { Button } from '../ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleLogin = () => {
+    // Store the current location to redirect back after login
+    const returnUrl = location.pathname;
+    navigate('/login', { state: { returnUrl } });
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b">
@@ -16,7 +23,7 @@ export function Header() {
           </div>
           <Button 
             variant="ghost"
-            onClick={() => navigate('/login')}
+            onClick={handleLogin}
             className="flex items-center gap-2"
           >
             <LogIn className="h-4 w-4" />
