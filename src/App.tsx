@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { HelmetProvider } from 'react-helmet-async'
-import Landing from "@/pages/Landing"
+import Index from "@/pages/Index"
 import Login from "@/pages/Login"
 import Settings from "@/pages/Settings"
 import WaitlistLanding from "@/pages/WaitlistLanding"
@@ -61,7 +61,7 @@ function App() {
               {/* Routes protégées */}
               <Route path="/chat" element={
                 <ProtectedRoute>
-                  <Landing />
+                  <Index />
                 </ProtectedRoute>
               } />
               <Route path="/settings" element={
