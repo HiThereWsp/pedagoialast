@@ -31,20 +31,39 @@ export function AppSidebar({
 
   useEffect(() => {
     const getUserProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name')
-          .eq('id', session.user.id)
-          .maybeSingle()
-        
-        if (profile?.first_name) {
-          setFirstName(profile.first_name)
-        } else {
-          console.log('No profile found for user:', session.user.id)
-          setFirstName('Anonymous')
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          // Vérifie si un profil existe
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('first_name')
+            .eq('id', session.user.id)
+            .maybeSingle()
+          
+          if (profile?.first_name) {
+            setFirstName(profile.first_name)
+          } else {
+            // Si aucun profil n'existe, on en crée un
+            const { data: newProfile, error: insertError } = await supabase
+              .from('profiles')
+              .insert([
+                { id: session.user.id, first_name: 'Anonymous' }
+              ])
+              .select('first_name')
+              .single()
+
+            if (insertError) {
+              console.error('Error creating profile:', insertError)
+              setFirstName('Anonymous')
+            } else if (newProfile) {
+              setFirstName(newProfile.first_name)
+            }
+          }
         }
+      } catch (error) {
+        console.error('Error in getUserProfile:', error)
+        setFirstName('Anonymous')
       }
     }
 
