@@ -26,11 +26,25 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
       })
       
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
-        })
+        if (error.message.includes("Email not confirmed")) {
+          toast({
+            variant: "destructive",
+            title: "Email non confirmé",
+            description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
+          })
+        } else if (error.message.includes("Too many requests")) {
+          toast({
+            variant: "destructive",
+            title: "Trop de tentatives",
+            description: "Trop de tentatives de connexion. Veuillez réessayer dans quelques minutes.",
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
+          })
+        }
         return
       }
 
@@ -42,7 +56,7 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
+        description: "Une erreur inattendue est survenue. Veuillez réessayer."
       })
     } finally {
       setIsLoading(false)

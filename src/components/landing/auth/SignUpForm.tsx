@@ -31,6 +31,15 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
       return
     }
 
+    if (password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Mot de passe invalide",
+        description: "Le mot de passe doit contenir au moins 6 caractères.",
+      })
+      return
+    }
+
     setIsLoading(true)
 
     try {
@@ -44,26 +53,39 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
         }
       })
       
-      if (error) throw error
+      if (error) {
+        if (error.message.includes("User already registered")) {
+          toast({
+            variant: "destructive",
+            title: "Compte existant",
+            description: "Un compte existe déjà avec cette adresse email. Veuillez vous connecter.",
+          })
+        } else if (error.message.includes("Invalid email")) {
+          toast({
+            variant: "destructive",
+            title: "Email invalide",
+            description: "Veuillez entrer une adresse email valide.",
+          })
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+          })
+        }
+        return
+      }
 
       toast({
         title: "Inscription réussie",
         description: "Vérifiez vos emails pour confirmer votre inscription.",
       })
     } catch (error: any) {
-      if (error.message.includes("User already registered")) {
-        toast({
-          variant: "destructive",
-          title: "Compte existant",
-          description: "Un compte existe déjà avec cette adresse email. Veuillez vous connecter.",
-        })
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
-        })
-      }
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur inattendue est survenue. Veuillez réessayer.",
+      })
     } finally {
       setIsLoading(false)
     }
