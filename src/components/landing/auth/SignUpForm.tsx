@@ -1,139 +1,50 @@
-import { useState } from "react"
-import { supabase } from "@/integrations/supabase/client"
-import { useToast } from "@/hooks/use-toast"
-import { Button } from "../../ui/button"
-import { Input } from "../../ui/input"
-import { Label } from "../../ui/label"
-import { Checkbox } from "../../ui/checkbox"
-import { TermsDialog } from "../../terms/TermsDialog"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import { TermsDialog } from "@/components/terms/TermsDialog"
+import { useAuthForm } from "@/hooks/use-auth-form"
+import { AuthFormField } from "./AuthFormField"
 
 interface SignUpFormProps {
-  onToggleMode: () => void;
+  onToggleMode: () => void
 }
 
 export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
-  const [acceptedTerms, setAcceptedTerms] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [firstName, setFirstName] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const { toast } = useToast()
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!acceptedTerms) {
-      toast({
-        variant: "destructive",
-        title: "Conditions d'utilisation",
-        description: "Veuillez accepter les conditions d'utilisation pour continuer.",
-      })
-      return
-    }
-
-    if (password.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Mot de passe invalide",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
-      })
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            first_name: firstName
-          }
-        }
-      })
-      
-      if (error) {
-        if (error.message.includes("User already registered")) {
-          toast({
-            variant: "destructive",
-            title: "Compte existant",
-            description: "Un compte existe déjà avec cette adresse email. Veuillez vous connecter.",
-          })
-        } else if (error.message.includes("Invalid email")) {
-          toast({
-            variant: "destructive",
-            title: "Email invalide",
-            description: "Veuillez entrer une adresse email valide.",
-          })
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
-          })
-        }
-        return
-      }
-
-      toast({
-        title: "Inscription réussie",
-        description: "Vérifiez vos emails pour confirmer votre inscription.",
-      })
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur inattendue est survenue. Veuillez réessayer.",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { formState, setField, handleSignUp } = useAuthForm()
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="firstName">Prénom</Label>
-        <Input
-          id="firstName"
-          type="text"
-          value={firstName}
-          onChange={(e) => setFirstName(e.target.value)}
-          placeholder="Votre prénom"
-          required
-        />
-      </div>
+    <form onSubmit={handleSignUp} className="space-y-4">
+      <AuthFormField
+        id="firstName"
+        label="Prénom"
+        value={formState.firstName || ""}
+        onChange={(value) => setField("firstName", value)}
+        placeholder="Votre prénom"
+      />
       
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Votre email"
-          required
-        />
-      </div>
+      <AuthFormField
+        id="email"
+        label="Email"
+        type="email"
+        value={formState.email}
+        onChange={(value) => setField("email", value)}
+        placeholder="Votre email"
+      />
       
-      <div className="space-y-2">
-        <Label htmlFor="password">Mot de passe</Label>
-        <Input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Votre mot de passe"
-          required
-        />
-      </div>
+      <AuthFormField
+        id="password"
+        label="Mot de passe"
+        type="password"
+        value={formState.password}
+        onChange={(value) => setField("password", value)}
+        placeholder="Votre mot de passe"
+      />
 
       <div className="flex items-start space-x-2">
         <Checkbox 
           id="terms" 
-          checked={acceptedTerms}
-          onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+          checked={formState.acceptedTerms}
+          onCheckedChange={(checked) => setField("acceptedTerms", checked)}
           className="mt-1"
         />
         <div className="grid gap-1.5 leading-none">
@@ -146,8 +57,8 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
         </div>
       </div>
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Inscription en cours..." : "S'inscrire"}
+      <Button type="submit" className="w-full" disabled={formState.isLoading}>
+        {formState.isLoading ? "Inscription en cours..." : "S'inscrire"}
       </Button>
 
       <Button 
