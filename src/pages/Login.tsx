@@ -1,40 +1,29 @@
-import { useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
-import { supabase } from "@/integrations/supabase/client"
-import { LoginForm } from "@/components/landing/LoginForm"
-import { Card, CardContent } from "@/components/ui/card"
+import { SEO } from "@/components/SEO"
+import React from 'react';
 
-export default function Login() {
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        const returnUrl = location.state?.returnUrl || '/chat'
-        navigate(returnUrl, { replace: true })
-      }
-    }
-    checkUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session) {
-        const returnUrl = location.state?.returnUrl || '/chat'
-        navigate(returnUrl, { replace: true })
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [navigate, location.state])
-
+const Login = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardContent className="pt-6">
-          <LoginForm />
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <SEO 
+        title="Connexion | PedagoIA - Assistant pédagogique intelligent"
+        description="Connectez-vous à votre compte PedagoIA pour accéder à votre assistant pédagogique personnel et optimiser votre enseignement."
+      />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <form className="w-full max-w-md">
+          <h2 className="text-2xl font-bold mb-6">Connexion</h2>
+          <div className="mb-4">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+            <input type="email" id="email" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
+          </div>
+          <div className="mb-6">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Mot de passe</label>
+            <input type="password" id="password" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required />
+          </div>
+          <button type="submit" className="w-full bg-primary text-white py-2 rounded-md hover:bg-primary/90 transition">Se connecter</button>
+        </form>
+      </div>
+    </>
   )
 }
+
+export default Login
