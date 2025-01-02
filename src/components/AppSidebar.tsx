@@ -37,10 +37,13 @@ export function AppSidebar({
           .from('profiles')
           .select('first_name')
           .eq('id', session.user.id)
-          .single()
+          .maybeSingle()
         
         if (profile?.first_name) {
           setFirstName(profile.first_name)
+        } else {
+          console.log('No profile found for user:', session.user.id)
+          setFirstName('Anonymous')
         }
       }
     }
