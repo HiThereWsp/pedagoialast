@@ -55,7 +55,14 @@ export const LoginForm = () => {
           password
         })
         
-        if (error) throw error
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
+          })
+          return
+        }
 
         toast({
           title: "Connexion réussie",
@@ -73,7 +80,7 @@ export const LoginForm = () => {
         toast({
           variant: "destructive",
           title: "Erreur",
-          description: error.message,
+          description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
         })
       }
     } finally {
