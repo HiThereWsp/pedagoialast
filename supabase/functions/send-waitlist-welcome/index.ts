@@ -87,18 +87,12 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error("❌ Error from Brevo API:", responseData)
-      return new Response(
-        JSON.stringify({ error: "Failed to send email via Brevo" }),
-        {
-          status: response.status,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      )
+      throw new Error(`Failed to send email via Brevo: ${responseData}`)
     }
 
     console.log("✓ Email sent successfully via Brevo")
     return new Response(
-      responseData,
+      JSON.stringify({ success: true }),
       { 
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
