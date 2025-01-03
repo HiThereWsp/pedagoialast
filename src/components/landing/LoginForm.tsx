@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { supabase } from "@/integrations/supabase/client"
 import { Input } from "@/components/ui/input"
+import { useNavigate } from "react-router-dom"
 
 interface LoginFormData {
   email: string
@@ -14,6 +15,7 @@ interface LoginFormData {
 export const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const navigate = useNavigate()
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>()
 
   const onSubmit = async (data: LoginFormData) => {
@@ -30,6 +32,9 @@ export const LoginForm = () => {
         title: "Connexion réussie",
         description: "Vous êtes maintenant connecté.",
       })
+      
+      // Redirection vers /chat après une connexion réussie
+      navigate('/chat')
     } catch (error) {
       console.error('Error logging in:', error)
       toast({
