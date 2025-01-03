@@ -3,7 +3,7 @@ import { SignUpForm } from "./auth/SignUpForm"
 import { SignInForm } from "./auth/SignInForm"
 
 export const LoginForm = () => {
-  const [isSignUp, setIsSignUp] = useState(true)
+  const [isSignUp, setIsSignUp] = useState(false)
 
   return (
     <div className="space-y-4">
