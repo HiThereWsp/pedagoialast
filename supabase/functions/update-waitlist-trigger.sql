@@ -2,7 +2,6 @@ CREATE OR REPLACE FUNCTION public.handle_new_waitlist_signup()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path TO 'public'
 AS $$
 BEGIN
   PERFORM extensions.http_post(
@@ -12,10 +11,7 @@ BEGIN
       'firstName', NEW.first_name,
       'teachingLevel', NEW.teaching_level
     )::text,
-    'application/json',
-    jsonb_build_object(
-      'Authorization', current_setting('request.header.apikey', true)
-    )
+    'application/json'
   );
   RETURN NEW;
 END;
