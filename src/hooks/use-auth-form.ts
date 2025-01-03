@@ -52,12 +52,12 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     setField("isLoading", true)
 
     try {
-      console.log("Attempting to sign up with:", {
+      console.log("Starting signup process with:", {
         email: formState.email,
-        firstName: formState.firstName
+        firstName: formState.firstName || 'Anonymous'
       })
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
         options: {
@@ -72,22 +72,24 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         throw error
       }
 
+      console.log("Signup successful:", data)
+
       toast({
         title: "Inscription réussie",
         description: "Vérifiez vos emails pour confirmer votre inscription.",
       })
       onSuccess?.()
     } catch (error: any) {
-      console.error("Sign up error:", error)
+      console.error("Full signup error details:", error)
       
       // Gestion spécifique des erreurs
-      if (error.message.includes("Database error")) {
+      if (error.message?.includes("Database error")) {
         toast({
           variant: "destructive",
           title: "Erreur technique",
           description: "Une erreur est survenue lors de la création du compte. Notre équipe a été notifiée.",
         })
-      } else if (error.message.includes("User already registered")) {
+      } else if (error.message?.includes("User already registered")) {
         toast({
           variant: "destructive",
           title: "Compte existant",
@@ -110,16 +112,18 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     setField("isLoading", true)
 
     try {
-      console.log("Attempting to sign in with:", {
+      console.log("Starting signin process with:", {
         email: formState.email
       })
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formState.email,
         password: formState.password
       })
       
       if (error) throw error
+
+      console.log("Signin successful:", data)
 
       toast({
         title: "Connexion réussie",
@@ -127,14 +131,14 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       })
       onSuccess?.()
     } catch (error: any) {
-      console.error("Sign in error:", error)
-      if (error.message.includes("Invalid login credentials")) {
+      console.error("Full signin error details:", error)
+      if (error.message?.includes("Invalid login credentials")) {
         toast({
           variant: "destructive",
           title: "Erreur",
           description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
         })
-      } else if (error.message.includes("Email not confirmed")) {
+      } else if (error.message?.includes("Email not confirmed")) {
         toast({
           variant: "destructive",
           title: "Email non confirmé",
