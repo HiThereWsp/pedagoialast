@@ -1,13 +1,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")
+const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY")
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
-interface WelcomeEmailRequest {
+interface WaitlistData {
   email: string
   firstName: string
   teachingLevel: string
@@ -22,70 +22,97 @@ serve(async (req) => {
   try {
     console.log("Starting send-waitlist-welcome function...")
     
-    const { email, firstName, teachingLevel }: WelcomeEmailRequest = await req.json()
-    console.log("Request data:", { email, firstName, teachingLevel })
+    const waitlistData: WaitlistData = await req.json()
+    console.log("Received data:", waitlistData)
 
-    if (!RESEND_API_KEY) {
-      console.error("❌ RESEND_API_KEY is not set")
-      throw new Error("RESEND_API_KEY is not configured")
+    if (!BREVO_API_KEY) {
+      console.error("❌ BREVO_API_KEY is not set")
+      throw new Error("BREVO_API_KEY is not configured")
     }
-    console.log("✓ RESEND_API_KEY is configured")
+    console.log("✓ BREVO_API_KEY is configured")
 
-    const emailData = {
-      from: "PedagoIA <bonjour@pedagoia.fr>",
-      to: [email],
-      subject: "Bienvenue sur la liste d'attente PedagoIA ! 🎉",
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #0F172A;">Bonjour ${firstName} !</h1>
-          
-          <p>Merci beaucoup pour votre inscription à la liste d'attente de PedagoIA. Nous sommes ravis de votre intérêt pour notre assistant pédagogique !</p>
-          
-          <p>Nous avons bien noté que vous enseignez en ${teachingLevel}. Votre expérience et votre perspective seront précieuses pour nous aider à développer un outil qui répond vraiment aux besoins des enseignants.</p>
-          
-          <p>Nous travaillons actuellement d'arrache-pied pour créer la meilleure expérience possible. Vous serez parmi les premiers informés dès que la plateforme sera disponible.</p>
-          
-          <p>Si vous avez des questions ou des suggestions, n'hésitez pas à nous contacter à <a href="mailto:bonjour@pedagoia.fr" style="color: #2563EB;">bonjour@pedagoia.fr</a></p>
-          
-          <p style="margin-top: 2em;">À très bientôt !</p>
-          <p>L'équipe PedagoIA</p>
-        </div>
-      `
-    }
-    console.log("Email data prepared:", emailData)
-
-    console.log("Sending request to Resend API...")
-    const res = await fetch("https://api.resend.com/emails", {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
+        "Accept": "application/json",
         "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "api-key": BREVO_API_KEY,
       },
-      body: JSON.stringify(emailData),
+      body: JSON.stringify({
+        sender: {
+          name: "PedagoIA",
+          email: "bonjour@pedagoia.fr"
+        },
+        to: [{
+          email: waitlistData.email,
+          name: waitlistData.firstName
+        }],
+        subject: "Bienvenue sur la liste d'attente PedagoIA ! 🎉",
+        htmlContent: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #1a1a1a;">Bienvenue ${waitlistData.firstName} ! 👋</h1>
+            
+            <p>Nous sommes ravis de vous compter parmi les premiers enseignants intéressés par PedagoIA.</p>
+            
+            <p>Voici un récapitulatif de vos informations :</p>
+            <ul>
+              <li>Nom : ${waitlistData.firstName}</li>
+              <li>Email : ${waitlistData.email}</li>
+              <li>Niveau d'enseignement : ${waitlistData.teachingLevel}</li>
+            </ul>
+            
+            <p>Nous travaillons actuellement sur :</p>
+            <ul>
+              <li>🎯 L'amélioration de notre IA pour mieux répondre à vos besoins</li>
+              <li>📚 La création de ressources pédagogiques adaptées</li>
+              <li>🔄 L'optimisation de notre interface utilisateur</li>
+            </ul>
+            
+            <p>Nous vous tiendrons informé(e) des avancées et vous contacterons dès que nous serons prêts à vous accueillir sur la plateforme.</p>
+            
+            <p style="margin-top: 30px;">À très bientôt !</p>
+            <p>L'équipe PedagoIA</p>
+            
+            <div style="margin-top: 40px; font-size: 12px; color: #666;">
+              <p>Si vous avez des questions, n'hésitez pas à nous contacter à <a href="mailto:bonjour@pedagoia.fr">bonjour@pedagoia.fr</a></p>
+            </div>
+          </div>
+        `
+      }),
     })
 
-    const responseText = await res.text()
-    console.log("Resend API response status:", res.status)
-    console.log("Resend API response body:", responseText)
+    const responseData = await response.text()
+    console.log("Brevo API response status:", response.status)
+    console.log("Brevo API response body:", responseData)
 
-    if (res.ok) {
-      console.log("✓ Email sent successfully")
-      return new Response(responseText, {
+    if (!response.ok) {
+      console.error("❌ Error from Brevo API:", responseData)
+      return new Response(
+        JSON.stringify({ error: "Failed to send email via Brevo" }),
+        {
+          status: response.status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      )
+    }
+
+    console.log("✓ Email sent successfully via Brevo")
+    return new Response(
+      responseData,
+      { 
         status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-      })
-    } else {
-      console.error("❌ Error from Resend API:", responseText)
-      return new Response(JSON.stringify({ error: responseText }), {
-        status: res.status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      })
-    }
+      }
+    )
+
   } catch (error) {
     console.error("❌ Error in send-waitlist-welcome function:", error)
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    })
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    )
   }
 })

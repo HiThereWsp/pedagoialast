@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { useBrevo } from "@/hooks/use-brevo"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
@@ -13,40 +12,9 @@ interface LoginFormData {
 }
 
 export const LoginForm = () => {
-  const [isTestingEmail, setIsTestingEmail] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const { sendEmail } = useBrevo()
   const { toast } = useToast()
   const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>()
-
-  const handleTestEmail = async () => {
-    setIsTestingEmail(true)
-    try {
-      await sendEmail({
-        to: [{ email: "test@example.com", name: "Test User" }],
-        subject: "Test Email from PedagoIA",
-        htmlContent: `
-          <h1>Test Email</h1>
-          <p>Ceci est un email de test envoyé depuis PedagoIA.</p>
-          <p>Si vous recevez cet email, la configuration Brevo fonctionne correctement !</p>
-        `
-      })
-
-      toast({
-        title: "Email de test envoyé !",
-        description: "Vérifiez votre boîte de réception.",
-      })
-    } catch (error) {
-      console.error("Erreur lors de l'envoi de l'email de test:", error)
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "L'envoi de l'email de test a échoué. Vérifiez les logs.",
-      })
-    } finally {
-      setIsTestingEmail(false)
-    }
-  }
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
@@ -75,71 +43,53 @@ export const LoginForm = () => {
   }
 
   return (
-    <div className="space-y-4">
-      <Button 
-        onClick={handleTestEmail}
-        disabled={isTestingEmail}
-        variant="outline"
-        className="w-full"
-      >
-        {isTestingEmail ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Envoi en cours...
-          </>
-        ) : (
-          "Tester l'envoi d'email"
-        )}
-      </Button>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <Input
-            type="email"
-            placeholder="Email"
-            {...register("email", { 
-              required: "L'email est requis",
-              pattern: {
-                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                message: "Email invalide"
-              }
-            })}
-            className="w-full"
-            disabled={isLoading}
-          />
-          {errors.email && (
-            <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
-          )}
-        </div>
-
-        <div>
-          <Input
-            type="password"
-            placeholder="Mot de passe"
-            {...register("password", { required: "Le mot de passe est requis" })}
-            className="w-full"
-            disabled={isLoading}
-          />
-          {errors.password && (
-            <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
-          )}
-        </div>
-
-        <Button 
-          type="submit" 
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <div>
+        <Input
+          type="email"
+          placeholder="Email"
+          {...register("email", { 
+            required: "L'email est requis",
+            pattern: {
+              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+              message: "Email invalide"
+            }
+          })}
           className="w-full"
           disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Connexion en cours...
-            </>
-          ) : (
-            "Se connecter"
-          )}
-        </Button>
-      </form>
-    </div>
+        />
+        {errors.email && (
+          <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>
+        )}
+      </div>
+
+      <div>
+        <Input
+          type="password"
+          placeholder="Mot de passe"
+          {...register("password", { required: "Le mot de passe est requis" })}
+          className="w-full"
+          disabled={isLoading}
+        />
+        {errors.password && (
+          <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+        )}
+      </div>
+
+      <Button 
+        type="submit" 
+        className="w-full"
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Connexion en cours...
+          </>
+        ) : (
+          "Se connecter"
+        )}
+      </Button>
+    </form>
   )
 }
