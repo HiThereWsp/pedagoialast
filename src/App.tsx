@@ -19,21 +19,47 @@ const queryClient = new QueryClient()
 // Composant pour protéger les routes authentifiées
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Vérifier la session au chargement
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (error) {
+          console.error("Session error:", error)
+          setIsAuthenticated(false)
+        } else {
+          setIsAuthenticated(!!session)
+        }
+      } catch (error) {
+        console.error("Auth error:", error)
+        setIsAuthenticated(false)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    checkSession()
+
+    // Écouter les changements d'authentification
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session)
       setIsAuthenticated(!!session)
+      setIsLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setIsAuthenticated(!!session)
-    })
-
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
-  // Afficher null pendant la vérification
-  if (isAuthenticated === null) return null
+  // Afficher un état de chargement pendant la vérification
+  if (isLoading) {
+    return <div className="flex h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  }
 
   // Rediriger vers la page de connexion si non authentifié
   if (!isAuthenticated) {
