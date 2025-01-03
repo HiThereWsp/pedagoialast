@@ -62,40 +62,28 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         }
       })
       
-      if (error) {
-        if (error.message.includes("User already registered")) {
-          toast({
-            variant: "destructive",
-            title: "Compte existant",
-            description: "Un compte existe déjà avec cette adresse email. Veuillez vous connecter.",
-          })
-        } else if (error.message.includes("Invalid email")) {
-          toast({
-            variant: "destructive",
-            title: "Email invalide",
-            description: "Veuillez entrer une adresse email valide.",
-          })
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
-          })
-        }
-        return
-      }
+      if (error) throw error
 
       toast({
         title: "Inscription réussie",
         description: "Vérifiez vos emails pour confirmer votre inscription.",
       })
       onSuccess?.()
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur inattendue est survenue. Veuillez réessayer.",
-      })
+    } catch (error: any) {
+      console.error("Sign up error:", error)
+      if (error.message.includes("User already registered")) {
+        toast({
+          variant: "destructive",
+          title: "Compte existant",
+          description: "Un compte existe déjà avec cette adresse email. Veuillez vous connecter.",
+        })
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+        })
+      }
     } finally {
       setField("isLoading", false)
     }
@@ -111,40 +99,34 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         password: formState.password
       })
       
-      if (error) {
-        if (error.message.includes("Email not confirmed")) {
-          toast({
-            variant: "destructive",
-            title: "Email non confirmé",
-            description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
-          })
-        } else if (error.message.includes("Too many requests")) {
-          toast({
-            variant: "destructive",
-            title: "Trop de tentatives",
-            description: "Trop de tentatives de connexion. Veuillez réessayer dans quelques minutes.",
-          })
-        } else {
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
-          })
-        }
-        return
-      }
+      if (error) throw error
 
       toast({
         title: "Connexion réussie",
         description: "Vous êtes maintenant connecté.",
       })
       onSuccess?.()
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur inattendue est survenue. Veuillez réessayer."
-      })
+    } catch (error: any) {
+      console.error("Sign in error:", error)
+      if (error.message.includes("Invalid login credentials")) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
+        })
+      } else if (error.message.includes("Email not confirmed")) {
+        toast({
+          variant: "destructive",
+          title: "Email non confirmé",
+          description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
+        })
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la connexion. Veuillez réessayer."
+        })
+      }
     } finally {
       setField("isLoading", false)
     }
