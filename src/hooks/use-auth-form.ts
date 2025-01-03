@@ -52,17 +52,25 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     setField("isLoading", true)
 
     try {
+      console.log("Attempting to sign up with:", {
+        email: formState.email,
+        firstName: formState.firstName
+      })
+
       const { error } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
         options: {
           data: {
-            first_name: formState.firstName
+            first_name: formState.firstName || 'Anonymous'
           }
         }
       })
       
-      if (error) throw error
+      if (error) {
+        console.error("Detailed signup error:", error)
+        throw error
+      }
 
       toast({
         title: "Inscription réussie",
@@ -71,7 +79,15 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       onSuccess?.()
     } catch (error: any) {
       console.error("Sign up error:", error)
-      if (error.message.includes("User already registered")) {
+      
+      // Gestion spécifique des erreurs
+      if (error.message.includes("Database error")) {
+        toast({
+          variant: "destructive",
+          title: "Erreur technique",
+          description: "Une erreur est survenue lors de la création du compte. Notre équipe a été notifiée.",
+        })
+      } else if (error.message.includes("User already registered")) {
         toast({
           variant: "destructive",
           title: "Compte existant",
@@ -94,6 +110,10 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     setField("isLoading", true)
 
     try {
+      console.log("Attempting to sign in with:", {
+        email: formState.email
+      })
+
       const { error } = await supabase.auth.signInWithPassword({
         email: formState.email,
         password: formState.password
