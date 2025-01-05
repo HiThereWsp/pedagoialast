@@ -9,34 +9,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Fonction utilitaire pour nettoyer et formater le contexte
-const formatContext = (context: string) => {
+const generateSystemPrompt = (type: string, context: string) => {
+  if (type === 'lesson-plan') {
+    const { classLevel, additionalInstructions } = JSON.parse(context)
+    return `Tu es un expert en pédagogie qui aide à créer des séquences pédagogiques détaillées. 
+    Pour le niveau ${classLevel}, crée une séquence pédagogique structurée qui inclut:
+    
+    1. Les objectifs d'apprentissage
+    2. Les prérequis nécessaires
+    3. Le matériel requis
+    4. Le déroulé détaillé de la séquence (introduction, développement, conclusion)
+    5. Les activités d'évaluation
+    6. Des suggestions d'adaptations pour différents profils d'élèves
+    
+    Instructions supplémentaires: ${additionalInstructions || 'Aucune'}`
+  }
+
   // Limite le contexte aux 10 derniers échanges pour optimiser les tokens
   const exchanges = context.split('\n')
   const lastExchanges = exchanges.slice(-20)
   return lastExchanges.join('\n')
-}
-
-// Fonction pour générer un prompt système plus précis
-const generateSystemPrompt = (type: string, context: string) => {
-  if (type === 'title-generation') {
-    return "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
-  }
-
-  let prompt = `Tu es un assistant pédagogique français expert qui aide les utilisateurs à apprendre et à comprendre des concepts. 
-    Instructions importantes:
-    - Sois précis et concis dans tes réponses
-    - Utilise des exemples concrets quand c'est pertinent
-    - Structure tes réponses de manière claire
-    - Adapte ton niveau de langage à celui de l'utilisateur
-    - Si tu n'es pas sûr d'une information, dis-le clairement
-    - Propose des ressources complémentaires si pertinent\n`
-
-  if (context) {
-    prompt += "Contexte de la conversation précédente :\n" + formatContext(context)
-  }
-
-  return prompt
 }
 
 serve(async (req) => {
@@ -82,9 +74,9 @@ serve(async (req) => {
           { role: 'user', content: message }
         ],
         temperature: 0.7,
-        max_tokens: Math.min(1000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
-        presence_penalty: 0.6, // Encourage plus de variété dans les réponses
-        frequency_penalty: 0.5, // Évite les répétitions
+        max_tokens: Math.min(2000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
+        presence_penalty: 0.6,
+        frequency_penalty: 0.5,
       }),
     })
 

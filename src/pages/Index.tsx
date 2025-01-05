@@ -7,6 +7,7 @@ import { ChatHistory } from "@/components/ChatHistory"
 import { QuickActions } from "@/components/QuickActions"
 import { WelcomeBanner } from "@/components/WelcomeBanner"
 import { ChatInput } from "@/components/ChatInput"
+import { LessonPlanCreator } from "@/components/LessonPlanCreator"
 import { useChat } from "@/hooks/useChat"
 import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
@@ -116,14 +117,20 @@ const Index = () => {
             <div className="h-16 flex items-center px-6 gap-2">
               <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
-              <div className="ml-auto">
-              </div>
             </div>
           </nav>
 
           <main className="flex-1 overflow-y-auto relative">
             <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
-              {!currentConversationId && <WelcomeBanner />}
+              {!currentConversationId && (
+                <>
+                  <WelcomeBanner />
+                  <div className="mt-8">
+                    <h2 className="text-2xl font-semibold mb-6">Créer une séquence pédagogique</h2>
+                    <LessonPlanCreator />
+                  </div>
+                </>
+              )}
               <ChatHistory messages={messages} isLoading={isLoading} />
               <QuickActions 
                 onActionClick={handleQuickAction} 
