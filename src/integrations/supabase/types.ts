@@ -19,7 +19,6 @@ export type Database = {
           deleted_at: string | null
           feedback_score: number | null
           id: number
-          lesson_plan_data: Json | null
           message: string
           message_type: string | null
           user_id: string
@@ -33,7 +32,6 @@ export type Database = {
           deleted_at?: string | null
           feedback_score?: number | null
           id?: never
-          lesson_plan_data?: Json | null
           message: string
           message_type?: string | null
           user_id: string
@@ -47,7 +45,6 @@ export type Database = {
           deleted_at?: string | null
           feedback_score?: number | null
           id?: never
-          lesson_plan_data?: Json | null
           message?: string
           message_type?: string | null
           user_id?: string

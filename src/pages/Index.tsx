@@ -9,10 +9,12 @@ import { WelcomeBanner } from "@/components/WelcomeBanner"
 import { ChatInput } from "@/components/ChatInput"
 import { useChat } from "@/hooks/useChat"
 import { Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
   const navigate = useNavigate()
+  const { toast } = useToast()
   const { 
     messages, 
     setMessages,
@@ -28,28 +30,50 @@ const Index = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error("Session error:", error)
+          throw error
+        }
+
+        if (!session) {
+          navigate('/login')
+          return
+        }
+
+        setUserId(session.user.id)
+      } catch (error) {
+        console.error("Auth error:", error)
+        toast({
+          variant: "destructive",
+          title: "Erreur d'authentification",
+          description: "Veuillez vous reconnecter"
+        })
         navigate('/login')
-        return
       }
-      setUserId(session.user.id)
     }
 
     checkAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate('/login')
-        return
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || !session) {
+        if (!session) {
+          navigate('/login')
+          return
+        }
       }
-      setUserId(session.user.id)
+      
+      if (session) {
+        setUserId(session.user.id)
+      }
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [navigate])
+  }, [navigate, toast])
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -89,8 +113,11 @@ const Index = () => {
         
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
-            <div className="h-16 flex items-center px-6">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Assistant Pédagogique IA</h1>
+            <div className="h-16 flex items-center px-6 gap-2">
+              <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
+              <div className="ml-auto">
+              </div>
             </div>
           </nav>
 
