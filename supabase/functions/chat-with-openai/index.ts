@@ -9,6 +9,36 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Fonction utilitaire pour nettoyer et formater le contexte
+const formatContext = (context: string) => {
+  // Limite le contexte aux 10 derniers échanges pour optimiser les tokens
+  const exchanges = context.split('\n')
+  const lastExchanges = exchanges.slice(-20)
+  return lastExchanges.join('\n')
+}
+
+// Fonction pour générer un prompt système plus précis
+const generateSystemPrompt = (type: string, context: string) => {
+  if (type === 'title-generation') {
+    return "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
+  }
+
+  let prompt = `Tu es un assistant pédagogique français expert qui aide les utilisateurs à apprendre et à comprendre des concepts. 
+    Instructions importantes:
+    - Sois précis et concis dans tes réponses
+    - Utilise des exemples concrets quand c'est pertinent
+    - Structure tes réponses de manière claire
+    - Adapte ton niveau de langage à celui de l'utilisateur
+    - Si tu n'es pas sûr d'une information, dis-le clairement
+    - Propose des ressources complémentaires si pertinent\n`
+
+  if (context) {
+    prompt += "Contexte de la conversation précédente :\n" + formatContext(context)
+  }
+
+  return prompt
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -16,18 +46,13 @@ serve(async (req) => {
 
   try {
     const { message, context, type } = await req.json()
+    console.log('Received request:', { messageLength: message.length, contextLength: context?.length, type })
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured')
     }
 
-    const systemPrompt = type === 'title-generation'
-      ? "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
-      : `Tu es un assistant pédagogique français qui aide les utilisateurs à apprendre et à comprendre des concepts. Tu es amical et encourageant. 
-         ${context ? "Voici le contexte de la conversation précédente :\n\n" + context : ""}`
-
-    console.log('Calling OpenAI API with message:', message)
-
+    const systemPrompt = generateSystemPrompt(type, context)
     const estimatedTokens = Math.ceil((message.length + systemPrompt.length) / 4)
 
     if (estimatedTokens > MONTHLY_TOKEN_LIMIT) {
@@ -41,6 +66,8 @@ serve(async (req) => {
         }
       )
     }
+
+    console.log('Calling OpenAI API with system prompt length:', systemPrompt.length)
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -56,6 +83,8 @@ serve(async (req) => {
         ],
         temperature: 0.7,
         max_tokens: Math.min(1000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
+        presence_penalty: 0.6, // Encourage plus de variété dans les réponses
+        frequency_penalty: 0.5, // Évite les répétitions
       }),
     })
 
@@ -68,7 +97,7 @@ serve(async (req) => {
     const data = await response.json()
     const aiResponse = data.choices[0].message.content
 
-    console.log('Successfully got response from OpenAI')
+    console.log('Successfully got response from OpenAI, length:', aiResponse.length)
 
     return new Response(JSON.stringify({ response: aiResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
