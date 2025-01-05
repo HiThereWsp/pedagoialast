@@ -45,6 +45,15 @@ export const LessonPlanCreator = () => {
         })
         return
       }
+
+      if (!classLevel.trim()) {
+        toast({
+          title: "Niveau requis",
+          description: "Veuillez entrer le niveau de la classe",
+          variant: "destructive",
+        })
+        return
+      }
     }
 
     setIsLoading(true)
@@ -54,6 +63,7 @@ export const LessonPlanCreator = () => {
            Niveau de la classe: ${classLevel}.
            Instructions supplémentaires: ${additionalInstructions}`
         : `Crée une séquence pédagogique basée sur ce texte: ${sourceText}.
+           Niveau de la classe: ${classLevel}.
            Instructions supplémentaires: ${additionalInstructions}`
 
       const { data, error } = await supabase.functions.invoke("chat-with-openai", {
@@ -145,6 +155,15 @@ export const LessonPlanCreator = () => {
                 value={sourceText}
                 onChange={(e) => setSourceText(e.target.value)}
                 className="min-h-[200px]"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Niveau de la classe</label>
+              <Input
+                placeholder="Par exemple : 6ème, CM2, CE1"
+                value={classLevel}
+                onChange={(e) => setClassLevel(e.target.value)}
               />
             </div>
           </TabsContent>
