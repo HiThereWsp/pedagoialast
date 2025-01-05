@@ -2,7 +2,6 @@ import { useState } from "react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Textarea } from "./ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select"
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs"
 import { Card, CardContent } from "./ui/card"
 import { Lightbulb, FileText, Globe, FileIcon, ArrowLeft, Sparkles } from "lucide-react"
@@ -11,9 +10,8 @@ import { supabase } from "@/integrations/supabase/client"
 
 export const LessonPlanCreator = () => {
   const [subject, setSubject] = useState("")
+  const [classLevel, setClassLevel] = useState("")
   const [additionalInstructions, setAdditionalInstructions] = useState("")
-  const [standards, setStandards] = useState("")
-  const [outputLanguage, setOutputLanguage] = useState("Français")
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -27,13 +25,22 @@ export const LessonPlanCreator = () => {
       return
     }
 
+    if (!classLevel.trim()) {
+      toast({
+        title: "Niveau requis",
+        description: "Veuillez entrer le niveau de la classe",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke("chat-with-openai", {
         body: {
           message: `Crée une séquence pédagogique sur le sujet: ${subject}. 
-                   Instructions supplémentaires: ${additionalInstructions}
-                   Normes à respecter: ${standards}`,
+                   Niveau de la classe: ${classLevel}.
+                   Instructions supplémentaires: ${additionalInstructions}`,
           type: "lesson-plan",
         },
       })
@@ -63,9 +70,9 @@ export const LessonPlanCreator = () => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 text-center">
-          <h1 className="text-2xl font-bold">Créer une séquence pédagogique</h1>
+          <h1 className="text-2xl font-bold">Créer un plan de cours</h1>
           <p className="text-muted-foreground mt-2">
-            Créez une séquence pédagogique à partir de n'importe quelle source
+            Créez un plan de cours à partir de n'importe quelle source : sujet, texte, page Web ou document
           </p>
         </div>
       </div>
@@ -103,51 +110,32 @@ export const LessonPlanCreator = () => {
         </div>
 
         <div>
+          <label className="text-sm font-medium mb-2 block">Niveau de la classe</label>
+          <Input
+            placeholder="Par exemple : 6ème, CM2, CE1"
+            value={classLevel}
+            onChange={(e) => setClassLevel(e.target.value)}
+          />
+        </div>
+
+        <div>
           <label className="text-sm font-medium mb-2 block">
             Instructions supplémentaires (facultatif)
           </label>
           <Textarea
-            placeholder="Précisez toutes les exigences supplémentaires, telles que les niveaux des étudiants, les normes à respecter, etc."
+            placeholder="Précisez toutes les exigences supplémentaires pour votre plan de cours"
             value={additionalInstructions}
             onChange={(e) => setAdditionalInstructions(e.target.value)}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Normes (optionnelles)
-            </label>
-            <Input
-              placeholder="Normes NGSS, NYS, etc."
-              value={standards}
-              onChange={(e) => setStandards(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Langue de sortie
-            </label>
-            <Select value={outputLanguage} onValueChange={setOutputLanguage}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Français">Français</SelectItem>
-                <SelectItem value="English">English</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
         <Button
-          className="w-full py-6 text-lg bg-emerald-500 hover:bg-emerald-600"
+          className="w-full py-6 text-lg bg-lime-400 hover:bg-lime-500 text-black"
           onClick={handleGenerateLessonPlan}
           disabled={isLoading}
         >
           <Sparkles className="mr-2 h-5 w-5" />
-          {isLoading ? "Génération en cours..." : "Générer une séquence pédagogique"}
+          {isLoading ? "Génération en cours..." : "Générer un plan de cours"}
         </Button>
       </CardContent>
     </Card>
