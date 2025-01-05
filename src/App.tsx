@@ -8,6 +8,7 @@ import Login from "./pages/Login"
 import Landing from "./pages/Landing"
 import Pricing from "./pages/Pricing"
 import Settings from "./pages/Settings"
+import LessonPlan from "./pages/LessonPlan"
 
 const queryClient = new QueryClient()
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/pricing" element={<Pricing />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/lesson-plan" element={<LessonPlan />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

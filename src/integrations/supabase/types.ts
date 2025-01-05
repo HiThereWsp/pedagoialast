@@ -51,6 +51,30 @@ export type Database = {
         }
         Relationships: []
       }
+      conversation_contexts: {
+        Row: {
+          context: string
+          conversation_id: string
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          context?: string
+          conversation_id: string
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          context?: string
+          conversation_id?: string
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -102,6 +126,30 @@ export type Database = {
           successful_actions?: number | null
           total_messages?: number | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          teaching_level: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          teaching_level: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          teaching_level?: string
         }
         Relationships: []
       }
@@ -159,14 +207,19 @@ export type Database = {
         }
         Returns: undefined
       }
-      send_email: {
-        Args: {
-          recipient: string
-          subject: string
-          body: string
-        }
-        Returns: undefined
-      }
+      send_email:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: undefined
+          }
+        | {
+            Args: {
+              recipient: string
+              subject: string
+              body: string
+            }
+            Returns: undefined
+          }
       send_password_reset_email: {
         Args: {
           email: string
