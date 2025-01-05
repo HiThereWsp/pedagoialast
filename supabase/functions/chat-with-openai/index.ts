@@ -9,7 +9,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -17,10 +16,19 @@ serve(async (req) => {
   try {
     const { message, type } = await req.json()
 
-    // If it's a title generation request, use a specific system prompt
-    const systemPrompt = type === 'title-generation'
-      ? "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
-      : "Tu es un assistant pédagogique français qui aide les utilisateurs à apprendre et à comprendre des concepts. Tu es amical et encourageant."
+    const systemPrompt = type === 'lesson-plan'
+      ? `Tu es un assistant pédagogique expert en création de séquences pédagogiques. 
+         Tu dois créer des séquences détaillées et structurées qui incluent :
+         - Les objectifs d'apprentissage
+         - Le niveau ciblé
+         - Le matériel nécessaire
+         - Le déroulé détaillé des séances
+         - Les évaluations
+         - Les adaptations possibles
+         Sois précis et pratique dans tes suggestions.`
+      : type === 'title-generation'
+        ? "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
+        : "Tu es un assistant pédagogique français qui aide les utilisateurs à apprendre et à comprendre des concepts. Tu es amical et encourageant."
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -29,11 +37,15 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }
         ],
+        temperature: 0.7,
+        max_tokens: 2000,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.5,
       }),
     })
 
