@@ -51,7 +51,7 @@ export const ChatInput = ({ onSendMessage, isLoading, value, onChange }: ChatInp
         onChange={(e) => handleChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Écrivez votre message ici..."
-        className="min-h-[80px] max-h-[200px] bg-white/80 border-[#FFDEE2]/20 focus-visible:ring-[#FFDEE2]/30 overflow-y-auto"
+        className="min-h-[80px] bg-white/80 border-[#FFDEE2]/20 focus-visible:ring-[#FFDEE2]/30"
       />
       <Button
         onClick={handleSubmit}

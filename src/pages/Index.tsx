@@ -7,15 +7,12 @@ import { ChatHistory } from "@/components/ChatHistory"
 import { QuickActions } from "@/components/QuickActions"
 import { WelcomeBanner } from "@/components/WelcomeBanner"
 import { ChatInput } from "@/components/ChatInput"
-import { LessonPlanCreator } from "@/components/LessonPlanCreator"
 import { useChat } from "@/hooks/useChat"
 import { Loader2 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
 
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
   const navigate = useNavigate()
-  const { toast } = useToast()
   const { 
     messages, 
     setMessages,
@@ -31,50 +28,28 @@ const Index = () => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.error("Session error:", error)
-          throw error
-        }
-
-        if (!session) {
-          navigate('/login')
-          return
-        }
-
-        setUserId(session.user.id)
-      } catch (error) {
-        console.error("Auth error:", error)
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: "Veuillez vous reconnecter"
-        })
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
         navigate('/login')
+        return
       }
+      setUserId(session.user.id)
     }
 
     checkAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || !session) {
-        if (!session) {
-          navigate('/login')
-          return
-        }
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate('/login')
+        return
       }
-      
-      if (session) {
-        setUserId(session.user.id)
-      }
+      setUserId(session.user.id)
     })
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [navigate, toast])
+  }, [navigate])
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -114,23 +89,14 @@ const Index = () => {
         
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
-            <div className="h-16 flex items-center px-6 gap-2">
-              <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
+            <div className="h-16 flex items-center px-6">
+              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Assistant Pédagogique IA</h1>
             </div>
           </nav>
 
           <main className="flex-1 overflow-y-auto relative">
             <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
-              {!currentConversationId && (
-                <>
-                  <WelcomeBanner />
-                  <div className="mt-8">
-                    <h2 className="text-2xl font-semibold mb-6">Créer une séquence pédagogique</h2>
-                    <LessonPlanCreator />
-                  </div>
-                </>
-              )}
+              {!currentConversationId && <WelcomeBanner />}
               <ChatHistory messages={messages} isLoading={isLoading} />
               <QuickActions 
                 onActionClick={handleQuickAction} 
