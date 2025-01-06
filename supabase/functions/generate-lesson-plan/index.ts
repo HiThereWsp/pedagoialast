@@ -45,8 +45,9 @@ serve(async (req) => {
     })
 
     if (!embeddingResponse.ok) {
-      console.error('Embedding generation failed:', await embeddingResponse.text())
-      throw new Error('Failed to generate embedding')
+      const errorText = await embeddingResponse.text()
+      console.error('Embedding generation failed:', errorText)
+      throw new Error(`Failed to generate embedding: ${errorText}`)
     }
 
     const embeddingData = await embeddingResponse.json()
@@ -69,8 +70,9 @@ serve(async (req) => {
     })
 
     if (!vectorSearchResponse.ok) {
-      console.error('Vector store search failed:', await vectorSearchResponse.text())
-      throw new Error('Failed to search vector store')
+      const errorText = await vectorSearchResponse.text()
+      console.error('Vector store search failed:', errorText)
+      throw new Error(`Failed to search vector store: ${errorText}`)
     }
 
     const vectorSearchResults = await vectorSearchResponse.json()
