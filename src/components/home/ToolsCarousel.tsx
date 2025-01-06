@@ -4,6 +4,7 @@ import {
   MessageSquare, 
   FileText, 
   Sparkles,
+  ClipboardList
 } from "lucide-react"
 import {
   Carousel,
@@ -34,6 +35,15 @@ const tools = [
     route: "/lesson-plan"
   },
   {
+    title: "Assistant administratif",
+    description: "Générez rapidement vos documents administratifs et gagnez du temps",
+    icon: ClipboardList,
+    color: "text-purple-500",
+    bgColor: "bg-[#FAF5FF]",
+    borderColor: "border-purple-500/20",
+    route: "/admin-assistant"
+  },
+  {
     title: "Générateur d'exercices",
     description: "Générez des exercices sur mesure pour vos élèves",
     icon: BookOpen,
@@ -57,7 +67,7 @@ export const ToolsCarousel = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="max-w-6xl mx-auto mb-16">
+    <div className="max-w-6xl mx-auto mb-16 perspective-1000">
       <Carousel
         opts={{
           align: "start",
@@ -69,7 +79,14 @@ export const ToolsCarousel = () => {
         <CarouselContent className="-ml-2 md:-ml-4">
           {tools.map((tool, index) => (
             <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/3 lg:basis-1/4">
-              <div className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+              <div 
+                className="animate-fade-in transform-gpu hover:translate-z-12 transition-all duration-500" 
+                style={{ 
+                  animationDelay: `${index * 100}ms`,
+                  transform: `translateZ(0) rotateY(0deg)`,
+                  transformStyle: 'preserve-3d'
+                }}
+              >
                 <ToolCard
                   {...tool}
                   onClick={() => navigate(tool.route)}
