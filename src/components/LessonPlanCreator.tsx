@@ -90,10 +90,14 @@ export const LessonPlanCreator = () => {
           break
         case "webpage":
           try {
+            console.log('Processing webpage:', webUrl)
             const { data: webData, error: webError } = await supabase.functions.invoke('process-webpage', {
               body: { url: webUrl }
             })
-            if (webError) throw webError
+            if (webError) {
+              console.error('Webpage processing error:', webError)
+              throw webError
+            }
             content = webData.text
             prompt = `Crée une séquence pédagogique sur le sujet: ${webSubject}. Basée sur ce contenu web: ${content}. Niveau de la classe: ${classLevel}.`
           } catch (error) {
@@ -109,12 +113,16 @@ export const LessonPlanCreator = () => {
         case "document":
           if (selectedFile) {
             try {
+              console.log('Processing document:', selectedFile.name)
               const formData = new FormData()
               formData.append('file', selectedFile)
               const { data: docData, error: docError } = await supabase.functions.invoke('process-document', {
                 body: formData
               })
-              if (docError) throw docError
+              if (docError) {
+                console.error('Document processing error:', docError)
+                throw docError
+              }
               content = docData.text
               prompt = `Crée une séquence pédagogique basée sur ce document: ${content}. Niveau de la classe: ${classLevel}.`
             } catch (error) {
@@ -135,6 +143,8 @@ export const LessonPlanCreator = () => {
         prompt += ` Instructions supplémentaires: ${additionalInstructions}`
       }
 
+      console.log('Sending prompt to OpenAI:', prompt)
+
       // Appel à l'API OpenAI via la fonction edge
       const { data, error } = await supabase.functions.invoke('chat-with-openai', {
         body: { 
@@ -143,7 +153,12 @@ export const LessonPlanCreator = () => {
         }
       })
 
-      if (error) throw error
+      if (error) {
+        console.error('OpenAI API error:', error)
+        throw error
+      }
+
+      console.log('Received response from OpenAI:', data)
 
       // Sauvegarde du plan de cours dans la base de données
       const { error: dbError } = await supabase
@@ -160,7 +175,10 @@ export const LessonPlanCreator = () => {
           }
         })
 
-      if (dbError) throw dbError
+      if (dbError) {
+        console.error('Database error when saving user message:', dbError)
+        throw dbError
+      }
 
       // Save the AI response
       const { error: aiResponseError } = await supabase
@@ -177,7 +195,10 @@ export const LessonPlanCreator = () => {
           }
         })
 
-      if (aiResponseError) throw aiResponseError
+      if (aiResponseError) {
+        console.error('Database error when saving AI response:', aiResponseError)
+        throw aiResponseError
+      }
 
       toast({
         title: "Succès",
@@ -188,7 +209,7 @@ export const LessonPlanCreator = () => {
       console.error("Erreur lors de la génération du plan de cours:", error)
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la génération de la séquence",
+        description: error.message || "Une erreur est survenue lors de la génération de la séquence",
         variant: "destructive",
       })
     } finally {

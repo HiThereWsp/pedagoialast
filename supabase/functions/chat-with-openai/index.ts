@@ -13,8 +13,10 @@ serve(async (req) => {
 
   try {
     const { message, type } = await req.json()
+    console.log('Received request:', { message, type })
 
     if (!message) {
+      console.error('No message provided')
       return new Response(
         JSON.stringify({ error: 'Message is required' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
@@ -39,8 +41,10 @@ serve(async (req) => {
       Assure-toi que la séquence soit adaptée au niveau demandé et qu'elle soit engageante pour les élèves.`
     }
 
+    console.log('Sending request to OpenAI with system prompt:', systemPrompt)
+
     const completion = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: message }
@@ -49,6 +53,8 @@ serve(async (req) => {
       max_tokens: 2000,
     })
 
+    console.log('Received response from OpenAI')
+
     const response = completion.data.choices[0].message?.content || "Désolé, je n'ai pas pu générer de réponse."
 
     return new Response(
@@ -56,9 +62,12 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in chat-with-openai function:', error)
     return new Response(
-      JSON.stringify({ error: 'An error occurred while processing your request' }),
+      JSON.stringify({ 
+        error: 'Une erreur est survenue lors de la génération de la séquence',
+        details: error.message 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
