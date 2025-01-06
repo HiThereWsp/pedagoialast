@@ -67,17 +67,17 @@ export function ResultDisplay({ text }: ResultDisplayProps) {
   if (!text) return null;
 
   return (
-    <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <Card className="relative bg-white/90 backdrop-blur-md p-6 rounded-xl border-[#9b87f5]/20 shadow-lg hover:shadow-xl transition-all duration-300">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
+        <h2 className="text-xl font-semibold bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] bg-clip-text text-transparent">
           Votre correspondance est prête
         </h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleFeedback('like')}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-emerald-500 transition-all duration-300 transform hover:scale-110",
-              feedbackScore === 1 && "text-emerald-500"
+              "rounded p-1.5 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#9b87f5] transition-all duration-300 transform hover:scale-110",
+              feedbackScore === 1 && "text-[#9b87f5]"
             )}
             aria-label="J'aime"
           >
@@ -86,8 +86,8 @@ export function ResultDisplay({ text }: ResultDisplayProps) {
           <button
             onClick={() => handleFeedback('dislike')}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-red-500 transition-all duration-300 transform hover:scale-110",
-              feedbackScore === -1 && "text-red-500"
+              "rounded p-1.5 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#6E59A5] transition-all duration-300 transform hover:scale-110",
+              feedbackScore === -1 && "text-[#6E59A5]"
             )}
             aria-label="Je n'aime pas"
           >
@@ -96,8 +96,8 @@ export function ResultDisplay({ text }: ResultDisplayProps) {
           <button
             onClick={handleCopy}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-blue-500 transition-all duration-300 transform hover:scale-110",
-              isCopied && "text-blue-500"
+              "rounded p-1.5 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#7E69AB] transition-all duration-300 transform hover:scale-110",
+              isCopied && "text-[#7E69AB]"
             )}
             aria-label="Copier le texte"
           >
@@ -106,7 +106,7 @@ export function ResultDisplay({ text }: ResultDisplayProps) {
         </div>
       </div>
       <div className="prose prose-sm max-w-none">
-        <div className="whitespace-pre-wrap bg-white rounded-lg text-gray-700 leading-relaxed">
+        <div className="whitespace-pre-wrap bg-white/80 rounded-lg p-4 text-gray-700 leading-relaxed border border-[#9b87f5]/10">
           {text}
         </div>
       </div>
