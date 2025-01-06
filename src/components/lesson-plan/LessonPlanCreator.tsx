@@ -86,7 +86,7 @@ export function LessonPlanCreator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FEF7CD] to-[#F1F0FB]">
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-purple-50">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-none mx-auto flex flex-col items-center">
           <div className="w-full max-w-[1200px]">
@@ -94,33 +94,33 @@ export function LessonPlanCreator() {
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               <div className="space-y-6">
-                <div className="bg-white rounded-xl shadow-sm border border-[#FDE1D3] p-6 hover:shadow-md transition-shadow duration-200">
+                <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
                   <Tabs defaultValue="subject" className="w-full" value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="w-full bg-[#FEF7CD]/50 p-1 rounded-lg mb-6">
+                    <TabsList className="w-full bg-pink-50/50 p-1 rounded-lg mb-6">
                       <TabsTrigger value="subject" className="flex items-center gap-2 flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <div className="w-6 h-6 rounded-full bg-[#FDE1D3] flex items-center justify-center">
-                          <Sparkles className="h-3.5 w-3.5 text-[#FF9B9B]" />
+                        <div className="w-6 h-6 rounded-full bg-[#D946EF]/10 flex items-center justify-center">
+                          <Sparkles className="h-3.5 w-3.5 text-[#D946EF]" />
                         </div>
                         <span className="hidden sm:inline">Sujet</span>
                       </TabsTrigger>
                       <TabsTrigger value="text" className="flex items-center gap-2 flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <div className="w-6 h-6 rounded-full bg-[#F2FCE2] flex items-center justify-center">
-                          <FileText className="h-3.5 w-3.5 text-[#7FB77E]" />
+                        <div className="w-6 h-6 rounded-full bg-[#E5DEFF] flex items-center justify-center">
+                          <FileText className="h-3.5 w-3.5 text-purple-600" />
                         </div>
                         <span className="hidden sm:inline">Texte</span>
                       </TabsTrigger>
                       <TabsTrigger value="webpage" className="flex items-center gap-2 flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm">
                         <div className="w-6 h-6 rounded-full bg-[#FFDEE2] flex items-center justify-center">
-                          <Globe className="h-3.5 w-3.5 text-[#FF9B9B]" />
+                          <Globe className="h-3.5 w-3.5 text-pink-600" />
                         </div>
                         <span className="hidden sm:inline">Page web</span>
                       </TabsTrigger>
                       <TabsTrigger value="document" className="flex items-center gap-2 flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <div className="w-6 h-6 rounded-full bg-[#F1F0FB] flex items-center justify-center">
-                          <Upload className="h-3.5 w-3.5 text-[#9B9B9B]" />
+                        <div className="w-6 h-6 rounded-full bg-[#D6BCFA] flex items-center justify-center">
+                          <Upload className="h-3.5 w-3.5 text-purple-700" />
                         </div>
                         <span className="hidden sm:inline">Document</span>
-                        <span className="ml-1 text-xs bg-[#FFDEE2] text-[#FF9B9B] px-1.5 py-0.5 rounded">Pro</span>
+                        <span className="ml-1 text-xs bg-[#D946EF] text-white px-1.5 py-0.5 rounded">Pro</span>
                       </TabsTrigger>
                     </TabsList>
 
@@ -142,12 +142,12 @@ export function LessonPlanCreator() {
                   </Tabs>
 
                   <Button
-                    className="w-full bg-gradient-to-r from-[#FEF7CD] via-[#FDE1D3] to-[#FFDEE2] hover:from-[#FFDEE2] hover:via-[#FDE1D3] hover:to-[#FEF7CD] text-[#FF9B9B] font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 mt-6 transition-all duration-200 shadow-sm hover:shadow"
+                    className="w-full bg-gradient-to-r from-yellow-300 via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-yellow-300 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 mt-6 transition-all duration-200 shadow-sm hover:shadow"
                     onClick={handleSubmit}
                     disabled={isLoading}
                   >
                     {isLoading ? (
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#FF9B9B]" />
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
                     ) : (
                       <Sparkles className="h-5 w-5" />
                     )}
