@@ -20,11 +20,11 @@ export const ShortcutCard = ({
 }: ShortcutCardProps) => {
   return (
     <Card
-      className="p-4 hover:shadow-md transition-all duration-300 cursor-pointer group animate-fade-in"
+      className="p-4 hover:shadow-xl transition-all duration-300 cursor-pointer group animate-fade-in transform hover:-translate-y-1 hover:scale-[1.02]"
       onClick={onClick}
     >
       <div className="flex items-center space-x-3">
-        <div className={`p-2 rounded-lg ${bgColor} transform group-hover:scale-110 transition-transform duration-300`}>
+        <div className={`p-2 rounded-lg ${bgColor} transform group-hover:scale-110 transition-transform duration-300 shadow-md`}>
           <Icon className={`w-5 h-5 ${color}`} />
         </div>
         <div>

@@ -29,12 +29,12 @@ export const ShortcutsSection = () => {
       <h2 className="text-xl font-semibold mb-4 text-gray-800">Accès rapides</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {shortcuts.map((shortcut, index) => (
-          <ShortcutCard
-            key={index}
-            {...shortcut}
-            onClick={() => navigate(shortcut.route)}
-            style={{ animationDelay: `${(index + 4) * 100}ms` }}
-          />
+          <div key={index} className="animate-fade-in" style={{ animationDelay: `${(index + 4) * 100}ms` }}>
+            <ShortcutCard
+              {...shortcut}
+              onClick={() => navigate(shortcut.route)}
+            />
+          </div>
         ))}
       </div>
     </div>

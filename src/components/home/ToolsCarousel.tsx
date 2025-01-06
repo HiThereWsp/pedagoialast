@@ -62,17 +62,19 @@ export const ToolsCarousel = () => {
         opts={{
           align: "start",
           loop: true,
+          dragFree: true,
         }}
         className="w-full"
       >
         <CarouselContent className="-ml-2 md:-ml-4">
           {tools.map((tool, index) => (
             <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/3 lg:basis-1/4">
-              <ToolCard
-                {...tool}
-                onClick={() => navigate(tool.route)}
-                style={{ animationDelay: `${index * 100}ms` }}
-              />
+              <div className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
+                <ToolCard
+                  {...tool}
+                  onClick={() => navigate(tool.route)}
+                />
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>

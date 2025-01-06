@@ -23,11 +23,11 @@ export const ToolCard = ({
 }: ToolCardProps) => {
   return (
     <Card 
-      className={`group cursor-pointer animate-fade-in h-[360px] hover:shadow-xl transition-all duration-300 overflow-hidden`}
+      className={`group cursor-pointer animate-fade-in h-[360px] hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.02]`}
       onClick={onClick}
     >
       <div className={`p-6 ${bgColor} border-b-2 ${borderColor} h-full flex flex-col`}>
-        <div className={`p-3 rounded-2xl bg-white/80 backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300 w-fit mb-6`}>
+        <div className={`p-3 rounded-2xl bg-white/80 backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300 w-fit mb-6 shadow-md`}>
           <Icon className={`w-8 h-8 ${color}`} />
         </div>
         <div className="flex-1 flex flex-col justify-between">
