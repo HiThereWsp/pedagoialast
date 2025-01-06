@@ -1,7 +1,9 @@
 import * as React from "react"
 
+type SidebarState = "expanded" | "collapsed"
+
 type SidebarContext = {
-  state: "expanded" | "collapsed"
+  state: SidebarState
   open: boolean
   setOpen: (open: boolean) => void
   openMobile: boolean
@@ -35,7 +37,7 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
 
   const value = React.useMemo(
     () => ({
-      state: open ? "expanded" : "collapsed",
+      state: open ? "expanded" as const : "collapsed" as const,
       open,
       setOpen,
       openMobile,
