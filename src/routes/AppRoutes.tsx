@@ -1,63 +1,36 @@
 import { Routes, Route, Navigate } from "react-router-dom"
-import { ProtectedLayout } from "@/components/layout/ProtectedLayout"
+import { ProtectedRoute } from "./ProtectedRoute"
 import Index from "@/pages/Index"
+import Home from "@/pages/Home"
 import Login from "@/pages/Login"
 import Settings from "@/pages/Settings"
-import WaitlistLanding from "@/pages/WaitlistLanding"
 import NotFound from "@/pages/NotFound"
-import PricingPage from "@/pages/Pricing"
-import { LessonPlanPage } from "@/pages/LessonPlanPage"
-import { ExerciseGenerator } from "@/components/exercise/ExerciseGenerator"
+import LessonPlanPage from "@/pages/LessonPlanPage"
 import CorrespondencePage from "@/pages/CorrespondencePage"
-import { ProtectedRoute } from "./ProtectedRoute"
+import Landing from "@/pages/Landing"
+import WaitlistLanding from "@/pages/WaitlistLanding"
+import Pricing from "@/pages/Pricing"
+import MetricsPage from "@/pages/MetricsPage"
+import SuggestionsPage from "@/pages/SuggestionsPage"
 
-export function AppRoutes() {
+export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Routes publiques */}
-      <Route path="/" element={<WaitlistLanding />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/waitlist" element={<WaitlistLanding />} />
-      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/login" element={<Login />} />
       
-      {/* Routes protégées */}
-      <Route path="/chat" element={
-        <ProtectedRoute>
-          <ProtectedLayout>
-            <Index />
-          </ProtectedLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <ProtectedLayout>
-            <Settings />
-          </ProtectedLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/creersequence" element={
-        <ProtectedRoute>
-          <ProtectedLayout>
-            <LessonPlanPage />
-          </ProtectedLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/exercices" element={
-        <ProtectedRoute>
-          <ProtectedLayout>
-            <ExerciseGenerator />
-          </ProtectedLayout>
-        </ProtectedRoute>
-      } />
-      <Route path="/correspondance" element={
-        <ProtectedRoute>
-          <ProtectedLayout>
-            <CorrespondencePage />
-          </ProtectedLayout>
-        </ProtectedRoute>
-      } />
-      
-      {/* Route 404 */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/home" element={<Home />} />
+        <Route path="/chat" element={<Index />} />
+        <Route path="/lesson-plan" element={<LessonPlanPage />} />
+        <Route path="/correspondence" element={<CorrespondencePage />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/metrics" element={<MetricsPage />} />
+        <Route path="/suggestions" element={<SuggestionsPage />} />
+      </Route>
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   )
