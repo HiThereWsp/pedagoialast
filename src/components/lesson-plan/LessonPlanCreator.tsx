@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +8,7 @@ import { ChevronLeft, Upload, Globe, FileText, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 export function LessonPlanCreator() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("subject");
   const [formData, setFormData] = useState({
     subject: "",
@@ -31,7 +33,12 @@ export function LessonPlanCreator() {
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <div className="flex items-center space-x-4 mb-6">
-        <Button variant="ghost" size="icon" className="hover:bg-gray-100">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="hover:bg-gray-100"
+          onClick={() => navigate(-1)}
+        >
           <ChevronLeft className="h-5 w-5" />
         </Button>
         <div>
