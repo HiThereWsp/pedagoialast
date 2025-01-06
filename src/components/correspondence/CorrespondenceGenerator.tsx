@@ -68,7 +68,9 @@ export function CorrespondenceGenerator() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <Card className="p-6 space-y-6 bg-white/90 backdrop-blur-md border-[#9b87f5]/20 shadow-lg hover:shadow-xl transition-all duration-300">
+      <Card className="relative overflow-hidden p-6 space-y-6 bg-white/90 backdrop-blur-md border-[#9b87f5]/20 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#9b87f5]/5 to-[#6E59A5]/5 pointer-events-none" />
+        
         <div className="space-y-2">
           <Label htmlFor="recipient" className="text-[#7E69AB] font-medium">Destinataire</Label>
           <Select value={recipient} onValueChange={setRecipient}>
@@ -125,7 +127,7 @@ export function CorrespondenceGenerator() {
         <Button 
           onClick={handleGenerate} 
           disabled={isLoading || !topic}
-          className="w-full bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] text-white hover:opacity-90 transition-all duration-300"
+          className="w-full bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] text-white hover:opacity-90 transition-all duration-300 shadow-md hover:shadow-lg"
         >
           {isLoading ? (
             <>
