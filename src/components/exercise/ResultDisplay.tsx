@@ -56,7 +56,7 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
-            Exercices générés
+            {exercises?.includes('Exercice') ? "Votre exercice est prêt" : "Vos exercices sont prêts"}
           </h2>
           <Sparkles 
             className={cn(
