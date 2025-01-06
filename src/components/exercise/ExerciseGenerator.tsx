@@ -35,17 +35,15 @@ export function ExerciseGenerator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 via-orange-50 to-purple-50">
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-pink-100 shadow-sm">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col gap-4">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 bg-clip-text text-transparent">
-                Différenciation pédagogique
-              </h1>
-              <p className="mt-2 text-gray-600">
-                Créez des exercices adaptés aux besoins spécifiques de vos élèves.
-              </p>
-            </div>
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-pink-100/50 shadow-sm">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+              Différenciation pédagogique
+            </h1>
+            <p className="text-base sm:text-lg text-gray-600">
+              Créez des exercices adaptés aux besoins spécifiques de vos élèves.
+            </p>
           </div>
         </div>
       </div>
@@ -58,7 +56,7 @@ export function ExerciseGenerator() {
                 <Collapsible
                   open={isFormExpanded}
                   onOpenChange={setIsFormExpanded}
-                  className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200"
+                  className="bg-white rounded-xl shadow-sm border border-pink-100/50 p-6 hover:shadow-md transition-shadow duration-200"
                 >
                   <CollapsibleContent>
                     <ExerciseForm 
