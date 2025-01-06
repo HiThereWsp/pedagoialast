@@ -4,8 +4,7 @@ import { ResultDisplay } from './ResultDisplay';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import type { ExerciseFormData } from '@/hooks/useExerciseGeneration';
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 
 export function ExerciseGenerator() {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
@@ -52,21 +51,6 @@ export function ExerciseGenerator() {
                   onOpenChange={setIsFormExpanded}
                   className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200"
                 >
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Paramètres
-                    </h2>
-                    <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        {isFormExpanded ? (
-                          <ChevronUp className="h-4 w-4" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </CollapsibleTrigger>
-                  </div>
-                  
                   <CollapsibleContent>
                     <ExerciseForm 
                       formData={formData} 
