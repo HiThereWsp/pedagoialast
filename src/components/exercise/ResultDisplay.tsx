@@ -100,18 +100,13 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   };
 
   return (
-    <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-all duration-500 animate-fade-in overflow-hidden">
+    <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
             {exercises?.includes('Exercice') ? "Votre exercice est prêt" : "Vos exercices sont prêts"}
           </h2>
-          <Sparkles 
-            className={cn(
-              "h-5 w-5 text-yellow-400",
-              showMagic && "animate-pulse"
-            )} 
-          />
+          <Sparkles className="h-5 w-5 text-yellow-400" />
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -146,17 +141,14 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           </button>
         </div>
       </div>
-      <div className={cn(
-        "prose prose-sm max-w-none transition-opacity duration-500",
-        showMagic ? "opacity-100" : "opacity-90"
-      )}>
+      <div className="prose prose-sm max-w-none">
         <ReactMarkdown
           components={{
             strong: ({ children }) => <span className="font-bold text-gray-900">{children}</span>,
             h1: ({ children }) => <h1 className="text-2xl font-bold mb-4 text-gray-900">{children}</h1>,
             h2: ({ children }) => <h2 className="text-xl font-bold mb-3 text-gray-800">{children}</h2>,
             h3: ({ children }) => <h3 className="text-lg font-bold mb-2 text-gray-800">{children}</h3>,
-            p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed">{children}</p>,
+            p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed text-justify">{children}</p>,
             ul: ({ children }) => <ul className="list-disc pl-6 mb-4 text-gray-700">{children}</ul>,
             ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 text-gray-700">{children}</ol>,
             li: ({ children }) => <li className="mb-1">{children}</li>,
