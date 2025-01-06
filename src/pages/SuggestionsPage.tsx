@@ -66,10 +66,10 @@ const SuggestionsPage = () => {
           <div className="flex items-start gap-8">
             <div className="flex-1 space-y-4">
               <h1 className="text-3xl font-bold text-gray-800">
-                Façonnez l'avenir de l'éducation avec nous
+                Participez à l'évolution de PedagoIA
               </h1>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Vos idées comptent ! Partagez vos suggestions pour améliorer nos outils pédagogiques et votez pour les fonctionnalités qui vous tiennent à cœur.
+                Nous sommes à votre écoute ! Partagez vos suggestions pour enrichir notre plateforme éducative.
               </p>
               <div className="flex items-center gap-4">
                 <Button 
