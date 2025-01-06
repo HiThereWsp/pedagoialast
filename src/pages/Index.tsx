@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast"
 
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
+  const [firstName, setFirstName] = useState<string | null>(null)
   const navigate = useNavigate()
   const { toast } = useToast()
   const { 
@@ -44,6 +45,19 @@ const Index = () => {
         }
 
         setUserId(session.user.id)
+        
+        // Fetch user's first name from profiles table
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', session.user.id)
+          .single()
+          
+        if (profileError) {
+          console.error("Profile fetch error:", profileError)
+        } else {
+          setFirstName(profileData?.first_name)
+        }
       } catch (error) {
         console.error("Auth error:", error)
         toast({
@@ -94,6 +108,11 @@ const Index = () => {
     setInputValue(prompt)
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    navigate('/login')
+  }
+
   if (!userId) return (
     <div className="flex h-screen items-center justify-center">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -102,15 +121,15 @@ const Index = () => {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
-      <SidebarProvider>
-        <AppSidebar 
-          conversations={conversations}
-          onConversationSelect={loadConversationMessages}
-          currentConversationId={currentConversationId}
-          onNewConversation={handleNewConversation}
-          onDeleteConversation={deleteConversation}
-        />
-      </SidebarProvider>
+      <AppSidebar 
+        conversations={conversations}
+        onConversationSelect={loadConversationMessages}
+        currentConversationId={currentConversationId}
+        onNewConversation={handleNewConversation}
+        onDeleteConversation={deleteConversation}
+        firstName={firstName}
+        onLogout={handleLogout}
+      />
       
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
