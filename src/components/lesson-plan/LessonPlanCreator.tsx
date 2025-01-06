@@ -38,10 +38,10 @@ export function LessonPlanCreator() {
                       <TabsTrigger value="text">Texte</TabsTrigger>
                     </TabsList>
                     <TabsContent value="subject">
-                      <SubjectTab formData={formData} handleInputChange={handleInputChange} />
+                      <SubjectTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
                     </TabsContent>
                     <TabsContent value="text">
-                      <TextTab formData={formData} handleInputChange={handleInputChange} />
+                      <TextTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
                     </TabsContent>
                   </Tabs>
                 </div>

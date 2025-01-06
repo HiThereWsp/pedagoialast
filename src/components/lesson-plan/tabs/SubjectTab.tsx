@@ -1,15 +1,12 @@
 import React from 'react';
 import { Textarea } from "@/components/ui/textarea";
-import { CommonFields } from '../CommonFields';
 
 interface SubjectTabProps {
   formData: {
     subject: string;
-    classLevel: string;
-    additionalInstructions: string;
-    totalSessions: string;
   };
   handleInputChange: (field: string, value: string) => void;
+  showCommonFields?: boolean;
 }
 
 export function SubjectTab({ formData, handleInputChange }: SubjectTabProps) {
@@ -26,7 +23,6 @@ export function SubjectTab({ formData, handleInputChange }: SubjectTabProps) {
           className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
         />
       </div>
-      <CommonFields formData={formData} handleInputChange={handleInputChange} />
     </div>
   );
 }
