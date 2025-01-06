@@ -16,11 +16,13 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <SidebarProvider>
-            <Toaster />
-            <Sonner />
-            <Router>
-              <AppRoutes />
-            </Router>
+            <div className="flex min-h-screen w-full">
+              <Toaster />
+              <Sonner />
+              <Router>
+                <AppRoutes />
+              </Router>
+            </div>
           </SidebarProvider>
         </TooltipProvider>
       </QueryClientProvider>
