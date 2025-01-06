@@ -16,17 +16,6 @@ export function Header() {
       >
         <ChevronLeft className="h-5 w-5 text-pink-600" />
       </Button>
-      
-      <div className="flex items-center space-x-3 md:space-x-4">
-        <img 
-          src="/favicon.svg" 
-          alt="PedagoIA Logo" 
-          className="w-8 h-8 md:w-10 md:h-10"
-        />
-        <span className="text-xl md:text-2xl font-semibold text-gray-900">
-          PedagoIA
-        </span>
-      </div>
 
       <div className="space-y-2">
         <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 bg-clip-text text-transparent">
