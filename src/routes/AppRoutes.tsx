@@ -1,39 +1,70 @@
-import { Routes, Route } from "react-router-dom"
+import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import { ProtectedRoute } from "./ProtectedRoute"
-import Index from "@/pages/Index"
-import Home from "@/pages/Home"
-import Login from "@/pages/Login"
-import Settings from "@/pages/Settings"
-import NotFound from "@/pages/NotFound"
-import LessonPlanPage from "@/pages/LessonPlanPage"
-import CorrespondencePage from "@/pages/CorrespondencePage"
-import Landing from "@/pages/Landing"
-import WaitlistLanding from "@/pages/WaitlistLanding"
-import Pricing from "@/pages/Pricing"
-import MetricsPage from "@/pages/MetricsPage"
-import SuggestionsPage from "@/pages/SuggestionsPage"
+import { ProtectedLayout } from "@/components/layout/ProtectedLayout"
+import { Landing } from "@/pages/Landing"
+import { Login } from "@/pages/Login"
+import { Home } from "@/pages/Home"
+import { NotFound } from "@/pages/NotFound"
+import { Settings } from "@/pages/Settings"
+import { MetricsPage } from "@/pages/MetricsPage"
+import { WaitlistLanding } from "@/pages/WaitlistLanding"
+import { CorrespondencePage } from "@/pages/CorrespondencePage"
+import { LessonPlanPage } from "@/pages/LessonPlanPage"
 import { ExerciseGenerator } from "@/components/exercise/ExerciseGenerator"
 
-export const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/waitlist" element={<WaitlistLanding />} />
-      <Route path="/pricing" element={<Pricing />} />
-      <Route path="/login" element={<Login />} />
-      
-      <Route element={<ProtectedRoute />}>
-        <Route path="/home" element={<Home />} />
-        <Route path="/chat" element={<Index />} />
-        <Route path="/lesson-plan" element={<LessonPlanPage />} />
-        <Route path="/correspondence" element={<CorrespondencePage />} />
-        <Route path="/differenciation" element={<ExerciseGenerator />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/metrics" element={<MetricsPage />} />
-        <Route path="/suggestions" element={<SuggestionsPage />} />
-      </Route>
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Landing />,
+  },
+  {
+    path: "/waitlist",
+    element: <WaitlistLanding />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/app",
+    element: (
+      <ProtectedRoute>
+        <ProtectedLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        path: "",
+        element: <Home />,
+      },
+      {
+        path: "settings",
+        element: <Settings />,
+      },
+      {
+        path: "metrics",
+        element: <MetricsPage />,
+      },
+      {
+        path: "correspondence",
+        element: <CorrespondencePage />,
+      },
+      {
+        path: "lesson-plan",
+        element: <LessonPlanPage />,
+      },
+      {
+        path: "differenciation",
+        element: <ExerciseGenerator />,
+      },
+    ],
+  },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+])
 
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  )
+export function AppRoutes() {
+  return <RouterProvider router={router} />
 }
