@@ -13,6 +13,7 @@ serve(async (req) => {
   }
 
   try {
+    const startTime = performance.now();
     const { subject, webUrl, text, classLevel, additionalInstructions, totalSessions } = await req.json()
     console.log('Received request with:', { subject, webUrl, text, classLevel, additionalInstructions, totalSessions })
 
@@ -78,7 +79,7 @@ Format de la réponse souhaitée:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -101,11 +102,16 @@ Format de la réponse souhaitée:
 
     const data = await response.json()
     const lessonPlan = data.choices[0].message.content
-
-    console.log('Successfully generated lesson plan')
+    const generationTime = Math.round(performance.now() - startTime);
 
     return new Response(
-      JSON.stringify({ lessonPlan }), 
+      JSON.stringify({ 
+        lessonPlan,
+        metrics: {
+          generationTime,
+          contentLength: lessonPlan.length
+        }
+      }), 
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }

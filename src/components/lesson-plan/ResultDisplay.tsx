@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useToolMetrics } from "@/hooks/useToolMetrics";
 
 interface ResultDisplayProps {
   lessonPlan: string | undefined;
@@ -14,6 +15,7 @@ interface ResultDisplayProps {
 
 export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
   const { toast } = useToast();
+  const { logToolUsage } = useToolMetrics();
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -26,6 +28,8 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
     
     try {
       setFeedbackScore(score);
+      await logToolUsage('lesson_plan', 'feedback', undefined, undefined, score);
+      
       if (type === 'dislike') {
         setIsDialogOpen(true);
       } else {
@@ -46,6 +50,7 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(lessonPlan);
+      await logToolUsage('lesson_plan', 'copy', lessonPlan.length);
       setIsCopied(true);
       toast({
         description: "Séquence copiée dans le presse-papier",
@@ -60,9 +65,10 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
     }
   };
 
-  const handleSubmitFeedback = () => {
+  const handleSubmitFeedback = async () => {
     if (feedback.trim()) {
       console.log('Feedback submitted:', feedback);
+      await logToolUsage('lesson_plan', 'feedback', feedback.length);
       toast({
         description: "Merci pour votre retour détaillé",
       });
