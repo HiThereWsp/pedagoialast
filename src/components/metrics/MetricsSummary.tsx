@@ -10,8 +10,7 @@ export function MetricsSummary() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tool_metrics')
-        .select('tool_type, action_type, feedback_score')
-        .is('deleted_at', null);
+        .select('tool_type, action_type, feedback_score');
       
       if (error) throw error;
       return data;
@@ -23,8 +22,7 @@ export function MetricsSummary() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('session_metrics')
-        .select('session_duration_seconds, total_messages, successful_actions')
-        .is('deleted_at', null);
+        .select('session_duration_seconds, total_messages, successful_actions');
       
       if (error) throw error;
       return data;
