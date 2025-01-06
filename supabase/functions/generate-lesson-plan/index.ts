@@ -1,112 +1,62 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const { subject, webUrl, text, classLevel, additionalInstructions, totalSessions } = await req.json()
-
     console.log('Received request with:', { subject, webUrl, text, classLevel, additionalInstructions, totalSessions })
 
     if (!classLevel || !totalSessions) {
       console.error('Missing required fields')
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: classLevel and totalSessions are required' }), 
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ 
+          error: 'Missing required fields', 
+          details: 'classLevel and totalSessions are required' 
+        }), 
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
       )
     }
 
-    // Recherche dans le vector store pour trouver les passages pertinents des programmes
-    const searchQuery = `Trouver les passages des programmes scolaires pertinents pour le niveau ${classLevel} ${subject ? `concernant ${subject}` : ''}`
-    
-    console.log('Getting embedding for query:', searchQuery)
-    
-    // First, get the embedding for our search query
-    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'text-embedding-ada-002',
-        input: searchQuery,
-      }),
-    })
+    // Construire le prompt de base
+    let prompt = `En tant qu'expert en pédagogie à l'éducation nationale, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.`
 
-    if (!embeddingResponse.ok) {
-      const errorText = await embeddingResponse.text()
-      console.error('Embedding generation failed:', errorText)
-      throw new Error(`Failed to generate embedding: ${errorText}`)
-    }
-
-    const embeddingData = await embeddingResponse.json()
-    const queryEmbedding = embeddingData.data[0].embedding
-
-    console.log('Got embedding, searching vector store')
-    
-    // Then use the embedding to search the vector store
-    const vectorSearchResponse = await fetch('https://api.openai.com/v1/vectors/search', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        vector_store_id: 'vs_6sUvixiJ5OVm7qK1xIGd24u3',
-        query_vector: queryEmbedding,
-        top_k: 3, // Récupérer les 3 passages les plus pertinents
-      }),
-    })
-
-    if (!vectorSearchResponse.ok) {
-      const errorText = await vectorSearchResponse.text()
-      console.error('Vector store search failed:', errorText)
-      throw new Error(`Failed to search vector store: ${errorText}`)
-    }
-
-    const vectorSearchResults = await vectorSearchResponse.json()
-    const relevantProgramContent = vectorSearchResults.matches
-      .map(match => match.text)
-      .join('\n\n')
-
-    console.log('Found relevant program content:', relevantProgramContent)
-
-    // Construire le prompt en incluant les passages pertinents des programmes
-    let prompt = `En tant qu'expert en pédagogie, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.
-    
-Voici les extraits pertinents des programmes officiels à prendre en compte :
-
-${relevantProgramContent}
-
-Assure-toi que ta réponse respecte ces programmes officiels.\n`
-
+    // Ajouter le sujet s'il est fourni
     if (subject) {
-      prompt += `Le sujet est: ${subject}.\n`
-    }
-    if (webUrl) {
-      prompt += `Basé sur le contenu de cette page web: ${webUrl}.\n`
-    }
-    if (text) {
-      prompt += `Basé sur ce texte: ${text}.\n`
-    }
-    if (additionalInstructions) {
-      prompt += `Instructions supplémentaires: ${additionalInstructions}.\n`
+      prompt += `\nLe sujet est: ${subject}.`
     }
 
+    // Ajouter l'URL s'il est fourni
+    if (webUrl) {
+      prompt += `\nBasé sur le contenu de cette page web: ${webUrl}.`
+    }
+
+    // Ajouter le texte s'il est fourni
+    if (text) {
+      prompt += `\nBasé sur ce texte: ${text}.`
+    }
+
+    // Ajouter les instructions supplémentaires si fournies
+    if (additionalInstructions) {
+      prompt += `\nInstructions supplémentaires: ${additionalInstructions}.`
+    }
+
+    // Ajouter le format de réponse souhaité
     prompt += `
 Format de la réponse souhaitée:
-1. Objectifs d'apprentissage (alignés avec les programmes officiels cités)
+1. Objectifs d'apprentissage
 2. Prérequis
 3. Durée estimée (${totalSessions} séances)
 4. Matériel nécessaire
@@ -120,10 +70,11 @@ Format de la réponse souhaitée:
 
     console.log('Calling OpenAI with prompt:', prompt)
 
+    // Appel à l'API OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -153,16 +104,20 @@ Format de la réponse souhaitée:
 
     console.log('Successfully generated lesson plan')
 
-    return new Response(JSON.stringify({ lessonPlan }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({ lessonPlan }), 
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
   } catch (error) {
     console.error('Error in generate-lesson-plan function:', error)
     return new Response(
       JSON.stringify({ 
         error: error.message,
         details: 'An error occurred while generating the lesson plan'
-      }), {
+      }), 
+      {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
