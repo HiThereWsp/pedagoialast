@@ -1,14 +1,14 @@
-import { useCallback } from "react";
+import React from 'react';
 import Particles from "react-tsparticles";
-import type { Container, Engine } from "tsparticles-engine";
 import { loadSlim } from "tsparticles-slim";
+import type { Engine } from "tsparticles-engine";
 
 interface MagicParticlesProps {
   isActive: boolean;
 }
 
 export function MagicParticles({ isActive }: MagicParticlesProps) {
-  const particlesInit = useCallback(async (engine: Engine) => {
+  const particlesInit = React.useCallback(async (engine: Engine) => {
     await loadSlim(engine);
   }, []);
 
@@ -18,89 +18,64 @@ export function MagicParticles({ isActive }: MagicParticlesProps) {
     <Particles
       id="tsparticles"
       init={particlesInit}
+      className="absolute inset-0 pointer-events-none z-10"
       options={{
-        particles: {
-          number: {
-            value: 50,
-            density: {
-              enable: true,
-              value_area: 800
-            }
-          },
-          color: {
-            value: ["#FF8E7C", "#9089FC", "#FF49DB"]
-          },
-          shape: {
-            type: "circle"
-          },
-          opacity: {
-            value: 0.6,
-            random: true,
-            animation: {
-              enable: true,
-              speed: 1,
-              minimumValue: 0.1,
-              sync: false
-            }
-          },
-          size: {
-            value: 3,
-            random: true,
-            animation: {
-              enable: true,
-              speed: 4,
-              minimumValue: 0.3,
-              sync: false
-            }
-          },
-          move: {
-            enable: true,
-            speed: 3,
-            direction: "top",
-            random: true,
-            straight: false,
-            outModes: {
-              default: "out"
-            },
-            attract: {
-              enable: true,
-              rotateX: 600,
-              rotateY: 1200
-            }
-          }
-        },
+        fpsLimit: 120,
         interactivity: {
-          detectsOn: "canvas",
           events: {
             onHover: {
               enable: true,
-              mode: "grab"
+              mode: "grab",
             },
-            resize: true
           },
           modes: {
             grab: {
-              distance: 150,
+              distance: 140,
               links: {
-                opacity: 0.3
-              }
-            }
-          }
+                opacity: 0.5,
+              },
+            },
+          },
+        },
+        particles: {
+          color: {
+            value: "#FF8E7C",
+          },
+          links: {
+            color: "#FF8E7C",
+            distance: 150,
+            enable: true,
+            opacity: 0.3,
+            width: 1,
+          },
+          move: {
+            direction: "none",
+            enable: true,
+            outModes: {
+              default: "bounce",
+            },
+            random: true,
+            speed: 2,
+            straight: false,
+          },
+          number: {
+            density: {
+              enable: true,
+              area: 800,
+            },
+            value: 40,
+          },
+          opacity: {
+            value: 0.5,
+          },
+          shape: {
+            type: "circle",
+          },
+          size: {
+            value: { min: 1, max: 5 },
+          },
         },
         detectRetina: true,
-        fullScreen: {
-          enable: false,
-          zIndex: 0
-        },
-        style: {
-          position: "absolute",
-          width: "100%",
-          height: "100%",
-          top: 0,
-          left: 0,
-          pointerEvents: "none",
-          zIndex: "50"
-        }
       }}
     />
   );

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
-import { ThumbsDown, Heart, Copy, Sparkles } from "lucide-react";
+import { ThumbsDown, Heart, Copy, Sparkles, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { MagicParticles } from './MagicParticles';
+import { Button } from "@/components/ui/button";
 
 interface ResultDisplayProps {
   exercises: string | null;
@@ -51,6 +52,24 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      await navigator.share({
+        title: 'Exercices générés par Pedagoia',
+        text: exercises,
+      });
+      toast({
+        description: "Merci d'avoir partagé ces exercices !",
+      });
+    } catch (err) {
+      // Si l'API de partage n'est pas disponible, on copie simplement le contenu
+      await handleCopy();
+      toast({
+        description: "Les exercices ont été copiés, vous pouvez maintenant les partager",
+      });
+    }
+  };
+
   return (
     <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-all duration-500 animate-fade-in overflow-hidden">
       <div className="flex justify-between items-center mb-4">
@@ -66,6 +85,15 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           />
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            onClick={handleShare}
+            variant="outline"
+            size="sm"
+            className="gap-2 text-gray-600 hover:text-gray-900"
+          >
+            <Share2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Partager avec un.e collègue</span>
+          </Button>
           <button
             onClick={() => handleFeedback('like')}
             className={cn(
