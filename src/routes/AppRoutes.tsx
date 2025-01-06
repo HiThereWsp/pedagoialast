@@ -1,15 +1,15 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import { ProtectedRoute } from "./ProtectedRoute"
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout"
-import { Landing } from "@/pages/Landing"
-import { Login } from "@/pages/Login"
-import { Home } from "@/pages/Home"
-import { NotFound } from "@/pages/NotFound"
-import { Settings } from "@/pages/Settings"
-import { MetricsPage } from "@/pages/MetricsPage"
-import { WaitlistLanding } from "@/pages/WaitlistLanding"
-import { CorrespondencePage } from "@/pages/CorrespondencePage"
-import { LessonPlanPage } from "@/pages/LessonPlanPage"
+import Landing from "@/pages/Landing"
+import Login from "@/pages/Login"
+import Home from "@/pages/Home"
+import NotFound from "@/pages/NotFound"
+import Settings from "@/pages/Settings"
+import MetricsPage from "@/pages/MetricsPage"
+import WaitlistLanding from "@/pages/WaitlistLanding"
+import CorrespondencePage from "@/pages/CorrespondencePage"
+import LessonPlanPage from "@/pages/LessonPlanPage"
 import { ExerciseGenerator } from "@/components/exercise/ExerciseGenerator"
 
 const router = createBrowserRouter([
@@ -29,7 +29,9 @@ const router = createBrowserRouter([
     path: "/app",
     element: (
       <ProtectedRoute>
-        <ProtectedLayout />
+        <ProtectedLayout>
+          <Outlet />
+        </ProtectedLayout>
       </ProtectedRoute>
     ),
     children: [
