@@ -14,10 +14,26 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  if (!openAIApiKey) {
+    console.error('OpenAI API key not found')
+    return new Response(
+      JSON.stringify({ error: 'OpenAI API key not configured' }), 
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
   try {
     const { subject, webUrl, text, classLevel, additionalInstructions, totalSessions } = await req.json()
 
     console.log('Received request with:', { subject, webUrl, text, classLevel, additionalInstructions, totalSessions })
+
+    if (!classLevel || !totalSessions) {
+      console.error('Missing required fields')
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: classLevel and totalSessions are required' }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     // Construct the prompt based on the input type and data
     let prompt = `En tant qu'expert en pédagogie, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.\n`
