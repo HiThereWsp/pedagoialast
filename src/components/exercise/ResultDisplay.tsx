@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
-import ReactMarkdown from 'react-markdown';
-import { ThumbsDown, Heart, Copy, Sparkles, Share2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { MagicParticles } from './MagicParticles';
-import { Button } from "@/components/ui/button";
+import { HeaderSection } from './result/HeaderSection';
+import { FeedbackButtons } from './result/FeedbackButtons';
+import { MarkdownContent } from './result/MarkdownContent';
+import { ShareButton } from './result/ShareButton';
 
 interface ResultDisplayProps {
   exercises: string | null;
@@ -15,15 +14,6 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   const { toast } = useToast();
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
   const [isCopied, setIsCopied] = useState(false);
-  const [showMagic, setShowMagic] = useState(false);
-
-  useEffect(() => {
-    if (exercises) {
-      setShowMagic(true);
-      const timer = setTimeout(() => setShowMagic(false), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [exercises]);
 
   if (!exercises) return null;
 
@@ -36,29 +26,15 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   };
 
   const formatText = (markdown: string) => {
-    // Remove any potential HTML tags
     let text = markdown.replace(/<[^>]*>/g, '');
-    
-    // Replace Markdown headers
     text = text.replace(/### (.*?)\n/g, '$1\n');
     text = text.replace(/## (.*?)\n/g, '$1\n');
     text = text.replace(/# (.*?)\n/g, '$1\n');
-    
-    // Replace bold text
     text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-    
-    // Replace italic text
     text = text.replace(/\*(.*?)\*/g, '$1');
-    
-    // Replace LaTeX-style math expressions
     text = text.replace(/\\\((.*?)\\\)/g, '$1');
-    
-    // Add proper spacing after bullet points
     text = text.replace(/- /g, '\n- ');
-    
-    // Remove extra newlines
     text = text.replace(/\n{3,}/g, '\n\n');
-    
     return text.trim();
   };
 
@@ -91,7 +67,6 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
         description: "Merci d'avoir partagé ces exercices !",
       });
     } catch (err) {
-      // Si l'API de partage n'est pas disponible, on copie simplement le contenu
       await handleCopy();
       toast({
         description: "Les exercices ont été copiés, vous pouvez maintenant les partager",
@@ -102,73 +77,18 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   return (
     <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex justify-between items-center mb-4">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
-            {exercises?.includes('Exercice') ? "Votre exercice est prêt" : "Vos exercices sont prêts"}
-          </h2>
-          <Sparkles className="h-5 w-5 text-yellow-400" />
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleFeedback('like')}
-            className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-emerald-500 transition-all duration-300 transform hover:scale-110",
-              feedbackScore === 1 && "text-emerald-500"
-            )}
-            aria-label="J'aime"
-          >
-            <Heart className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => handleFeedback('dislike')}
-            className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-red-500 transition-all duration-300 transform hover:scale-110",
-              feedbackScore === -1 && "text-red-500"
-            )}
-            aria-label="Je n'aime pas"
-          >
-            <ThumbsDown className="h-5 w-5" />
-          </button>
-          <button
-            onClick={handleCopy}
-            className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-blue-500 transition-all duration-300 transform hover:scale-110",
-              isCopied && "text-blue-500"
-            )}
-            aria-label="Copier les exercices"
-          >
-            <Copy className="h-5 w-5" />
-          </button>
-        </div>
+        <HeaderSection exerciseCount={exercises} />
+        <FeedbackButtons
+          feedbackScore={feedbackScore}
+          isCopied={isCopied}
+          onFeedback={handleFeedback}
+          onCopy={handleCopy}
+        />
       </div>
-      <div className="prose prose-sm max-w-none">
-        <ReactMarkdown
-          components={{
-            strong: ({ children }) => <span className="font-bold text-gray-900">{children}</span>,
-            h1: ({ children }) => <h1 className="text-2xl font-bold mb-4 text-gray-900">{children}</h1>,
-            h2: ({ children }) => <h2 className="text-xl font-bold mb-3 text-gray-800">{children}</h2>,
-            h3: ({ children }) => <h3 className="text-lg font-bold mb-2 text-gray-800">{children}</h3>,
-            p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed text-justify">{children}</p>,
-            ul: ({ children }) => <ul className="list-disc pl-6 mb-4 text-gray-700">{children}</ul>,
-            ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 text-gray-700">{children}</ol>,
-            li: ({ children }) => <li className="mb-1">{children}</li>,
-          }}
-        >
-          {exercises}
-        </ReactMarkdown>
-      </div>
+      <MarkdownContent content={exercises} />
       <div className="mt-6 flex justify-end">
-        <Button
-          onClick={handleShare}
-          variant="outline"
-          size="sm"
-          className="gap-2 text-gray-600 hover:text-gray-900"
-        >
-          <Share2 className="h-4 w-4" />
-          <span className="hidden sm:inline">Partager avec un.e collègue</span>
-        </Button>
+        <ShareButton onShare={handleShare} />
       </div>
-      <MagicParticles isActive={showMagic} />
     </Card>
   );
 }
