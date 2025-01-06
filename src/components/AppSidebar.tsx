@@ -5,17 +5,18 @@ import { Menu, PlusCircle, Settings, BookOpen, Brain, BarChart } from "lucide-re
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { ConversationList } from "./sidebar/ConversationList"
-import { SidebarFooter } from "./sidebar/SidebarFooter"
 import { SidebarHeader } from "./sidebar/SidebarHeader"
-import { useSidebar } from "@/hooks/use-sidebar"
+import { SidebarFooter } from "./sidebar/SidebarFooter"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 interface AppSidebarProps {
-  conversations: any[]
+  conversations: Array<{id: string, title: string}>
   onConversationSelect: (id: string) => void
-  currentConversationId?: string
-  onNewConversation: () => void
+  currentConversationId?: string | null
+  onNewConversation?: () => void
   onDeleteConversation: (id: string) => void
-  firstName?: string
+  firstName: string | null
+  onLogout: () => void
 }
 
 export function AppSidebar({
@@ -24,111 +25,90 @@ export function AppSidebar({
   currentConversationId,
   onNewConversation,
   onDeleteConversation,
-  firstName = "User",
+  firstName,
+  onLogout
 }: AppSidebarProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
   const location = useLocation()
-  const { open: isSidebarOpen, setOpen: setIsSidebarOpen } = useSidebar()
-  const [isHovered, setIsHovered] = useState(false)
-
-  const handleLogout = () => {
-    // Implement logout logic here
-    console.log("Logout clicked")
-  }
 
   return (
     <>
       <Button
         variant="ghost"
-        className={cn(
-          "absolute left-2 top-2 h-10 w-10 px-0 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden",
-          isSidebarOpen && "hidden"
-        )}
-        onClick={() => setIsSidebarOpen(true)}
+        size="icon"
+        className="fixed left-4 top-4 z-40 md:hidden"
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
         <Menu className="h-6 w-6" />
       </Button>
-
+      <div
+        className={cn(
+          "fixed inset-0 z-30 bg-background/80 backdrop-blur-sm md:hidden",
+          isMobileOpen ? "block" : "hidden"
+        )}
+        onClick={() => setIsMobileOpen(false)}
+      />
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-white shadow-lg transition-transform dark:bg-gray-900 lg:static lg:transition-none",
-          !isSidebarOpen && "-translate-x-full lg:translate-x-0"
+          "fixed left-0 top-0 z-30 flex h-full w-64 flex-col border-r bg-background transition-transform md:relative md:translate-x-0",
+          isCollapsed && "w-16",
+          !isMobileOpen && "-translate-x-full"
         )}
       >
-        <SidebarHeader firstName={firstName} onNewConversation={onNewConversation} />
-
-        <div className="flex flex-1 flex-col gap-4 px-4">
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              className="justify-start gap-2"
-              onClick={onNewConversation}
-            >
-              <PlusCircle className="h-5 w-5" />
-              Nouvelle conversation
-            </Button>
-
-            <Link to="/creersequence">
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start gap-2",
-                  location.pathname === "/creersequence" &&
-                    "bg-gray-100 dark:bg-gray-800"
-                )}
-              >
-                <BookOpen className="h-5 w-5" />
-                Créer une séquence
-              </Button>
-            </Link>
-
-            <Link to="/exercices">
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start gap-2",
-                  location.pathname === "/exercices" &&
-                    "bg-gray-100 dark:bg-gray-800"
-                )}
-              >
-                <Brain className="h-5 w-5" />
-                Créer des exercices
-              </Button>
-            </Link>
-
-            <Link to="/metrics">
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start gap-2",
-                  location.pathname === "/metrics" &&
-                    "bg-gray-100 dark:bg-gray-800"
-                )}
-              >
-                <BarChart className="h-5 w-5" />
-                Métriques
-              </Button>
-            </Link>
-          </div>
-
-          <ScrollArea className="flex-1">
-            <ConversationList
-              conversations={conversations}
-              onConversationSelect={onConversationSelect}
-              currentConversationId={currentConversationId}
-              onDeleteConversation={onDeleteConversation}
+        <TooltipProvider>
+          <div className="flex h-full flex-col">
+            <SidebarHeader 
+              firstName={firstName}
+              onNewConversation={onNewConversation}
             />
-          </ScrollArea>
-        </div>
 
-        <SidebarFooter onLogout={handleLogout} currentPath={location.pathname} />
+            <div className="flex flex-col gap-2 p-2">
+              <Link to="/creerexercice">
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start gap-2",
+                    location.pathname === "/creerexercice" &&
+                      "bg-gray-100 dark:bg-gray-800"
+                  )}
+                >
+                  <Brain className="h-5 w-5" />
+                  Créer des exercices
+                </Button>
+              </Link>
+
+              <Link to="/metrics">
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start gap-2",
+                    location.pathname === "/metrics" &&
+                      "bg-gray-100 dark:bg-gray-800"
+                  )}
+                >
+                  <BarChart className="h-5 w-5" />
+                  Métriques
+                </Button>
+              </Link>
+            </div>
+
+            <ScrollArea className="flex-1">
+              <ConversationList
+                conversations={conversations}
+                onConversationSelect={onConversationSelect}
+                currentConversationId={currentConversationId}
+                onDeleteConversation={onDeleteConversation}
+              />
+            </ScrollArea>
+
+            <SidebarFooter 
+              onLogout={onLogout}
+              currentPath={location.pathname}
+            />
+          </div>
+        </TooltipProvider>
       </aside>
-
-      {isSidebarOpen && (
-        <div
-          className="fixed inset-0 z-10 bg-gray-900/50 lg:hidden"
-          onClick={() => setIsSidebarOpen(false)}
-        />
-      )}
     </>
   )
 }
