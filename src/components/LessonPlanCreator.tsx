@@ -1,12 +1,14 @@
 import { useState } from "react"
 import { Button } from "./ui/button"
-import { Input } from "./ui/input"
-import { Textarea } from "./ui/textarea"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs"
 import { Card, CardContent } from "./ui/card"
-import { Lightbulb, FileText, Globe, FileIcon, ArrowLeft, Sparkles, Upload } from "lucide-react"
+import { Lightbulb, FileText, Globe, FileIcon, ArrowLeft, Sparkles } from "lucide-react"
 import { useToast } from "./ui/use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import { SubjectTabContent } from "./lesson-plan/SubjectTabContent"
+import { TextTabContent } from "./lesson-plan/TextTabContent"
+import { WebpageTabContent } from "./lesson-plan/WebpageTabContent"
+import { DocumentTabContent } from "./lesson-plan/DocumentTabContent"
 
 export const LessonPlanCreator = () => {
   const [subject, setSubject] = useState("")
@@ -19,6 +21,13 @@ export const LessonPlanCreator = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const { toast } = useToast()
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+    }
+  }
 
   const handleGenerateLessonPlan = async () => {
     if (currentTab === "subject") {
@@ -148,13 +157,6 @@ export const LessonPlanCreator = () => {
     }
   }
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      setSelectedFile(file)
-    }
-  }
-
   return (
     <Card className="max-w-4xl mx-auto mt-8 p-6">
       <div className="flex items-center gap-2 mb-6">
@@ -162,9 +164,9 @@ export const LessonPlanCreator = () => {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1 text-center">
-          <h1 className="text-2xl font-bold">Créer un plan de cours</h1>
+          <h1 className="text-2xl font-bold">Créer une séquence pédagogique</h1>
           <p className="text-muted-foreground mt-2">
-            Créez un plan de cours à partir de n'importe quelle source : sujet, texte, page Web ou document
+            Créez vos séquences pédagogiques à partir de la source de votre choix
           </p>
         </div>
       </div>
@@ -192,118 +194,50 @@ export const LessonPlanCreator = () => {
 
         <CardContent className="space-y-6">
           <TabsContent value="subject">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Votre sujet</label>
-              <Input
-                placeholder="Entrez un sujet. Par exemple : Système solaire, Photosynthèse"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Niveau de la classe</label>
-              <Input
-                placeholder="Par exemple : 6ème, CM2, CE1"
-                value={classLevel}
-                onChange={(e) => setClassLevel(e.target.value)}
-              />
-            </div>
+            <SubjectTabContent
+              subject={subject}
+              setSubject={setSubject}
+              classLevel={classLevel}
+              setClassLevel={setClassLevel}
+              additionalInstructions={additionalInstructions}
+              setAdditionalInstructions={setAdditionalInstructions}
+            />
           </TabsContent>
 
           <TabsContent value="text">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Votre texte</label>
-              <Textarea
-                placeholder="Collez votre texte ici..."
-                value={sourceText}
-                onChange={(e) => setSourceText(e.target.value)}
-                className="min-h-[200px]"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Niveau de la classe</label>
-              <Input
-                placeholder="Par exemple : 6ème, CM2, CE1"
-                value={classLevel}
-                onChange={(e) => setClassLevel(e.target.value)}
-              />
-            </div>
+            <TextTabContent
+              sourceText={sourceText}
+              setSourceText={setSourceText}
+              classLevel={classLevel}
+              setClassLevel={setClassLevel}
+              additionalInstructions={additionalInstructions}
+              setAdditionalInstructions={setAdditionalInstructions}
+            />
           </TabsContent>
 
           <TabsContent value="webpage">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Sujet</label>
-              <Input
-                placeholder="Entrez le sujet de la page web"
-                value={webSubject}
-                onChange={(e) => setWebSubject(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Lien de la page web</label>
-              <Input
-                placeholder="Collez l'URL de la page web"
-                value={webUrl}
-                onChange={(e) => setWebUrl(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Niveau de la classe</label>
-              <Input
-                placeholder="Par exemple : 6ème, CM2, CE1"
-                value={classLevel}
-                onChange={(e) => setClassLevel(e.target.value)}
-              />
-            </div>
+            <WebpageTabContent
+              webSubject={webSubject}
+              setWebSubject={setWebSubject}
+              webUrl={webUrl}
+              setWebUrl={setWebUrl}
+              classLevel={classLevel}
+              setClassLevel={setClassLevel}
+              additionalInstructions={additionalInstructions}
+              setAdditionalInstructions={setAdditionalInstructions}
+            />
           </TabsContent>
 
           <TabsContent value="document">
-            <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
-              <input
-                type="file"
-                id="file-upload"
-                className="hidden"
-                onChange={handleFileChange}
-                accept=".pdf,.doc,.docx"
-              />
-              <label
-                htmlFor="file-upload"
-                className="cursor-pointer flex flex-col items-center gap-2"
-              >
-                <Upload className="h-8 w-8 text-gray-400" />
-                <span className="text-sm text-gray-600">
-                  {selectedFile ? selectedFile.name : "Cliquez pour joindre un document"}
-                </span>
-                <span className="text-xs text-gray-400">
-                  Formats acceptés : PDF, DOC, DOCX
-                </span>
-              </label>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">Niveau de la classe</label>
-              <Input
-                placeholder="Par exemple : 6ème, CM2, CE1"
-                value={classLevel}
-                onChange={(e) => setClassLevel(e.target.value)}
-              />
-            </div>
-          </TabsContent>
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Instructions supplémentaires (facultatif)
-            </label>
-            <Textarea
-              placeholder="Précisez toutes les exigences supplémentaires pour votre plan de cours"
-              value={additionalInstructions}
-              onChange={(e) => setAdditionalInstructions(e.target.value)}
+            <DocumentTabContent
+              selectedFile={selectedFile}
+              handleFileChange={handleFileChange}
+              classLevel={classLevel}
+              setClassLevel={setClassLevel}
+              additionalInstructions={additionalInstructions}
+              setAdditionalInstructions={setAdditionalInstructions}
             />
-          </div>
+          </TabsContent>
 
           <Button
             className="w-full py-6 text-lg bg-lime-400 hover:bg-lime-500 text-black"
