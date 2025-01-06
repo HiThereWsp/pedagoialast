@@ -3,7 +3,7 @@ import { Button } from "./ui/button"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs"
 import { Card, CardContent } from "./ui/card"
 import { Lightbulb, FileText, Globe, FileIcon, ArrowLeft, Sparkles } from "lucide-react"
-import { useToast } from "./ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { SubjectTabContent } from "./lesson-plan/SubjectTabContent"
 import { TextTabContent } from "./lesson-plan/TextTabContent"
@@ -30,89 +30,34 @@ export const LessonPlanCreator = () => {
   }
 
   const handleGenerateLessonPlan = async () => {
-    if (currentTab === "subject") {
-      if (!subject.trim()) {
-        toast({
-          title: "Sujet requis",
-          description: "Veuillez entrer un sujet pour votre séquence",
-          variant: "destructive",
-        })
-        return
-      }
+    setIsLoading(true)
+    try {
+      let prompt = ""
+      let content = ""
 
-      if (!classLevel.trim()) {
-        toast({
-          title: "Niveau requis",
-          description: "Veuillez entrer le niveau de la classe",
-          variant: "destructive",
-        })
-        return
-      }
-    } else if (currentTab === "text") {
-      if (!sourceText.trim()) {
-        toast({
-          title: "Texte requis",
-          description: "Veuillez entrer un texte source",
-          variant: "destructive",
-        })
-        return
-      }
-
-      if (!classLevel.trim()) {
-        toast({
-          title: "Niveau requis",
-          description: "Veuillez entrer le niveau de la classe",
-          variant: "destructive",
-        })
-        return
-      }
-    } else if (currentTab === "webpage") {
-      if (!webSubject.trim() || !webUrl.trim() || !classLevel.trim()) {
+      // Validation des champs requis selon l'onglet actif
+      if (currentTab === "subject" && (!subject.trim() || !classLevel.trim())) {
         toast({
           title: "Champs requis",
           description: "Veuillez remplir tous les champs obligatoires",
           variant: "destructive",
         })
         return
-      }
-
-      setIsLoading(true)
-      try {
-        // First, process the webpage
-        const { data: webData, error: webError } = await supabase.functions.invoke('process-webpage', {
-          body: { url: webUrl }
-        })
-
-        if (webError) throw webError
-
-        // Then, generate the lesson plan
-        const { data, error } = await supabase.functions.invoke('chat-with-openai', {
-          body: {
-            message: `Crée une séquence pédagogique sur le sujet: ${webSubject}.
-                     Basée sur ce contenu web: ${webData.text}
-                     Niveau de la classe: ${classLevel}.
-                     Instructions supplémentaires: ${additionalInstructions}`,
-            type: 'lesson-plan'
-          }
-        })
-
-        if (error) throw error
-
+      } else if (currentTab === "text" && (!sourceText.trim() || !classLevel.trim())) {
         toast({
-          title: "Séquence générée avec succès",
-          description: "Votre séquence pédagogique a été créée",
-        })
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la génération de la séquence",
+          title: "Champs requis",
+          description: "Veuillez remplir tous les champs obligatoires",
           variant: "destructive",
         })
-      } finally {
-        setIsLoading(false)
-      }
-    } else if (currentTab === "document") {
-      if (!selectedFile || !classLevel.trim()) {
+        return
+      } else if (currentTab === "webpage" && (!webSubject.trim() || !webUrl.trim() || !classLevel.trim())) {
+        toast({
+          title: "Champs requis",
+          description: "Veuillez remplir tous les champs obligatoires",
+          variant: "destructive",
+        })
+        return
+      } else if (currentTab === "document" && (!selectedFile || !classLevel.trim())) {
         toast({
           title: "Champs requis",
           description: "Veuillez joindre un document et remplir tous les champs obligatoires",
@@ -121,43 +66,103 @@ export const LessonPlanCreator = () => {
         return
       }
 
-      setIsLoading(true)
-      try {
-        // First, upload the document
-        const formData = new FormData()
-        formData.append('file', selectedFile)
-
-        const { data: uploadData, error: uploadError } = await supabase.functions.invoke('process-document', {
-          body: formData
-        })
-
-        if (uploadError) throw uploadError
-
-        // Then, generate the lesson plan
-        const { data, error } = await supabase.functions.invoke('chat-with-openai', {
-          body: {
-            message: `Crée une séquence pédagogique basée sur le document: ${uploadData.publicUrl}.
-                     Niveau de la classe: ${classLevel}.
-                     Instructions supplémentaires: ${additionalInstructions}`,
-            type: 'lesson-plan'
+      // Préparation du contenu selon l'onglet
+      switch (currentTab) {
+        case "subject":
+          content = subject
+          prompt = `Crée une séquence pédagogique sur le sujet: ${subject}. Niveau de la classe: ${classLevel}.`
+          break
+        case "text":
+          content = sourceText
+          prompt = `Crée une séquence pédagogique basée sur ce texte: ${sourceText}. Niveau de la classe: ${classLevel}.`
+          break
+        case "webpage":
+          try {
+            const { data: webData, error: webError } = await supabase.functions.invoke('process-webpage', {
+              body: { url: webUrl }
+            })
+            if (webError) throw webError
+            content = webData.text
+            prompt = `Crée une séquence pédagogique sur le sujet: ${webSubject}. Basée sur ce contenu web: ${content}. Niveau de la classe: ${classLevel}.`
+          } catch (error) {
+            console.error("Erreur lors du traitement de la page web:", error)
+            toast({
+              title: "Erreur",
+              description: "Impossible de traiter la page web",
+              variant: "destructive",
+            })
+            return
           }
-        })
-
-        if (error) throw error
-
-        toast({
-          title: "Séquence générée avec succès",
-          description: "Votre séquence pédagogique a été créée",
-        })
-      } catch (error) {
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la génération de la séquence",
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
+          break
+        case "document":
+          if (selectedFile) {
+            try {
+              const formData = new FormData()
+              formData.append('file', selectedFile)
+              const { data: docData, error: docError } = await supabase.functions.invoke('process-document', {
+                body: formData
+              })
+              if (docError) throw docError
+              content = docData.text
+              prompt = `Crée une séquence pédagogique basée sur ce document: ${content}. Niveau de la classe: ${classLevel}.`
+            } catch (error) {
+              console.error("Erreur lors du traitement du document:", error)
+              toast({
+                title: "Erreur",
+                description: "Impossible de traiter le document",
+                variant: "destructive",
+              })
+              return
+            }
+          }
+          break
       }
+
+      // Ajout des instructions supplémentaires si présentes
+      if (additionalInstructions.trim()) {
+        prompt += ` Instructions supplémentaires: ${additionalInstructions}`
+      }
+
+      // Appel à l'API OpenAI via la fonction edge
+      const { data, error } = await supabase.functions.invoke('chat-with-openai', {
+        body: { 
+          message: prompt,
+          type: 'lesson-plan'
+        }
+      })
+
+      if (error) throw error
+
+      // Sauvegarde du plan de cours dans la base de données
+      const { error: dbError } = await supabase
+        .from('chats')
+        .insert([{
+          message: prompt,
+          message_type: 'user',
+          lesson_plan_data: {
+            source_type: currentTab,
+            content,
+            class_level: classLevel,
+            additional_instructions: additionalInstructions
+          }
+        }])
+
+      if (dbError) throw dbError
+
+      toast({
+        title: "Succès",
+        description: "Votre séquence pédagogique a été générée avec succès",
+      })
+
+    } catch (error) {
+      console.error("Erreur lors de la génération du plan de cours:", error)
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération de la séquence",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 

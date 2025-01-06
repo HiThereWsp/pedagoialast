@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { Configuration, OpenAIApi } from "https://esm.sh/openai@3.2.1"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { Configuration, OpenAIApi } from 'https://esm.sh/openai@3.2.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,34 +26,39 @@ serve(async (req) => {
     })
     const openai = new OpenAIApi(configuration)
 
-    console.log('Processing request type:', type)
-    console.log('Message:', message)
+    let systemPrompt = ""
+    if (type === 'lesson-plan') {
+      systemPrompt = `Tu es un assistant pédagogique expert en création de séquences pédagogiques.
+      Tu vas créer une séquence pédagogique détaillée et structurée qui comprend :
+      1. Les objectifs d'apprentissage
+      2. Les compétences visées
+      3. Le matériel nécessaire
+      4. Le déroulé détaillé de la séquence avec la durée estimée pour chaque partie
+      5. Les activités d'évaluation
+      6. Des suggestions d'adaptations pour différents niveaux
+      Assure-toi que la séquence soit adaptée au niveau demandé et qu'elle soit engageante pour les élèves.`
+    }
 
     const completion = await openai.createChatCompletion({
       model: "gpt-4",
       messages: [
-        {
-          role: "system",
-          content: "Tu es un assistant spécialisé dans la création de séquences pédagogiques. Tu dois créer des séquences détaillées et adaptées au niveau demandé."
-        },
+        { role: "system", content: systemPrompt },
         { role: "user", content: message }
       ],
       temperature: 0.7,
       max_tokens: 2000,
     })
 
-    const response = completion.data.choices[0].message?.content
-
-    console.log('Generated response successfully')
+    const response = completion.data.choices[0].message?.content || "Désolé, je n'ai pas pu générer de réponse."
 
     return new Response(
       JSON.stringify({ response }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error processing request:', error)
+    console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: 'Failed to process request' }),
+      JSON.stringify({ error: 'An error occurred while processing your request' }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }

@@ -1,5 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { load } from "https://deno.land/x/cheerio@1.0.7/mod.ts";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,35 +21,23 @@ serve(async (req) => {
       )
     }
 
-    console.log('Fetching webpage content from:', url)
-
+    // Fetch the webpage content
     const response = await fetch(url)
     const html = await response.text()
-    
-    // Use cheerio to parse HTML and extract text content
-    const $ = load(html)
-    
-    // Remove script tags, style tags, and comments
-    $('script').remove()
-    $('style').remove()
-    $('comments').remove()
-    
-    // Get text content from body
-    const text = $('body').text()
-      .replace(/\s+/g, ' ')
-      .trim()
-      .slice(0, 8000) // Limit text length for OpenAI
 
-    console.log('Successfully extracted text from webpage')
+    // Basic text extraction (you might want to use a more sophisticated HTML parser)
+    const text = html
+      .replace(/<[^>]*>/g, ' ') // Remove HTML tags
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim()
 
     return new Response(
       JSON.stringify({ text }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error processing webpage:', error)
     return new Response(
-      JSON.stringify({ error: 'Failed to process webpage' }),
+      JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }

@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
@@ -32,8 +32,7 @@ serve(async (req) => {
     const fileExt = sanitizedFileName.split('.').pop()
     const filePath = `${crypto.randomUUID()}.${fileExt}`
 
-    console.log('Uploading file:', sanitizedFileName)
-
+    // Upload file to Supabase Storage
     const { data, error: uploadError } = await supabase.storage
       .from('lesson-documents')
       .upload(filePath, file, {
@@ -42,36 +41,27 @@ serve(async (req) => {
       })
 
     if (uploadError) {
-      console.error('Error uploading file:', uploadError)
       return new Response(
-        JSON.stringify({ error: 'Failed to upload file' }),
+        JSON.stringify({ error: 'Failed to upload file', details: uploadError }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
       )
     }
 
-    // Get the public URL of the uploaded file
-    const { data: { publicUrl }, error: urlError } = supabase.storage
+    // Get public URL of the uploaded file
+    const { data: { publicUrl } } = supabase.storage
       .from('lesson-documents')
       .getPublicUrl(filePath)
 
-    if (urlError) {
-      console.error('Error getting public URL:', urlError)
-      return new Response(
-        JSON.stringify({ error: 'Failed to get file URL' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-      )
-    }
-
-    console.log('File uploaded successfully:', publicUrl)
-
     return new Response(
-      JSON.stringify({ publicUrl }),
+      JSON.stringify({ 
+        text: `Document accessible à: ${publicUrl}`,
+        publicUrl 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Unexpected error:', error)
     return new Response(
-      JSON.stringify({ error: 'An unexpected error occurred' }),
+      JSON.stringify({ error: 'An unexpected error occurred', details: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
