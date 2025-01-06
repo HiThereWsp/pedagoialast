@@ -51,12 +51,9 @@ export const useMessageManagement = (userId: string | null) => {
           conversation_title: conversationTitle
         }])
 
-      // Get AI response with context
-      const { data, error } = await supabase.functions.invoke('chat-with-openai', {
-        body: { 
-          message: userMessage,
-          context: context
-        }
+      // Get AI response with embeddings
+      const { data, error } = await supabase.functions.invoke('chat-with-embeddings', {
+        body: { message: userMessage }
       })
 
       if (error) throw error
