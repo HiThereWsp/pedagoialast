@@ -35,6 +35,18 @@ export const LessonPlanCreator = () => {
       let prompt = ""
       let content = ""
 
+      // Get the current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError || !user) {
+        toast({
+          title: "Erreur d'authentification",
+          description: "Veuillez vous connecter pour générer un plan de cours",
+          variant: "destructive",
+        })
+        return
+      }
+
       // Validation des champs requis selon l'onglet actif
       if (currentTab === "subject" && (!subject.trim() || !classLevel.trim())) {
         toast({
@@ -136,16 +148,17 @@ export const LessonPlanCreator = () => {
       // Sauvegarde du plan de cours dans la base de données
       const { error: dbError } = await supabase
         .from('chats')
-        .insert([{
+        .insert({
           message: prompt,
           message_type: 'user',
+          user_id: user.id,
           lesson_plan_data: {
             source_type: currentTab,
             content,
             class_level: classLevel,
             additional_instructions: additionalInstructions
           }
-        }])
+        })
 
       if (dbError) throw dbError
 
