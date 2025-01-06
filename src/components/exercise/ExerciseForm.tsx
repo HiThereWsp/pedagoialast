@@ -90,7 +90,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Besoins spécifiques (optionnel)
+          Besoins spécifiques
         </label>
         <Textarea
           placeholder="Par exemple : Dyslexie, TDAH, Troubles visuels..."
@@ -102,7 +102,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Forces ou intérêts (optionnel)
+          Forces ou intérêts
         </label>
         <Textarea
           placeholder="Par exemple : Facilité avec les images, Intérêt pour la musique..."
@@ -114,7 +114,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Défis ou obstacles (optionnel)
+          Défis ou obstacles
         </label>
         <Textarea
           placeholder="Par exemple : Difficulté de concentration, Anxiété face aux exercices..."
@@ -126,7 +126,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Instructions supplémentaires (facultatif)
+          Instructions supplémentaires
         </label>
         <Textarea
           placeholder="Précisez toutes les exigences supplémentaires pour vos exercices"
