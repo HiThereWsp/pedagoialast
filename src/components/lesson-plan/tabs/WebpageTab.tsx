@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { CommonFields } from '../CommonFields';
 
@@ -8,24 +7,27 @@ interface WebpageTabProps {
     webUrl: string;
     classLevel: string;
     additionalInstructions: string;
+    totalSessions: string;
   };
   handleInputChange: (field: string, value: string) => void;
 }
 
 export function WebpageTab({ formData, handleInputChange }: WebpageTabProps) {
   return (
-    <Card className="p-6">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Lien de la page web</label>
-          <Input
-            placeholder="Collez l'URL de la page web"
-            value={formData.webUrl}
-            onChange={(e) => handleInputChange("webUrl", e.target.value)}
-          />
-        </div>
-        <CommonFields formData={formData} handleInputChange={handleInputChange} />
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          URL de la page web <span className="text-red-500">*</span>
+        </label>
+        <Input
+          type="url"
+          placeholder="https://example.com/article"
+          value={formData.webUrl}
+          onChange={(e) => handleInputChange("webUrl", e.target.value)}
+          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+        />
       </div>
-    </Card>
+      <CommonFields formData={formData} handleInputChange={handleInputChange} />
+    </div>
   );
 }

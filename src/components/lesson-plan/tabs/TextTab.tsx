@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { CommonFields } from '../CommonFields';
 
@@ -8,25 +7,26 @@ interface TextTabProps {
     text: string;
     classLevel: string;
     additionalInstructions: string;
+    totalSessions: string;
   };
   handleInputChange: (field: string, value: string) => void;
 }
 
 export function TextTab({ formData, handleInputChange }: TextTabProps) {
   return (
-    <Card className="p-6">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Votre texte</label>
-          <Textarea
-            placeholder="Collez votre texte ici..."
-            value={formData.text}
-            onChange={(e) => handleInputChange("text", e.target.value)}
-            className="min-h-[200px]"
-          />
-        </div>
-        <CommonFields formData={formData} handleInputChange={handleInputChange} />
+    <div className="space-y-6">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Texte source <span className="text-red-500">*</span>
+        </label>
+        <Textarea
+          placeholder="Collez ici le texte que vous souhaitez utiliser comme base pour votre séquence..."
+          value={formData.text}
+          onChange={(e) => handleInputChange("text", e.target.value)}
+          className="min-h-[200px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+        />
       </div>
-    </Card>
+      <CommonFields formData={formData} handleInputChange={handleInputChange} />
+    </div>
   );
 }
