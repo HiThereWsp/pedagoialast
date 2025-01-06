@@ -162,6 +162,23 @@ export const LessonPlanCreator = () => {
 
       if (dbError) throw dbError
 
+      // Save the AI response
+      const { error: aiResponseError } = await supabase
+        .from('chats')
+        .insert({
+          message: data.response,
+          message_type: 'assistant',
+          user_id: user.id,
+          lesson_plan_data: {
+            source_type: currentTab,
+            content,
+            class_level: classLevel,
+            additional_instructions: additionalInstructions
+          }
+        })
+
+      if (aiResponseError) throw aiResponseError
+
       toast({
         title: "Succès",
         description: "Votre séquence pédagogique a été générée avec succès",
@@ -267,7 +284,7 @@ export const LessonPlanCreator = () => {
             disabled={isLoading}
           >
             <Sparkles className="mr-2 h-5 w-5" />
-            {isLoading ? "Génération en cours..." : "Générer un plan de cours"}
+            {isLoading ? "Génération en cours..." : "Générer une séquence"}
           </Button>
         </CardContent>
       </Tabs>
