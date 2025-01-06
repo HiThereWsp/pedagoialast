@@ -6,7 +6,7 @@ import { NewSuggestionForm } from '@/components/suggestions/NewSuggestionForm';
 import { SuggestionFilters } from '@/components/suggestions/SuggestionFilters';
 import { initialSuggestions } from '@/data/suggestions';
 
-export function SuggestionsPage() {
+const SuggestionsPage = () => {
   const [suggestions, setSuggestions] = useState(initialSuggestions);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('tous');
@@ -123,3 +123,5 @@ export function SuggestionsPage() {
     </div>
   );
 }
+
+export default SuggestionsPage;
