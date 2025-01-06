@@ -12,6 +12,7 @@ import WaitlistLanding from "@/pages/WaitlistLanding"
 import Pricing from "@/pages/Pricing"
 import MetricsPage from "@/pages/MetricsPage"
 import SuggestionsPage from "@/pages/SuggestionsPage"
+import { ExerciseGenerator } from "@/components/exercise/ExerciseGenerator"
 
 export const AppRoutes = () => {
   return (
@@ -26,6 +27,7 @@ export const AppRoutes = () => {
         <Route path="/chat" element={<Index />} />
         <Route path="/lesson-plan" element={<LessonPlanPage />} />
         <Route path="/correspondence" element={<CorrespondencePage />} />
+        <Route path="/exercise" element={<ExerciseGenerator />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/metrics" element={<MetricsPage />} />
         <Route path="/suggestions" element={<SuggestionsPage />} />
