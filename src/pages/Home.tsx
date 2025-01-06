@@ -13,7 +13,7 @@ const Home = () => {
             <span className="text-sm font-medium">Votre assistant pédagogique IA</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-            <span className="block text-gray-900">Gagnez du temps dans</span>
+            <span className="block text-gray-900">Bienvenue votre espace PedagoIA</span>
             <span className="bg-gradient-to-r from-coral-400 to-violet-500 bg-clip-text text-transparent">
               la préparation de vos cours
             </span>
