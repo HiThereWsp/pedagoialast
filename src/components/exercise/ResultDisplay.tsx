@@ -85,15 +85,6 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Button
-            onClick={handleShare}
-            variant="outline"
-            size="sm"
-            className="gap-2 text-gray-600 hover:text-gray-900"
-          >
-            <Share2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Partager avec un.e collègue</span>
-          </Button>
           <button
             onClick={() => handleFeedback('like')}
             className={cn(
@@ -144,6 +135,17 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
         >
           {exercises}
         </ReactMarkdown>
+      </div>
+      <div className="mt-6 flex justify-end">
+        <Button
+          onClick={handleShare}
+          variant="outline"
+          size="sm"
+          className="gap-2 text-gray-600 hover:text-gray-900"
+        >
+          <Share2 className="h-4 w-4" />
+          <span className="hidden sm:inline">Partager avec un.e collègue</span>
+        </Button>
       </div>
       <MagicParticles isActive={showMagic} />
     </Card>
