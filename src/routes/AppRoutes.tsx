@@ -8,6 +8,7 @@ import NotFound from "@/pages/NotFound"
 import PricingPage from "@/pages/Pricing"
 import { LessonPlanPage } from "@/pages/LessonPlanPage"
 import { ExerciseGenerator } from "@/components/exercise/ExerciseGenerator"
+import CorrespondencePage from "@/pages/CorrespondencePage"
 import { ProtectedRoute } from "./ProtectedRoute"
 
 export function AppRoutes() {
@@ -45,6 +46,13 @@ export function AppRoutes() {
         <ProtectedRoute>
           <ProtectedLayout>
             <ExerciseGenerator />
+          </ProtectedLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/correspondance" element={
+        <ProtectedRoute>
+          <ProtectedLayout>
+            <CorrespondencePage />
           </ProtectedLayout>
         </ProtectedRoute>
       } />
