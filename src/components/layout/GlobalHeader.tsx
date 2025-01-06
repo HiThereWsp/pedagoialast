@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button";
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, MessageSquare } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 
 export function GlobalHeader() {
@@ -41,6 +41,10 @@ export function GlobalHeader() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => navigate('/suggestions')}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                <span>Suggestions</span>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/settings')}>
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Paramètres</span>
