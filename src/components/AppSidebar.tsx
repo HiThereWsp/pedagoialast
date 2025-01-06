@@ -1,4 +1,4 @@
-import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User, Trash2 } from "lucide-react"
+import { MessageSquarePlus, MessageSquare, Lightbulb, Settings, LogOut, User, Trash2, BookOpen } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -147,6 +147,22 @@ export function AppSidebar({
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton 
+                          onClick={() => navigate('/lesson-plan')}
+                          data-active={location.pathname === '/lesson-plan'}
+                        >
+                          <BookOpen className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">Créer une séquence</span>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">
+                        Créer une séquence
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
                   <SidebarMenuItem>
                     <Tooltip>
                       <TooltipTrigger asChild>
