@@ -15,9 +15,6 @@ const Home = () => {
           <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
             <span className="block text-gray-900">Bienvenue votre espace PedagoIA</span>
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-            Créez des contenus pédagogiques de qualité en quelques clics grâce à l'intelligence artificielle
-          </p>
         </div>
 
         {/* Tools Carousel */}
