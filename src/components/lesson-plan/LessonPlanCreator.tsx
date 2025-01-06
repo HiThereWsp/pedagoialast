@@ -22,6 +22,7 @@ export function LessonPlanCreator() {
     text: "",
     classLevel: "",
     additionalInstructions: "",
+    totalSessions: "",
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -36,6 +37,15 @@ export function LessonPlanCreator() {
       toast({
         title: "Niveau requis",
         description: "Veuillez spécifier le niveau de la classe",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.totalSessions) {
+      toast({
+        title: "Nombre de séances requis",
+        description: "Veuillez spécifier le nombre de séances souhaité",
         variant: "destructive",
       });
       return;

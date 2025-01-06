@@ -6,6 +6,7 @@ interface CommonFieldsProps {
   formData: {
     classLevel: string;
     additionalInstructions: string;
+    totalSessions: string;
   };
   handleInputChange: (field: string, value: string) => void;
 }
@@ -19,6 +20,20 @@ export function CommonFields({ formData, handleInputChange }: CommonFieldsProps)
           placeholder="Par exemple : 6ème, CM2, CE1"
           value={formData.classLevel}
           onChange={(e) => handleInputChange("classLevel", e.target.value)}
+          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Nombre de séances <span className="text-red-500">*</span>
+        </label>
+        <Input
+          type="number"
+          min="1"
+          required
+          placeholder="Exemple : 5"
+          value={formData.totalSessions}
+          onChange={(e) => handleInputChange("totalSessions", e.target.value)}
           className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
         />
       </div>
