@@ -14,14 +14,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  if (!openAIApiKey) {
-    console.error('OpenAI API key not found')
-    return new Response(
-      JSON.stringify({ error: 'OpenAI API key not configured' }), 
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  }
-
   try {
     const { subject, webUrl, text, classLevel, additionalInstructions, totalSessions } = await req.json()
 
@@ -34,30 +26,6 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
-    // Construct the base query for embedding
-    let queryForEmbedding = `niveau ${classLevel} ${subject || ''} ${additionalInstructions || ''}`
-
-    // Generate embedding for the query
-    console.log('Generating embedding for query:', queryForEmbedding)
-    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'text-embedding-ada-002',
-        input: queryForEmbedding,
-      }),
-    })
-
-    if (!embeddingResponse.ok) {
-      throw new Error(`OpenAI Embedding API error: ${embeddingResponse.statusText}`)
-    }
-
-    const embeddingData = await embeddingResponse.json()
-    const embedding = embeddingData.data[0].embedding
 
     // Construct the prompt based on the input type and data
     let prompt = `En tant qu'expert en pédagogie, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.\n`
