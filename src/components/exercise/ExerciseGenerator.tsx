@@ -34,7 +34,7 @@ export function ExerciseGenerator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-orange-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-orange-50 to-purple-50 pt-24">
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-pink-100/50 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col gap-2">
