@@ -31,11 +31,15 @@ export function HeroSection() {
               Bientôt disponible
             </span>
           </div>
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text">
-            <span className="text-foreground block mb-4">L'assistant pédagogique</span>
-            <span className="text-foreground">qui vous aide à </span>
-            <DynamicText />
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            <span className="text-foreground block mb-4">Préparez vos classes</span>
+            <span className="bg-gradient-to-r from-coral-400 to-violet-500 bg-clip-text text-transparent">
+              10x plus vite
+            </span>
           </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-8">
+            Gagnez en efficacité et concentrez-vous sur l'essentiel : vos élèves !
+          </p>
           <div className="flex flex-col items-center gap-6 mb-8">
             <Button 
               size="lg"
@@ -51,9 +55,6 @@ export function HeroSection() {
               🎁 <span className="font-medium">Offre de lancement</span> • Accès prioritaire et tarif exclusif
             </p>
           </div>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Rejoignez la communauté des premiers utilisateurs et transformez votre façon d'enseigner
-          </p>
         </div>
       </div>
       <Dialog open={showWaitlistForm} onOpenChange={setShowWaitlistForm}>
