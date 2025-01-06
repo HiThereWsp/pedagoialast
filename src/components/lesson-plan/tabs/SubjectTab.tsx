@@ -14,18 +14,17 @@ interface SubjectTabProps {
 
 export function SubjectTab({ formData, handleInputChange }: SubjectTabProps) {
   return (
-    <Card className="p-6">
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">Votre sujet</label>
-          <Input
-            placeholder="Entrez un sujet. Par exemple : Système solaire, Photosynthèse"
-            value={formData.subject}
-            onChange={(e) => handleInputChange("subject", e.target.value)}
-          />
-        </div>
-        <CommonFields formData={formData} handleInputChange={handleInputChange} />
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Votre sujet</label>
+        <Input
+          placeholder="Entrez un sujet. Par exemple : Système solaire, Photosynthèse"
+          value={formData.subject}
+          onChange={(e) => handleInputChange("subject", e.target.value)}
+          className="w-full border-gray-200 focus:border-[#9b87f5] focus:ring-[#9b87f5]"
+        />
       </div>
-    </Card>
+      <CommonFields formData={formData} handleInputChange={handleInputChange} />
+    </div>
   );
 }
