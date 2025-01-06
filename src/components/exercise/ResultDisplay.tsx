@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
-import { ThumbsDown, Heart, Copy } from "lucide-react";
+import { ThumbsDown, Heart, Copy, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -42,7 +42,14 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   };
 
   return (
-    <Card className="bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200 animate-fade-in">
+    <Card className="bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="flex flex-col items-center mb-6 animate-scale-in">
+        <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-gradient-to-r from-[#F97316] to-[#D946EF] text-white">
+          <Sparkles className="w-6 h-6 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900">Exercices générés avec succès !</h3>
+      </div>
+
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
           Exercices générés
