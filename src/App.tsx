@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { HelmetProvider } from 'react-helmet-async'
 import { SidebarProvider } from "@/components/ui/sidebar"
+import { ProtectedLayout } from "@/components/layout/ProtectedLayout"
 import Index from "@/pages/Index"
 import Login from "@/pages/Login"
 import Settings from "@/pages/Settings"
@@ -91,22 +92,30 @@ function App() {
                 {/* Routes protégées */}
                 <Route path="/chat" element={
                   <ProtectedRoute>
-                    <Index />
+                    <ProtectedLayout>
+                      <Index />
+                    </ProtectedLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/settings" element={
                   <ProtectedRoute>
-                    <Settings />
+                    <ProtectedLayout>
+                      <Settings />
+                    </ProtectedLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/creersequence" element={
                   <ProtectedRoute>
-                    <LessonPlanPage />
+                    <ProtectedLayout>
+                      <LessonPlanPage />
+                    </ProtectedLayout>
                   </ProtectedRoute>
                 } />
                 <Route path="/exercices" element={
                   <ProtectedRoute>
-                    <ExerciseGenerator />
+                    <ProtectedLayout>
+                      <ExerciseGenerator />
+                    </ProtectedLayout>
                   </ProtectedRoute>
                 } />
                 
