@@ -9,6 +9,9 @@ export interface ExerciseFormData {
   objective: string;
   exerciseType: string;
   additionalInstructions: string;
+  specificNeeds: string;
+  strengths: string;
+  challenges: string;
 }
 
 export function useExerciseGeneration() {
@@ -46,7 +49,12 @@ export function useExerciseGeneration() {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
-        body: formData
+        body: {
+          ...formData,
+          specificNeeds: formData.specificNeeds.trim(),
+          strengths: formData.strengths.trim(),
+          challenges: formData.challenges.trim()
+        }
       });
 
       if (error) throw error;

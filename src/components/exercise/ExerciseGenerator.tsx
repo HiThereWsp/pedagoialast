@@ -16,6 +16,9 @@ export function ExerciseGenerator() {
     objective: "",
     exerciseType: "",
     additionalInstructions: "",
+    specificNeeds: "",
+    strengths: "",
+    challenges: "",
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -32,23 +35,21 @@ export function ExerciseGenerator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 via-orange-50 to-purple-50">
-      {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-pink-100 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col gap-4">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 bg-clip-text text-transparent">
-                Générateur d'exercices
+                Différenciation pédagogique
               </h1>
               <p className="mt-2 text-gray-600">
-                Créez des exercices adaptés à vos besoins pédagogiques en quelques clics.
+                Créez des exercices adaptés aux besoins spécifiques de vos élèves.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-none mx-auto flex flex-col items-center">
           <div className="w-full max-w-[1200px]">

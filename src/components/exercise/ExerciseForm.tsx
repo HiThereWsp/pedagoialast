@@ -12,6 +12,9 @@ interface ExerciseFormProps {
     objective: string;
     exerciseType: string;
     additionalInstructions: string;
+    specificNeeds: string;
+    strengths: string;
+    challenges: string;
   };
   handleInputChange: (field: string, value: string) => void;
   handleSubmit: () => Promise<void>;
@@ -82,6 +85,42 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           value={formData.exerciseType}
           onChange={(e) => handleInputChange("exerciseType", e.target.value)}
           className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Besoins spécifiques (optionnel)
+        </label>
+        <Textarea
+          placeholder="Par exemple : Dyslexie, TDAH, Troubles visuels..."
+          value={formData.specificNeeds}
+          onChange={(e) => handleInputChange("specificNeeds", e.target.value)}
+          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Forces ou intérêts (optionnel)
+        </label>
+        <Textarea
+          placeholder="Par exemple : Facilité avec les images, Intérêt pour la musique..."
+          value={formData.strengths}
+          onChange={(e) => handleInputChange("strengths", e.target.value)}
+          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Défis ou obstacles (optionnel)
+        </label>
+        <Textarea
+          placeholder="Par exemple : Difficulté de concentration, Anxiété face aux exercices..."
+          value={formData.challenges}
+          onChange={(e) => handleInputChange("challenges", e.target.value)}
+          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
         />
       </div>
 

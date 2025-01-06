@@ -12,18 +12,34 @@ serve(async (req) => {
   }
 
   try {
-    const { subject, classLevel, numberOfExercises, objective, exerciseType, additionalInstructions } = await req.json()
+    const { 
+      subject, 
+      classLevel, 
+      numberOfExercises, 
+      objective, 
+      exerciseType, 
+      additionalInstructions,
+      specificNeeds,
+      strengths,
+      challenges
+    } = await req.json()
 
     const prompt = `En tant qu'expert en pédagogie, crée ${numberOfExercises} exercices pour la matière "${subject}" destinés à des élèves de niveau "${classLevel}". 
     Ces exercices doivent correspondre à l'objectif suivant : "${objective}". 
-    Le type d'exercice souhaité est : "${exerciseType}". 
-    ${additionalInstructions ? `Instructions supplémentaires : ${additionalInstructions}.` : ''}
+    ${exerciseType ? `Le type d'exercice souhaité est : "${exerciseType}".` : ''}
+    
+    ${specificNeeds ? `Besoins spécifiques à prendre en compte : ${specificNeeds}` : ''}
+    ${strengths ? `Forces et intérêts de l'élève : ${strengths}` : ''}
+    ${challenges ? `Défis et obstacles à considérer : ${challenges}` : ''}
+    ${additionalInstructions ? `Instructions supplémentaires : ${additionalInstructions}` : ''}
     
     Format des exercices :
-    - Chaque exercice doit être clair et adapté au niveau de la classe.
-    - Fournir une consigne précise.
-    - Inclure une réponse ou une solution si nécessaire.
-    - Varier les types de questions pour maintenir l'intérêt des élèves.`
+    - Chaque exercice doit être clair et adapté au niveau de la classe
+    - Fournir une consigne précise
+    - Inclure une réponse ou une solution si nécessaire
+    - Adapter le format et la présentation en fonction des besoins spécifiques mentionnés
+    - Exploiter les forces et intérêts indiqués pour favoriser l'engagement
+    - Proposer des stratégies pour surmonter les défis mentionnés`
 
     console.log('Calling OpenAI with prompt:', prompt)
 
@@ -38,7 +54,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Tu es un expert en pédagogie qui aide à créer des exercices détaillés et structurés, en respectant scrupuleusement les programmes officiels de l\'Education Nationale.'
+            content: 'Tu es un expert en pédagogie spécialisé dans la différenciation pédagogique. Tu aides à créer des exercices adaptés aux besoins spécifiques des élèves tout en respectant les programmes officiels de l\'Education Nationale.'
           },
           {
             role: 'user',
