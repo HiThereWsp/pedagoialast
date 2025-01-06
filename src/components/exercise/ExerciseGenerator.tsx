@@ -35,8 +35,13 @@ export function ExerciseGenerator() {
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-pink-100 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-3">
-            <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
+                <span className="text-xl font-semibold">PedagoIA</span>
+              </div>
+            </div>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 bg-clip-text text-transparent">
                 Générateur d'exercices
