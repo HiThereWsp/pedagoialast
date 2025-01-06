@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
-import { ThumbsDown, Heart, Copy, Sparkles } from "lucide-react";
+import { ThumbsDown, Heart, Copy, Sparkles, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -42,24 +42,37 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   };
 
   return (
-    <Card className="bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="flex flex-col items-center mb-6 animate-scale-in">
-        <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-gradient-to-r from-[#F97316] to-[#D946EF] text-white">
-          <Sparkles className="w-6 h-6 animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite]" />
+    <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]">
+      {/* Success Animation Container */}
+      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-sky-500/20 rounded-xl animate-[pulse_3s_ease-in-out_infinite]" />
+      
+      {/* Success Icon and Message */}
+      <div className="relative flex flex-col items-center mb-8">
+        <div className="flex items-center justify-center w-16 h-16 mb-4">
+          <div className="absolute w-16 h-16 bg-gradient-to-r from-[#F97316] to-[#D946EF] rounded-full animate-[ping_1s_cubic-bezier(0,0,0.2,1)_1]" />
+          <div className="absolute w-16 h-16 bg-gradient-to-r from-[#F97316] to-[#D946EF] rounded-full animate-pulse" />
+          <div className="relative flex items-center justify-center w-14 h-14 bg-white rounded-full">
+            <Sparkles className="w-8 h-8 text-[#F97316] animate-[bounce_2s_infinite]" />
+          </div>
         </div>
-        <h3 className="text-lg font-medium text-gray-900">Exercices générés avec succès !</h3>
+        <div className="flex items-center space-x-2 animate-fade-in">
+          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+          <h3 className="text-lg font-medium bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
+            Exercices générés avec succès !
+          </h3>
+        </div>
       </div>
 
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
+      <div className="relative flex justify-between items-center mb-4">
+        <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent animate-fade-in">
           Exercices générés
         </h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleFeedback('like')}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-emerald-500 transition-colors",
-              feedbackScore === 1 && "text-emerald-500"
+              "rounded p-2 text-gray-400 hover:bg-orange-50 hover:text-emerald-500 transition-all duration-300 transform hover:scale-110",
+              feedbackScore === 1 && "text-emerald-500 scale-110"
             )}
             aria-label="J'aime"
           >
@@ -68,8 +81,8 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           <button
             onClick={() => handleFeedback('dislike')}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-red-500 transition-colors",
-              feedbackScore === -1 && "text-red-500"
+              "rounded p-2 text-gray-400 hover:bg-orange-50 hover:text-red-500 transition-all duration-300 transform hover:scale-110",
+              feedbackScore === -1 && "text-red-500 scale-110"
             )}
             aria-label="Je n'aime pas"
           >
@@ -78,8 +91,8 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           <button
             onClick={handleCopy}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-blue-500 transition-colors",
-              isCopied && "text-blue-500"
+              "rounded p-2 text-gray-400 hover:bg-orange-50 hover:text-blue-500 transition-all duration-300 transform hover:scale-110",
+              isCopied && "text-blue-500 scale-110"
             )}
             aria-label="Copier les exercices"
           >
@@ -87,7 +100,8 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           </button>
         </div>
       </div>
-      <div className="prose prose-sm max-w-none">
+
+      <div className="prose prose-sm max-w-none animate-fade-in">
         <ReactMarkdown
           components={{
             strong: ({ children }) => <span className="font-bold text-gray-900">{children}</span>,
