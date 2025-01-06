@@ -32,21 +32,27 @@ export function ExerciseGenerator() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-50 via-orange-50 to-purple-50">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-pink-100 shadow-sm">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center gap-3">
+            <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 bg-clip-text text-transparent">
+                Générateur d'exercices
+              </h1>
+              <p className="mt-2 text-gray-600">
+                Créez des exercices adaptés à vos besoins pédagogiques en quelques clics.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-none mx-auto flex flex-col items-center">
           <div className="w-full max-w-[1200px]">
-            <div className="mb-8 flex items-center gap-3">
-              <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
-              <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 bg-clip-text text-transparent">
-                  Générateur d'exercices
-                </h1>
-                <p className="mt-2 text-gray-600">
-                  Créez des exercices adaptés à vos besoins pédagogiques en quelques clics.
-                </p>
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <Collapsible
