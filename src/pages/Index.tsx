@@ -1,4 +1,4 @@
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/hooks/use-sidebar"
 import { AppSidebar } from "@/components/AppSidebar"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
@@ -102,13 +102,15 @@ const Index = () => {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
-      <AppSidebar 
-        conversations={conversations}
-        onConversationSelect={loadConversationMessages}
-        currentConversationId={currentConversationId}
-        onNewConversation={handleNewConversation}
-        onDeleteConversation={deleteConversation}
-      />
+      <SidebarProvider>
+        <AppSidebar 
+          conversations={conversations}
+          onConversationSelect={loadConversationMessages}
+          currentConversationId={currentConversationId}
+          onNewConversation={handleNewConversation}
+          onDeleteConversation={deleteConversation}
+        />
+      </SidebarProvider>
       
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">

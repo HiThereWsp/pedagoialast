@@ -20,4 +20,35 @@ export function useSidebar() {
   return context
 }
 
-export { SidebarContext }
+interface SidebarProviderProps {
+  children: React.ReactNode
+}
+
+export function SidebarProvider({ children }: SidebarProviderProps) {
+  const [open, setOpen] = React.useState(true)
+  const [openMobile, setOpenMobile] = React.useState(false)
+  const isMobile = window.innerWidth < 768
+
+  const toggleSidebar = React.useCallback(() => {
+    return isMobile ? setOpenMobile(prev => !prev) : setOpen(prev => !prev)
+  }, [isMobile])
+
+  const value = React.useMemo(
+    () => ({
+      state: open ? "expanded" : "collapsed",
+      open,
+      setOpen,
+      openMobile,
+      setOpenMobile,
+      isMobile,
+      toggleSidebar,
+    }),
+    [open, openMobile, isMobile, toggleSidebar]
+  )
+
+  return (
+    <SidebarContext.Provider value={value}>
+      {children}
+    </SidebarContext.Provider>
+  )
+}
