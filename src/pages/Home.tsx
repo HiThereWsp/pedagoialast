@@ -1,4 +1,3 @@
-import { useNavigate } from "react-router-dom"
 import { 
   BookOpen, 
   MessageSquare, 
@@ -9,7 +8,6 @@ import {
   Lightbulb,
   Zap
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
   Carousel,
@@ -20,8 +18,6 @@ import {
 } from "@/components/ui/carousel"
 
 const Home = () => {
-  const navigate = useNavigate()
-
   const tools = [
     {
       title: "Chat pédagogique",
@@ -98,14 +94,6 @@ const Home = () => {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
             Créez des contenus pédagogiques de qualité en quelques clics grâce à l'intelligence artificielle
           </p>
-          <Button 
-            size="lg"
-            onClick={() => navigate("/chat")}
-            className="bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105"
-          >
-            Commencer maintenant
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
         </div>
 
         {/* Tools Carousel */}
