@@ -14,15 +14,14 @@ serve(async (req) => {
   }
 
   try {
-    const { topic, tone, additionalContext } = await req.json()
+    const { topic, tone, recipient, additionalContext } = await req.json()
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured')
-    }
-
-    const systemPrompt = `Tu es un assistant spécialisé dans la rédaction de correspondances scolaires en français. 
-    Tu dois générer des messages professionnels, respectueux et bienveillants à destination des parents d'élèves.
-    Adapte le ton et le style en fonction des demandes.`
+    const systemPrompt = `Tu es un assistant spécialisé dans la rédaction de correspondances professionnelles en milieu scolaire.
+    Tu dois générer un message ${tone} destiné à ${recipient === 'parents' ? 'des parents d\'élèves' : 
+    recipient === 'director' ? 'la direction de l\'établissement' :
+    recipient === 'inspector' ? 'l\'inspection académique' : 'un(e) collègue'}.
+    Le message doit être professionnel, respectueux et adapté au destinataire.
+    Utilise les formules de politesse appropriées en fonction du destinataire.`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -34,7 +33,7 @@ serve(async (req) => {
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Sujet: ${topic}\nTon souhaité: ${tone}\nContexte additionnel: ${additionalContext}` }
+          { role: 'user', content: `Sujet: ${topic}\nContexte additionnel: ${additionalContext}` }
         ],
         temperature: 0.7,
       }),

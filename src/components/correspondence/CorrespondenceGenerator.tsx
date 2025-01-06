@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client"
 export function CorrespondenceGenerator() {
   const [topic, setTopic] = useState("")
   const [tone, setTone] = useState("formal")
+  const [recipient, setRecipient] = useState("parents")
   const [additionalContext, setAdditionalContext] = useState("")
   const [generatedText, setGeneratedText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -30,7 +31,7 @@ export function CorrespondenceGenerator() {
     setIsLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke('generate-correspondence', {
-        body: { topic, tone, additionalContext }
+        body: { topic, tone, recipient, additionalContext }
       })
 
       if (error) throw error
@@ -69,6 +70,21 @@ export function CorrespondenceGenerator() {
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
       <Card className="p-6 space-y-6">
+        <div className="space-y-2">
+          <Label htmlFor="recipient">Destinataire</Label>
+          <Select value={recipient} onValueChange={setRecipient}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="parents">Parents d'élèves</SelectItem>
+              <SelectItem value="director">Direction</SelectItem>
+              <SelectItem value="inspector">Inspection</SelectItem>
+              <SelectItem value="colleague">Collègue</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="topic">Sujet de la correspondance</Label>
           <Input
