@@ -15,9 +15,9 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
           h2: ({ children }) => <h2 className="text-xl font-bold mb-3 text-gray-800">{children}</h2>,
           h3: ({ children }) => <h3 className="text-lg font-bold mb-2 text-gray-800">{children}</h3>,
           p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed text-justify">{children}</p>,
-          ul: ({ children }) => <ul className="list-disc pl-6 mb-4 text-gray-700">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 text-gray-700">{children}</ol>,
-          li: ({ children }) => <li className="mb-1">{children}</li>,
+          ul: ({ children }) => <ul className="list-disc pl-6 mb-4 text-gray-700 text-justify">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 text-gray-700 text-justify">{children}</ol>,
+          li: ({ children }) => <li className="mb-1 text-justify">{children}</li>,
         }}
       >
         {content}
