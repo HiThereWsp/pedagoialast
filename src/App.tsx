@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { HelmetProvider } from 'react-helmet-async'
+import { SidebarProvider } from "@/components/ui/sidebar"
 import Index from "@/pages/Index"
 import Login from "@/pages/Login"
 import Settings from "@/pages/Settings"
@@ -76,42 +77,44 @@ function App() {
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Router>
-            <Routes>
-              {/* Routes publiques */}
-              <Route path="/" element={<WaitlistLanding />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/waitlist" element={<WaitlistLanding />} />
-              <Route path="/pricing" element={<PricingPage />} />
-              
-              {/* Routes protégées */}
-              <Route path="/chat" element={
-                <ProtectedRoute>
-                  <Index />
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              } />
-              <Route path="/creersequence" element={
-                <ProtectedRoute>
-                  <LessonPlanPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/exercices" element={
-                <ProtectedRoute>
-                  <ExerciseGenerator />
-                </ProtectedRoute>
-              } />
-              
-              {/* Route 404 */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
+          <SidebarProvider>
+            <Toaster />
+            <Sonner />
+            <Router>
+              <Routes>
+                {/* Routes publiques */}
+                <Route path="/" element={<WaitlistLanding />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/waitlist" element={<WaitlistLanding />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                
+                {/* Routes protégées */}
+                <Route path="/chat" element={
+                  <ProtectedRoute>
+                    <Index />
+                  </ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                } />
+                <Route path="/creersequence" element={
+                  <ProtectedRoute>
+                    <LessonPlanPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/exercices" element={
+                  <ProtectedRoute>
+                    <ExerciseGenerator />
+                  </ProtectedRoute>
+                } />
+                
+                {/* Route 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+          </SidebarProvider>
         </TooltipProvider>
       </QueryClientProvider>
     </HelmetProvider>
