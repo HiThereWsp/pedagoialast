@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface ResultDisplayProps {
-  lessonPlan: string | null;
+  lessonPlan: string | undefined;
 }
 
 export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {

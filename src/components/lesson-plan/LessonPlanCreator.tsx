@@ -8,9 +8,25 @@ import { TextTab } from './tabs/TextTab';
 import { WebpageTab } from './tabs/WebpageTab';
 import { SubjectTab } from './tabs/SubjectTab';
 
+interface FormData {
+  classLevel: string;
+  additionalInstructions: string;
+  totalSessions: string;
+  subject?: string;
+  text?: string;
+  webUrl?: string;
+  lessonPlan?: string;
+}
+
 export function LessonPlanCreator() {
-  const [formData, setFormData] = useState({
-    // ... add your form data state here
+  const [formData, setFormData] = useState<FormData>({
+    classLevel: '',
+    additionalInstructions: '',
+    totalSessions: '',
+    subject: '',
+    text: '',
+    webUrl: '',
+    lessonPlan: ''
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -75,7 +91,7 @@ export function LessonPlanCreator() {
                 </div>
               </div>
               <div className="xl:sticky xl:top-8 space-y-6">
-                <ResultDisplay lessonPlan={formData} />
+                <ResultDisplay lessonPlan={formData.lessonPlan} />
               </div>
             </div>
           </div>
