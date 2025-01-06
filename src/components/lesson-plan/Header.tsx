@@ -21,7 +21,7 @@ export function Header() {
           Créer une séquence pédagogique
         </h1>
         <p className="text-gray-600 text-sm md:text-base">
-          Créez vos séquences pédagogiques à partir de la source de votre choix
+          Générez vos séquences pédagogiques à partir de la source de votre choix
         </p>
       </div>
     </div>
