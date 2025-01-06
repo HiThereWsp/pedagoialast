@@ -9,9 +9,9 @@ export function ProtectedLayout({ children }: ProtectedLayoutProps) {
   return (
     <div className="min-h-screen">
       <GlobalHeader />
-      <div className="pt-16">
+      <main className="pt-20 px-4 sm:px-6 lg:px-8">
         {children}
-      </div>
+      </main>
     </div>
   );
 }
