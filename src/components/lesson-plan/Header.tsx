@@ -11,13 +11,13 @@ export function Header() {
       <Button 
         variant="ghost" 
         size="icon" 
-        className="hover:bg-gray-100 w-10 h-10 self-start"
+        className="hover:bg-pink-50 w-10 h-10 self-start"
         onClick={() => navigate('/chat')}
       >
-        <ChevronLeft className="h-5 w-5 text-gray-600" />
+        <ChevronLeft className="h-5 w-5 text-pink-600" />
       </Button>
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] bg-clip-text text-transparent">
+        <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#D946EF] to-pink-500 bg-clip-text text-transparent">
           Créer une séquence pédagogique
         </h1>
         <p className="text-gray-600 text-sm md:text-base">
