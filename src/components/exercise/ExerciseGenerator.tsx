@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { FileText, Sparkles } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { ExerciseForm } from './ExerciseForm';
 import { ResultDisplay } from './ResultDisplay';
+import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
+import type { ExerciseFormData } from '@/hooks/useExerciseGeneration';
 
 export function ExerciseGenerator() {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [exercises, setExercises] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const { exercises, isLoading, generateExercises } = useExerciseGeneration();
+  const [formData, setFormData] = useState<ExerciseFormData>({
     subject: "",
     classLevel: "",
     numberOfExercises: "3",
@@ -25,59 +20,6 @@ export function ExerciseGenerator() {
       ...prev,
       [field]: value,
     }));
-  };
-
-  const handleSubmit = async () => {
-    if (!formData.classLevel.trim()) {
-      toast({
-        title: "Niveau requis",
-        description: "Veuillez spécifier le niveau de la classe",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.subject.trim()) {
-      toast({
-        title: "Matière requise",
-        description: "Veuillez spécifier la matière",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.objective.trim()) {
-      toast({
-        title: "Objectif requis",
-        description: "Veuillez spécifier l'objectif de l'exercice",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-exercises', {
-        body: formData
-      });
-
-      if (error) throw error;
-
-      setExercises(data.exercises);
-      toast({
-        title: "Exercices générés avec succès",
-        description: "Vos exercices ont été créés",
-      });
-    } catch (error) {
-      console.error('Error generating exercises:', error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la génération des exercices",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -100,7 +42,7 @@ export function ExerciseGenerator() {
                   <ExerciseForm 
                     formData={formData} 
                     handleInputChange={handleInputChange}
-                    handleSubmit={handleSubmit}
+                    handleSubmit={() => generateExercises(formData)}
                     isLoading={isLoading}
                   />
                 </div>
