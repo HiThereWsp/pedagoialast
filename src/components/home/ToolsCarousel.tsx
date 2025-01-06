@@ -58,7 +58,7 @@ export const ToolsCarousel = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="max-w-6xl mx-auto mb-16">
+    <div className="w-full">
       <Carousel
         opts={{
           align: "start",
@@ -69,7 +69,7 @@ export const ToolsCarousel = () => {
       >
         <CarouselContent className="-ml-2 md:-ml-4">
           {tools.map((tool, index) => (
-            <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/3 lg:basis-1/4">
+            <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
               <div className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
                 <ToolCard
                   {...tool}
@@ -79,8 +79,10 @@ export const ToolsCarousel = () => {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious className="hidden md:flex" />
-        <CarouselNext className="hidden md:flex" />
+        <div className="hidden sm:flex justify-end gap-2 mt-4">
+          <CarouselPrevious />
+          <CarouselNext />
+        </div>
       </Carousel>
     </div>
   )

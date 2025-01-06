@@ -23,16 +23,16 @@ export const ToolCard = ({
 }: ToolCardProps) => {
   return (
     <Card 
-      className={`group cursor-pointer animate-fade-in h-[280px] hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.02]`}
+      className={`group cursor-pointer animate-fade-in h-full min-h-[280px] hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.02]`}
       onClick={onClick}
     >
-      <div className={`p-4 ${bgColor} border-b-2 ${borderColor} h-full flex flex-col`}>
+      <div className={`p-4 sm:p-6 ${bgColor} border-b-2 ${borderColor} h-full flex flex-col`}>
         <div className={`p-2.5 rounded-xl ${color} bg-white/90 backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300 w-fit mb-4 shadow-md`}>
-          <Icon className={`w-6 h-6 text-current`} />
+          <Icon className={`w-5 h-5 sm:w-6 sm:h-6 text-current`} />
         </div>
         <div className="flex-1 flex flex-col justify-between">
           <div>
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 group-hover:text-coral-400 transition-colors">
+            <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-900 group-hover:text-coral-400 transition-colors">
               {title}
             </h3>
             <p className="text-sm text-gray-700">

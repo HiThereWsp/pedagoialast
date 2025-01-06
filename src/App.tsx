@@ -22,11 +22,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <SidebarProvider>
-          <div className="flex min-h-screen w-full">
+          <div className="flex min-h-screen w-full flex-col lg:flex-row">
             <TooltipProvider>
               <BrowserRouter>
                 <GlobalHeader />
-                <AppRoutes />
+                <main className="flex-1 w-full px-4 lg:px-8 py-4 lg:py-8">
+                  <AppRoutes />
+                </main>
                 <Toaster />
               </BrowserRouter>
             </TooltipProvider>
