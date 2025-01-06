@@ -1,14 +1,12 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Globe, FileText, Sparkles, Upload } from "lucide-react";
+import { FileText, Sparkles } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from './Header';
 import { SubjectTab } from './tabs/SubjectTab';
 import { TextTab } from './tabs/TextTab';
-import { WebpageTab } from './tabs/WebpageTab';
-import { DocumentTab } from './tabs/DocumentTab';
 import { ResultDisplay } from './ResultDisplay';
 
 export function LessonPlanCreator() {
@@ -18,7 +16,6 @@ export function LessonPlanCreator() {
   const [lessonPlan, setLessonPlan] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     subject: "",
-    webUrl: "",
     text: "",
     classLevel: "",
     additionalInstructions: "",
@@ -51,10 +48,10 @@ export function LessonPlanCreator() {
       return;
     }
 
-    if (!formData.subject && !formData.webUrl && !formData.text) {
+    if (!formData.subject && !formData.text) {
       toast({
         title: "Source requise",
-        description: "Veuillez fournir au moins un sujet, une URL ou un texte",
+        description: "Veuillez fournir au moins un sujet ou un texte",
         variant: "destructive",
       });
       return;
@@ -109,19 +106,6 @@ export function LessonPlanCreator() {
                         </div>
                         <span className="hidden sm:inline">Texte</span>
                       </TabsTrigger>
-                      <TabsTrigger value="webpage" className="flex items-center gap-2 flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <div className="w-6 h-6 rounded-full bg-[#FFDEE2] flex items-center justify-center">
-                          <Globe className="h-3.5 w-3.5 text-pink-600" />
-                        </div>
-                        <span className="hidden sm:inline">Page web</span>
-                      </TabsTrigger>
-                      <TabsTrigger value="document" className="flex items-center gap-2 flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <div className="w-6 h-6 rounded-full bg-[#D6BCFA] flex items-center justify-center">
-                          <Upload className="h-3.5 w-3.5 text-purple-700" />
-                        </div>
-                        <span className="hidden sm:inline">Document</span>
-                        <span className="ml-1 text-xs bg-[#D946EF] text-white px-1.5 py-0.5 rounded">Pro</span>
-                      </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="subject" className="mt-6 focus:outline-none">
@@ -130,14 +114,6 @@ export function LessonPlanCreator() {
 
                     <TabsContent value="text" className="mt-6 focus:outline-none">
                       <TextTab formData={formData} handleInputChange={handleInputChange} />
-                    </TabsContent>
-
-                    <TabsContent value="webpage" className="mt-6 focus:outline-none">
-                      <WebpageTab formData={formData} handleInputChange={handleInputChange} />
-                    </TabsContent>
-
-                    <TabsContent value="document" className="mt-6 focus:outline-none">
-                      <DocumentTab formData={formData} handleInputChange={handleInputChange} />
                     </TabsContent>
                   </Tabs>
 
