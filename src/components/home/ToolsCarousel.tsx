@@ -4,6 +4,7 @@ import {
   MessageSquare, 
   FileText, 
   Sparkles,
+  FileEdit
 } from "lucide-react"
 import {
   Carousel,
@@ -43,9 +44,9 @@ const tools = [
     route: "/exercise"
   },
   {
-    title: "Générateur de correspondances",
-    description: "Créez facilement des correspondances avec les parents d'élèves",
-    icon: FileText,
+    title: "Assistant administratif",
+    description: "Créez facilement des correspondances avec les parents d'élèves et l'administration",
+    icon: FileEdit,
     color: "text-blue-500",
     bgColor: "bg-[#EBF8FF]",
     borderColor: "border-blue-500/20",
