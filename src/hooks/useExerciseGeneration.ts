@@ -26,15 +26,6 @@ export function useExerciseGeneration() {
       return false;
     }
 
-    if (!formData.subject.trim()) {
-      toast({
-        title: "Matière requise",
-        description: "Veuillez spécifier la matière",
-        variant: "destructive",
-      });
-      return false;
-    }
-
     if (!formData.objective.trim()) {
       toast({
         title: "Objectif requis",
