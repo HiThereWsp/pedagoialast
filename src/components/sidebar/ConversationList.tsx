@@ -10,10 +10,10 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface ConversationListProps {
-  conversations: Array<{id: string, title: string}>;
-  onConversationSelect?: (id: string) => void;
-  currentConversationId?: string | null;
-  onDeleteConversation?: (id: string) => void;
+  conversations: Array<{id: string, title: string}>
+  onConversationSelect: (id: string) => void
+  currentConversationId?: string | null
+  onDeleteConversation: (id: string) => void
 }
 
 export function ConversationList({ 

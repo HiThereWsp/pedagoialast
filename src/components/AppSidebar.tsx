@@ -7,7 +7,7 @@ import { Link, useLocation } from "react-router-dom"
 import { ConversationList } from "./sidebar/ConversationList"
 import { SidebarFooter } from "./sidebar/SidebarFooter"
 import { SidebarHeader } from "./sidebar/SidebarHeader"
-import { useSidebarContext } from "./ui/sidebar"
+import { useSidebar } from "@/hooks/use-sidebar"
 
 interface AppSidebarProps {
   conversations: any[]
@@ -15,6 +15,7 @@ interface AppSidebarProps {
   currentConversationId?: string
   onNewConversation: () => void
   onDeleteConversation: (id: string) => void
+  firstName?: string
 }
 
 export function AppSidebar({
@@ -23,10 +24,16 @@ export function AppSidebar({
   currentConversationId,
   onNewConversation,
   onDeleteConversation,
+  firstName = "User",
 }: AppSidebarProps) {
   const location = useLocation()
-  const { isSidebarOpen, setIsSidebarOpen } = useSidebarContext()
+  const { open: isSidebarOpen, setOpen: setIsSidebarOpen } = useSidebar()
   const [isHovered, setIsHovered] = useState(false)
+
+  const handleLogout = () => {
+    // Implement logout logic here
+    console.log("Logout clicked")
+  }
 
   return (
     <>
@@ -47,7 +54,7 @@ export function AppSidebar({
           !isSidebarOpen && "-translate-x-full lg:translate-x-0"
         )}
       >
-        <SidebarHeader />
+        <SidebarHeader firstName={firstName} onNewConversation={onNewConversation} />
 
         <div className="flex flex-1 flex-col gap-4 px-4">
           <div className="flex flex-col gap-2">
@@ -92,14 +99,14 @@ export function AppSidebar({
           <ScrollArea className="flex-1">
             <ConversationList
               conversations={conversations}
-              onSelect={onConversationSelect}
-              currentId={currentConversationId}
-              onDelete={onDeleteConversation}
+              onConversationSelect={onConversationSelect}
+              currentConversationId={currentConversationId}
+              onDeleteConversation={onDeleteConversation}
             />
           </ScrollArea>
         </div>
 
-        <SidebarFooter />
+        <SidebarFooter onLogout={handleLogout} currentPath={location.pathname} />
       </aside>
 
       {isSidebarOpen && (
