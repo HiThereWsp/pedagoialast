@@ -1,112 +1,113 @@
-import { useNavigate, useLocation } from "react-router-dom"
-import { supabase } from "@/integrations/supabase/client"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarRail,
-} from "@/components/ui/sidebar"
-import { useEffect, useState } from "react"
-import { SidebarHeader } from "./sidebar/SidebarHeader"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { cn } from "@/lib/utils"
+import { Menu, PlusCircle, Settings, BookOpen, Brain } from "lucide-react"
+import { useState } from "react"
+import { Link, useLocation } from "react-router-dom"
 import { ConversationList } from "./sidebar/ConversationList"
 import { SidebarFooter } from "./sidebar/SidebarFooter"
+import { SidebarHeader } from "./sidebar/SidebarHeader"
+import { useSidebarContext } from "./ui/sidebar"
 
 interface AppSidebarProps {
-  conversations?: Array<{id: string, title: string}>;
-  onConversationSelect?: (id: string) => void;
-  currentConversationId?: string | null;
-  onNewConversation?: () => void;
-  onDeleteConversation?: (id: string) => void;
+  conversations: any[]
+  onConversationSelect: (id: string) => void
+  currentConversationId?: string
+  onNewConversation: () => void
+  onDeleteConversation: (id: string) => void
 }
 
-export function AppSidebar({ 
-  conversations = [], 
+export function AppSidebar({
+  conversations,
   onConversationSelect,
   currentConversationId,
   onNewConversation,
-  onDeleteConversation
+  onDeleteConversation,
 }: AppSidebarProps) {
-  const navigate = useNavigate()
   const location = useLocation()
-  const [firstName, setFirstName] = useState<string | null>(null)
-
-  useEffect(() => {
-    const getUserProfile = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (session?.user) {
-          // Vérifie si un profil existe
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('first_name')
-            .eq('id', session.user.id)
-            .maybeSingle()
-          
-          if (profile?.first_name) {
-            setFirstName(profile.first_name)
-          } else {
-            // Si aucun profil n'existe, on en crée un
-            const { data: newProfile, error: insertError } = await supabase
-              .from('profiles')
-              .insert([
-                { id: session.user.id, first_name: 'Anonymous' }
-              ])
-              .select('first_name')
-              .single()
-
-            if (insertError) {
-              console.error('Error creating profile:', insertError)
-              setFirstName('Anonymous')
-            } else if (newProfile) {
-              setFirstName(newProfile.first_name)
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error in getUserProfile:', error)
-        setFirstName('Anonymous')
-      }
-    }
-
-    getUserProfile()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        getUserProfile()
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate("/login")
-  }
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebarContext()
+  const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <Sidebar collapsible="offcanvas" variant="floating" className="z-50">
-      <SidebarRail />
-      <SidebarHeader firstName={firstName} onNewConversation={onNewConversation} />
-      
-      <SidebarContent>
-        <div className="flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto min-h-0 mb-20">
-            <ConversationList 
-              conversations={conversations}
-              onConversationSelect={onConversationSelect}
-              currentConversationId={currentConversationId}
-              onDeleteConversation={onDeleteConversation}
-            />
+    <>
+      <Button
+        variant="ghost"
+        className={cn(
+          "absolute left-2 top-2 h-10 w-10 px-0 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden",
+          isSidebarOpen && "hidden"
+        )}
+        onClick={() => setIsSidebarOpen(true)}
+      >
+        <Menu className="h-6 w-6" />
+      </Button>
+
+      <aside
+        className={cn(
+          "fixed inset-y-0 left-0 z-20 flex w-64 flex-col bg-white shadow-lg transition-transform dark:bg-gray-900 lg:static lg:transition-none",
+          !isSidebarOpen && "-translate-x-full lg:translate-x-0"
+        )}
+      >
+        <SidebarHeader />
+
+        <div className="flex flex-1 flex-col gap-4 px-4">
+          <div className="flex flex-col gap-2">
+            <Button
+              variant="outline"
+              className="justify-start gap-2"
+              onClick={onNewConversation}
+            >
+              <PlusCircle className="h-5 w-5" />
+              Nouvelle conversation
+            </Button>
+
+            <Link to="/creersequence">
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start gap-2",
+                  location.pathname === "/creersequence" &&
+                    "bg-gray-100 dark:bg-gray-800"
+                )}
+              >
+                <BookOpen className="h-5 w-5" />
+                Créer une séquence
+              </Button>
+            </Link>
+
+            <Link to="/exercices">
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start gap-2",
+                  location.pathname === "/exercices" &&
+                    "bg-gray-100 dark:bg-gray-800"
+                )}
+              >
+                <Brain className="h-5 w-5" />
+                Créer des exercices
+              </Button>
+            </Link>
           </div>
 
-          <SidebarFooter 
-            onLogout={handleLogout}
-            currentPath={location.pathname}
-          />
+          <ScrollArea className="flex-1">
+            <ConversationList
+              conversations={conversations}
+              onSelect={onConversationSelect}
+              currentId={currentConversationId}
+              onDelete={onDeleteConversation}
+            />
+          </ScrollArea>
         </div>
-      </SidebarContent>
-    </Sidebar>
+
+        <SidebarFooter />
+      </aside>
+
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-10 bg-gray-900/50 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+    </>
   )
 }

@@ -11,6 +11,7 @@ import WaitlistLanding from "@/pages/WaitlistLanding"
 import NotFound from "@/pages/NotFound"
 import PricingPage from "@/pages/Pricing"
 import { LessonPlanPage } from "@/pages/LessonPlanPage"
+import { ExerciseGenerator } from "@/components/exercise/ExerciseGenerator"
 import { useEffect, useState } from "react"
 import { supabase } from "./integrations/supabase/client"
 import "./App.css"
@@ -99,6 +100,11 @@ function App() {
               <Route path="/creersequence" element={
                 <ProtectedRoute>
                   <LessonPlanPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/exercices" element={
+                <ProtectedRoute>
+                  <ExerciseGenerator />
                 </ProtectedRoute>
               } />
               
