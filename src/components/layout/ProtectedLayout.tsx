@@ -1,8 +1,8 @@
-import { Outlet } from 'react-router-dom';
+import { ReactNode } from 'react';
 import { GlobalHeader } from './GlobalHeader';
 
 interface ProtectedLayoutProps {
-  children?: React.ReactNode;
+  children: ReactNode;
 }
 
 export function ProtectedLayout({ children }: ProtectedLayoutProps) {

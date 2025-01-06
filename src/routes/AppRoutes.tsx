@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom"
 import { ProtectedRoute } from "./ProtectedRoute"
 import { ProtectedLayout } from "@/components/layout/ProtectedLayout"
 import Landing from "@/pages/Landing"
