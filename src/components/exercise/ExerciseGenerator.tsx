@@ -3,9 +3,13 @@ import { ExerciseForm } from './ExerciseForm';
 import { ResultDisplay } from './ResultDisplay';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import type { ExerciseFormData } from '@/hooks/useExerciseGeneration';
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export function ExerciseGenerator() {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
+  const [isFormExpanded, setIsFormExpanded] = useState(true);
   const [formData, setFormData] = useState<ExerciseFormData>({
     subject: "",
     classLevel: "",
@@ -20,6 +24,11 @@ export function ExerciseGenerator() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleGenerateExercises = async () => {
+    await generateExercises(formData);
+    setIsFormExpanded(false);
   };
 
   return (
@@ -38,14 +47,44 @@ export function ExerciseGenerator() {
 
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               <div className="space-y-6">
-                <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
-                  <ExerciseForm 
-                    formData={formData} 
-                    handleInputChange={handleInputChange}
-                    handleSubmit={() => generateExercises(formData)}
-                    isLoading={isLoading}
-                  />
-                </div>
+                <Collapsible
+                  open={isFormExpanded}
+                  onOpenChange={setIsFormExpanded}
+                  className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200"
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Paramètres
+                    </h2>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        {isFormExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                  
+                  <CollapsibleContent>
+                    <ExerciseForm 
+                      formData={formData} 
+                      handleInputChange={handleInputChange}
+                      handleSubmit={handleGenerateExercises}
+                      isLoading={isLoading}
+                    />
+                  </CollapsibleContent>
+
+                  {!isFormExpanded && (
+                    <Button
+                      onClick={() => setIsFormExpanded(true)}
+                      className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow mt-4"
+                    >
+                      Générer de nouveaux exercices
+                    </Button>
+                  )}
+                </Collapsible>
               </div>
 
               <div className="xl:sticky xl:top-8 space-y-6">
