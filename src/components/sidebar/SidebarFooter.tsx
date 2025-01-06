@@ -1,6 +1,8 @@
-import { Lightbulb, Settings, LogOut } from "lucide-react"
+import { Settings, BookOpen } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import {
+  SidebarFooter as Footer,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
@@ -18,60 +20,54 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
   const navigate = useNavigate()
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 border-t border-sidebar-border bg-sidebar">
-      <div className="px-2">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton 
-                      onClick={() => navigate('/suggestions')}
-                      data-active={currentPath === '/suggestions'}
-                    >
-                      <Lightbulb className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">Faire des suggestions</span>
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    Faire des suggestions
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton 
-                      onClick={() => navigate('/settings')}
-                      data-active={currentPath === '/settings'}
-                    >
-                      <Settings className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">Paramètres</span>
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    Paramètres
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <SidebarMenuButton onClick={onLogout} className="text-red-500 hover:text-red-600">
-                      <LogOut className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">Déconnexion</span>
-                    </SidebarMenuButton>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    Déconnexion
-                  </TooltipContent>
-                </Tooltip>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </div>
-    </div>
+    <Footer>
+      <SidebarGroup>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton
+                    onClick={() => navigate('/lesson-plan')}
+                    data-active={currentPath === '/lesson-plan'}
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    <span>Créer une séquence</span>
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  Créer une séquence pédagogique
+                </TooltipContent>
+              </Tooltip>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton
+                    onClick={() => navigate('/settings')}
+                    data-active={currentPath === '/settings'}
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Paramètres</span>
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  Paramètres
+                </TooltipContent>
+              </Tooltip>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={onLogout}
+              >
+                Se déconnecter
+              </Button>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </Footer>
   )
 }

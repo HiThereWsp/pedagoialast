@@ -10,6 +10,7 @@ import Settings from "@/pages/Settings"
 import WaitlistLanding from "@/pages/WaitlistLanding"
 import NotFound from "@/pages/NotFound"
 import PricingPage from "@/pages/Pricing"
+import { LessonPlanPage } from "@/pages/LessonPlanPage"
 import { useEffect, useState } from "react"
 import { supabase } from "./integrations/supabase/client"
 import "./App.css"
@@ -93,6 +94,11 @@ function App() {
               <Route path="/settings" element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              } />
+              <Route path="/lesson-plan" element={
+                <ProtectedRoute>
+                  <LessonPlanPage />
                 </ProtectedRoute>
               } />
               
