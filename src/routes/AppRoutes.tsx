@@ -29,9 +29,7 @@ const router = createBrowserRouter([
     path: "/app",
     element: (
       <ProtectedRoute>
-        <ProtectedLayout>
-          <Outlet />
-        </ProtectedLayout>
+        <ProtectedLayout />
       </ProtectedRoute>
     ),
     children: [

@@ -1,8 +1,9 @@
 import { ReactNode } from 'react';
+import { Outlet } from 'react-router-dom';
 import { GlobalHeader } from './GlobalHeader';
 
 interface ProtectedLayoutProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 export function ProtectedLayout({ children }: ProtectedLayoutProps) {
@@ -10,7 +11,7 @@ export function ProtectedLayout({ children }: ProtectedLayoutProps) {
     <div className="min-h-screen bg-background">
       <GlobalHeader />
       <main className="pt-24 px-4 sm:px-6 lg:px-8">
-        {children}
+        {children || <Outlet />}
       </main>
     </div>
   );
