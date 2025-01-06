@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
-import { ThumbsDown, Heart, Copy } from "lucide-react";
+import { ThumbsDown, Heart, Copy, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { MagicParticles } from './MagicParticles';
 
 interface ResultDisplayProps {
   exercises: string | null;
@@ -13,6 +14,15 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   const { toast } = useToast();
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [showMagic, setShowMagic] = useState(false);
+
+  useEffect(() => {
+    if (exercises) {
+      setShowMagic(true);
+      const timer = setTimeout(() => setShowMagic(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [exercises]);
 
   if (!exercises) return null;
 
@@ -42,16 +52,25 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   };
 
   return (
-    <Card className="bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200 animate-fade-in">
+    <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-all duration-500 animate-fade-in overflow-hidden">
+      <MagicParticles isActive={showMagic} />
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
-          Exercices générés
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
+            Exercices générés
+          </h2>
+          <Sparkles 
+            className={cn(
+              "h-5 w-5 text-yellow-400",
+              showMagic && "animate-pulse"
+            )} 
+          />
+        </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => handleFeedback('like')}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-emerald-500 transition-colors",
+              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-emerald-500 transition-all duration-300 transform hover:scale-110",
               feedbackScore === 1 && "text-emerald-500"
             )}
             aria-label="J'aime"
@@ -61,7 +80,7 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           <button
             onClick={() => handleFeedback('dislike')}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-red-500 transition-colors",
+              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-red-500 transition-all duration-300 transform hover:scale-110",
               feedbackScore === -1 && "text-red-500"
             )}
             aria-label="Je n'aime pas"
@@ -71,7 +90,7 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           <button
             onClick={handleCopy}
             className={cn(
-              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-blue-500 transition-colors",
+              "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-blue-500 transition-all duration-300 transform hover:scale-110",
               isCopied && "text-blue-500"
             )}
             aria-label="Copier les exercices"
@@ -80,7 +99,10 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           </button>
         </div>
       </div>
-      <div className="prose prose-sm max-w-none">
+      <div className={cn(
+        "prose prose-sm max-w-none transition-opacity duration-500",
+        showMagic ? "opacity-100" : "opacity-90"
+      )}>
         <ReactMarkdown
           components={{
             strong: ({ children }) => <span className="font-bold text-gray-900">{children}</span>,
