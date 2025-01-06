@@ -38,10 +38,15 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     return text.trim();
   };
 
+  const getShareableText = (formattedText: string) => {
+    return `Bonjour collègue, voici ce que j'ai pu créer avec PedagoIA aujourd'hui :\n\n${formattedText}`;
+  };
+
   const handleCopy = async () => {
     try {
       const formattedText = formatText(exercises);
-      await navigator.clipboard.writeText(formattedText);
+      const shareableText = getShareableText(formattedText);
+      await navigator.clipboard.writeText(shareableText);
       setIsCopied(true);
       toast({
         description: "Exercices copiés dans le presse-papier",
@@ -59,9 +64,10 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   const handleShare = async () => {
     try {
       const formattedText = formatText(exercises);
+      const shareableText = getShareableText(formattedText);
       await navigator.share({
         title: 'Exercices générés par Pedagoia',
-        text: formattedText,
+        text: shareableText,
       });
       toast({
         description: "Merci d'avoir partagé ces exercices !",
