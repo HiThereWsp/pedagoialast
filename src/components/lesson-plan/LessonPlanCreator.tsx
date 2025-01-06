@@ -30,7 +30,7 @@ export function LessonPlanCreator() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.classLevel) {
+    if (!formData.classLevel.trim()) {
       toast({
         title: "Niveau requis",
         description: "Veuillez spécifier le niveau de la classe",

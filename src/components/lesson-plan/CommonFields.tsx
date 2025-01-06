@@ -15,12 +15,15 @@ export function CommonFields({ formData, handleInputChange }: CommonFieldsProps)
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Niveau de la classe</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Niveau de la classe <span className="text-red-500">*</span>
+        </label>
         <Input
           placeholder="Par exemple : 6ème, CM2, CE1"
           value={formData.classLevel}
           onChange={(e) => handleInputChange("classLevel", e.target.value)}
           className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          required
         />
       </div>
       <div>
