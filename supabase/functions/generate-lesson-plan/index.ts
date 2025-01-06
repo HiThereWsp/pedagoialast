@@ -9,7 +9,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -27,8 +26,43 @@ serve(async (req) => {
       )
     }
 
-    // Construct the prompt based on the input type and data
-    let prompt = `En tant qu'expert en pédagogie, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.\n`
+    // Recherche dans le vector store pour trouver les passages pertinents des programmes
+    const searchQuery = `Trouver les passages des programmes scolaires pertinents pour le niveau ${classLevel} ${subject ? `concernant ${subject}` : ''}`
+    
+    console.log('Searching vector store with query:', searchQuery)
+    const vectorSearchResponse = await fetch('https://api.openai.com/v1/vector-search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        vector_store_id: 'vs_6sUvixiJ5OVm7qK1xIGd24u3',
+        query: searchQuery,
+        top_k: 3, // Récupérer les 3 passages les plus pertinents
+      }),
+    })
+
+    if (!vectorSearchResponse.ok) {
+      console.error('Vector store search failed:', await vectorSearchResponse.text())
+      throw new Error('Failed to search vector store')
+    }
+
+    const vectorSearchResults = await vectorSearchResponse.json()
+    const relevantProgramContent = vectorSearchResults.matches
+      .map(match => match.text)
+      .join('\n\n')
+
+    console.log('Found relevant program content:', relevantProgramContent)
+
+    // Construire le prompt en incluant les passages pertinents des programmes
+    let prompt = `En tant qu'expert en pédagogie, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.
+    
+Voici les extraits pertinents des programmes officiels à prendre en compte :
+
+${relevantProgramContent}
+
+Assure-toi que ta réponse respecte ces programmes officiels.\n`
 
     if (subject) {
       prompt += `Le sujet est: ${subject}.\n`
@@ -44,18 +78,18 @@ serve(async (req) => {
     }
 
     prompt += `
-    Format de la réponse souhaitée:
-    1. Objectifs d'apprentissage
-    2. Prérequis
-    3. Durée estimée (${totalSessions} séances)
-    4. Matériel nécessaire
-    5. Déroulement détaillé:
-       - Phase 1: Introduction
-       - Phase 2: Développement
-       - Phase 3: Application
-       - Phase 4: Conclusion
-    6. Évaluation
-    7. Prolongements possibles`
+Format de la réponse souhaitée:
+1. Objectifs d'apprentissage (alignés avec les programmes officiels cités)
+2. Prérequis
+3. Durée estimée (${totalSessions} séances)
+4. Matériel nécessaire
+5. Déroulement détaillé:
+   - Phase 1: Introduction
+   - Phase 2: Développement
+   - Phase 3: Application
+   - Phase 4: Conclusion
+6. Évaluation
+7. Prolongements possibles`
 
     console.log('Calling OpenAI with prompt:', prompt)
 
@@ -70,7 +104,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Tu es un expert en pédagogie qui aide à créer des séquences pédagogiques détaillées et structurées.'
+            content: 'Tu es un expert en pédagogie qui aide à créer des séquences pédagogiques détaillées et structurées, en respectant scrupuleusement les programmes officiels de l\'Education Nationale.'
           },
           {
             role: 'user',
