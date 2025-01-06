@@ -1,24 +1,24 @@
 import React from 'react';
-import { UserPlus, Wand2, Smile } from 'lucide-react';
+import { UserPlus, Wand2, Gift } from 'lucide-react';
 
 const steps = [
   {
     number: 1,
     icon: UserPlus,
-    title: "Inscrivez-vous gratuitement",
-    description: "Créez votre compte en quelques secondes et accédez immédiatement à nos outils."
+    title: "Rejoignez la liste d'attente",
+    description: "Inscrivez-vous en quelques secondes et soyez prévenu dès que Pedagoia sera disponible, avec un tarif de lancement exclusif."
   },
   {
     number: 2,
     icon: Wand2,
-    title: "Choisissez vos outils",
-    description: "Sélectionnez et utilisez chaque jour l'outil adapté à votre besoin du moment. De la préparation à l'évaluation."
+    title: "Soyez le premier à tester",
+    description: "En tant que membre de la liste d'attente, vous serez les premiers à accéder à notre plateforme, avant même le lancement officiel."
   },
   {
     number: 3,
-    icon: Smile,
-    title: "Retrouvez votre équilibre",
-    description: "Redécouvrez le plaisir d'enseigner en vous concentrant sur ce qui compte vraiment : l'épanouissement et la réussite de vos élèves sans négliger votre santé mentale."
+    icon: Gift,
+    title: "Bénéficiez d'un tarif de lancement",
+    description: "Profitez d'un tarif spécial réservé aux premiers utilisateurs. Vous serez ainsi les pionniers de l'outil qui va transformer l'enseignement."
   }
 ];
 
@@ -32,7 +32,7 @@ export function HowItWorksSection() {
               Comment ça marche ?
             </h2>
             <p className="text-xl text-muted-foreground mt-4 max-w-2xl mx-auto">
-              3 étapes simples vers un enseignement plus serein et efficace
+              Trois étapes simples pour être prêt à révolutionner votre enseignement
             </p>
           </div>
 
