@@ -28,15 +28,15 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SidebarMenuButton
-                    onClick={() => navigate('/lesson-plan')}
-                    data-active={currentPath === '/lesson-plan'}
+                    onClick={() => navigate('/creersequence')}
+                    data-active={currentPath === '/creersequence'}
                   >
                     <BookOpen className="h-4 w-4" />
-                    <span>Créer une séquence</span>
+                    <span>Créateur de séquences</span>
                   </SidebarMenuButton>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  Créer une séquence pédagogique
+                  Créateur de séquences pédagogiques
                 </TooltipContent>
               </Tooltip>
             </SidebarMenuItem>

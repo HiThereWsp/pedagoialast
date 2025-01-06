@@ -96,7 +96,7 @@ function App() {
                   <Settings />
                 </ProtectedRoute>
               } />
-              <Route path="/lesson-plan" element={
+              <Route path="/creersequence" element={
                 <ProtectedRoute>
                   <LessonPlanPage />
                 </ProtectedRoute>
