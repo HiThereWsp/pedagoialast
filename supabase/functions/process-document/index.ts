@@ -1,4 +1,3 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
@@ -17,45 +16,63 @@ serve(async (req) => {
     const file = formData.get('file')
 
     if (!file) {
-      throw new Error('No file uploaded')
+      return new Response(
+        JSON.stringify({ error: 'No file uploaded' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
     }
 
-    // Create Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Upload file to Supabase Storage
-    const fileExt = file.name.split('.').pop()
+    // Sanitize filename and generate a unique path
+    const sanitizedFileName = file.name.replace(/[^\x00-\x7F]/g, '')
+    const fileExt = sanitizedFileName.split('.').pop()
     const filePath = `${crypto.randomUUID()}.${fileExt}`
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    console.log('Uploading file:', sanitizedFileName)
+
+    const { data, error: uploadError } = await supabase.storage
       .from('lesson-documents')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        contentType: file.type,
+        upsert: false
+      })
 
-    if (uploadError) throw uploadError
+    if (uploadError) {
+      console.error('Error uploading file:', uploadError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to upload file' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
+    }
 
-    // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    // Get the public URL of the uploaded file
+    const { data: { publicUrl }, error: urlError } = supabase.storage
       .from('lesson-documents')
       .getPublicUrl(filePath)
 
+    if (urlError) {
+      console.error('Error getting public URL:', urlError)
+      return new Response(
+        JSON.stringify({ error: 'Failed to get file URL' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      )
+    }
+
+    console.log('File uploaded successfully:', publicUrl)
+
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        filePath,
-        publicUrl
-      }),
+      JSON.stringify({ publicUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Unexpected error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ error: 'An unexpected error occurred' }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
 })
