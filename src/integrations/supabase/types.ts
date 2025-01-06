@@ -78,6 +78,48 @@ export type Database = {
         }
         Relationships: []
       }
+      differentiated_exercises: {
+        Row: {
+          adapted_exercise: string
+          class_level: string
+          created_at: string
+          id: string
+          learning_style: string | null
+          objective: string
+          original_exercise: string | null
+          specific_needs: string | null
+          student_profile: string
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          adapted_exercise: string
+          class_level: string
+          created_at?: string
+          id?: string
+          learning_style?: string | null
+          objective: string
+          original_exercise?: string | null
+          specific_needs?: string | null
+          student_profile: string
+          subject: string
+          user_id: string
+        }
+        Update: {
+          adapted_exercise?: string
+          class_level?: string
+          created_at?: string
+          id?: string
+          learning_style?: string | null
+          objective?: string
+          original_exercise?: string | null
+          specific_needs?: string | null
+          student_profile?: string
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
