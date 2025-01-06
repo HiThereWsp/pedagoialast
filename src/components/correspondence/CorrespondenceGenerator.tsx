@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Loader2, Copy, CheckCircle2 } from "lucide-react"
+import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import { ResultDisplay } from "./ResultDisplay"
 
 export function CorrespondenceGenerator() {
   const [topic, setTopic] = useState("")
@@ -16,7 +17,6 @@ export function CorrespondenceGenerator() {
   const [additionalContext, setAdditionalContext] = useState("")
   const [generatedText, setGeneratedText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [isCopied, setIsCopied] = useState(false)
   const { toast } = useToast()
 
   const handleGenerate = async () => {
@@ -51,25 +51,9 @@ export function CorrespondenceGenerator() {
     }
   }
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(generatedText)
-      setIsCopied(true)
-      toast({
-        description: "Texte copié dans le presse-papier !",
-      })
-      setTimeout(() => setIsCopied(false), 2000)
-    } catch (error) {
-      toast({
-        description: "Erreur lors de la copie du texte.",
-        variant: "destructive"
-      })
-    }
-  }
-
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
-      <Card className="p-6 space-y-6">
+      <Card className="p-6 space-y-6 bg-white/90 backdrop-blur-md border border-orange-100">
         <div className="space-y-2">
           <Label htmlFor="recipient">Destinataire</Label>
           <Select value={recipient} onValueChange={setRecipient}>
@@ -92,6 +76,7 @@ export function CorrespondenceGenerator() {
             placeholder="Ex: Absence non justifiée, Félicitations, Comportement en classe..."
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
+            className="bg-white/80 border-orange-100/20 focus-visible:ring-orange-200/30"
           />
         </div>
 
@@ -117,14 +102,14 @@ export function CorrespondenceGenerator() {
             placeholder="Ajoutez des détails spécifiques pour personnaliser la correspondance..."
             value={additionalContext}
             onChange={(e) => setAdditionalContext(e.target.value)}
-            className="min-h-[100px]"
+            className="min-h-[100px] bg-white/80 border-orange-100/20 focus-visible:ring-orange-200/30"
           />
         </div>
 
         <Button 
           onClick={handleGenerate} 
           disabled={isLoading || !topic}
-          className="w-full"
+          className="w-full bg-gradient-to-r from-[#F97316] to-[#D946EF] text-white hover:opacity-90"
         >
           {isLoading ? (
             <>
@@ -137,28 +122,7 @@ export function CorrespondenceGenerator() {
         </Button>
       </Card>
 
-      {generatedText && (
-        <Card className="p-6 space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">Correspondance générée</h3>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleCopy}
-              className="h-8 w-8"
-            >
-              {isCopied ? (
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-          <div className="whitespace-pre-wrap bg-muted p-4 rounded-md">
-            {generatedText}
-          </div>
-        </Card>
-      )}
+      {generatedText && <ResultDisplay text={generatedText} />}
     </div>
   )
 }
