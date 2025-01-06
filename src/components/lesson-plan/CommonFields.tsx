@@ -40,7 +40,7 @@ export function CommonFields({ formData, handleInputChange }: CommonFieldsProps)
           className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
         />
       </div>
-      <div>
+      <div className="mt-8">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Instructions supplémentaires (facultatif)
         </label>

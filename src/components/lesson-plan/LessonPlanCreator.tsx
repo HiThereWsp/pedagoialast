@@ -32,8 +32,7 @@ export function LessonPlanCreator() {
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
-                  <CommonFields formData={formData} handleInputChange={handleInputChange} />
-                  <Tabs defaultValue="subject" className="mt-6">
+                  <Tabs defaultValue="subject" className="mb-6">
                     <TabsList className="grid grid-cols-2 gap-4">
                       <TabsTrigger value="subject">Programme scolaire</TabsTrigger>
                       <TabsTrigger value="text">Texte</TabsTrigger>
@@ -45,6 +44,7 @@ export function LessonPlanCreator() {
                       <TextTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
                     </TabsContent>
                   </Tabs>
+                  <CommonFields formData={formData} handleInputChange={handleInputChange} />
                 </div>
               </div>
               <div className="xl:sticky xl:top-8 space-y-6">
