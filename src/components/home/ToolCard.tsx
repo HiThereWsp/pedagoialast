@@ -23,26 +23,23 @@ export const ToolCard = ({
 }: ToolCardProps) => {
   return (
     <Card 
-      className="group cursor-pointer animate-fade-in h-[280px] hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.02] card-gradient-headspace"
+      className={`group cursor-pointer animate-fade-in h-[280px] hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.02]`}
       onClick={onClick}
     >
-      <div className={`p-6 h-full flex flex-col relative overflow-hidden ${bgColor}`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent" />
-        <div className="relative z-10">
-          <div className={`p-3 rounded-2xl bg-white/90 backdrop-blur-sm w-fit mb-4 shadow-md transform group-hover:scale-110 transition-transform duration-300`}>
-            <Icon className={`w-6 h-6 ${color}`} />
+      <div className={`p-4 ${bgColor} border-b-2 ${borderColor} h-full flex flex-col`}>
+        <div className={`p-2.5 rounded-xl ${color} bg-white/90 backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300 w-fit mb-4 shadow-md`}>
+          <Icon className={`w-6 h-6 text-current`} />
+        </div>
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 group-hover:text-coral-400 transition-colors">
+              {title}
+            </h3>
+            <p className="text-sm text-gray-700">
+              {description}
+            </p>
           </div>
-          <div className="flex-1 flex flex-col justify-between">
-            <div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800 group-hover:text-headspace-orange transition-colors">
-                {title}
-              </h3>
-              <p className="text-gray-600">
-                {description}
-              </p>
-            </div>
-            <ArrowRight className={`w-5 h-5 ${color} opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300 self-end mt-4`} />
-          </div>
+          <ArrowRight className={`w-5 h-5 ${color} opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300 self-end mt-4`} />
         </div>
       </div>
     </Card>
