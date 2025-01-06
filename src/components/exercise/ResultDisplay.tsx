@@ -35,9 +35,37 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     });
   };
 
+  const formatText = (markdown: string) => {
+    // Remove any potential HTML tags
+    let text = markdown.replace(/<[^>]*>/g, '');
+    
+    // Replace Markdown headers
+    text = text.replace(/### (.*?)\n/g, '$1\n');
+    text = text.replace(/## (.*?)\n/g, '$1\n');
+    text = text.replace(/# (.*?)\n/g, '$1\n');
+    
+    // Replace bold text
+    text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+    
+    // Replace italic text
+    text = text.replace(/\*(.*?)\*/g, '$1');
+    
+    // Replace LaTeX-style math expressions
+    text = text.replace(/\\\((.*?)\\\)/g, '$1');
+    
+    // Add proper spacing after bullet points
+    text = text.replace(/- /g, '\n- ');
+    
+    // Remove extra newlines
+    text = text.replace(/\n{3,}/g, '\n\n');
+    
+    return text.trim();
+  };
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(exercises);
+      const formattedText = formatText(exercises);
+      await navigator.clipboard.writeText(formattedText);
       setIsCopied(true);
       toast({
         description: "Exercices copiés dans le presse-papier",
@@ -54,9 +82,10 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
 
   const handleShare = async () => {
     try {
+      const formattedText = formatText(exercises);
       await navigator.share({
         title: 'Exercices générés par Pedagoia',
-        text: exercises,
+        text: formattedText,
       });
       toast({
         description: "Merci d'avoir partagé ces exercices !",
