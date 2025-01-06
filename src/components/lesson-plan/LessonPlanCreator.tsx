@@ -34,7 +34,7 @@ export function LessonPlanCreator() {
                   <CommonFields formData={formData} handleInputChange={handleInputChange} />
                   <Tabs defaultValue="subject" className="mt-6">
                     <TabsList className="grid grid-cols-2 gap-4">
-                      <TabsTrigger value="subject">Matière</TabsTrigger>
+                      <TabsTrigger value="subject">Programme scolaire</TabsTrigger>
                       <TabsTrigger value="text">Texte</TabsTrigger>
                     </TabsList>
                     <TabsContent value="subject">
