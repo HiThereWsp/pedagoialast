@@ -16,13 +16,15 @@ const Landing = () => {
         description="Votre assistant pédagogique qui vous aide à adapter vos cours, effectuer vos tâches administratives et préparer vos cours plus efficacement."
       />
       <Header />
-      <HeroSection />
-      <ChallengesSection />
-      <MetricsSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <FAQSection />
-      <CTASection />
+      <div className="pt-24">
+        <HeroSection />
+        <ChallengesSection />
+        <MetricsSection />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <FAQSection />
+        <CTASection />
+      </div>
     </div>
   )
 }

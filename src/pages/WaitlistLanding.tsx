@@ -13,10 +13,12 @@ const WaitlistLanding = () => {
         description="Inscrivez-vous à la liste d'attente pour accéder à votre assistant pédagogique intelligent qui vous aide à adapter vos cours et gagner du temps."
       />
       <Header />
-      <HeroSection />
-      <ChallengesSection />
-      <MetricsSection />
-      <HowItWorksSection />
+      <div className="pt-24">
+        <HeroSection />
+        <ChallengesSection />
+        <MetricsSection />
+        <HowItWorksSection />
+      </div>
     </div>
   )
 }
