@@ -4,17 +4,20 @@ import { Input } from "./ui/input"
 import { Textarea } from "./ui/textarea"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs"
 import { Card, CardContent } from "./ui/card"
-import { Lightbulb, FileText, Globe, FileIcon, ArrowLeft, Sparkles } from "lucide-react"
+import { Lightbulb, FileText, Globe, FileIcon, ArrowLeft, Sparkles, Upload } from "lucide-react"
 import { useToast } from "./ui/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 
 export const LessonPlanCreator = () => {
   const [subject, setSubject] = useState("")
+  const [webSubject, setWebSubject] = useState("")
+  const [webUrl, setWebUrl] = useState("")
   const [classLevel, setClassLevel] = useState("")
   const [additionalInstructions, setAdditionalInstructions] = useState("")
   const [sourceText, setSourceText] = useState("")
   const [currentTab, setCurrentTab] = useState("subject")
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const { toast } = useToast()
 
   const handleGenerateLessonPlan = async () => {
@@ -54,6 +57,51 @@ export const LessonPlanCreator = () => {
         })
         return
       }
+    } else if (currentTab === "webpage") {
+      if (!webSubject.trim()) {
+        toast({
+          title: "Sujet requis",
+          description: "Veuillez entrer un sujet",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (!webUrl.trim()) {
+        toast({
+          title: "URL requise",
+          description: "Veuillez entrer l'URL de la page web",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (!classLevel.trim()) {
+        toast({
+          title: "Niveau requis",
+          description: "Veuillez entrer le niveau de la classe",
+          variant: "destructive",
+        })
+        return
+      }
+    } else if (currentTab === "document") {
+      if (!selectedFile) {
+        toast({
+          title: "Document requis",
+          description: "Veuillez joindre un document",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (!classLevel.trim()) {
+        toast({
+          title: "Niveau requis",
+          description: "Veuillez entrer le niveau de la classe",
+          variant: "destructive",
+        })
+        return
+      }
     }
 
     setIsLoading(true)
@@ -62,7 +110,16 @@ export const LessonPlanCreator = () => {
         ? `Crée une séquence pédagogique sur le sujet: ${subject}. 
            Niveau de la classe: ${classLevel}.
            Instructions supplémentaires: ${additionalInstructions}`
-        : `Crée une séquence pédagogique basée sur ce texte: ${sourceText}.
+        : currentTab === "text"
+        ? `Crée une séquence pédagogique basée sur ce texte: ${sourceText}.
+           Niveau de la classe: ${classLevel}.
+           Instructions supplémentaires: ${additionalInstructions}`
+        : currentTab === "webpage"
+        ? `Crée une séquence pédagogique sur le sujet: ${webSubject}.
+           Basée sur la page web: ${webUrl}.
+           Niveau de la classe: ${classLevel}.
+           Instructions supplémentaires: ${additionalInstructions}`
+        : `Crée une séquence pédagogique basée sur le document joint.
            Niveau de la classe: ${classLevel}.
            Instructions supplémentaires: ${additionalInstructions}`
 
@@ -88,6 +145,13 @@ export const LessonPlanCreator = () => {
       })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
     }
   }
 
@@ -156,6 +220,68 @@ export const LessonPlanCreator = () => {
                 onChange={(e) => setSourceText(e.target.value)}
                 className="min-h-[200px]"
               />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Niveau de la classe</label>
+              <Input
+                placeholder="Par exemple : 6ème, CM2, CE1"
+                value={classLevel}
+                onChange={(e) => setClassLevel(e.target.value)}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="webpage">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Sujet</label>
+              <Input
+                placeholder="Entrez le sujet de la page web"
+                value={webSubject}
+                onChange={(e) => setWebSubject(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Lien de la page web</label>
+              <Input
+                placeholder="Collez l'URL de la page web"
+                value={webUrl}
+                onChange={(e) => setWebUrl(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Niveau de la classe</label>
+              <Input
+                placeholder="Par exemple : 6ème, CM2, CE1"
+                value={classLevel}
+                onChange={(e) => setClassLevel(e.target.value)}
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="document">
+            <div className="border-2 border-dashed border-gray-200 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                id="file-upload"
+                className="hidden"
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx"
+              />
+              <label
+                htmlFor="file-upload"
+                className="cursor-pointer flex flex-col items-center gap-2"
+              >
+                <Upload className="h-8 w-8 text-gray-400" />
+                <span className="text-sm text-gray-600">
+                  {selectedFile ? selectedFile.name : "Cliquez pour joindre un document"}
+                </span>
+                <span className="text-xs text-gray-400">
+                  Formats acceptés : PDF, DOC, DOCX
+                </span>
+              </label>
             </div>
 
             <div>
