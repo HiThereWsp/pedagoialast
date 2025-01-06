@@ -3,9 +3,7 @@ import { Header } from './Header';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DocumentTab } from './tabs/DocumentTab';
 import { TextTab } from './tabs/TextTab';
-import { WebpageTab } from './tabs/WebpageTab';
 import { SubjectTab } from './tabs/SubjectTab';
 
 export function LessonPlanCreator() {
@@ -15,7 +13,6 @@ export function LessonPlanCreator() {
     totalSessions: '',
     subject: '',
     text: '',
-    webUrl: '',
     lessonPlan: ''
   });
 
@@ -36,23 +33,15 @@ export function LessonPlanCreator() {
                 <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
                   <CommonFields formData={formData} handleInputChange={handleInputChange} />
                   <Tabs defaultValue="subject" className="mt-6">
-                    <TabsList className="grid grid-cols-4 gap-4">
+                    <TabsList className="grid grid-cols-2 gap-4">
                       <TabsTrigger value="subject">Matière</TabsTrigger>
-                      <TabsTrigger value="document">Document</TabsTrigger>
                       <TabsTrigger value="text">Texte</TabsTrigger>
-                      <TabsTrigger value="webpage">Page web</TabsTrigger>
                     </TabsList>
                     <TabsContent value="subject">
                       <SubjectTab formData={formData} handleInputChange={handleInputChange} />
                     </TabsContent>
-                    <TabsContent value="document">
-                      <DocumentTab formData={formData} handleInputChange={handleInputChange} />
-                    </TabsContent>
                     <TabsContent value="text">
                       <TextTab formData={formData} handleInputChange={handleInputChange} />
-                    </TabsContent>
-                    <TabsContent value="webpage">
-                      <WebpageTab formData={formData} handleInputChange={handleInputChange} />
                     </TabsContent>
                   </Tabs>
                 </div>
