@@ -74,16 +74,16 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
 
   return (
     <>
-      <Card className="bg-white p-6 rounded-xl border border-pink-100 shadow-sm hover:shadow-md transition-shadow duration-200 animate-fade-in">
+      <Card className="bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200 animate-fade-in">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold bg-gradient-to-r from-[#D946EF] to-pink-500 bg-clip-text text-transparent">
+          <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
             Séquence pédagogique générée
           </h2>
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleFeedback('like')}
               className={cn(
-                "rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-emerald-500 transition-colors",
+                "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-emerald-500 transition-colors",
                 feedbackScore === 1 && "text-emerald-500"
               )}
               aria-label="J'aime"
@@ -93,7 +93,7 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
             <button
               onClick={() => handleFeedback('dislike')}
               className={cn(
-                "rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-500 transition-colors",
+                "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-red-500 transition-colors",
                 feedbackScore === -1 && "text-red-500"
               )}
               aria-label="Je n'aime pas"
@@ -103,7 +103,7 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
             <button
               onClick={handleCopy}
               className={cn(
-                "rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-blue-500 transition-colors",
+                "rounded p-1.5 text-gray-400 hover:bg-orange-50 hover:text-blue-500 transition-colors",
                 isCopied && "text-blue-500"
               )}
               aria-label="Copier la séquence"

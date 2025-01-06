@@ -83,7 +83,7 @@ export function LessonPlanCreator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-purple-50">
+    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-orange-50 to-purple-50">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-none mx-auto flex flex-col items-center">
           <div className="w-full max-w-[1200px]">
@@ -93,10 +93,10 @@ export function LessonPlanCreator() {
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
                   <Tabs defaultValue="subject" className="w-full" value={activeTab} onValueChange={setActiveTab}>
-                    <TabsList className="w-full bg-pink-50/50 p-1 rounded-lg mb-6">
+                    <TabsList className="w-full bg-gradient-to-r from-pink-50/50 via-orange-50/50 to-pink-50/50 p-1 rounded-lg mb-6">
                       <TabsTrigger value="subject" className="flex items-center gap-2 flex-1 data-[state=active]:bg-white data-[state=active]:shadow-sm">
-                        <div className="w-6 h-6 rounded-full bg-[#D946EF]/10 flex items-center justify-center">
-                          <Sparkles className="h-3.5 w-3.5 text-[#D946EF]" />
+                        <div className="w-6 h-6 rounded-full bg-[#F97316]/10 flex items-center justify-center">
+                          <Sparkles className="h-3.5 w-3.5 text-[#F97316]" />
                         </div>
                         <span className="hidden sm:inline">Sujet</span>
                       </TabsTrigger>
@@ -118,7 +118,7 @@ export function LessonPlanCreator() {
                   </Tabs>
 
                   <Button
-                    className="w-full bg-gradient-to-r from-yellow-300 via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-yellow-300 text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 mt-6 transition-all duration-200 shadow-sm hover:shadow"
+                    className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 mt-6 transition-all duration-200 shadow-sm hover:shadow"
                     onClick={handleSubmit}
                     disabled={isLoading}
                   >

@@ -17,7 +17,7 @@ export function Header() {
         <ChevronLeft className="h-5 w-5 text-pink-600" />
       </Button>
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#D946EF] to-pink-500 bg-clip-text text-transparent">
+        <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 bg-clip-text text-transparent">
           Créer une séquence pédagogique
         </h1>
         <p className="text-gray-600 text-sm md:text-base">
