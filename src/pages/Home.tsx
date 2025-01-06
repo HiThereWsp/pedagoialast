@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom"
 import { 
   BookOpen, 
   MessageSquare, 
@@ -18,6 +19,8 @@ import {
 } from "@/components/ui/carousel"
 
 const Home = () => {
+  const navigate = useNavigate()
+
   const tools = [
     {
       title: "Chat pédagogique",
@@ -107,26 +110,26 @@ const Home = () => {
           >
             <CarouselContent className="-ml-2 md:-ml-4">
               {tools.map((tool, index) => (
-                <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/3 lg:basis-1/4">
                   <Card 
-                    className={`group cursor-pointer animate-fade-in hover:shadow-xl transition-all duration-300 overflow-hidden h-full`}
+                    className={`group cursor-pointer animate-fade-in h-[360px] hover:shadow-xl transition-all duration-300 overflow-hidden`}
                     style={{ animationDelay: `${index * 100}ms` }}
                     onClick={() => navigate(tool.route)}
                   >
-                    <div className={`p-6 ${tool.bgColor} border-b-2 ${tool.borderColor} h-full`}>
-                      <div className="flex flex-col gap-4">
-                        <div className={`p-3 rounded-2xl bg-white/80 backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300 w-fit`}>
-                          <tool.icon className={`w-6 h-6 ${tool.color}`} />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold mb-2 group-hover:text-coral-400 transition-colors">
+                    <div className={`p-6 ${tool.bgColor} border-b-2 ${tool.borderColor} h-full flex flex-col`}>
+                      <div className={`p-3 rounded-2xl bg-white/80 backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300 w-fit mb-6`}>
+                        <tool.icon className={`w-8 h-8 ${tool.color}`} />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-xl font-semibold mb-4 group-hover:text-coral-400 transition-colors">
                             {tool.title}
                           </h3>
-                          <p className="text-gray-600 text-sm">
+                          <p className="text-gray-600">
                             {tool.description}
                           </p>
                         </div>
-                        <ArrowRight className={`w-5 h-5 ${tool.color} opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300 self-end`} />
+                        <ArrowRight className={`w-5 h-5 ${tool.color} opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300 self-end mt-6`} />
                       </div>
                     </div>
                   </Card>
