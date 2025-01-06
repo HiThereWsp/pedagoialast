@@ -8,14 +8,14 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 function App() {
   return (
     <HelmetProvider>
-      <TooltipProvider>
-        <SidebarProvider>
+      <SidebarProvider>
+        <TooltipProvider>
           <BrowserRouter>
             <AppRoutes />
             <Toaster />
           </BrowserRouter>
-        </SidebarProvider>
-      </TooltipProvider>
+        </TooltipProvider>
+      </SidebarProvider>
     </HelmetProvider>
   )
 }
