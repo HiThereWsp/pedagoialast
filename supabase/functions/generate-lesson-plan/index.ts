@@ -15,10 +15,12 @@ serve(async (req) => {
   }
 
   try {
-    const { subject, webUrl, text, classLevel, additionalInstructions } = await req.json()
+    const { subject, webUrl, text, classLevel, additionalInstructions, totalSessions } = await req.json()
+
+    console.log('Received request with:', { subject, webUrl, text, classLevel, additionalInstructions, totalSessions })
 
     // Construct the prompt based on the input type and data
-    let prompt = `En tant qu'expert en pédagogie, crée une séquence pédagogique détaillée pour le niveau ${classLevel}.\n`
+    let prompt = `En tant qu'expert en pédagogie, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.\n`
 
     if (subject) {
       prompt += `Le sujet est: ${subject}.\n`
@@ -37,7 +39,7 @@ serve(async (req) => {
     Format de la réponse souhaitée:
     1. Objectifs d'apprentissage
     2. Prérequis
-    3. Durée estimée
+    3. Durée estimée (${totalSessions} séances)
     4. Matériel nécessaire
     5. Déroulement détaillé:
        - Phase 1: Introduction
@@ -56,7 +58,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -79,6 +81,8 @@ serve(async (req) => {
 
     const data = await response.json()
     const lessonPlan = data.choices[0].message.content
+
+    console.log('Successfully generated lesson plan')
 
     return new Response(JSON.stringify({ lessonPlan }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
