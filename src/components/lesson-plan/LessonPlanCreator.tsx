@@ -28,6 +28,7 @@ export function LessonPlanCreator() {
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="max-w-none mx-auto flex flex-col items-center">
           <div className="w-full max-w-[1200px]">
+            <Header />
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
