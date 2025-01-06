@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
-import { ThumbsDown, Heart, Copy, MessageSquare } from "lucide-react";
+import { ThumbsDown, Heart, Copy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";

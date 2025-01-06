@@ -8,18 +8,8 @@ import { TextTab } from './tabs/TextTab';
 import { WebpageTab } from './tabs/WebpageTab';
 import { SubjectTab } from './tabs/SubjectTab';
 
-interface FormData {
-  classLevel: string;
-  additionalInstructions: string;
-  totalSessions: string;
-  subject?: string;
-  text?: string;
-  webUrl?: string;
-  lessonPlan?: string;
-}
-
 export function LessonPlanCreator() {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     classLevel: '',
     additionalInstructions: '',
     totalSessions: '',
