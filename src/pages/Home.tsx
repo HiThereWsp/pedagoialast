@@ -1,84 +1,8 @@
-import { useNavigate } from "react-router-dom"
-import { 
-  BookOpen, 
-  MessageSquare, 
-  FileText, 
-  Sparkles,
-  ArrowRight,
-  Settings,
-  Lightbulb,
-  Zap
-} from "lucide-react"
-import { Card } from "@/components/ui/card"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
+import { Zap } from "lucide-react"
+import { ToolsCarousel } from "@/components/home/ToolsCarousel"
+import { ShortcutsSection } from "@/components/home/ShortcutsSection"
 
 const Home = () => {
-  const navigate = useNavigate()
-
-  const tools = [
-    {
-      title: "Chat pédagogique",
-      description: "Discutez avec votre assistant pour obtenir des conseils et des ressources personnalisées",
-      icon: MessageSquare,
-      color: "text-coral-400",
-      bgColor: "bg-[#FFF5F5]",
-      borderColor: "border-coral-400/20",
-      route: "/chat"
-    },
-    {
-      title: "Générateur de séquences",
-      description: "Créez des séquences pédagogiques complètes adaptées à vos besoins",
-      icon: Sparkles,
-      color: "text-emerald-500",
-      bgColor: "bg-[#F0FFF4]",
-      borderColor: "border-emerald-500/20",
-      route: "/lesson-plan"
-    },
-    {
-      title: "Générateur d'exercices",
-      description: "Générez des exercices sur mesure pour vos élèves",
-      icon: BookOpen,
-      color: "text-violet-500",
-      bgColor: "bg-[#FAF5FF]",
-      borderColor: "border-violet-500/20",
-      route: "/exercise"
-    },
-    {
-      title: "Générateur de correspondances",
-      description: "Créez facilement des correspondances avec les parents d'élèves",
-      icon: FileText,
-      color: "text-blue-500",
-      bgColor: "bg-[#EBF8FF]",
-      borderColor: "border-blue-500/20",
-      route: "/correspondence"
-    }
-  ]
-
-  const shortcuts = [
-    {
-      title: "Paramètres",
-      description: "Gérez votre profil et vos préférences",
-      icon: Settings,
-      color: "text-purple-500",
-      bgColor: "bg-purple-500/10",
-      route: "/settings"
-    },
-    {
-      title: "Suggestions",
-      description: "Proposez de nouvelles fonctionnalités",
-      icon: Lightbulb,
-      color: "text-yellow-500",
-      bgColor: "bg-yellow-500/10",
-      route: "/suggestions"
-    }
-  ]
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50">
       <div className="container mx-auto px-4 py-8">
@@ -100,75 +24,10 @@ const Home = () => {
         </div>
 
         {/* Tools Carousel */}
-        <div className="max-w-6xl mx-auto mb-16">
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-2 md:-ml-4">
-              {tools.map((tool, index) => (
-                <CarouselItem key={index} className="pl-2 md:pl-4 md:basis-1/3 lg:basis-1/4">
-                  <Card 
-                    className={`group cursor-pointer animate-fade-in h-[360px] hover:shadow-xl transition-all duration-300 overflow-hidden`}
-                    style={{ animationDelay: `${index * 100}ms` }}
-                    onClick={() => navigate(tool.route)}
-                  >
-                    <div className={`p-6 ${tool.bgColor} border-b-2 ${tool.borderColor} h-full flex flex-col`}>
-                      <div className={`p-3 rounded-2xl bg-white/80 backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300 w-fit mb-6`}>
-                        <tool.icon className={`w-8 h-8 ${tool.color}`} />
-                      </div>
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-xl font-semibold mb-4 group-hover:text-coral-400 transition-colors">
-                            {tool.title}
-                          </h3>
-                          <p className="text-gray-600">
-                            {tool.description}
-                          </p>
-                        </div>
-                        <ArrowRight className={`w-5 h-5 ${tool.color} opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300 self-end mt-6`} />
-                      </div>
-                    </div>
-                  </Card>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden md:flex" />
-            <CarouselNext className="hidden md:flex" />
-          </Carousel>
-        </div>
+        <ToolsCarousel />
 
         {/* Shortcuts Section */}
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Accès rapides</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {shortcuts.map((shortcut, index) => (
-              <Card
-                key={index}
-                className="p-4 hover:shadow-md transition-all duration-300 cursor-pointer group animate-fade-in"
-                style={{ animationDelay: `${(index + tools.length) * 100}ms` }}
-                onClick={() => navigate(shortcut.route)}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${shortcut.bgColor} transform group-hover:scale-110 transition-transform duration-300`}>
-                    <shortcut.icon className={`w-5 h-5 ${shortcut.color}`} />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800 group-hover:text-coral-400 transition-colors">
-                      {shortcut.title}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {shortcut.description}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
+        <ShortcutsSection />
       </div>
     </div>
   )
