@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { Menu, PlusCircle, Settings, BookOpen, Brain } from "lucide-react"
+import { Menu, PlusCircle, Settings, BookOpen, Brain, BarChart } from "lucide-react"
 import { useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { ConversationList } from "./sidebar/ConversationList"
@@ -92,6 +92,20 @@ export function AppSidebar({
               >
                 <Brain className="h-5 w-5" />
                 Créer des exercices
+              </Button>
+            </Link>
+
+            <Link to="/metrics">
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start gap-2",
+                  location.pathname === "/metrics" &&
+                    "bg-gray-100 dark:bg-gray-800"
+                )}
+              >
+                <BarChart className="h-5 w-5" />
+                Métriques
               </Button>
             </Link>
           </div>
