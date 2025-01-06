@@ -101,51 +101,49 @@ const Index = () => {
   )
 
   return (
-    <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
-        <AppSidebar 
-          conversations={conversations}
-          onConversationSelect={loadConversationMessages}
-          currentConversationId={currentConversationId}
-          onNewConversation={handleNewConversation}
-          onDeleteConversation={deleteConversation}
-        />
-        
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
-            <div className="h-16 flex items-center px-6 gap-2">
-              <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
-              <div className="ml-auto">
-              </div>
+    <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
+      <AppSidebar 
+        conversations={conversations}
+        onConversationSelect={loadConversationMessages}
+        currentConversationId={currentConversationId}
+        onNewConversation={handleNewConversation}
+        onDeleteConversation={deleteConversation}
+      />
+      
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        <nav className="flex-shrink-0 border-b bg-white dark:bg-gray-900 dark:border-gray-800">
+          <div className="h-16 flex items-center px-6 gap-2">
+            <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
+            <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">PedagoIA</h1>
+            <div className="ml-auto">
             </div>
-          </nav>
+          </div>
+        </nav>
 
-          <main className="flex-1 overflow-y-auto relative">
-            <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
-              {!currentConversationId && <WelcomeBanner />}
-              <ChatHistory messages={messages} isLoading={isLoading} />
-              <QuickActions 
-                onActionClick={handleQuickAction} 
-                visible={showQuickActions}
-                onPromptSelect={handlePromptSelect}
-              />
-            </div>
-          </main>
+        <main className="flex-1 overflow-y-auto relative">
+          <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
+            {!currentConversationId && <WelcomeBanner />}
+            <ChatHistory messages={messages} isLoading={isLoading} />
+            <QuickActions 
+              onActionClick={handleQuickAction} 
+              visible={showQuickActions}
+              onPromptSelect={handlePromptSelect}
+            />
+          </div>
+        </main>
 
-          <div className="fixed bottom-0 left-0 right-0 border-t bg-white dark:bg-gray-900 dark:border-gray-800 z-10">
-            <div className="max-w-5xl mx-auto px-6 py-4">
-              <ChatInput 
-                onSendMessage={sendMessage} 
-                isLoading={isLoading}
-                value={inputValue}
-                onChange={setInputValue}
-              />
-            </div>
+        <div className="fixed bottom-0 left-0 right-0 border-t bg-white dark:bg-gray-900 dark:border-gray-800 z-10">
+          <div className="max-w-5xl mx-auto px-6 py-4">
+            <ChatInput 
+              onSendMessage={sendMessage} 
+              isLoading={isLoading}
+              value={inputValue}
+              onChange={setInputValue}
+            />
           </div>
         </div>
       </div>
-    </SidebarProvider>
+    </div>
   )
 }
 
