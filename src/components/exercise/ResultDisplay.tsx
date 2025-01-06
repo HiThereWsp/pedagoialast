@@ -53,7 +53,6 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
 
   return (
     <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-all duration-500 animate-fade-in overflow-hidden">
-      <MagicParticles isActive={showMagic} />
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-semibold bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
@@ -118,6 +117,7 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           {exercises}
         </ReactMarkdown>
       </div>
+      <MagicParticles isActive={showMagic} />
     </Card>
   );
 }

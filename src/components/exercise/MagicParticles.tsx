@@ -98,7 +98,8 @@ export function MagicParticles({ isActive }: MagicParticlesProps) {
           height: "100%",
           top: 0,
           left: 0,
-          pointerEvents: "none"
+          pointerEvents: "none",
+          zIndex: "50"
         }
       }}
     />
