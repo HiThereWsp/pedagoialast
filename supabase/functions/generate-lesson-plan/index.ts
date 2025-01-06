@@ -29,8 +29,33 @@ serve(async (req) => {
     // Recherche dans le vector store pour trouver les passages pertinents des programmes
     const searchQuery = `Trouver les passages des programmes scolaires pertinents pour le niveau ${classLevel} ${subject ? `concernant ${subject}` : ''}`
     
-    console.log('Searching vector store with query:', searchQuery)
-    const vectorSearchResponse = await fetch('https://api.openai.com/v1/vector-search', {
+    console.log('Getting embedding for query:', searchQuery)
+    
+    // First, get the embedding for our search query
+    const embeddingResponse = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'text-embedding-ada-002',
+        input: searchQuery,
+      }),
+    })
+
+    if (!embeddingResponse.ok) {
+      console.error('Embedding generation failed:', await embeddingResponse.text())
+      throw new Error('Failed to generate embedding')
+    }
+
+    const embeddingData = await embeddingResponse.json()
+    const queryEmbedding = embeddingData.data[0].embedding
+
+    console.log('Got embedding, searching vector store')
+    
+    // Then use the embedding to search the vector store
+    const vectorSearchResponse = await fetch('https://api.openai.com/v1/vectors/search', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
@@ -38,7 +63,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         vector_store_id: 'vs_6sUvixiJ5OVm7qK1xIGd24u3',
-        query: searchQuery,
+        query_vector: queryEmbedding,
         top_k: 3, // Récupérer les 3 passages les plus pertinents
       }),
     })
