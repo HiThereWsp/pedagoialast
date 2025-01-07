@@ -23,15 +23,7 @@ export function GlobalHeader() {
   return (
     <header className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-sm border-b h-16 flex items-center">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between">
-          <button 
-            onClick={() => navigate('/home')} 
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
-            <span className="text-xl font-semibold">PedagoIA</span>
-          </button>
-          
+        <div className="flex items-center justify-end">
           <DropdownMenu modal={true}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
