@@ -76,14 +76,6 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
-
   /* Premium styles */
   .card, 
   .button,
@@ -106,7 +98,7 @@
   }
 
   .premium-card {
-    @apply rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-primary/20 shadow-premium hover:shadow-premium-lg transition-all duration-300;
+    @apply rounded-2xl bg-white/80 backdrop-blur-sm border-2 border-primary/20 shadow-premium hover:shadow-premium-lg transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02];
   }
 
   .premium-button {

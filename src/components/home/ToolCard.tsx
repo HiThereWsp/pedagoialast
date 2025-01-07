@@ -23,24 +23,37 @@ export const ToolCard = ({
 }: ToolCardProps) => {
   return (
     <Card 
-      className={`group cursor-pointer animate-fade-in h-full min-h-[280px] hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:-translate-y-1 hover:scale-[1.02]`}
+      className="group cursor-pointer premium-card h-full min-h-[280px] overflow-hidden"
       onClick={onClick}
     >
-      <div className={`p-4 sm:p-6 ${bgColor} border-b-2 ${borderColor} h-full flex flex-col`}>
-        <div className={`p-2.5 rounded-xl ${color} bg-white/90 backdrop-blur-sm transform group-hover:scale-110 transition-transform duration-300 w-fit mb-4 shadow-md`}>
-          <Icon className={`w-5 h-5 sm:w-6 sm:h-6 text-current`} />
+      <div className={`p-6 sm:p-8 ${bgColor} h-full flex flex-col relative overflow-hidden`}>
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-50" />
+        
+        {/* Icon container with premium styling */}
+        <div className={`relative p-3 rounded-2xl ${color} bg-white/90 backdrop-blur-sm transform group-hover:scale-110 transition-all duration-300 w-fit mb-6 shadow-premium hover:shadow-premium-lg`}>
+          <Icon className={`w-6 h-6 sm:w-7 sm:h-7 text-current`} />
         </div>
-        <div className="flex-1 flex flex-col justify-between">
+
+        {/* Content container */}
+        <div className="flex-1 flex flex-col justify-between relative z-10">
           <div>
-            <h3 className="text-base sm:text-lg font-semibold mb-2 text-gray-900 group-hover:text-coral-400 transition-colors">
+            <h3 className="text-lg sm:text-xl font-semibold mb-3 text-gray-900 group-hover:premium-text transition-all duration-300">
               {title}
             </h3>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
               {description}
             </p>
           </div>
-          <ArrowRight className={`w-5 h-5 ${color} opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300 self-end mt-4`} />
+
+          {/* Arrow with premium animation */}
+          <div className="flex justify-end mt-6">
+            <ArrowRight className={`w-5 h-5 ${color} opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300`} />
+          </div>
         </div>
+
+        {/* Premium shine effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       </div>
     </Card>
   )

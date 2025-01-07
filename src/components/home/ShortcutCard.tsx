@@ -20,18 +20,22 @@ export const ShortcutCard = ({
 }: ShortcutCardProps) => {
   return (
     <Card
-      className="p-4 hover:shadow-xl transition-all duration-300 cursor-pointer group animate-fade-in transform hover:-translate-y-1 hover:scale-[1.02]"
+      className="premium-card p-5 cursor-pointer group"
       onClick={onClick}
     >
-      <div className="flex items-center space-x-3">
-        <div className={`p-2 rounded-lg ${bgColor} transform group-hover:scale-110 transition-transform duration-300 shadow-md`}>
+      <div className="flex items-center space-x-4 relative">
+        {/* Icon container with premium styling */}
+        <div className={`p-2.5 rounded-xl ${bgColor} transform group-hover:scale-110 transition-all duration-300 shadow-premium hover:shadow-premium-lg relative`}>
           <Icon className={`w-5 h-5 ${color}`} />
+          {/* Premium shine effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
         </div>
-        <div>
-          <h3 className="font-medium text-gray-800 group-hover:text-coral-400 transition-colors">
+
+        <div className="flex-1">
+          <h3 className="font-medium text-gray-800 group-hover:premium-text transition-all duration-300 mb-1">
             {title}
           </h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 leading-relaxed">
             {description}
           </p>
         </div>
