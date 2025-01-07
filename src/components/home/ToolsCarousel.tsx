@@ -6,13 +6,6 @@ import {
   Sparkles,
   FileEdit
 } from "lucide-react"
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel"
 import { ToolCard } from "./ToolCard"
 
 const tools = [
@@ -59,31 +52,20 @@ export const ToolsCarousel = () => {
 
   return (
     <div className="w-full">
-      <Carousel
-        opts={{
-          align: "start",
-          loop: true,
-          dragFree: true,
-        }}
-        className="w-full"
-      >
-        <CarouselContent className="-ml-2 md:-ml-4">
-          {tools.map((tool, index) => (
-            <CarouselItem key={index} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-              <div className="animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-                <ToolCard
-                  {...tool}
-                  onClick={() => navigate(tool.route)}
-                />
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <div className="hidden sm:flex justify-end gap-2 mt-4">
-          <CarouselPrevious />
-          <CarouselNext />
-        </div>
-      </Carousel>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        {tools.map((tool, index) => (
+          <div 
+            key={index} 
+            className="animate-fade-in" 
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <ToolCard
+              {...tool}
+              onClick={() => navigate(tool.route)}
+            />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
