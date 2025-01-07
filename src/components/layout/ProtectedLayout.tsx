@@ -1,17 +1,16 @@
-import { ReactNode } from 'react';
-import { Outlet } from 'react-router-dom';
+import React from 'react';
 import { GlobalHeader } from './GlobalHeader';
 
 interface ProtectedLayoutProps {
-  children?: ReactNode;
+  children: React.ReactNode;
 }
 
 export function ProtectedLayout({ children }: ProtectedLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       <GlobalHeader />
-      <main className="pt-24 px-4 sm:px-6 lg:px-8">
-        {children || <Outlet />}
+      <main className="pt-20 px-4 sm:px-6 lg:px-8">
+        {children}
       </main>
     </div>
   );
