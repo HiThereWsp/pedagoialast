@@ -45,7 +45,7 @@ export const ChatInput = ({ onSendMessage, isLoading, value, onChange }: ChatInp
   }
 
   return (
-    <div className="flex items-end gap-4 bg-gradient-to-r from-[#FEF7CD]/10 to-[#FFDEE2]/10 p-4 rounded-lg backdrop-blur-sm border border-[#FEF7CD]/20">
+    <div className="flex items-end gap-4 bg-gradient-to-r from-[#FEF7CD]/10 to-[#FFDEE2]/10 p-4 rounded-lg backdrop-blur-sm border border-[#FEF7CD]/20 max-w-[calc(100%-280px)] ml-auto mr-4">
       <Textarea
         value={message}
         onChange={(e) => handleChange(e.target.value)}
