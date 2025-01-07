@@ -1,5 +1,4 @@
-import { Settings, Home } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Home } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import {
   SidebarFooter as Footer,
@@ -39,31 +38,6 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
                   Retour à l'accueil
                 </TooltipContent>
               </Tooltip>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarMenuButton
-                    onClick={() => navigate('/settings')}
-                    data-active={currentPath === '/settings'}
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Paramètres</span>
-                  </SidebarMenuButton>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  Paramètres
-                </TooltipContent>
-              </Tooltip>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={onLogout}
-              >
-                Se déconnecter
-              </Button>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroupContent>
