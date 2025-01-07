@@ -1,4 +1,4 @@
-import { Settings, BookOpen } from "lucide-react"
+import { Settings, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useNavigate } from "react-router-dom"
 import {
@@ -28,15 +28,15 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SidebarMenuButton
-                    onClick={() => navigate('/creersequence')}
-                    data-active={currentPath === '/creersequence'}
+                    onClick={() => navigate('/home')}
+                    data-active={currentPath === '/home'}
                   >
-                    <BookOpen className="h-4 w-4" />
-                    <span>Créateur de séquences</span>
+                    <Home className="h-4 w-4" />
+                    <span>Accueil</span>
                   </SidebarMenuButton>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  Créateur de séquences pédagogiques
+                  Retour à l'accueil
                 </TooltipContent>
               </Tooltip>
             </SidebarMenuItem>
