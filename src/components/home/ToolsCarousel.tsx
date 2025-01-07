@@ -51,12 +51,12 @@ export const ToolsCarousel = () => {
   const navigate = useNavigate()
 
   return (
-    <div className="w-full">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
         {tools.map((tool, index) => (
           <div 
             key={index} 
-            className="animate-fade-in" 
+            className="animate-fade-in transform hover:-translate-y-1 transition-all duration-300" 
             style={{ animationDelay: `${index * 100}ms` }}
           >
             <ToolCard

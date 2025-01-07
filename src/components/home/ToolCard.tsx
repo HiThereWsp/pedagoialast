@@ -1,6 +1,5 @@
 import { LucideIcon } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { ArrowRight } from "lucide-react"
 
 interface ToolCardProps {
   title: string
@@ -44,11 +43,6 @@ export const ToolCard = ({
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
               {description}
             </p>
-          </div>
-
-          {/* Arrow with premium animation */}
-          <div className="flex justify-end mt-6">
-            <ArrowRight className={`w-5 h-5 ${color} opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all duration-300`} />
           </div>
         </div>
 
