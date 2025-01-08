@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { WaitlistFormFields } from "./waitlist/WaitlistFormFields"
 import { SuccessToast } from "./waitlist/SuccessToast"
+import { useRateLimit } from "@/hooks/useRateLimit"
 
 interface WaitlistFormData {
   email: string
@@ -15,8 +16,18 @@ export const WaitlistForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const { register, handleSubmit, reset, formState: { errors } } = useForm<WaitlistFormData>()
+  const { checkRateLimit, isLimited } = useRateLimit({ maxRequests: 3, timeWindow: 300000 }) // 5 minutes
 
   const onSubmit = async (data: WaitlistFormData) => {
+    if (!checkRateLimit()) {
+      toast({
+        variant: "destructive",
+        title: "Trop de tentatives",
+        description: "Veuillez patienter quelques minutes avant de réessayer.",
+      })
+      return
+    }
+
     console.log('Submitting form with data:', data)
     setIsLoading(true)
     try {
@@ -33,7 +44,6 @@ export const WaitlistForm = () => {
       if (supabaseError) {
         console.error('Supabase error details:', supabaseError)
         
-        // Check if it's a duplicate email error
         if (supabaseError.code === '23505') {
           toast({
             variant: "default",
@@ -63,11 +73,9 @@ export const WaitlistForm = () => {
 
       console.log('Form submitted successfully')
       
-      // Close the popup immediately using the Dialog API
       const closeEvent = new Event('close')
       window.dispatchEvent(closeEvent)
 
-      // Show success toast
       toast({
         duration: 3000,
         className: "bg-white dark:bg-gray-800",
@@ -91,7 +99,7 @@ export const WaitlistForm = () => {
       <WaitlistFormFields 
         register={register}
         errors={errors}
-        isLoading={isLoading}
+        isLoading={isLoading || isLimited}
       />
     </form>
   )

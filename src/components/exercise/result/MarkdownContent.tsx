@@ -1,11 +1,15 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import DOMPurify from 'dompurify';
 
 interface MarkdownContentProps {
   content: string;
 }
 
 export function MarkdownContent({ content }: MarkdownContentProps) {
+  // Nettoyer le contenu avant de le rendre
+  const sanitizedContent = DOMPurify.sanitize(content);
+
   return (
     <div className="prose prose-sm max-w-none">
       <ReactMarkdown
@@ -52,7 +56,7 @@ export function MarkdownContent({ content }: MarkdownContentProps) {
           ),
         }}
       >
-        {content}
+        {sanitizedContent}
       </ReactMarkdown>
     </div>
   );
