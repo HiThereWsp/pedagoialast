@@ -64,8 +64,8 @@ export const useMessageManagement = (userId: string | null) => {
         throw insertError
       }
 
-      // Obtenir la réponse de l'IA avec recherche web
-      const { data, error } = await supabase.functions.invoke('chat-with-web-search', {
+      // Obtenir la réponse de l'IA
+      const { data, error } = await supabase.functions.invoke('chat-with-openai', {
         body: { message: userMessage, context }
       })
 
