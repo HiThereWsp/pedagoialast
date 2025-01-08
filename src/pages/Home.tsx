@@ -3,6 +3,14 @@ import { useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import { User } from "@supabase/supabase-js"
+import { 
+  Compass, 
+  BookOpen, 
+  SplitSquareVertical, 
+  PenSquare, 
+  FileText, 
+  Lightbulb 
+} from "lucide-react"
 
 const Home = () => {
   const navigate = useNavigate()
@@ -31,27 +39,33 @@ const Home = () => {
   const actions = [
     {
       title: "Découvrir l'application",
-      route: "/discover"
+      route: "/discover",
+      icon: Compass
     },
     {
       title: "Générer une séquence pédagogique",
-      route: "/lesson-plan"
+      route: "/lesson-plan",
+      icon: BookOpen
     },
     {
       title: "Différencier un exercices",
-      route: "/differenciation"
+      route: "/differenciation",
+      icon: SplitSquareVertical
     },
     {
       title: "Générer un exercice",
-      route: "/exercises"
+      route: "/exercises",
+      icon: PenSquare
     },
     {
       title: "Rédiger un document administratif",
-      route: "/correspondence"
+      route: "/correspondence",
+      icon: FileText
     },
     {
       title: "Suggérer de nouveaux outils pédagogiques",
-      route: "/suggestions"
+      route: "/suggestions",
+      icon: Lightbulb
     }
   ]
 
@@ -85,16 +99,20 @@ const Home = () => {
 
       {/* Action buttons */}
       <div className="w-full space-y-4">
-        {actions.map((action, index) => (
-          <Button
-            key={index}
-            onClick={() => navigate(action.route)}
-            className="w-full h-14 bg-gradient-to-r from-[#FEF7CD]/60 to-[#FFDEE2]/60 hover:from-[#FEF7CD]/80 hover:to-[#FFDEE2]/80 text-gray-800 rounded-2xl border border-[#FEF7CD]/50 shadow-sm transition-all duration-300 hover:shadow-md"
-            variant="ghost"
-          >
-            {action.title}
-          </Button>
-        ))}
+        {actions.map((action, index) => {
+          const Icon = action.icon
+          return (
+            <Button
+              key={index}
+              onClick={() => navigate(action.route)}
+              className="w-full h-14 bg-gradient-to-r from-[#FEF7CD]/60 to-[#FFDEE2]/60 hover:from-[#FEF7CD]/80 hover:to-[#FFDEE2]/80 text-gray-800 rounded-2xl border border-[#FEF7CD]/50 shadow-sm transition-all duration-300 hover:shadow-md"
+              variant="ghost"
+            >
+              <Icon className="w-5 h-5 mr-2 flex-shrink-0" />
+              <span className="flex-1 text-left">{action.title}</span>
+            </Button>
+          )
+        })}
       </div>
 
       {/* Footer with logo */}
