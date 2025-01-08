@@ -9,8 +9,7 @@ interface ChatHistoryProps {
 
 export const ChatHistory = ({ messages, isLoading }: ChatHistoryProps) => {
   return (
-    <div className="w-full space-y-6 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FEF7CD]/5 to-[#FFDEE2]/5 pointer-events-none" />
+    <div className="w-full max-w-[800px] mx-auto space-y-6 pb-32">
       {messages.map((msg, index) => (
         <ChatMessageComponent
           key={index}

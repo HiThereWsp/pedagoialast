@@ -19,26 +19,33 @@ export const ChatMessage = ({ role, content, index }: ChatMessageProps) => {
   return (
     <div
       className={cn(
-        "group relative rounded-lg p-4 mb-8 transition-all backdrop-blur-sm",
+        "group relative px-4",
         role === 'user' 
-          ? 'ml-auto max-w-[80%] bg-white shadow-md border border-gray-100/20' 
-          : 'mr-auto max-w-[80%] bg-gradient-to-r from-[#FEF7CD]/30 via-[#FFDEE2]/30 to-[#FEC6A1]/30 border border-[#FEF7CD]/10 shadow-sm'
+          ? 'ml-auto max-w-[80%]' 
+          : 'mr-auto max-w-[80%]'
       )}
     >
-      <div className="text-foreground whitespace-pre-wrap leading-relaxed">
-        <ReactMarkdown
-          components={{
-            strong: ({ children }) => <span className="font-bold">{children}</span>,
-            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>
-          }}
-        >
-          {formatMessage(content)}
-        </ReactMarkdown>
-      </div>
+      <div className={cn(
+        "rounded-2xl p-4 transition-all",
+        role === 'user' 
+          ? 'bg-white shadow-sm border border-gray-100/20' 
+          : 'bg-gradient-to-r from-[#FFDEE2]/10 to-[#FEF7CD]/10'
+      )}>
+        <div className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+          <ReactMarkdown
+            components={{
+              strong: ({ children }) => <span className="font-bold">{children}</span>,
+              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>
+            }}
+          >
+            {formatMessage(content)}
+          </ReactMarkdown>
+        </div>
 
-      {role === 'assistant' && (
-        <FeedbackButtons messageId={index} content={content} />
-      )}
+        {role === 'assistant' && (
+          <FeedbackButtons messageId={index} content={content} />
+        )}
+      </div>
     </div>
   )
 }
