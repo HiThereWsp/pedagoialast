@@ -27,6 +27,7 @@ export const AppRoutes = () => {
         <Route path="/chat" element={<Index />} />
         <Route path="/lesson-plan" element={<LessonPlanPage />} />
         <Route path="/correspondence" element={<CorrespondencePage />} />
+        <Route path="/exercises" element={<ExerciseGenerator />} />
         <Route path="/differenciation" element={<ExerciseGenerator />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/metrics" element={<MetricsPage />} />
