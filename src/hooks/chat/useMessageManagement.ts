@@ -7,22 +7,26 @@ export const useMessageManagement = (userId: string | null) => {
   const [isLoading, setIsLoading] = useState(false)
 
   const loadConversationMessages = async (conversationId: string) => {
-    const { data: messagesData, error: messagesError } = await supabase
-      .from('chats')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .is('deleted_at', null)
-      .order('created_at', { ascending: true })
+    try {
+      const { data: messagesData, error: messagesError } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true })
 
-    if (messagesError) {
-      console.error("Error loading messages:", messagesError)
-      return
+      if (messagesError) {
+        console.error("Error loading messages:", messagesError)
+        return
+      }
+
+      setMessages(messagesData.map(msg => ({
+        role: msg.message_type as 'user' | 'assistant',
+        content: msg.message
+      })))
+    } catch (error) {
+      console.error("Error in loadConversationMessages:", error)
     }
-
-    setMessages(messagesData.map(msg => ({
-      role: msg.message_type as 'user' | 'assistant',
-      content: msg.message
-    })))
   }
 
   const sendMessage = async (
@@ -37,11 +41,11 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      // Add user message to UI
+      // Ajouter le message utilisateur à l'UI
       setMessages(prev => [...prev, { role: 'user', content: userMessage }])
 
-      // Save user message to database
-      await supabase
+      // Sauvegarder le message utilisateur dans la base de données
+      const { error: insertError } = await supabase
         .from('chats')
         .insert([{
           message: userMessage,
@@ -51,31 +55,43 @@ export const useMessageManagement = (userId: string | null) => {
           conversation_title: conversationTitle
         }])
 
-      // Get AI response with embeddings
+      if (insertError) {
+        console.error("Error inserting user message:", insertError)
+        throw insertError
+      }
+
+      // Obtenir la réponse de l'IA
       const { data, error } = await supabase.functions.invoke('chat-with-embeddings', {
-        body: { message: userMessage }
+        body: { message: userMessage, context }
       })
 
       if (error) throw error
 
       const aiResponse = data.response
 
-      // Save AI response to database
-      await supabase
+      // Sauvegarder la réponse de l'IA dans la base de données
+      const { error: aiInsertError } = await supabase
         .from('chats')
         .insert([{
           message: aiResponse,
           user_id: userId,
           message_type: 'assistant',
-          conversation_id: conversationId
+          conversation_id: conversationId,
+          conversation_title: conversationTitle
         }])
 
-      // Add AI response to UI
+      if (aiInsertError) {
+        console.error("Error inserting AI response:", aiInsertError)
+        throw aiInsertError
+      }
+
+      // Ajouter la réponse de l'IA à l'UI
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }])
 
       return aiResponse
     } catch (error) {
-      console.error("Error:", error)
+      console.error("Error in sendMessage:", error)
+      throw error
     } finally {
       setIsLoading(false)
     }

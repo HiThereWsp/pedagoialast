@@ -43,19 +43,29 @@ export const useChat = (userId: string | null) => {
   const handleSendMessage = async (message: string) => {
     if (!message.trim() || isLoading || !userId) return
 
-    let currentId = currentConversationId
-    let title: string | undefined
+    try {
+      let currentId = currentConversationId
+      let title: string | undefined
 
-    if (!currentId) {
-      const newConversation = await createNewConversation(message)
-      currentId = newConversation.conversationId
-      title = newConversation.title
-    }
+      // Si pas de conversation en cours, en créer une nouvelle
+      if (!currentId) {
+        const newConversation = await createNewConversation(message)
+        currentId = newConversation.conversationId
+        title = newConversation.title
+        setCurrentConversationId(currentId)
+      }
 
-    const aiResponse = await sendMessage(message, currentId, title, conversationContext)
-    
-    if (aiResponse) {
-      await updateContext(currentId, message, aiResponse)
+      // Envoyer le message avec l'ID de conversation
+      const aiResponse = await sendMessage(message, currentId, title, conversationContext)
+      
+      if (aiResponse) {
+        await updateContext(currentId, message, aiResponse)
+      }
+
+      // Recharger les conversations pour mettre à jour la liste
+      await loadConversations()
+    } catch (error) {
+      console.error("Error in handleSendMessage:", error)
     }
   }
 
