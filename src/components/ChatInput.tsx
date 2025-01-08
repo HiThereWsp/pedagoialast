@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Send } from "lucide-react"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface ChatInputProps {
   onSendMessage: (message: string) => Promise<void>
@@ -17,6 +18,7 @@ export const ChatInput = ({
   onChange,
 }: ChatInputProps) => {
   const [message, setMessage] = useState(value || "")
+  const isMobile = useIsMobile()
 
   const handleSubmit = async () => {
     if (message.trim() === "") return
@@ -47,7 +49,7 @@ export const ChatInput = ({
   }
 
   return (
-    <div className="flex items-end gap-4 bg-gradient-to-r from-[#FEF7CD]/10 to-[#FFDEE2]/10 p-4 rounded-lg backdrop-blur-sm border border-[#FEF7CD]/20 max-w-[calc(100%-280px)] ml-auto mr-4">
+    <div className={`flex items-end gap-4 bg-gradient-to-r from-[#FEF7CD]/10 to-[#FFDEE2]/10 p-4 rounded-lg backdrop-blur-sm border border-[#FEF7CD]/20 mx-4 ${isMobile ? 'w-[calc(100%-2rem)]' : 'max-w-[calc(100%-280px)] ml-auto'}`}>
       <Textarea
         value={message}
         onChange={(e) => handleChange(e.target.value)}
