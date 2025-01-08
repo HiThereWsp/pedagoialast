@@ -89,7 +89,7 @@ const Home = () => {
           <Button
             key={index}
             onClick={() => navigate(action.route)}
-            className="w-full h-14 bg-gradient-to-r from-[#FEF7CD]/30 to-[#FFDEE2]/30 hover:from-[#FEF7CD]/40 hover:to-[#FFDEE2]/40 text-gray-800 rounded-2xl border border-[#FEF7CD]/30 shadow-sm transition-all duration-300 hover:shadow-md"
+            className="w-full h-14 bg-gradient-to-r from-[#FEF7CD]/60 to-[#FFDEE2]/60 hover:from-[#FEF7CD]/80 hover:to-[#FFDEE2]/80 text-gray-800 rounded-2xl border border-[#FEF7CD]/50 shadow-sm transition-all duration-300 hover:shadow-md"
             variant="ghost"
           >
             {action.title}
