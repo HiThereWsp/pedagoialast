@@ -71,6 +71,10 @@ const Home = () => {
     }
   ]
 
+  // Séparer les actions en deux groupes
+  const utilityActions = actions.filter(action => action.isUtilityAction)
+  const mainActions = actions.filter(action => !action.isUtilityAction)
+
   return (
     <div className="min-h-screen bg-white flex flex-col items-center px-6 py-8 max-w-md mx-auto">
       {/* Profile icon */}
@@ -100,25 +104,56 @@ const Home = () => {
       </div>
 
       {/* Action buttons */}
-      <div className="w-full space-y-4">
-        {actions.map((action, index) => {
+      <div className="w-full space-y-6">
+        {/* Utility action at the top */}
+        {utilityActions.slice(0, 1).map((action, index) => {
           const Icon = action.icon
           return (
             <Button
               key={index}
               onClick={() => navigate(action.route)}
-              className={`w-full h-14 bg-gradient-to-r text-gray-800 rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-md ${
-                action.isUtilityAction 
-                ? "from-blue-100/60 to-blue-200/60 hover:from-blue-100/80 hover:to-blue-200/80 border-blue-200/50"
-                : "from-[#FEF7CD]/60 to-[#FFDEE2]/60 hover:from-[#FEF7CD]/80 hover:to-[#FFDEE2]/80 border-[#FEF7CD]/50"
-              }`}
+              className="w-full h-12 bg-gradient-to-r from-blue-100/60 to-blue-200/60 hover:from-blue-100/80 hover:to-blue-200/80 text-gray-800 rounded-2xl border border-blue-200/50 shadow-sm transition-all duration-300 hover:shadow-md"
               variant="ghost"
             >
-              <Icon className={`w-5 h-5 mr-2 flex-shrink-0 ${action.isUtilityAction ? 'text-blue-600' : ''}`} />
+              <Icon className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" />
               <span className="flex-1 text-left">{action.title}</span>
             </Button>
-          )
-        })}
+          )}
+        )}
+
+        {/* Main actions */}
+        <div className="space-y-4">
+          {mainActions.map((action, index) => {
+            const Icon = action.icon
+            return (
+              <Button
+                key={index}
+                onClick={() => navigate(action.route)}
+                className="w-full h-14 bg-gradient-to-r from-[#FEF7CD]/60 to-[#FFDEE2]/60 hover:from-[#FEF7CD]/80 hover:to-[#FFDEE2]/80 text-gray-800 rounded-2xl border border-[#FEF7CD]/50 shadow-sm transition-all duration-300 hover:shadow-md"
+                variant="ghost"
+              >
+                <Icon className="w-5 h-5 mr-2 flex-shrink-0" />
+                <span className="flex-1 text-left">{action.title}</span>
+              </Button>
+            )
+          })}
+        </div>
+
+        {/* Utility action at the bottom */}
+        {utilityActions.slice(1).map((action, index) => {
+          const Icon = action.icon
+          return (
+            <Button
+              key={index}
+              onClick={() => navigate(action.route)}
+              className="w-full h-12 bg-gradient-to-r from-blue-100/60 to-blue-200/60 hover:from-blue-100/80 hover:to-blue-200/80 text-gray-800 rounded-2xl border border-blue-200/50 shadow-sm transition-all duration-300 hover:shadow-md"
+              variant="ghost"
+            >
+              <Icon className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" />
+              <span className="flex-1 text-left">{action.title}</span>
+            </Button>
+          )}
+        )}
       </div>
 
       {/* Footer with logo */}
