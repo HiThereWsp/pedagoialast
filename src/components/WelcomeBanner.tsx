@@ -1,6 +1,6 @@
 export const WelcomeBanner = () => {
   return (
-    <div className="mb-8 px-4">
+    <div className="text-center">
       <h2 className="text-2xl font-semibold mb-2">
         LOgo + PedagoIA
       </h2>

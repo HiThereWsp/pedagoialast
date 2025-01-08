@@ -132,16 +132,22 @@ const Index = () => {
         />
         
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <main className="flex-1 overflow-y-auto relative">
-            <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
-              {!currentConversationId && <WelcomeBanner />}
-              <ChatHistory messages={messages} isLoading={isLoading} />
-              <QuickActions 
-                onActionClick={handleQuickAction} 
-                visible={showQuickActions}
-                onPromptSelect={handlePromptSelect}
-              />
-            </div>
+          <main className="flex-1 overflow-y-auto relative flex flex-col">
+            {!currentConversationId && (
+              <div className="flex-1 flex flex-col items-center justify-center px-6">
+                <WelcomeBanner />
+                <QuickActions 
+                  onActionClick={handleQuickAction} 
+                  visible={showQuickActions}
+                  onPromptSelect={handlePromptSelect}
+                />
+              </div>
+            )}
+            {currentConversationId && (
+              <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
+                <ChatHistory messages={messages} isLoading={isLoading} />
+              </div>
+            )}
           </main>
 
           <div className="fixed bottom-0 left-0 right-0 border-t bg-white dark:bg-gray-900 dark:border-gray-800 z-10">
