@@ -40,6 +40,16 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
               </Tooltip>
             </SidebarMenuItem>
           </SidebarMenu>
+          
+          <div className="mt-4 px-2">
+            <div className="flex items-center justify-center gap-2">
+              <img 
+                src="/lovable-uploads/a514063e-400f-4c84-b2f2-78114e277365.png" 
+                alt="PedagoIA Logo" 
+                className="h-8"
+              />
+            </div>
+          </div>
         </SidebarGroupContent>
       </SidebarGroup>
     </Footer>
