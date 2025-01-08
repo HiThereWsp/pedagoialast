@@ -1,1 +1,2 @@
-project_id = "jpelncawdaounkidvymu"
+[functions.handle-stripe-events]
+verify_jwt = false
