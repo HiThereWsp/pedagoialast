@@ -57,19 +57,28 @@ serve(async (req) => {
         const customer = await stripe.customers.retrieve(session.customer as string)
         
         if (!customer.deleted && customer.email) {
-          // Email de bienvenue
+          // Email de bienvenue avec la date de fin de garantie
           await sendBrevoEmail(1, customer.email, {
             first_name: customer.name,
             guarantee_end_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
           })
-          
-          // Planifier le rappel pour J+5
-          setTimeout(async () => {
+        }
+        break
+      }
+
+      case 'customer.subscription.created': {
+        // Envoi du rappel de garantie à J+5
+        const subscription = event.data.object as Stripe.Subscription
+        const customer = await stripe.customers.retrieve(subscription.customer as string)
+        
+        if (!customer.deleted && customer.email) {
+          const subscriptionAge = Date.now() - subscription.start_date * 1000
+          if (subscriptionAge >= 5 * 24 * 60 * 60 * 1000) {
             await sendBrevoEmail(2, customer.email, {
               first_name: customer.name,
               days_left: 2,
             })
-          }, 5 * 24 * 60 * 60 * 1000)
+          }
         }
         break
       }
