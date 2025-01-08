@@ -1,7 +1,6 @@
 import { Zap } from "lucide-react"
 import { ToolsCarousel } from "@/components/home/ToolsCarousel"
 import { ShortcutsSection } from "@/components/home/ShortcutsSection"
-import { ExerciseGenerator } from "@/components/exercise/ExerciseGenerator"
 
 const Home = () => {
   return (
@@ -21,11 +20,6 @@ const Home = () => {
         {/* Tools Carousel */}
         <div className="mb-8 sm:mb-12">
           <ToolsCarousel />
-        </div>
-
-        {/* Exercise Generator */}
-        <div className="mb-8 sm:mb-12">
-          <ExerciseGenerator />
         </div>
 
         {/* Shortcuts Section */}
