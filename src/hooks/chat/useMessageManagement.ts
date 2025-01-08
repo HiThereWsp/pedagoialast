@@ -64,8 +64,8 @@ export const useMessageManagement = (userId: string | null) => {
         throw insertError
       }
 
-      // Obtenir la réponse de l'IA avec recherche web via Perplexity
-      const { data, error } = await supabase.functions.invoke('chat-with-perplexity', {
+      // Obtenir la réponse de l'IA avec recherche web
+      const { data, error } = await supabase.functions.invoke('chat-with-web-search', {
         body: { message: userMessage, context }
       })
 
