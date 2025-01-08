@@ -1,2 +1,5 @@
-[functions.handle-stripe-events]
+# Project ID from the Supabase dashboard
+project_id = "jpelncawdaounkidvymu"
+
+[functions.chat-with-embeddings]
 verify_jwt = false
