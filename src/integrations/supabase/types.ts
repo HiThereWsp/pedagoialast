@@ -207,6 +207,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_prompts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          system_prompt: string
+          tool_type: Database["public"]["Enums"]["tool_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          system_prompt: string
+          tool_type: Database["public"]["Enums"]["tool_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          system_prompt?: string
+          tool_type?: Database["public"]["Enums"]["tool_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -332,6 +359,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      tool_type: "differentiation" | "sequence" | "administrative" | "general"
     }
     CompositeTypes: {
       [_ in never]: never
