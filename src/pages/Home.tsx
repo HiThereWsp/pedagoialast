@@ -64,7 +64,7 @@ const Home = () => {
       icon: FileText
     },
     {
-      title: "Suggérer de nouveaux outils pédagogiques",
+      title: "Suggérer de nouveaux outils",
       route: "/suggestions",
       icon: Lightbulb,
       isUtilityAction: true
