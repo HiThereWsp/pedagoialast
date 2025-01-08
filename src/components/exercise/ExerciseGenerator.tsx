@@ -5,8 +5,11 @@ import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import type { ExerciseFormData } from '@/hooks/useExerciseGeneration';
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { ChevronLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function ExerciseGenerator() {
+  const navigate = useNavigate();
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
   const [isFormExpanded, setIsFormExpanded] = useState(true);
   const [formData, setFormData] = useState<ExerciseFormData>({
@@ -37,6 +40,14 @@ export function ExerciseGenerator() {
     <div className="min-h-screen bg-gradient-to-b from-pink-50 via-orange-50 to-purple-50 pt-24">
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-pink-100/50 shadow-sm">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <Button 
+            variant="ghost" 
+            className="mb-4"
+            onClick={() => navigate('/home')}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" />
+            Retour à l'accueil
+          </Button>
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
               Différenciation pédagogique
