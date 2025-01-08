@@ -49,7 +49,7 @@ export const ChatInput = ({
   }
 
   return (
-    <div className={`fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm ${isMobile ? 'w-full' : 'max-w-[800px] mx-auto ml-[calc(50%+128px)]'}`}>
+    <div className={`fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm ${isMobile ? 'w-full' : 'max-w-[800px] mx-auto ml-[calc(50%+100px)]'}`}>
       <div className="flex items-end gap-4 bg-gradient-to-r from-[#FFDEE2]/20 to-[#FEF7CD]/20 p-4 rounded-2xl border border-[#FFDEE2]/30">
         <Textarea
           value={message}
