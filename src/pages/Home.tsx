@@ -1,29 +1,105 @@
-import { Zap } from "lucide-react"
-import { ToolsCarousel } from "@/components/home/ToolsCarousel"
-import { ShortcutsSection } from "@/components/home/ShortcutsSection"
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { supabase } from "@/integrations/supabase/client"
+import { Button } from "@/components/ui/button"
+import { User } from "@supabase/supabase-js"
 
 const Home = () => {
+  const navigate = useNavigate()
+  const [user, setUser] = useState<User | null>(null)
+  const [firstName, setFirstName] = useState<string>("")
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setUser(user)
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', user.id)
+          .single()
+        
+        if (profile) {
+          setFirstName(profile.first_name)
+        }
+      }
+    }
+    getUser()
+  }, [])
+
+  const actions = [
+    {
+      title: "Découvrir l'application",
+      route: "/discover"
+    },
+    {
+      title: "Générer une séquence pédagogique",
+      route: "/lesson-plan"
+    },
+    {
+      title: "Différencier un exercices",
+      route: "/differenciation"
+    },
+    {
+      title: "Générer un exercice",
+      route: "/exercises"
+    },
+    {
+      title: "Rédiger un document administratif",
+      route: "/correspondence"
+    },
+    {
+      title: "Suggérer de nouveaux outils pédagogiques",
+      route: "/suggestions"
+    }
+  ]
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50">
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        {/* Hero Section with Value Proposition */}
-        <div className="text-center mb-8 sm:mb-12 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-[#FEF7CD] to-[#FFDEE2] text-gray-700 mb-4 sm:mb-6">
-            <Zap className="w-4 h-4" />
-            <span className="text-sm font-medium">Votre assistant pédagogique IA</span>
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 leading-tight">
-            <span className="block text-gray-900">Bienvenue dans votre espace PedagoIA</span>
-          </h1>
+    <div className="min-h-screen bg-white flex flex-col items-center px-6 py-8 max-w-md mx-auto">
+      {/* Profile icon */}
+      <div className="w-full flex justify-end mb-8">
+        <div 
+          className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer"
+          onClick={() => navigate('/settings')}
+        >
+          <svg className="w-6 h-6 text-gray-600" viewBox="0 0 24 24">
+            <path 
+              fill="currentColor" 
+              d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+            />
+          </svg>
         </div>
+      </div>
 
-        {/* Tools Carousel */}
-        <div className="mb-8 sm:mb-12">
-          <ToolsCarousel />
-        </div>
+      {/* Welcome message */}
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4 flex items-center justify-center gap-2">
+          Bonjour {firstName} 
+          <span role="img" aria-label="wave">👋</span>
+        </h1>
+        <p className="text-xl text-gray-600">
+          Sur quoi souhaitez-vous travailler aujourd'hui ?
+        </p>
+      </div>
 
-        {/* Shortcuts Section */}
-        <ShortcutsSection />
+      {/* Action buttons */}
+      <div className="w-full space-y-4">
+        {actions.map((action, index) => (
+          <Button
+            key={index}
+            onClick={() => navigate(action.route)}
+            className="w-full h-14 bg-gradient-to-r from-[#FEF7CD]/20 to-[#FFDEE2]/20 hover:from-[#FEF7CD]/30 hover:to-[#FFDEE2]/30 text-gray-800 rounded-2xl border border-[#FEF7CD]/30 shadow-sm transition-all duration-300 hover:shadow-md"
+            variant="ghost"
+          >
+            {action.title}
+          </Button>
+        ))}
+      </div>
+
+      {/* Logo */}
+      <div className="mt-12">
+        <p className="text-2xl font-semibold text-gray-800">PedagoIA</p>
       </div>
     </div>
   )
