@@ -28,13 +28,13 @@ const tools = [
     route: "/lesson-plan"
   },
   {
-    title: "Générateur d'exercices",
-    description: "Générez des exercices sur mesure pour vos élèves",
+    title: "Différenciation pédagogique",
+    description: "Adaptez vos exercices aux besoins spécifiques de vos élèves",
     icon: BookOpen,
     color: "text-violet-500",
     bgColor: "bg-[#FAF5FF]",
     borderColor: "border-violet-500/20",
-    route: "/exercise"
+    route: "/differentiation"
   },
   {
     title: "Assistant administratif",
