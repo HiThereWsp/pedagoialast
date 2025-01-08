@@ -53,6 +53,9 @@ export const useChat = (userId: string | null) => {
         currentId = newConversation.conversationId
         title = newConversation.title
         setCurrentConversationId(currentId)
+        
+        // Important: Initialize messages array for new conversation
+        setMessages([])
       }
 
       // Envoyer le message avec l'ID de conversation
@@ -62,7 +65,8 @@ export const useChat = (userId: string | null) => {
         await updateContext(currentId, message, aiResponse)
       }
 
-      // Recharger les conversations pour mettre à jour la liste
+      // Recharger les messages et les conversations
+      await loadConversationMessages(currentId)
       await loadConversations()
     } catch (error) {
       console.error("Error in handleSendMessage:", error)

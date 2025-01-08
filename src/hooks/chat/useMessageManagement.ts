@@ -20,10 +20,13 @@ export const useMessageManagement = (userId: string | null) => {
         return
       }
 
-      setMessages(messagesData.map(msg => ({
-        role: msg.message_type as 'user' | 'assistant',
-        content: msg.message
-      })))
+      if (messagesData) {
+        const formattedMessages = messagesData.map(msg => ({
+          role: msg.message_type as 'user' | 'assistant',
+          content: msg.message
+        }))
+        setMessages(formattedMessages)
+      }
     } catch (error) {
       console.error("Error in loadConversationMessages:", error)
     }
@@ -42,7 +45,8 @@ export const useMessageManagement = (userId: string | null) => {
 
     try {
       // Ajouter le message utilisateur à l'UI
-      setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+      const userChatMessage: ChatMessage = { role: 'user', content: userMessage }
+      setMessages(prev => [...prev, userChatMessage])
 
       // Sauvegarder le message utilisateur dans la base de données
       const { error: insertError } = await supabase
@@ -86,7 +90,8 @@ export const useMessageManagement = (userId: string | null) => {
       }
 
       // Ajouter la réponse de l'IA à l'UI
-      setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }])
+      const aiChatMessage: ChatMessage = { role: 'assistant', content: aiResponse }
+      setMessages(prev => [...prev, aiChatMessage])
 
       return aiResponse
     } catch (error) {
