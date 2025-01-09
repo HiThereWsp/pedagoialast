@@ -49,26 +49,24 @@ export const ChatInput = ({
   }
 
   return (
-    <div className={`fixed bottom-0 left-16 right-0 p-4 bg-white/80 backdrop-blur-sm ${isMobile ? 'w-full left-0' : ''}`}>
-      <div className="max-w-3xl mx-auto">
-        <div className="flex items-end gap-4 bg-gradient-to-r from-[#FFDEE2]/20 to-[#FEF7CD]/20 p-4 rounded-2xl border border-[#FFDEE2]/30">
-          <Textarea
-            value={message}
-            onChange={(e) => handleChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Écrivez votre message ici..."
-            className="min-h-[60px] max-h-[200px] resize-none flex-1 bg-white/50 border-none focus-visible:ring-0"
-            disabled={isLoading}
-          />
-          <Button 
-            onClick={handleSubmit}
-            disabled={message.trim() === "" || isLoading}
-            size="icon"
-            className="shrink-0 bg-[#FFDEE2] hover:bg-[#FFDEE2]/80 text-gray-700"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+    <div className={`fixed bottom-0 left-[40%] right-0 p-4 bg-white/80 backdrop-blur-sm ${isMobile ? 'w-full left-0' : ''}`}>
+      <div className="flex items-end gap-4 bg-gradient-to-r from-[#FFDEE2]/20 to-[#FEF7CD]/20 p-4 rounded-2xl border border-[#FFDEE2]/30">
+        <Textarea
+          value={message}
+          onChange={(e) => handleChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Écrivez votre message ici..."
+          className="min-h-[60px] max-h-[200px] resize-none flex-1 bg-white/50 border-none focus-visible:ring-0"
+          disabled={isLoading}
+        />
+        <Button 
+          onClick={handleSubmit}
+          disabled={message.trim() === "" || isLoading}
+          size="icon"
+          className="shrink-0 bg-[#FFDEE2] hover:bg-[#FFDEE2]/80 text-gray-700"
+        >
+          <Send className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   )

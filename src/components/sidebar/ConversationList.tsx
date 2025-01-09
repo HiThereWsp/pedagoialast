@@ -32,7 +32,7 @@ export function ConversationList({
       <SidebarGroupContent>
         <SidebarMenu>
           {conversations.map((conversation) => (
-            <SidebarMenuItem key={conversation.id} className="group-data-[collapsible=true]:hidden">
+            <SidebarMenuItem key={conversation.id}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SidebarMenuButton 

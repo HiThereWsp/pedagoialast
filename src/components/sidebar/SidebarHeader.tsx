@@ -12,9 +12,12 @@ export function SidebarHeader({ firstName, onNewConversation }: SidebarHeaderPro
   return (
     <div className="p-2">
       <div className="flex items-center justify-between mb-2">
-        <span className="truncate group-data-[collapsible=icon]:hidden">
-          {firstName || 'Chargement...'}
-        </span>
+        <div className="flex items-center gap-2">
+          <User className="h-5 w-5" />
+          <span className="truncate group-data-[collapsible=icon]:hidden">
+            {firstName || 'Chargement...'}
+          </span>
+        </div>
       </div>
       <Tooltip>
         <TooltipTrigger asChild>

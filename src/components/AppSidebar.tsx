@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { ChevronLeft, Menu, MessageCircle } from "lucide-react"
+import { Menu } from "lucide-react"
 import { useState } from "react"
 import { useLocation } from "react-router-dom"
 import { ConversationList } from "./sidebar/ConversationList"
@@ -28,7 +28,7 @@ export function AppSidebar({
   firstName,
   onLogout
 }: AppSidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const location = useLocation()
 
@@ -51,9 +51,9 @@ export function AppSidebar({
       />
       <aside
         className={cn(
-          "fixed left-0 top-0 z-30 flex h-full flex-col border-r bg-background transition-all duration-300",
-          isCollapsed ? "w-16" : "w-64",
-          !isMobileOpen && "-translate-x-full md:translate-x-0"
+          "fixed left-0 top-0 z-30 flex h-full w-64 flex-col border-r bg-background transition-transform md:relative md:translate-x-0",
+          isCollapsed && "w-16",
+          !isMobileOpen && "-translate-x-full"
         )}
       >
         <TooltipProvider>
@@ -78,24 +78,7 @@ export function AppSidebar({
             />
           </div>
         </TooltipProvider>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute -right-10 top-4 hidden md:flex"
-          onClick={() => setIsCollapsed(!isCollapsed)}
-        >
-          <ChevronLeft className={cn("h-4 w-4 transition-transform", !isCollapsed && "rotate-180")} />
-        </Button>
       </aside>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        className="fixed right-4 top-4 z-40"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
     </>
   )
 }
