@@ -104,6 +104,10 @@ const Home = () => {
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={() => navigate('/suggestions')} className="cursor-pointer">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              <span>Suggérer des fonctionnalités</span>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
               <Settings className="mr-2 h-4 w-4" />
               <span>Paramètres</span>
