@@ -1,101 +1,180 @@
-import React, { useState } from 'react';
-import { ExerciseForm } from './ExerciseForm';
-import { ResultDisplay } from './ResultDisplay';
-import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
-import type { ExerciseFormData } from '@/hooks/useExerciseGeneration';
+import React, { useState } from "react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { ChevronLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { ResultDisplay } from "./result/ResultDisplay";
 
 export function ExerciseGenerator() {
-  const navigate = useNavigate();
-  const { exercises, isLoading, generateExercises } = useExerciseGeneration();
-  const [isFormExpanded, setIsFormExpanded] = useState(true);
-  const [formData, setFormData] = useState<ExerciseFormData>({
-    subject: "",
-    classLevel: "",
-    numberOfExercises: "3",
-    objective: "",
-    exerciseType: "",
-    additionalInstructions: "",
-    specificNeeds: "",
-    strengths: "",
-    challenges: "",
-  });
+  const [subject, setSubject] = useState("");
+  const [classLevel, setClassLevel] = useState("");
+  const [objective, setObjective] = useState("");
+  const [studentProfile, setStudentProfile] = useState("");
+  const [learningStyle, setLearningStyle] = useState("");
+  const [specificNeeds, setSpecificNeeds] = useState("");
+  const [originalExercise, setOriginalExercise] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [generatedExercise, setGeneratedExercise] = useState("");
+  const { toast } = useToast();
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const handleGenerate = async () => {
+    if (!subject || !classLevel || !objective || !studentProfile || !originalExercise) {
+      toast({
+        description: "Veuillez remplir tous les champs requis.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  const handleGenerateExercises = async () => {
-    await generateExercises(formData);
-    setIsFormExpanded(false);
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-exercises", {
+        body: {
+          type: "differentiated",
+          subject,
+          classLevel,
+          objective,
+          studentProfile,
+          learningStyle,
+          specificNeeds,
+          originalExercise,
+        },
+      });
+
+      if (error) throw error;
+
+      setGeneratedExercise(data.exercise);
+      toast({
+        description: "Exercice adapté avec succès !",
+      });
+    } catch (error) {
+      console.error("Error:", error);
+      toast({
+        description: "Une erreur est survenue lors de l'adaptation.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 via-orange-50 to-purple-50 pt-24">
-      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-sm border-b border-pink-100/50 shadow-sm">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Button 
-            variant="ghost" 
-            className="mb-4"
-            onClick={() => navigate('/home')}
-          >
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Retour à l'accueil
-          </Button>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-              Différenciation pédagogique
-            </h1>
-            <p className="text-base sm:text-lg text-gray-600">
-              Créez des exercices adaptés aux besoins spécifiques de vos élèves.
-            </p>
-          </div>
+    <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <Card className="relative overflow-hidden p-6 space-y-6 bg-white/90 backdrop-blur-md border-[#9b87f5]/20 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#9b87f5]/5 to-[#6E59A5]/5 pointer-events-none" />
+        
+        <div className="space-y-2">
+          <Label htmlFor="subject" className="text-[#7E69AB] font-medium">Matière</Label>
+          <Select value={subject} onValueChange={setSubject}>
+            <SelectTrigger className="bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30">
+              <SelectValue placeholder="Sélectionnez une matière" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="mathematics">Mathématiques</SelectItem>
+              <SelectItem value="french">Français</SelectItem>
+              <SelectItem value="history">Histoire</SelectItem>
+              <SelectItem value="geography">Géographie</SelectItem>
+              <SelectItem value="science">Sciences</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </div>
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-none mx-auto flex flex-col items-center">
-          <div className="w-full max-w-[1200px]">
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-              <div className="space-y-6">
-                <Collapsible
-                  open={isFormExpanded}
-                  onOpenChange={setIsFormExpanded}
-                  className="bg-white rounded-xl shadow-sm border border-pink-100/50 p-6 hover:shadow-md transition-shadow duration-200"
-                >
-                  <CollapsibleContent>
-                    <ExerciseForm 
-                      formData={formData} 
-                      handleInputChange={handleInputChange}
-                      handleSubmit={handleGenerateExercises}
-                      isLoading={isLoading}
-                    />
-                  </CollapsibleContent>
-
-                  {!isFormExpanded && (
-                    <Button
-                      onClick={() => setIsFormExpanded(true)}
-                      className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow mt-4"
-                    >
-                      Générer de nouveaux exercices
-                    </Button>
-                  )}
-                </Collapsible>
-              </div>
-
-              <div className="xl:sticky xl:top-8 space-y-6">
-                <ResultDisplay exercises={exercises} />
-              </div>
-            </div>
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="classLevel" className="text-[#7E69AB] font-medium">Niveau de classe</Label>
+          <Select value={classLevel} onValueChange={setClassLevel}>
+            <SelectTrigger className="bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30">
+              <SelectValue placeholder="Sélectionnez un niveau" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cp">CP</SelectItem>
+              <SelectItem value="ce1">CE1</SelectItem>
+              <SelectItem value="ce2">CE2</SelectItem>
+              <SelectItem value="cm1">CM1</SelectItem>
+              <SelectItem value="cm2">CM2</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="objective" className="text-[#7E69AB] font-medium">Objectif pédagogique</Label>
+          <Textarea
+            id="objective"
+            placeholder="Ex: Apprendre à additionner des nombres à deux chiffres..."
+            value={objective}
+            onChange={(e) => setObjective(e.target.value)}
+            className="min-h-[100px] bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="studentProfile" className="text-[#7E69AB] font-medium">Profil de l'élève</Label>
+          <Textarea
+            id="studentProfile"
+            placeholder="Décrivez le profil de l'élève (forces, difficultés...)"
+            value={studentProfile}
+            onChange={(e) => setStudentProfile(e.target.value)}
+            className="min-h-[100px] bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="learningStyle" className="text-[#7E69AB] font-medium">Style d'apprentissage (optionnel)</Label>
+          <Select value={learningStyle} onValueChange={setLearningStyle}>
+            <SelectTrigger className="bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30">
+              <SelectValue placeholder="Sélectionnez un style d'apprentissage" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="visual">Visuel</SelectItem>
+              <SelectItem value="auditory">Auditif</SelectItem>
+              <SelectItem value="kinesthetic">Kinesthésique</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="specificNeeds" className="text-[#7E69AB] font-medium">Besoins spécifiques (optionnel)</Label>
+          <Textarea
+            id="specificNeeds"
+            placeholder="Ex: dyslexie, TDAH..."
+            value={specificNeeds}
+            onChange={(e) => setSpecificNeeds(e.target.value)}
+            className="min-h-[100px] bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="originalExercise" className="text-[#7E69AB] font-medium">Exercice original</Label>
+          <Textarea
+            id="originalExercise"
+            placeholder="Collez ici l'exercice à adapter..."
+            value={originalExercise}
+            onChange={(e) => setOriginalExercise(e.target.value)}
+            className="min-h-[100px] bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30"
+          />
+        </div>
+
+        <Button 
+          onClick={handleGenerate} 
+          disabled={isLoading || !subject || !classLevel || !objective || !studentProfile || !originalExercise}
+          className="w-full bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] text-white hover:opacity-90 transition-all duration-300 shadow-md hover:shadow-lg"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Adaptation en cours...
+            </>
+          ) : (
+            "Adapter l'exercice"
+          )}
+        </Button>
+      </Card>
+
+      {generatedExercise && <ResultDisplay text={generatedExercise} />}
     </div>
   );
 }
