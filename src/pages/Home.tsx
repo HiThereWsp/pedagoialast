@@ -68,7 +68,7 @@ const Home = () => {
       icon: BookOpen
     },
     {
-      title: "Différencier un exercices",
+      title: "Adapter un exercice",
       route: "/differenciation",
       icon: SplitSquareVertical
     },
