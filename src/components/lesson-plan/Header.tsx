@@ -12,7 +12,7 @@ export function Header() {
         variant="ghost" 
         size="icon" 
         className="hover:bg-pink-50 w-10 h-10 self-start"
-        onClick={() => navigate('/chat')}
+        onClick={() => navigate('/home')}
       >
         <ChevronLeft className="h-5 w-5 text-pink-600" />
       </Button>
