@@ -1,8 +1,10 @@
 import { CorrespondenceGenerator } from "@/components/correspondence/CorrespondenceGenerator"
+import { BackButton } from "@/components/settings/BackButton"
 
 export default function CorrespondencePage() {
   return (
     <div className="container mx-auto py-8">
+      <BackButton />
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] bg-clip-text text-transparent">
           Générateur de correspondances
