@@ -17,8 +17,8 @@ export function DocumentTab({ formData, handleInputChange }: DocumentTabProps) {
     <div className="relative">
       <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-[#D946EF]/10 flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-6 h-6 text-[#D946EF]" />
+          <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-6 h-6 text-gray-600" />
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Fonctionnalité Pro</h3>
           <p className="text-sm text-gray-500">
@@ -34,7 +34,7 @@ export function DocumentTab({ formData, handleInputChange }: DocumentTabProps) {
           <Input
             type="file"
             disabled
-            className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+            className="w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
           />
           <p className="mt-2 text-sm text-gray-500">
             Formats acceptés : PDF, DOCX, TXT (max 10MB)

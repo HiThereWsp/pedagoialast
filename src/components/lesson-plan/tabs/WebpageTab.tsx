@@ -24,7 +24,7 @@ export function WebpageTab({ formData, handleInputChange }: WebpageTabProps) {
           placeholder="https://example.com/article"
           value={formData.webUrl}
           onChange={(e) => handleInputChange("webUrl", e.target.value)}
-          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
         />
       </div>
       <CommonFields formData={formData} handleInputChange={handleInputChange} />

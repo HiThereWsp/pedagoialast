@@ -22,7 +22,7 @@ export function CommonFields({ formData, handleInputChange }: CommonFieldsProps)
           placeholder="Par exemple : 6ème, CM2, CE1"
           value={formData.classLevel}
           onChange={(e) => handleInputChange("classLevel", e.target.value)}
-          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
           required
         />
       </div>
@@ -37,7 +37,7 @@ export function CommonFields({ formData, handleInputChange }: CommonFieldsProps)
           placeholder="Exemple : 5"
           value={formData.totalSessions}
           onChange={(e) => handleInputChange("totalSessions", e.target.value)}
-          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
         />
       </div>
       <div className="mt-8">
@@ -48,7 +48,7 @@ export function CommonFields({ formData, handleInputChange }: CommonFieldsProps)
           placeholder="Précisez toutes les exigences supplémentaires pour votre plan de cours"
           value={formData.additionalInstructions}
           onChange={(e) => handleInputChange("additionalInstructions", e.target.value)}
-          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="min-h-[100px] w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
         />
       </div>
     </div>

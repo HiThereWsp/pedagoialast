@@ -20,7 +20,7 @@ export function TextTab({ formData, handleInputChange }: TextTabProps) {
           placeholder="Collez ici le texte que vous souhaitez utiliser comme base pour votre séquence..."
           value={formData.text}
           onChange={(e) => handleInputChange("text", e.target.value)}
-          className="min-h-[200px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="min-h-[200px] w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
         />
       </div>
     </div>

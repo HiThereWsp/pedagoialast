@@ -20,7 +20,7 @@ export function SubjectTab({ formData, handleInputChange }: SubjectTabProps) {
           placeholder="Par exemple : La photosynthèse, Les fractions, La Révolution française..."
           value={formData.subject}
           onChange={(e) => handleInputChange("subject", e.target.value)}
-          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="min-h-[100px] w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
         />
       </div>
     </div>
