@@ -1,25 +1,57 @@
-import { SEO } from "@/components/SEO"
 import { BackButton } from "@/components/settings/BackButton"
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Helmet } from "react-helmet-async"
+import { Link } from "react-router-dom"
 
 const DiscoverPage = () => {
   return (
-    <div className="min-h-screen flex flex-col items-start justify-center p-8">
-      <SEO 
-        title="Découvrir l'application | Pedagoia" 
-        description="Tutoriels et guides pour découvrir l'application Pedagoia"
-      />
-      
-      <BackButton />
-      
-      <div className="max-w-2xl mx-auto space-y-6 text-center w-full">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Découvrez Pedagoia
-        </h1>
-        
-        <div className="bg-white rounded-2xl p-8 shadow-premium">
-          <p className="text-xl text-gray-700">
-            Nos tutoriels sont en train d'être peaufinés, vous serez les premiers informés dès leur sortie !
-          </p>
+    <div className="container mx-auto px-4 py-8">
+      <Helmet>
+        <title>Découvrir - Lov</title>
+      </Helmet>
+      <div className="mb-6">
+        <BackButton />
+      </div>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">Découvrir</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Ressources pédagogiques</h2>
+            <p className="text-gray-600 mb-4">
+              Explorez notre collection de ressources pour enrichir vos cours.
+            </p>
+            <Button asChild>
+              <Link to="/resources">Explorer</Link>
+            </Button>
+          </Card>
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Communauté</h2>
+            <p className="text-gray-600 mb-4">
+              Échangez avec d'autres enseignants et partagez vos expériences.
+            </p>
+            <Button asChild>
+              <Link to="/community">Rejoindre</Link>
+            </Button>
+          </Card>
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Tutoriels</h2>
+            <p className="text-gray-600 mb-4">
+              Apprenez à utiliser toutes les fonctionnalités de Lov.
+            </p>
+            <Button asChild>
+              <Link to="/tutorials">Commencer</Link>
+            </Button>
+          </Card>
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Nouveautés</h2>
+            <p className="text-gray-600 mb-4">
+              Découvrez les dernières mises à jour et fonctionnalités.
+            </p>
+            <Button asChild>
+              <Link to="/updates">Voir plus</Link>
+            </Button>
+          </Card>
         </div>
       </div>
     </div>
