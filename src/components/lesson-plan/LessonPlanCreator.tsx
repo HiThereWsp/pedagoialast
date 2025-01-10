@@ -41,10 +41,9 @@ export function LessonPlanCreator() {
 
     setIsLoading(true);
     const startTime = performance.now();
-    let streamedText = '';
 
     try {
-      const response = await supabase.functions.invoke('generate-lesson-plan', {
+      const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
           classLevel: formData.classLevel,
           totalSessions: formData.totalSessions,
@@ -54,50 +53,21 @@ export function LessonPlanCreator() {
         }
       });
 
-      if (response.data) {
-        const reader = new ReadableStream({
-          start(controller) {
-            controller.enqueue(new TextEncoder().encode(JSON.stringify(response.data)));
-            controller.close();
-          }
-        }).getReader();
+      if (error) throw error;
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+      if (data) {
+        setFormData(prev => ({
+          ...prev,
+          lessonPlan: data.content
+        }));
 
-          const chunk = new TextDecoder().decode(value);
-          const lines = chunk.split('\n');
-          
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const data = line.slice(6);
-              if (data === '[DONE]') continue;
-              
-              try {
-                const parsed = JSON.parse(data);
-                const content = parsed.choices[0].delta.content;
-                if (content) {
-                  streamedText += content;
-                  setFormData(prev => ({
-                    ...prev,
-                    lessonPlan: streamedText
-                  }));
-                }
-              } catch (e) {
-                console.error('Error parsing chunk:', e);
-              }
-            }
-          }
-        }
+        const generationTime = Math.round(performance.now() - startTime);
+        await logToolUsage('lesson_plan', 'generate', data.content.length, generationTime);
+
+        toast({
+          description: "Votre séquence a été générée avec succès !",
+        });
       }
-
-      const generationTime = Math.round(performance.now() - startTime);
-      await logToolUsage('lesson_plan', 'generate', streamedText.length, generationTime);
-
-      toast({
-        description: "Votre séquence a été générée avec succès !",
-      });
     } catch (error) {
       console.error('Error generating lesson plan:', error);
       toast({
