@@ -31,15 +31,30 @@ const Index = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Vérifier d'abord si une session existe dans le localStorage
+        const currentSession = localStorage.getItem('pedagoia-auth-token')
+        if (!currentSession) {
+          console.log("No session found in localStorage")
+          navigate('/login')
+          return
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
-          throw error
+          localStorage.removeItem('pedagoia-auth-token')
+          toast({
+            variant: "destructive",
+            title: "Erreur de session",
+            description: "Votre session a expiré. Veuillez vous reconnecter.",
+          })
+          navigate('/login')
+          return
         }
 
         if (!session) {
-          // Clear local storage to ensure clean state
+          console.log("No valid session found")
           localStorage.removeItem('pedagoia-auth-token')
           navigate('/login')
           return
@@ -65,7 +80,6 @@ const Index = () => {
         }
       } catch (error) {
         console.error("Auth error:", error)
-        // Clear local storage on error
         localStorage.removeItem('pedagoia-auth-token')
         toast({
           variant: "destructive",
@@ -82,7 +96,6 @@ const Index = () => {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_OUT' || !session) {
-        // Clear local storage on sign out
         localStorage.removeItem('pedagoia-auth-token')
         navigate('/login')
         return
