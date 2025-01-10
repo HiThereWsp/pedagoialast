@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
-import { Menu } from "lucide-react"
+import { ChevronLeft, Menu } from "lucide-react"
 import { useState } from "react"
 import { useLocation } from "react-router-dom"
 import { ConversationList } from "./sidebar/ConversationList"
@@ -51,17 +51,30 @@ export function AppSidebar({
       />
       <aside
         className={cn(
-          "fixed left-0 top-0 z-30 flex h-full w-64 flex-col border-r bg-background transition-transform md:relative md:translate-x-0",
+          "fixed left-0 top-0 z-30 flex h-full w-64 flex-col border-r bg-background transition-all duration-300 md:relative md:translate-x-0",
           isCollapsed && "w-16",
           !isMobileOpen && "-translate-x-full"
         )}
       >
         <TooltipProvider>
           <div className="flex h-full flex-col">
-            <SidebarHeader 
-              firstName={firstName}
-              onNewConversation={onNewConversation}
-            />
+            <div className="flex items-center justify-between p-4">
+              <SidebarHeader 
+                firstName={firstName}
+                onNewConversation={onNewConversation}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex"
+                onClick={() => setIsCollapsed(!isCollapsed)}
+              >
+                <ChevronLeft className={cn(
+                  "h-4 w-4 transition-transform",
+                  isCollapsed && "rotate-180"
+                )} />
+              </Button>
+            </div>
 
             <ScrollArea className="flex-1">
               <ConversationList
