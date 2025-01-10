@@ -44,44 +44,49 @@ export function LessonPlanCreator() {
     let streamedText = '';
 
     try {
-      const { data: stream } = await supabase.functions.invoke('generate-lesson-plan', {
+      const response = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
           classLevel: formData.classLevel,
           totalSessions: formData.totalSessions,
           subject: formData.subject,
           text: formData.text,
           additionalInstructions: formData.additionalInstructions,
-        },
-        responseType: 'stream'
+        }
       });
 
-      const reader = stream.getReader();
-      const decoder = new TextDecoder();
+      if (response.data) {
+        const reader = new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode(JSON.stringify(response.data)));
+            controller.close();
+          }
+        }).getReader();
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split('\n');
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices[0].delta.content;
-              if (content) {
-                streamedText += content;
-                setFormData(prev => ({
-                  ...prev,
-                  lessonPlan: streamedText
-                }));
+          const chunk = new TextDecoder().decode(value);
+          const lines = chunk.split('\n');
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = line.slice(6);
+              if (data === '[DONE]') continue;
+              
+              try {
+                const parsed = JSON.parse(data);
+                const content = parsed.choices[0].delta.content;
+                if (content) {
+                  streamedText += content;
+                  setFormData(prev => ({
+                    ...prev,
+                    lessonPlan: streamedText
+                  }));
+                }
+              } catch (e) {
+                console.error('Error parsing chunk:', e);
               }
-            } catch (e) {
-              console.error('Error parsing chunk:', e);
             }
           }
         }
