@@ -4,21 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ResultDisplay } from "./result/ResultDisplay";
 
-export function ExerciseGenerator() {
+export function DifferentiatedExerciseGenerator() {
   const [subject, setSubject] = useState("");
   const [classLevel, setClassLevel] = useState("");
   const [objective, setObjective] = useState("");
+  const [studentProfile, setStudentProfile] = useState("");
+  const [learningStyle, setLearningStyle] = useState("");
+  const [specificNeeds, setSpecificNeeds] = useState("");
+  const [originalExercise, setOriginalExercise] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [generatedExercise, setGeneratedExercise] = useState("");
   const { toast } = useToast();
 
   const handleGenerate = async () => {
-    if (!subject || !classLevel || !objective) {
+    if (!subject || !classLevel || !objective || !studentProfile || !originalExercise) {
       toast({
         description: "Veuillez remplir tous les champs requis.",
         variant: "destructive",
@@ -30,10 +35,14 @@ export function ExerciseGenerator() {
     try {
       const { data, error } = await supabase.functions.invoke("generate-exercises", {
         body: {
-          type: "standard",
+          type: "differentiated",
           subject,
           classLevel,
           objective,
+          studentProfile,
+          learningStyle,
+          specificNeeds,
+          originalExercise,
         },
       });
 
@@ -41,12 +50,12 @@ export function ExerciseGenerator() {
 
       setGeneratedExercise(data.exercise);
       toast({
-        description: "Exercice généré avec succès !",
+        description: "Exercice adapté avec succès !",
       });
     } catch (error) {
       console.error("Error:", error);
       toast({
-        description: "Une erreur est survenue lors de la génération.",
+        description: "Une erreur est survenue lors de l'adaptation.",
         variant: "destructive",
       });
     } finally {
@@ -95,18 +104,67 @@ export function ExerciseGenerator() {
           />
         </div>
 
+        <div className="space-y-2">
+          <Label htmlFor="studentProfile" className="text-[#7E69AB] font-medium">Profil de l'élève <span className="text-red-500">*</span></Label>
+          <Textarea
+            id="studentProfile"
+            placeholder="Décrivez le profil de l'élève (forces, difficultés...)"
+            value={studentProfile}
+            onChange={(e) => setStudentProfile(e.target.value)}
+            className="min-h-[100px] bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30"
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="learningStyle" className="text-[#7E69AB] font-medium">Style d'apprentissage (optionnel)</Label>
+          <Select value={learningStyle} onValueChange={setLearningStyle}>
+            <SelectTrigger className="bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30">
+              <SelectValue placeholder="Sélectionnez un style d'apprentissage" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="visual">Visuel</SelectItem>
+              <SelectItem value="auditory">Auditif</SelectItem>
+              <SelectItem value="kinesthetic">Kinesthésique</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="specificNeeds" className="text-[#7E69AB] font-medium">Besoins spécifiques (optionnel)</Label>
+          <Textarea
+            id="specificNeeds"
+            placeholder="Ex: dyslexie, TDAH..."
+            value={specificNeeds}
+            onChange={(e) => setSpecificNeeds(e.target.value)}
+            className="min-h-[100px] bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="originalExercise" className="text-[#7E69AB] font-medium">Exercice original <span className="text-red-500">*</span></Label>
+          <Textarea
+            id="originalExercise"
+            placeholder="Collez ici l'exercice à adapter..."
+            value={originalExercise}
+            onChange={(e) => setOriginalExercise(e.target.value)}
+            className="min-h-[100px] bg-white/80 border-[#9b87f5]/20 focus-visible:ring-[#9b87f5]/30"
+            required
+          />
+        </div>
+
         <Button 
           onClick={handleGenerate} 
-          disabled={isLoading || !subject || !classLevel || !objective}
+          disabled={isLoading || !subject || !classLevel || !objective || !studentProfile || !originalExercise}
           className="w-full bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] text-white hover:opacity-90 transition-all duration-300 shadow-md hover:shadow-lg"
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Génération en cours...
+              Adaptation en cours...
             </>
           ) : (
-            "Générer l'exercice"
+            "Adapter l'exercice"
           )}
         </Button>
       </Card>
