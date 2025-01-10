@@ -6,9 +6,9 @@ import { QuickActions } from "@/components/QuickActions"
 import { WelcomeBanner } from "@/components/WelcomeBanner"
 import { ChatInput } from "@/components/ChatInput"
 import { useChat } from "@/hooks/useChat"
-import { Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { AppSidebar } from "@/components/AppSidebar"
+import { LoadingIndicator } from "@/components/chat/LoadingIndicator"
 
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
@@ -114,7 +114,7 @@ const Index = () => {
 
   if (!userId) return (
     <div className="flex h-screen items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <LoadingIndicator />
     </div>
   )
 
