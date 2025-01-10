@@ -26,7 +26,7 @@ export const actions: ActionType[] = [
     icon: BookOpen
   },
   {
-    title: "Générer un exercice",
+    title: "Générer/Adapter un exercice",
     route: "/exercises",
     icon: PenSquare
   },
