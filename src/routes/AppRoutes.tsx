@@ -17,6 +17,7 @@ const Pricing = lazy(() => import("@/pages/Pricing"))
 const MetricsPage = lazy(() => import("@/pages/MetricsPage"))
 const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
 const ExercisePage = lazy(() => import("@/pages/ExercisePage"))
+const DiscoverPage = lazy(() => import("@/pages/DiscoverPage"))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -43,6 +44,7 @@ export const AppRoutes = () => {
           <Route path="/settings" element={<Settings />} />
           <Route path="/metrics" element={<MetricsPage />} />
           <Route path="/suggestions" element={<SuggestionsPage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/differenciation" element={<Navigate to="/home" replace />} />
         </Route>
 
