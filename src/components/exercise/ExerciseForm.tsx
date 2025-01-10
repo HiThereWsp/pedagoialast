@@ -31,37 +31,25 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-all duration-200">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              {isDifferentiation ? "Différenciation d'exercice" : "Générateur d'exercices"}
-            </h1>
-            <p className="text-gray-600">
-              {isDifferentiation 
-                ? "Adaptez un exercice existant aux besoins spécifiques d'un élève" 
-                : "Créez des exercices personnalisés pour vos élèves"}
-            </p>
-          </div>
-          <Tabs defaultValue={isDifferentiation ? "differentiate" : "generate"} className="w-[400px]">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger 
-                value="generate" 
-                onClick={() => setIsDifferentiation(false)}
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
-              >
-                Générer
-              </TabsTrigger>
-              <TabsTrigger 
-                value="differentiate" 
-                onClick={() => setIsDifferentiation(true)}
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
-              >
-                Différencier
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
+      <div className="flex justify-center mb-8">
+        <Tabs defaultValue={isDifferentiation ? "differentiate" : "generate"} className="w-[400px]">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger 
+              value="generate" 
+              onClick={() => setIsDifferentiation(false)}
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
+            >
+              Générer
+            </TabsTrigger>
+            <TabsTrigger 
+              value="differentiate" 
+              onClick={() => setIsDifferentiation(true)}
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
+            >
+              Différencier
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
       {isDifferentiation ? (
