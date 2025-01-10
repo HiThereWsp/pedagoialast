@@ -6,7 +6,6 @@ import { User } from "@supabase/supabase-js"
 import { 
   Compass, 
   BookOpen, 
-  SplitSquareVertical, 
   PenSquare, 
   FileText, 
   MessageSquare,
@@ -74,11 +73,6 @@ const Home = () => {
       title: "Générer une séquence pédagogique",
       route: "/lesson-plan",
       icon: BookOpen
-    },
-    {
-      title: "Adapter un exercice",
-      route: "/differenciation",
-      icon: SplitSquareVertical
     },
     {
       title: "Générer un exercice",
