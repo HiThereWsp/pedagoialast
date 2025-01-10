@@ -16,6 +16,7 @@ const WaitlistLanding = lazy(() => import("@/pages/WaitlistLanding"))
 const Pricing = lazy(() => import("@/pages/Pricing"))
 const MetricsPage = lazy(() => import("@/pages/MetricsPage"))
 const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
+const ExercisePage = lazy(() => import("@/pages/ExercisePage"))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -38,11 +39,10 @@ export const AppRoutes = () => {
           <Route path="/chat" element={<Index />} />
           <Route path="/lesson-plan" element={<LessonPlanPage />} />
           <Route path="/correspondence" element={<CorrespondencePage />} />
+          <Route path="/exercises" element={<ExercisePage />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/metrics" element={<MetricsPage />} />
           <Route path="/suggestions" element={<SuggestionsPage />} />
-          {/* Redirect old exercise routes to home */}
-          <Route path="/exercises" element={<Navigate to="/home" replace />} />
           <Route path="/differenciation" element={<Navigate to="/home" replace />} />
         </Route>
 

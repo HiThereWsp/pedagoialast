@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface ExerciseFormData {
@@ -20,6 +20,15 @@ export function useExerciseGeneration() {
   const [exercises, setExercises] = useState<string | null>(null);
 
   const validateFormData = (formData: ExerciseFormData) => {
+    if (!formData.subject.trim()) {
+      toast({
+        title: "Matière requise",
+        description: "Veuillez spécifier la matière",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     if (!formData.classLevel.trim()) {
       toast({
         title: "Niveau requis",
