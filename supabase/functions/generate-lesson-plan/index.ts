@@ -17,6 +17,7 @@ serve(async (req) => {
     console.log('Received request with:', { classLevel, totalSessions, subject, text, additionalInstructions })
 
     if (!classLevel || !totalSessions) {
+      console.error('Missing required fields')
       return new Response(
         JSON.stringify({ 
           error: 'Missing required fields', 
@@ -29,33 +30,42 @@ serve(async (req) => {
       )
     }
 
-    // Construire un prompt plus concis et efficace
-    let prompt = `En tant qu'expert pédagogique, crée une séquence de ${totalSessions} séances pour le niveau ${classLevel}.`
+    // Construire le prompt de base
+    let prompt = `En tant qu'expert en pédagogie à l'éducation nationale, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.`
 
+    // Ajouter le sujet s'il est fourni
     if (subject) {
-      prompt += `\nMatière: ${subject}.`
+      prompt += `\nLe sujet est: ${subject}.`
     }
 
+    // Ajouter le texte s'il est fourni
     if (text) {
-      prompt += `\nBasé sur: ${text}.`
+      prompt += `\nBasé sur ce texte: ${text}.`
     }
 
+    // Ajouter les instructions supplémentaires si fournies
     if (additionalInstructions) {
-      prompt += `\nInstructions: ${additionalInstructions}.`
+      prompt += `\nInstructions supplémentaires: ${additionalInstructions}.`
     }
 
-    // Structure attendue plus concise
+    // Ajouter le format de réponse souhaité
     prompt += `
-Format:
-1. Objectifs
+Format de la réponse souhaitée:
+1. Objectifs d'apprentissage
 2. Prérequis
-3. Matériel
-4. Déroulé:${Array.from({ length: Number(totalSessions) }, (_, i) => `\n   Séance ${i + 1}:`).join('')}
-5. Évaluation`
+3. Durée estimée (${totalSessions} séances)
+4. Matériel nécessaire
+5. Déroulement détaillé:
+   - Phase 1: Introduction
+   - Phase 2: Développement
+   - Phase 3: Application
+   - Phase 4: Conclusion
+6. Évaluation
+7. Prolongements possibles`
 
-    console.log('Sending prompt to OpenAI:', prompt)
+    console.log('Calling OpenAI with prompt:', prompt)
 
-    // Appel à l'API OpenAI avec le modèle plus rapide
+    // Appel à l'API OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -67,7 +77,7 @@ Format:
         messages: [
           {
             role: 'system',
-            content: 'Tu es un expert en pédagogie qui aide à créer des séquences pédagogiques détaillées et structurées, en respectant les programmes officiels de l\'Education Nationale.'
+            content: 'Tu es un expert en pédagogie qui aide à créer des séquences pédagogiques détaillées et structurées, en respectant scrupuleusement les programmes officiels de l\'Education Nationale.'
           },
           {
             role: 'user',
@@ -75,20 +85,29 @@ Format:
           }
         ],
         temperature: 0.7,
-        stream: true, // Activer le streaming pour une réponse progressive
       }),
     })
 
-    // Transformer la réponse en stream
-    return new Response(response.body, {
-      headers: { 
-        ...corsHeaders,
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-      }
-    })
+    if (!response.ok) {
+      const error = await response.text()
+      console.error('OpenAI API error:', error)
+      throw new Error(`OpenAI API error: ${response.statusText}`)
+    }
 
+    const data = await response.json()
+    const lessonPlan = data.choices[0].message.content
+
+    return new Response(
+      JSON.stringify({ 
+        lessonPlan,
+        metrics: {
+          contentLength: lessonPlan.length
+        }
+      }), 
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    )
   } catch (error) {
     console.error('Error in generate-lesson-plan function:', error)
     return new Response(

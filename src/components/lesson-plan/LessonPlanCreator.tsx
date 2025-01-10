@@ -43,7 +43,7 @@ export function LessonPlanCreator() {
     const startTime = performance.now();
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
           classLevel: formData.classLevel,
           totalSessions: formData.totalSessions,
@@ -53,21 +53,22 @@ export function LessonPlanCreator() {
         }
       });
 
-      if (error) throw error;
-
-      if (data) {
-        setFormData(prev => ({
-          ...prev,
-          lessonPlan: data.content
-        }));
-
-        const generationTime = Math.round(performance.now() - startTime);
-        await logToolUsage('lesson_plan', 'generate', data.content.length, generationTime);
-
-        toast({
-          description: "Votre séquence a été générée avec succès !",
-        });
+      if (functionError) {
+        throw functionError;
       }
+
+      const generationTime = Math.round(performance.now() - startTime);
+      
+      setFormData(prev => ({
+        ...prev,
+        lessonPlan: functionData.lessonPlan
+      }));
+
+      await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
+
+      toast({
+        description: "Votre séquence a été générée avec succès !",
+      });
     } catch (error) {
       console.error('Error generating lesson plan:', error);
       toast({
