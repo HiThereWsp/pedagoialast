@@ -15,14 +15,14 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
-            <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
-            <span className="text-xl font-semibold">PedagoIA</span>
+            <img src="/favicon.svg" alt="PedagoIA Logo" className="w-6 h-6 sm:w-8 sm:h-8" />
+            <span className="text-lg sm:text-xl font-semibold">PedagoIA</span>
           </div>
           <div>
             <Button 
               variant="outline"
               onClick={handleLoginClick}
-              className="font-medium"
+              className="font-medium text-sm sm:text-base"
             >
               Se connecter
             </Button>
