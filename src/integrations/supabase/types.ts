@@ -234,6 +234,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_popup_views: {
+        Row: {
+          id: string
+          popup_key: string
+          user_id: string | null
+          viewed_at: string | null
+        }
+        Insert: {
+          id?: string
+          popup_key: string
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Update: {
+          id?: string
+          popup_key?: string
+          user_id?: string | null
+          viewed_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

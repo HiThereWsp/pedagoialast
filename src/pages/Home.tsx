@@ -6,6 +6,7 @@ import { UserMenu } from "@/components/home/UserMenu"
 import { WelcomeMessage } from "@/components/home/WelcomeMessage"
 import { ActionButtons } from "@/components/home/ActionButtons"
 import { Footer } from "@/components/home/Footer"
+import { UpdateNotification } from "@/components/home/UpdateNotification"
 
 const Home = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -47,6 +48,7 @@ const Home = () => {
       <WelcomeMessage firstName={firstName} />
       <ActionButtons />
       <Footer />
+      <UpdateNotification />
     </div>
   )
 }
