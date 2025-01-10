@@ -39,7 +39,8 @@ serve(async (req) => {
     - Inclure une réponse ou une solution si nécessaire
     - Adapter le format et la présentation en fonction des besoins spécifiques mentionnés
     - Exploiter les forces et intérêts indiqués pour favoriser l'engagement
-    - Proposer des stratégies pour surmonter les défis mentionnés`
+    - Proposer des stratégies pour surmonter les défis mentionnés
+    - IMPORTANT : Ne pas créer d'exercices nécessitant des images ou des supports visuels. Les exercices doivent pouvoir être réalisés uniquement avec du texte.`
 
     console.log('Calling OpenAI with prompt:', prompt)
 
