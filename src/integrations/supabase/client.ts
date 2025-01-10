@@ -12,7 +12,9 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      storage: window?.localStorage
+      storage: window?.localStorage,
+      storageKey: 'pedagoia-auth-token',
+      flowType: 'pkce'
     }
   }
 );
