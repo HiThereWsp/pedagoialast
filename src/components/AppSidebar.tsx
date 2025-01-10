@@ -51,8 +51,8 @@ export function AppSidebar({
       />
       <aside
         className={cn(
-          "fixed left-0 top-0 z-30 flex h-full w-64 flex-col border-r bg-background transition-all duration-300 md:relative md:translate-x-0",
-          isCollapsed && "w-16",
+          "fixed left-0 top-0 z-30 flex h-full flex-col border-r bg-background transition-all duration-300 md:relative md:translate-x-0",
+          isCollapsed ? "w-0 md:w-0 opacity-0" : "w-64",
           !isMobileOpen && "-translate-x-full"
         )}
       >
@@ -92,6 +92,16 @@ export function AppSidebar({
           </div>
         </TooltipProvider>
       </aside>
+      {isCollapsed && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="fixed left-4 top-4 z-40 hidden md:flex"
+          onClick={() => setIsCollapsed(false)}
+        >
+          <Menu className="h-6 w-6" />
+        </Button>
+      )}
     </>
   )
 }
