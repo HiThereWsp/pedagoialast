@@ -1,14 +1,17 @@
 import { SEO } from "@/components/SEO"
+import { BackButton } from "@/components/settings/BackButton"
 
 const DiscoverPage = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center">
+    <div className="min-h-screen flex flex-col items-start justify-center p-8">
       <SEO 
         title="Découvrir l'application | Pedagoia" 
         description="Tutoriels et guides pour découvrir l'application Pedagoia"
       />
       
-      <div className="max-w-2xl mx-auto space-y-6">
+      <BackButton />
+      
+      <div className="max-w-2xl mx-auto space-y-6 text-center w-full">
         <h1 className="text-4xl font-bold text-gray-900">
           Découvrez Pedagoia
         </h1>
