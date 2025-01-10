@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles, SwitchCamera } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { Toggle } from "@/components/ui/toggle";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -44,21 +44,18 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Toggle
+            <Button
               variant="outline"
-              aria-label="Toggle differentiation mode"
-              pressed={isDifferentiation}
-              onPressedChange={setIsDifferentiation}
-              className="data-[state=on]:bg-purple-100 data-[state=on]:text-purple-900 data-[state=on]:border-purple-200 hover:bg-purple-50"
+              onClick={() => setIsDifferentiation(!isDifferentiation)}
+              className="bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] text-white hover:from-[#8b77e5] hover:to-[#5E49A5] transition-all duration-300"
             >
               {isDifferentiation ? "Mode différenciation" : "Mode générateur"}
-            </Toggle>
+            </Button>
           </div>
         </div>
       </div>
 
       {isDifferentiation ? (
-        // Mode Différenciation
         <>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -157,7 +154,6 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           </div>
         </>
       ) : (
-        // Mode Générateur
         <>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
