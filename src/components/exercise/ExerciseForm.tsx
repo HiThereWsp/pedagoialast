@@ -48,14 +48,14 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
               <TabsTrigger 
                 value="generate" 
                 onClick={() => setIsDifferentiation(false)}
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#9b87f5] data-[state=active]:to-[#6E59A5] data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
               >
                 Générer
               </TabsTrigger>
               <TabsTrigger 
                 value="differentiate" 
                 onClick={() => setIsDifferentiation(true)}
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#9b87f5] data-[state=active]:to-[#6E59A5] data-[state=active]:text-white"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
               >
                 Différencier
               </TabsTrigger>
