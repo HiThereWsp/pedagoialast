@@ -23,7 +23,7 @@ interface ExerciseFormProps {
 
 export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoading }: ExerciseFormProps) {
   return (
-    <div className="space-y-6 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm">
+    <div className="space-y-6 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-all duration-200">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Générateur d'exercices</h1>
         <p className="text-gray-600">Créez des exercices personnalisés pour vos élèves</p>
