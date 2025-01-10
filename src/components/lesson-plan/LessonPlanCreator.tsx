@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
+import { supabase } from "@/integrations/supabase/client";
 
 export function LessonPlanCreator() {
   const { toast } = useToast();
@@ -42,36 +43,28 @@ export function LessonPlanCreator() {
     const startTime = performance.now();
 
     try {
-      const response = await fetch(
-        'https://jpelncawdaounkidvymu.supabase.co/functions/v1/generate-lesson-plan',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            classLevel: formData.classLevel,
-            totalSessions: formData.totalSessions,
-            subject: formData.subject,
-            text: formData.text,
-            additionalInstructions: formData.additionalInstructions,
-          }),
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-lesson-plan', {
+        body: {
+          classLevel: formData.classLevel,
+          totalSessions: formData.totalSessions,
+          subject: formData.subject,
+          text: formData.text,
+          additionalInstructions: formData.additionalInstructions,
         }
-      );
+      });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de la génération du plan de cours');
+      if (functionError) {
+        throw functionError;
       }
 
-      const data = await response.json();
       const generationTime = Math.round(performance.now() - startTime);
       
       setFormData(prev => ({
         ...prev,
-        lessonPlan: data.lessonPlan
+        lessonPlan: functionData.lessonPlan
       }));
 
-      await logToolUsage('lesson_plan', 'generate', data.lessonPlan.length, generationTime);
+      await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
 
       toast({
         description: "Votre séquence a été générée avec succès !",
