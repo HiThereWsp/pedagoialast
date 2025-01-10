@@ -39,13 +39,14 @@ const Index = () => {
         }
 
         if (!session) {
+          // Clear local storage to ensure clean state
+          localStorage.removeItem('pedagoia-auth-token')
           navigate('/login')
           return
         }
 
         setUserId(session.user.id)
         
-        // Fetch user's first name from profiles table
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('first_name')
@@ -54,11 +55,18 @@ const Index = () => {
           
         if (profileError) {
           console.error("Profile fetch error:", profileError)
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de charger votre profil"
+          })
         } else {
           setFirstName(profileData?.first_name)
         }
       } catch (error) {
         console.error("Auth error:", error)
+        // Clear local storage on error
+        localStorage.removeItem('pedagoia-auth-token')
         toast({
           variant: "destructive",
           title: "Erreur d'authentification",
@@ -71,11 +79,13 @@ const Index = () => {
     checkAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || !session) {
-        if (!session) {
-          navigate('/login')
-          return
-        }
+      console.log("Auth state changed:", event, session)
+      
+      if (event === 'SIGNED_OUT' || !session) {
+        // Clear local storage on sign out
+        localStorage.removeItem('pedagoia-auth-token')
+        navigate('/login')
+        return
       }
       
       if (session) {
@@ -108,8 +118,19 @@ const Index = () => {
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate('/login')
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      
+      // Clear local storage on successful logout
+      localStorage.removeItem('pedagoia-auth-token')
+      navigate('/login')
+    } catch (error) {
+      console.error("Logout error:", error)
+      // Force navigation to login even if logout fails
+      localStorage.removeItem('pedagoia-auth-token')
+      navigate('/login')
+    }
   }
 
   if (!userId) return (
