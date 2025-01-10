@@ -1,0 +1,14 @@
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[context.production]
+  base = "Second-branch"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
