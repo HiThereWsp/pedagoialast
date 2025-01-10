@@ -16,8 +16,6 @@ const WaitlistLanding = lazy(() => import("@/pages/WaitlistLanding"))
 const Pricing = lazy(() => import("@/pages/Pricing"))
 const MetricsPage = lazy(() => import("@/pages/MetricsPage"))
 const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
-const ExerciseGenerator = lazy(() => import("@/components/exercise/ExerciseGenerator").then(module => ({ default: module.ExerciseGenerator })))
-const StandardExerciseGenerator = lazy(() => import("@/components/exercise/StandardExerciseGenerator").then(module => ({ default: module.StandardExerciseGenerator })))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -40,11 +38,12 @@ export const AppRoutes = () => {
           <Route path="/chat" element={<Index />} />
           <Route path="/lesson-plan" element={<LessonPlanPage />} />
           <Route path="/correspondence" element={<CorrespondencePage />} />
-          <Route path="/exercises" element={<StandardExerciseGenerator />} />
-          <Route path="/differenciation" element={<ExerciseGenerator />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/metrics" element={<MetricsPage />} />
           <Route path="/suggestions" element={<SuggestionsPage />} />
+          {/* Redirect old exercise routes to home */}
+          <Route path="/exercises" element={<Navigate to="/home" replace />} />
+          <Route path="/differenciation" element={<Navigate to="/home" replace />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
