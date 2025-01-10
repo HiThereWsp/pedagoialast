@@ -5,8 +5,8 @@
 [build.environment]
   NODE_VERSION = "18"
 
-[context.production]
-  base = "Second-branch"
+[context.production.environment]
+  BRANCH = "Second-branch"
 
 [[redirects]]
   from = "/*"
