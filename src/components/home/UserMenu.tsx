@@ -7,13 +7,50 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 export const UserMenu = () => {
   const navigate = useNavigate()
+  const { toast } = useToast()
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    navigate('/login')
+    try {
+      // Vérifier d'abord si une session existe
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError) {
+        console.error("Session error:", sessionError)
+        // En cas d'erreur de session, on nettoie quand même
+        localStorage.clear()
+        navigate('/login')
+        return
+      }
+
+      if (!session) {
+        console.log("No session found, redirecting to login")
+        navigate('/login')
+        return
+      }
+
+      // Si on a une session valide, on tente la déconnexion
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error("Signout error:", error)
+        toast({
+          variant: "destructive",
+          title: "Erreur de déconnexion",
+          description: "Une erreur est survenue lors de la déconnexion. Veuillez réessayer.",
+        })
+      } else {
+        console.log("Successfully signed out")
+        localStorage.clear() // Nettoyer le localStorage
+        navigate('/login')
+      }
+    } catch (error) {
+      console.error("Unexpected error during signout:", error)
+      localStorage.clear() // Par sécurité, on nettoie quand même
+      navigate('/login')
+    }
   }
 
   return (
