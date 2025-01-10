@@ -1,41 +1,54 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import { ProtectedRoute } from "./ProtectedRoute"
-import Index from "@/pages/Index"
-import Home from "@/pages/Home"
-import Login from "@/pages/Login"
-import Settings from "@/pages/Settings"
-import NotFound from "@/pages/NotFound"
-import LessonPlanPage from "@/pages/LessonPlanPage"
-import CorrespondencePage from "@/pages/CorrespondencePage"
-import Landing from "@/pages/Landing"
-import WaitlistLanding from "@/pages/WaitlistLanding"
-import Pricing from "@/pages/Pricing"
-import MetricsPage from "@/pages/MetricsPage"
-import SuggestionsPage from "@/pages/SuggestionsPage"
-import { ExerciseGenerator } from "@/components/exercise/ExerciseGenerator"
-import { StandardExerciseGenerator } from "@/components/exercise/StandardExerciseGenerator"
+import { Suspense, lazy } from "react"
+import { Loader2 } from "lucide-react"
+
+// Lazy load components
+const Index = lazy(() => import("@/pages/Index"))
+const Home = lazy(() => import("@/pages/Home"))
+const Login = lazy(() => import("@/pages/Login"))
+const Settings = lazy(() => import("@/pages/Settings"))
+const NotFound = lazy(() => import("@/pages/NotFound"))
+const LessonPlanPage = lazy(() => import("@/pages/LessonPlanPage"))
+const CorrespondencePage = lazy(() => import("@/pages/CorrespondencePage"))
+const Landing = lazy(() => import("@/pages/Landing"))
+const WaitlistLanding = lazy(() => import("@/pages/WaitlistLanding"))
+const Pricing = lazy(() => import("@/pages/Pricing"))
+const MetricsPage = lazy(() => import("@/pages/MetricsPage"))
+const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
+const ExerciseGenerator = lazy(() => import("@/components/exercise/ExerciseGenerator").then(module => ({ default: module.ExerciseGenerator })))
+const StandardExerciseGenerator = lazy(() => import("@/components/exercise/StandardExerciseGenerator").then(module => ({ default: module.StandardExerciseGenerator })))
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex h-screen w-full items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+)
 
 export const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/waitlist" element={<WaitlistLanding />} />
-      <Route path="/pricing" element={<Pricing />} />
-      <Route path="/login" element={<Login />} />
-      
-      <Route element={<ProtectedRoute />}>
-        <Route path="/home" element={<Home />} />
-        <Route path="/chat" element={<Index />} />
-        <Route path="/lesson-plan" element={<LessonPlanPage />} />
-        <Route path="/correspondence" element={<CorrespondencePage />} />
-        <Route path="/exercises" element={<StandardExerciseGenerator />} />
-        <Route path="/differenciation" element={<ExerciseGenerator />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/metrics" element={<MetricsPage />} />
-        <Route path="/suggestions" element={<SuggestionsPage />} />
-      </Route>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/waitlist" element={<WaitlistLanding />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/login" element={<Login />} />
+        
+        <Route element={<ProtectedRoute />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/chat" element={<Index />} />
+          <Route path="/lesson-plan" element={<LessonPlanPage />} />
+          <Route path="/correspondence" element={<CorrespondencePage />} />
+          <Route path="/exercises" element={<StandardExerciseGenerator />} />
+          <Route path="/differenciation" element={<ExerciseGenerator />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/metrics" element={<MetricsPage />} />
+          <Route path="/suggestions" element={<SuggestionsPage />} />
+        </Route>
 
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   )
 }
