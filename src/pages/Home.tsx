@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
-import { User } from "@supabase/supabase-js"
+import type { User } from "@supabase/supabase-js"
 import { HomeSkeleton } from "@/components/home/HomeSkeleton"
 import { UserMenu } from "@/components/home/UserMenu"
 import { WelcomeMessage } from "@/components/home/WelcomeMessage"

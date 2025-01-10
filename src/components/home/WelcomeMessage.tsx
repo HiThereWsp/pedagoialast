@@ -1,8 +1,10 @@
+import type { FC } from "react"
+
 interface WelcomeMessageProps {
   firstName: string
 }
 
-export const WelcomeMessage = ({ firstName }: WelcomeMessageProps) => {
+export const WelcomeMessage: FC<WelcomeMessageProps> = ({ firstName }) => {
   return (
     <div className="text-center mb-12">
       <h1 className="text-4xl font-bold mb-4 flex items-center justify-center gap-2">

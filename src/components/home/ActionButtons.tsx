@@ -1,42 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { 
-  Compass, 
-  BookOpen, 
-  PenSquare, 
-  FileText, 
-  MessageSquare,
-} from "lucide-react"
-
-const actions = [
-  {
-    title: "Découvrir l'application",
-    route: "/discover",
-    icon: Compass,
-    isUtilityAction: true
-  },
-  {
-    title: "Chatter avec l'assistant",
-    route: "/chat",
-    icon: MessageSquare,
-    isUtilityAction: false
-  },
-  {
-    title: "Générer une séquence pédagogique",
-    route: "/lesson-plan",
-    icon: BookOpen
-  },
-  {
-    title: "Générer un exercice",
-    route: "/exercises",
-    icon: PenSquare
-  },
-  {
-    title: "Rédiger un document administratif",
-    route: "/correspondence",
-    icon: FileText
-  }
-]
+import { actions } from "@/data/actions"
 
 export const ActionButtons = () => {
   const navigate = useNavigate()
