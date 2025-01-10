@@ -4,7 +4,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ExerciseFormProps {
   formData: {
@@ -43,24 +42,6 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
                 : "Créez des exercices personnalisés pour vos élèves"}
             </p>
           </div>
-          <Tabs defaultValue={isDifferentiation ? "differentiate" : "generate"} className="w-[400px]">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger 
-                value="generate" 
-                onClick={() => setIsDifferentiation(false)}
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
-              >
-                Générer
-              </TabsTrigger>
-              <TabsTrigger 
-                value="differentiate" 
-                onClick={() => setIsDifferentiation(true)}
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
-              >
-                Différencier
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
         </div>
       </div>
 
