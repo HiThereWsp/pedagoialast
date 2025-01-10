@@ -3,11 +3,10 @@ import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
 import { ResultDisplay } from '@/components/exercise/ResultDisplay';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
-import type { ExerciseFormData } from '@/hooks/useExerciseGeneration';
 
 const ExercisePage = () => {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
-  const [formData, setFormData] = useState<ExerciseFormData>({
+  const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
     numberOfExercises: '',
@@ -17,6 +16,9 @@ const ExercisePage = () => {
     specificNeeds: '',
     strengths: '',
     challenges: '',
+    originalExercise: '',
+    studentProfile: '',
+    learningStyle: '',
   });
 
   const handleInputChange = (field: string, value: string) => {
