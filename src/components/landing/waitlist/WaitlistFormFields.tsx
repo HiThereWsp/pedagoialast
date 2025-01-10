@@ -18,7 +18,7 @@ interface WaitlistFormFieldsProps {
 
 export const WaitlistFormFields = ({ register, errors, isLoading }: WaitlistFormFieldsProps) => {
   return (
-    <>
+    <div className="space-y-4 w-full max-w-sm mx-auto">
       <div>
         <Input
           placeholder="Votre prénom"
@@ -54,7 +54,7 @@ export const WaitlistFormFields = ({ register, errors, isLoading }: WaitlistForm
         <Textarea
           placeholder="Votre niveau d'enseignement"
           {...register("teachingLevel", { required: "Le niveau d'enseignement est requis" })}
-          className="w-full"
+          className="w-full resize-none"
           disabled={isLoading}
         />
         {errors.teachingLevel && (
@@ -76,6 +76,6 @@ export const WaitlistFormFields = ({ register, errors, isLoading }: WaitlistForm
           "Je m'inscris à la liste d'attente"
         )}
       </Button>
-    </>
+    </div>
   )
 }

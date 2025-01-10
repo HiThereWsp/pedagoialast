@@ -95,7 +95,7 @@ export const WaitlistForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full max-w-md mx-auto">
+    <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md mx-auto px-4 sm:px-6">
       <WaitlistFormFields 
         register={register}
         errors={errors}
