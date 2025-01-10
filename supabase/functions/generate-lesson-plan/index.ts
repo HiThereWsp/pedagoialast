@@ -13,9 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const startTime = performance.now();
-    const { subject, webUrl, text, classLevel, additionalInstructions, totalSessions } = await req.json()
-    console.log('Received request with:', { subject, webUrl, text, classLevel, additionalInstructions, totalSessions })
+    const { classLevel, totalSessions, subject, text, additionalInstructions } = await req.json()
+    console.log('Received request with:', { classLevel, totalSessions, subject, text, additionalInstructions })
 
     if (!classLevel || !totalSessions) {
       console.error('Missing required fields')
@@ -37,11 +36,6 @@ serve(async (req) => {
     // Ajouter le sujet s'il est fourni
     if (subject) {
       prompt += `\nLe sujet est: ${subject}.`
-    }
-
-    // Ajouter l'URL s'il est fourni
-    if (webUrl) {
-      prompt += `\nBasé sur le contenu de cette page web: ${webUrl}.`
     }
 
     // Ajouter le texte s'il est fourni
@@ -79,7 +73,7 @@ Format de la réponse souhaitée:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -102,13 +96,11 @@ Format de la réponse souhaitée:
 
     const data = await response.json()
     const lessonPlan = data.choices[0].message.content
-    const generationTime = Math.round(performance.now() - startTime);
 
     return new Response(
       JSON.stringify({ 
         lessonPlan,
         metrics: {
-          generationTime,
           contentLength: lessonPlan.length
         }
       }), 
