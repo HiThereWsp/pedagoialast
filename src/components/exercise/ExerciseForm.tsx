@@ -23,7 +23,12 @@ interface ExerciseFormProps {
 
 export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoading }: ExerciseFormProps) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Générateur d'exercices</h1>
+        <p className="text-gray-600">Créez des exercices personnalisés pour vos élèves</p>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Matière <span className="text-red-500">*</span>
@@ -32,7 +37,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           placeholder="Par exemple : Mathématiques, Français, Histoire..."
           value={formData.subject}
           onChange={(e) => handleInputChange("subject", e.target.value)}
-          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
           required
         />
       </div>
@@ -45,7 +50,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           placeholder="Par exemple : 6ème, CM2, CE1"
           value={formData.classLevel}
           onChange={(e) => handleInputChange("classLevel", e.target.value)}
-          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
           required
         />
       </div>
@@ -60,7 +65,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           max="5"
           value={formData.numberOfExercises}
           onChange={(e) => handleInputChange("numberOfExercises", e.target.value)}
-          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
         />
       </div>
 
@@ -72,7 +77,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           placeholder="Par exemple : Réviser les fractions, Pratiquer l'accord des adjectifs..."
           value={formData.objective}
           onChange={(e) => handleInputChange("objective", e.target.value)}
-          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="min-h-[100px] w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
           required
         />
       </div>
@@ -85,7 +90,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           placeholder="Par exemple : QCM, Questions ouvertes, Exercices pratiques..."
           value={formData.exerciseType}
           onChange={(e) => handleInputChange("exerciseType", e.target.value)}
-          className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
         />
       </div>
 
@@ -97,7 +102,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           placeholder="Par exemple : Dyslexie, TDAH, Troubles visuels..."
           value={formData.specificNeeds}
           onChange={(e) => handleInputChange("specificNeeds", e.target.value)}
-          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="min-h-[100px] w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
         />
       </div>
 
@@ -109,7 +114,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           placeholder="Par exemple : Facilité avec les images, Intérêt pour la musique..."
           value={formData.strengths}
           onChange={(e) => handleInputChange("strengths", e.target.value)}
-          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="min-h-[100px] w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
         />
       </div>
 
@@ -121,7 +126,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           placeholder="Par exemple : Difficulté de concentration, Anxiété face aux exercices..."
           value={formData.challenges}
           onChange={(e) => handleInputChange("challenges", e.target.value)}
-          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="min-h-[100px] w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
         />
       </div>
 
@@ -133,7 +138,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
           placeholder="Précisez toutes les exigences supplémentaires pour vos exercices"
           value={formData.additionalInstructions}
           onChange={(e) => handleInputChange("additionalInstructions", e.target.value)}
-          className="min-h-[100px] w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          className="min-h-[100px] w-full border-gray-200 focus:border-purple-500 focus:ring-purple-500 transition-colors"
         />
       </div>
 

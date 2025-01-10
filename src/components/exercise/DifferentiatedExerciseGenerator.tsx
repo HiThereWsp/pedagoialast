@@ -65,6 +65,11 @@ export function DifferentiatedExerciseGenerator() {
 
   return (
     <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Différenciation pédagogique</h1>
+        <p className="text-gray-600">Adaptez vos exercices aux besoins spécifiques de vos élèves</p>
+      </div>
+
       <Card className="relative overflow-hidden p-6 space-y-6 bg-white/90 backdrop-blur-md border-[#9b87f5]/20 shadow-lg hover:shadow-xl transition-all duration-300">
         <div className="absolute inset-0 bg-gradient-to-br from-[#9b87f5]/5 to-[#6E59A5]/5 pointer-events-none" />
         
