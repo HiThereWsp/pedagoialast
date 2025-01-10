@@ -19,17 +19,17 @@ export const ChatMessage = ({ role, content, index }: ChatMessageProps) => {
   return (
     <div
       className={cn(
-        "group relative px-4",
+        "group relative px-4 transition-all duration-300 hover:scale-[1.01]",
         role === 'user' 
-          ? 'ml-auto max-w-[80%]' 
-          : 'mr-auto max-w-[80%]'
+          ? 'ml-auto max-w-[85%] md:max-w-[80%]' 
+          : 'mr-auto max-w-[85%] md:max-w-[80%]'
       )}
     >
       <div className={cn(
-        "rounded-2xl p-4 transition-all",
+        "rounded-2xl p-4 transition-all shadow-premium hover:shadow-premium-lg",
         role === 'user' 
-          ? 'bg-white shadow-sm border border-gray-100/20' 
-          : 'bg-gradient-to-r from-[#FFDEE2]/10 to-[#FEF7CD]/10'
+          ? 'bg-white border border-gray-100/20' 
+          : 'bg-gradient-to-r from-[#FFDEE2]/10 to-[#FEF7CD]/10 border border-[#FFDEE2]/20'
       )}>
         <div className="text-gray-800 whitespace-pre-wrap leading-relaxed">
           <ReactMarkdown
