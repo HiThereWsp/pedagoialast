@@ -26,13 +26,14 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
     <div className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Matière
+          Matière <span className="text-red-500">*</span>
         </label>
         <Input
           placeholder="Par exemple : Mathématiques, Français, Histoire..."
           value={formData.subject}
           onChange={(e) => handleInputChange("subject", e.target.value)}
           className="w-full border-pink-200 focus:border-[#D946EF] focus:ring-[#D946EF] transition-colors"
+          required
         />
       </div>
 
