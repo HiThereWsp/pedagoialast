@@ -21,7 +21,7 @@ export const UpdateNotification = () => {
           .select('*')
           .eq('user_id', user.id)
           .eq('popup_key', POPUP_KEY)
-          .single()
+          .maybeSingle()
 
         if (!popupView) {
           setOpen(true)
