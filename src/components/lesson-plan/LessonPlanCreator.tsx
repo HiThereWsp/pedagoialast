@@ -41,30 +41,54 @@ export function LessonPlanCreator() {
 
     setIsLoading(true);
     const startTime = performance.now();
+    let streamedText = '';
 
     try {
-      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-lesson-plan', {
+      const { data: stream } = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
           classLevel: formData.classLevel,
           totalSessions: formData.totalSessions,
           subject: formData.subject,
           text: formData.text,
           additionalInstructions: formData.additionalInstructions,
-        }
+        },
+        responseType: 'stream'
       });
 
-      if (functionError) {
-        throw functionError;
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices[0].delta.content;
+              if (content) {
+                streamedText += content;
+                setFormData(prev => ({
+                  ...prev,
+                  lessonPlan: streamedText
+                }));
+              }
+            } catch (e) {
+              console.error('Error parsing chunk:', e);
+            }
+          }
+        }
       }
 
       const generationTime = Math.round(performance.now() - startTime);
-      
-      setFormData(prev => ({
-        ...prev,
-        lessonPlan: functionData.lessonPlan
-      }));
-
-      await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
+      await logToolUsage('lesson_plan', 'generate', streamedText.length, generationTime);
 
       toast({
         description: "Votre séquence a été générée avec succès !",
