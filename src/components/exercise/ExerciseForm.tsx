@@ -3,8 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles, SwitchCamera } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Toggle } from "@/components/ui/toggle";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ExerciseFormProps {
@@ -45,12 +44,15 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <Label htmlFor="mode-switch" className="text-sm text-gray-600">Mode différenciation</Label>
-            <Switch
-              id="mode-switch"
-              checked={isDifferentiation}
-              onCheckedChange={setIsDifferentiation}
-            />
+            <Toggle
+              variant="outline"
+              aria-label="Toggle differentiation mode"
+              pressed={isDifferentiation}
+              onPressedChange={setIsDifferentiation}
+              className="data-[state=on]:bg-purple-100 data-[state=on]:text-purple-900 data-[state=on]:border-purple-200 hover:bg-purple-50"
+            >
+              {isDifferentiation ? "Mode différenciation" : "Mode générateur"}
+            </Toggle>
           </div>
         </div>
       </div>
