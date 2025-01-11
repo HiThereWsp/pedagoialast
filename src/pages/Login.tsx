@@ -29,7 +29,7 @@ export default function Login() {
             })
           }
         } else if (session) {
-          const returnUrl = location.state?.returnUrl || '/chat'
+          const returnUrl = location.state?.returnUrl || '/home'
           navigate(returnUrl, { replace: true })
         }
       } catch (error) {
@@ -45,7 +45,7 @@ export default function Login() {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_IN' && session) {
-        const returnUrl = location.state?.returnUrl || '/chat'
+        const returnUrl = location.state?.returnUrl || '/home'
         navigate(returnUrl, { replace: true })
       } else if (event === 'SIGNED_OUT') {
         toast({
