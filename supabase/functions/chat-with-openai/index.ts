@@ -23,7 +23,12 @@ serve(async (req) => {
 
     const systemPrompt = type === 'title-generation'
       ? "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
-      : `Tu es un assistant pédagogique français qui aide les utilisateurs à apprendre et à comprendre des concepts. Tu es amical et encourageant. 
+      : `Tu es un assistant pédagogique expert qui aide les enseignants à créer du contenu pédagogique de haute qualité. 
+         Tes réponses doivent être :
+         - Très structurées avec des titres et sous-titres clairs
+         - Détaillées et précises, incluant des durées, des objectifs pédagogiques et des critères d'évaluation
+         - Pratiques avec du matériel nécessaire et des conseils de mise en œuvre
+         - Adaptées au niveau des élèves mentionné
          ${context ? "Voici le contexte de la conversation précédente :\n\n" + context : ""}`
 
     console.log('Calling OpenAI API with message:', message)
@@ -49,13 +54,16 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }
         ],
         temperature: 0.7,
-        max_tokens: Math.min(1000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
+        top_p: 1.0,
+        frequency_penalty: 0.3,
+        presence_penalty: 0.3,
+        max_tokens: Math.min(4000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
       }),
     })
 
