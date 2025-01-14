@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useToast } from "./use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import { AuthError, AuthApiError } from "@supabase/supabase-js"
 
 interface AuthFormState {
   email: string
@@ -12,6 +13,28 @@ interface AuthFormState {
 
 interface AuthFormProps {
   onSuccess?: () => void
+}
+
+const getErrorMessage = (error: AuthError) => {
+  if (error instanceof AuthApiError) {
+    switch (error.status) {
+      case 400:
+        if (error.message.includes("Email not confirmed")) {
+          return "Veuillez confirmer votre email avant de vous connecter."
+        }
+        if (error.message.includes("Invalid login credentials")) {
+          return "Email ou mot de passe incorrect."
+        }
+        return "Les identifiants fournis sont invalides."
+      case 422:
+        return "Format d'email invalide."
+      case 429:
+        return "Trop de tentatives. Veuillez réessayer plus tard."
+      default:
+        return error.message
+    }
+  }
+  return "Une erreur est survenue. Veuillez réessayer."
 }
 
 export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
@@ -67,10 +90,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         }
       })
       
-      if (error) {
-        console.error("Detailed signup error:", error)
-        throw error
-      }
+      if (error) throw error
 
       console.log("Signup successful:", data)
 
@@ -81,27 +101,11 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       onSuccess?.()
     } catch (error: any) {
       console.error("Full signup error details:", error)
-      
-      // Gestion spécifique des erreurs
-      if (error.message?.includes("Database error")) {
-        toast({
-          variant: "destructive",
-          title: "Erreur technique",
-          description: "Une erreur est survenue lors de la création du compte. Notre équipe a été notifiée.",
-        })
-      } else if (error.message?.includes("User already registered")) {
-        toast({
-          variant: "destructive",
-          title: "Compte existant",
-          description: "Un compte existe déjà avec cette adresse email. Veuillez vous connecter.",
-        })
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
-        })
-      }
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: getErrorMessage(error),
+      })
     } finally {
       setField("isLoading", false)
     }
@@ -132,25 +136,11 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       onSuccess?.()
     } catch (error: any) {
       console.error("Full signin error details:", error)
-      if (error.message?.includes("Invalid login credentials")) {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Identifiants incorrects. Veuillez vérifier votre email et mot de passe."
-        })
-      } else if (error.message?.includes("Email not confirmed")) {
-        toast({
-          variant: "destructive",
-          title: "Email non confirmé",
-          description: "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception.",
-        })
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la connexion. Veuillez réessayer."
-        })
-      }
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: getErrorMessage(error),
+      })
     } finally {
       setField("isLoading", false)
     }
