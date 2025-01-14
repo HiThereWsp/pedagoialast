@@ -30,11 +30,13 @@ export const AppRoutes = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
+        {/* Route racine redirige vers /home ou /login selon l'authentification */}
         <Route path="/" element={<Landing />} />
         <Route path="/waitlist" element={<WaitlistLanding />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/login" element={<Login />} />
         
+        {/* Routes protégées nécessitant une authentification */}
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
           <Route path="/chat" element={<Index />} />
@@ -45,9 +47,9 @@ export const AppRoutes = () => {
           <Route path="/metrics" element={<MetricsPage />} />
           <Route path="/suggestions" element={<SuggestionsPage />} />
           <Route path="/discover" element={<DiscoverPage />} />
-          <Route path="/differenciation" element={<Navigate to="/home" replace />} />
         </Route>
 
+        {/* Gestion des routes inconnues */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>

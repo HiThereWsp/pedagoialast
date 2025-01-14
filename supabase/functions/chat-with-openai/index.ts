@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    const { message, context, type } = await req.json()
+    const { message, type } = await req.json()
 
     if (!openAIApiKey) {
       throw new Error('OpenAI API key not configured')
@@ -23,8 +23,24 @@ serve(async (req) => {
 
     const systemPrompt = type === 'title-generation'
       ? "Tu es un assistant qui génère des titres courts et concis (maximum 5 mots) pour des conversations. Réponds uniquement avec le titre, sans ponctuation ni guillemets."
-      : `Tu es un assistant pédagogique français qui aide les utilisateurs à apprendre et à comprendre des concepts. Tu es amical et encourageant. 
-         ${context ? "Voici le contexte de la conversation précédente :\n\n" + context : ""}`
+      : `Tu es un assistant pédagogique expert qui aide les enseignants à créer du contenu pédagogique de haute qualité.
+
+         Directives de formatage :
+         1. Utilise une structure claire avec des titres et sous-titres numérotés
+         2. Pour les listes, utilise des puces avec des tirets (-)
+         3. Mets en gras les éléments importants avec **texte**
+         4. Sépare clairement les sections avec des sauts de ligne
+
+         Directives de contenu :
+         1. Adopte un ton professionnel adapté à l'éducation nationale
+         2. Fournis des réponses détaillées et précises
+         3. Inclus systématiquement :
+            - Les objectifs pédagogiques
+            - Les critères d'évaluation
+            - Le matériel nécessaire
+            - Les conseils de mise en œuvre
+         4. Adapte le contenu au niveau mentionné
+         5. Ne fais JAMAIS référence à d'autres conversations`
 
     console.log('Calling OpenAI API with message:', message)
 
@@ -49,13 +65,16 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }
         ],
         temperature: 0.7,
-        max_tokens: Math.min(1000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
+        top_p: 1.0,
+        frequency_penalty: 0.3,
+        presence_penalty: 0.3,
+        max_tokens: Math.min(4000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
       }),
     })
 
