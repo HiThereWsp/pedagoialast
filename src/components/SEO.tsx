@@ -7,7 +7,12 @@ interface SEOProps {
   article?: boolean;
 }
 
-export const SEO = ({ title, description, image = '/og-image.png', article = false }: SEOProps) => {
+export const SEO = ({ 
+  title = "PedagoIA - L'assistant qui révolutionne la préparation des cours",
+  description = "Créez des contenus pédagogiques personnalisés et innovants en quelques clics grâce à l'intelligence artificielle.",
+  image = '/og-image-new.png',
+  article = false 
+}: SEOProps) => {
   const siteUrl = window.location.origin;
 
   return (
