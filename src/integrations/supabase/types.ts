@@ -354,29 +354,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      send_email:
-        | {
-            Args: Record<PropertyKey, never>
-            Returns: undefined
-          }
-        | {
-            Args: {
-              recipient: string
-              subject: string
-              body: string
-            }
-            Returns: undefined
-          }
-      send_password_reset_email: {
-        Args: {
-          email: string
-        }
-        Returns: undefined
-      }
-      test_send_email: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
     }
     Enums: {
       app_role: "admin" | "user"
