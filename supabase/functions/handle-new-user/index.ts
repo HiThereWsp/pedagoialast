@@ -15,21 +15,23 @@ const supabase = createClient(
 )
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('🚀 handle-new-user function started')
+  
   if (req.method === 'OPTIONS') {
+    console.log('OPTIONS request received')
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const { record } = await req.json()
-    console.log('Nouvel utilisateur créé:', record)
-    console.log('Données utilisateur:', {
+    console.log('📝 Nouvel utilisateur créé:', {
       id: record.id,
       email: record.email,
       firstName: record.raw_user_meta_data?.first_name
     })
 
     // Envoyer l'email de bienvenue
-    console.log('Tentative d\'envoi de l\'email de bienvenue...')
+    console.log('📧 Tentative d\'envoi de l\'email de bienvenue...')
     const welcomeEmailResponse = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
       method: 'POST',
       headers: {
@@ -45,27 +47,34 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!welcomeEmailResponse.ok) {
       const errorText = await welcomeEmailResponse.text()
-      console.error('Échec de l\'envoi de l\'email de bienvenue:', {
+      console.error('❌ Échec de l\'envoi de l\'email de bienvenue:', {
         status: welcomeEmailResponse.status,
         statusText: welcomeEmailResponse.statusText,
-        error: errorText
+        error: errorText,
+        headers: Object.fromEntries(welcomeEmailResponse.headers.entries())
       })
-    } else {
-      const responseData = await welcomeEmailResponse.json()
-      console.log('Email de bienvenue envoyé avec succès:', responseData)
+      throw new Error(`Erreur lors de l'envoi de l'email: ${errorText}`)
     }
+
+    const responseData = await welcomeEmailResponse.json()
+    console.log('✅ Email de bienvenue envoyé avec succès:', responseData)
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error('Erreur détaillée dans handle-new-user:', {
+    console.error('❌ Erreur détaillée dans handle-new-user:', {
+      name: error.name,
       message: error.message,
       stack: error.stack,
-      name: error.name
+      cause: error.cause
     })
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      stack: error.stack,
+      name: error.name
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })

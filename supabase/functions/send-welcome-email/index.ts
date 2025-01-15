@@ -16,25 +16,25 @@ interface EmailPayload {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  console.log('Démarrage de la fonction send-welcome-email')
-  console.log('Méthode de la requête:', req.method)
+  console.log('🚀 Démarrage de la fonction send-welcome-email')
+  console.log('📝 Méthode de la requête:', req.method)
   
   if (req.method === 'OPTIONS') {
-    console.log('Requête OPTIONS reçue, renvoi des headers CORS')
+    console.log('OPTIONS request received')
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log('Lecture du corps de la requête...')
-    const payload: EmailPayload = await req.json()
-    console.log('Payload reçu:', payload)
-
     if (!BREVO_API_KEY) {
-      console.error('BREVO_API_KEY manquante dans les variables d\'environnement')
+      console.error('❌ BREVO_API_KEY manquante dans les variables d\'environnement')
       throw new Error('BREVO_API_KEY n\'est pas configurée')
     }
 
-    console.log('Préparation de l\'email avec Brevo')
+    console.log('📧 Lecture du corps de la requête...')
+    const payload: EmailPayload = await req.json()
+    console.log('📝 Payload reçu:', payload)
+
+    console.log('📧 Préparation de l\'email avec Brevo')
     const emailData = {
       sender: {
         name: 'PedagoIA',
@@ -60,9 +60,9 @@ const handler = async (req: Request): Promise<Response> => {
         <p>L'équipe PedagoIA</p>
       `
     }
-    console.log('Données de l\'email préparées:', emailData)
+    console.log('📝 Données de l\'email préparées:', emailData)
 
-    console.log('Envoi de la requête à l\'API Brevo...')
+    console.log('📤 Envoi de la requête à l\'API Brevo...')
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -73,14 +73,14 @@ const handler = async (req: Request): Promise<Response> => {
       body: JSON.stringify(emailData)
     })
 
-    console.log('Réponse reçue de Brevo:', {
+    console.log('📥 Réponse reçue de Brevo:', {
       status: response.status,
       statusText: response.statusText
     })
 
     if (!response.ok) {
       const errorText = await response.text()
-      console.error('Erreur détaillée de Brevo:', {
+      console.error('❌ Erreur détaillée de Brevo:', {
         status: response.status,
         statusText: response.statusText,
         error: errorText,
@@ -90,14 +90,14 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const result = await response.json()
-    console.log('Email envoyé avec succès:', result)
+    console.log('✅ Email envoyé avec succès:', result)
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error('Erreur détaillée dans send-welcome-email:', {
+    console.error('❌ Erreur détaillée dans send-welcome-email:', {
       name: error.name,
       message: error.message,
       stack: error.stack,
