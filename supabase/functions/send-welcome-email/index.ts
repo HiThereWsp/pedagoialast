@@ -1,77 +1,89 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface WelcomeEmailRequest {
-  email: string
-  firstName: string
+interface EmailPayload {
+  userId: string;
+  email: string;
+  firstName: string;
 }
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
+const supabase = createClient(
+  SUPABASE_URL!,
+  SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const handler = async (req: Request): Promise<Response> => {
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { email, firstName }: WelcomeEmailRequest = await req.json()
-    console.log("Sending welcome email to:", email, "firstName:", firstName)
+    const payload: EmailPayload = await req.json()
+    console.log('Sending welcome email to:', payload)
 
-    if (!RESEND_API_KEY) {
-      console.error("RESEND_API_KEY is not set")
-      throw new Error("RESEND_API_KEY is not configured")
-    }
-
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': BREVO_API_KEY!,
       },
       body: JSON.stringify({
-        from: "PedagoIA <bonjour@pedagoia.fr>",
-        to: [email],
-        subject: "Bienvenue sur PedagoIA ! 🎉",
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1>Bienvenue ${firstName} !</h1>
-            <p>Nous sommes ravis de vous accueillir sur PedagoIA.</p>
-            <p>Notre assistant pédagogique est là pour vous aider à créer des contenus pédagogiques de qualité.</p>
-            <p>N'hésitez pas à explorer toutes les fonctionnalités disponibles et à nous faire part de vos retours !</p>
-            <p>À très bientôt,</p>
-            <p>L'équipe PedagoIA</p>
-          </div>
-        `,
-      }),
+        sender: {
+          name: 'PedagoIA',
+          email: 'contact@pedagoia.fr'
+        },
+        to: [{
+          email: payload.email,
+          name: payload.firstName
+        }],
+        subject: 'Bienvenue sur PedagoIA !',
+        htmlContent: `
+          <h1>Bienvenue ${payload.firstName} !</h1>
+          <p>Nous sommes ravis de vous accueillir sur PedagoIA.</p>
+          <p>Notre assistant pédagogique intelligent est là pour vous aider à créer des contenus pédagogiques innovants et personnalisés.</p>
+          <p>N'hésitez pas à explorer toutes nos fonctionnalités :</p>
+          <ul>
+            <li>Création de séquences pédagogiques</li>
+            <li>Génération d'exercices différenciés</li>
+            <li>Rédaction de correspondances</li>
+          </ul>
+          <p>Si vous avez des questions, notre équipe est là pour vous accompagner.</p>
+          <p>Bonne découverte !</p>
+          <p>L'équipe PedagoIA</p>
+        `
+      })
     })
 
-    if (res.ok) {
-      const data = await res.json()
-      console.log("Welcome email sent successfully:", data)
-      
-      return new Response(JSON.stringify(data), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      })
-    } else {
-      const error = await res.text()
-      console.error("Error sending welcome email:", error)
-      
-      return new Response(JSON.stringify({ error }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      })
+    if (!response.ok) {
+      const error = await response.text()
+      console.error('Error sending welcome email:', error)
+      throw new Error('Failed to send welcome email')
     }
+
+    const result = await response.json()
+    console.log('Welcome email sent successfully:', result)
+
+    return new Response(JSON.stringify(result), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
   } catch (error) {
-    console.error("Error in send-welcome-email function:", error)
+    console.error('Error in send-welcome-email function:', error)
     return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
     })
   }
-})
+}
+
+serve(handler)
