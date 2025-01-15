@@ -21,9 +21,15 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { record } = await req.json()
-    console.log('New user created:', record)
+    console.log('Nouvel utilisateur créé:', record)
+    console.log('Données utilisateur:', {
+      id: record.id,
+      email: record.email,
+      firstName: record.raw_user_meta_data?.first_name
+    })
 
     // Envoyer l'email de bienvenue
+    console.log('Tentative d\'envoi de l\'email de bienvenue...')
     const welcomeEmailResponse = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
       method: 'POST',
       headers: {
@@ -38,9 +44,15 @@ const handler = async (req: Request): Promise<Response> => {
     })
 
     if (!welcomeEmailResponse.ok) {
-      console.error('Failed to trigger welcome email:', await welcomeEmailResponse.text())
+      const errorText = await welcomeEmailResponse.text()
+      console.error('Échec de l\'envoi de l\'email de bienvenue:', {
+        status: welcomeEmailResponse.status,
+        statusText: welcomeEmailResponse.statusText,
+        error: errorText
+      })
     } else {
-      console.log('Welcome email triggered successfully')
+      const responseData = await welcomeEmailResponse.json()
+      console.log('Email de bienvenue envoyé avec succès:', responseData)
     }
 
     return new Response(JSON.stringify({ success: true }), {
@@ -48,7 +60,11 @@ const handler = async (req: Request): Promise<Response> => {
       status: 200,
     })
   } catch (error) {
-    console.error('Error in handle-new-user function:', error)
+    console.error('Erreur détaillée dans handle-new-user:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    })
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
