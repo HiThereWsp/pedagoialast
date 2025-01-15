@@ -13,49 +13,37 @@ import { LoadingIndicator } from "@/components/chat/LoadingIndicator"
 const Index = () => {
   const [userId, setUserId] = useState<string | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate()
   const { toast } = useToast()
+  
   const { 
     messages, 
     setMessages,
-    isLoading, 
+    isLoading: chatLoading, 
     sendMessage, 
     conversations,
     loadConversationMessages,
     currentConversationId,
     deleteConversation
   } = useChat(userId)
+
   const [showQuickActions, setShowQuickActions] = useState(true)
   const [inputValue, setInputValue] = useState("")
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Vérifier d'abord si une session existe dans le localStorage
-        const currentSession = localStorage.getItem('pedagoia-auth-token')
-        if (!currentSession) {
-          console.log("No session found in localStorage")
-          navigate('/login')
-          return
-        }
-
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
-          localStorage.removeItem('pedagoia-auth-token')
-          toast({
-            variant: "destructive",
-            title: "Erreur de session",
-            description: "Votre session a expiré. Veuillez vous reconnecter.",
-          })
           navigate('/login')
           return
         }
 
         if (!session) {
-          console.log("No valid session found")
-          localStorage.removeItem('pedagoia-auth-token')
+          console.log("No session found, redirecting to login")
           navigate('/login')
           return
         }
@@ -80,23 +68,19 @@ const Index = () => {
         }
       } catch (error) {
         console.error("Auth error:", error)
-        localStorage.removeItem('pedagoia-auth-token')
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: "Veuillez vous reconnecter"
-        })
         navigate('/login')
+      } finally {
+        setIsLoading(false)
       }
     }
 
     checkAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_OUT' || !session) {
-        localStorage.removeItem('pedagoia-auth-token')
+        setUserId(null)
         navigate('/login')
         return
       }
@@ -130,27 +114,13 @@ const Index = () => {
     setInputValue(prompt)
   }
 
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
-      // Clear local storage on successful logout
-      localStorage.removeItem('pedagoia-auth-token')
-      navigate('/login')
-    } catch (error) {
-      console.error("Logout error:", error)
-      // Force navigation to login even if logout fails
-      localStorage.removeItem('pedagoia-auth-token')
-      navigate('/login')
-    }
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingIndicator />
+      </div>
+    )
   }
-
-  if (!userId) return (
-    <div className="flex h-screen items-center justify-center">
-      <LoadingIndicator />
-    </div>
-  )
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
@@ -162,7 +132,6 @@ const Index = () => {
           onNewConversation={handleNewConversation}
           onDeleteConversation={deleteConversation}
           firstName={firstName}
-          onLogout={handleLogout}
         />
         
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
@@ -179,7 +148,7 @@ const Index = () => {
             )}
             {currentConversationId && (
               <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
-                <ChatHistory messages={messages} isLoading={isLoading} />
+                <ChatHistory messages={messages} isLoading={chatLoading} />
               </div>
             )}
           </main>
@@ -188,7 +157,7 @@ const Index = () => {
             <div className="max-w-5xl mx-auto px-6 py-4">
               <ChatInput 
                 onSendMessage={sendMessage} 
-                isLoading={isLoading}
+                isLoading={chatLoading}
                 value={inputValue}
                 onChange={setInputValue}
               />
