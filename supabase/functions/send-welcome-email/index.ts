@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
@@ -16,11 +15,6 @@ interface EmailPayload {
   firstName: string;
 }
 
-const supabase = createClient(
-  SUPABASE_URL!,
-  SUPABASE_SERVICE_ROLE_KEY!
-)
-
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -28,14 +22,19 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const payload: EmailPayload = await req.json()
-    console.log('Sending welcome email to:', payload)
+    console.log('Début de l\'envoi d\'email de bienvenue pour:', payload)
 
+    if (!BREVO_API_KEY) {
+      throw new Error('BREVO_API_KEY n\'est pas configurée')
+    }
+
+    console.log('Préparation de la requête vers Brevo API')
     const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': BREVO_API_KEY!,
+        'api-key': BREVO_API_KEY,
       },
       body: JSON.stringify({
         sender: {
@@ -65,21 +64,24 @@ const handler = async (req: Request): Promise<Response> => {
     })
 
     if (!response.ok) {
-      const error = await response.text()
-      console.error('Error sending welcome email:', error)
-      throw new Error('Failed to send welcome email')
+      const errorText = await response.text()
+      console.error('Erreur Brevo:', errorText)
+      throw new Error(`Erreur lors de l'envoi de l'email: ${errorText}`)
     }
 
     const result = await response.json()
-    console.log('Welcome email sent successfully:', result)
+    console.log('Email envoyé avec succès:', result)
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error('Error in send-welcome-email function:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('Erreur détaillée dans send-welcome-email:', error)
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      stack: error.stack 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })
