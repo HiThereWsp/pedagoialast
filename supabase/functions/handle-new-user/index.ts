@@ -30,34 +30,25 @@ const handler = async (req: Request): Promise<Response> => {
       firstName: record.raw_user_meta_data?.first_name
     })
 
-    // Envoyer l'email de bienvenue
-    console.log('📧 Tentative d\'envoi de l\'email de bienvenue...')
-    const welcomeEmailResponse = await fetch(`${SUPABASE_URL}/functions/v1/process-welcome-emails`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-      },
-      body: JSON.stringify({
-        userId: record.id,
-        email: record.email,
-        firstName: record.raw_user_meta_data?.first_name || 'Utilisateur'
-      })
-    })
+    // Appeler la fonction process-welcome-emails
+    console.log('📧 Tentative de traitement de l\'email de bienvenue...')
+    const { data: welcomeEmailResponse, error: welcomeEmailError } = await supabase.functions.invoke(
+      'process-welcome-emails',
+      {
+        body: JSON.stringify({
+          userId: record.id,
+          email: record.email,
+          firstName: record.raw_user_meta_data?.first_name || 'Utilisateur'
+        })
+      }
+    )
 
-    if (!welcomeEmailResponse.ok) {
-      const errorText = await welcomeEmailResponse.text()
-      console.error('❌ Échec de l\'envoi de l\'email de bienvenue:', {
-        status: welcomeEmailResponse.status,
-        statusText: welcomeEmailResponse.statusText,
-        error: errorText,
-        headers: Object.fromEntries(welcomeEmailResponse.headers.entries())
-      })
-      throw new Error(`Erreur lors de l'envoi de l'email: ${errorText}`)
+    if (welcomeEmailError) {
+      console.error('❌ Échec du traitement de l\'email de bienvenue:', welcomeEmailError)
+      throw welcomeEmailError
     }
 
-    const responseData = await welcomeEmailResponse.json()
-    console.log('✅ Email de bienvenue envoyé avec succès:', responseData)
+    console.log('✅ Email de bienvenue traité avec succès:', welcomeEmailResponse)
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
