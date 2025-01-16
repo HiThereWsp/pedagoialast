@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
@@ -9,11 +9,6 @@ const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
-
-const supabase = createClient(
-  SUPABASE_URL!,
-  SUPABASE_SERVICE_ROLE_KEY!
-)
 
 interface EmailPayload {
   userId: string
@@ -52,19 +47,26 @@ const handler = async (req: Request): Promise<Response> => {
       )
     }
 
-    // Envoyer l'email via Resend
-    console.log('📤 Sending email via Resend API...')
-    const res = await fetch('https://api.resend.com/emails', {
+    // Envoyer l'email via Brevo
+    console.log('📤 Sending email via Brevo API...')
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'api-key': BREVO_API_KEY!,
       },
       body: JSON.stringify({
-        from: 'PedagoIA <contact@pedagoia.fr>',
-        to: [email],
+        sender: {
+          name: 'PedagoIA',
+          email: 'contact@pedagoia.fr'
+        },
+        to: [{
+          email: email,
+          name: firstName || 'Utilisateur'
+        }],
         subject: 'Bienvenue sur PedagoIA !',
-        html: `
+        htmlContent: `
           <h1>Bienvenue ${firstName} !</h1>
           <p>Nous sommes ravis de vous accueillir sur PedagoIA.</p>
           <p>Notre assistant pédagogique intelligent est là pour vous aider à créer des contenus pédagogiques innovants et personnalisés.</p>
@@ -83,12 +85,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!res.ok) {
       const errorText = await res.text()
-      console.error('❌ Resend API error:', {
+      console.error('❌ Brevo API error:', {
         status: res.status,
         statusText: res.statusText,
         error: errorText
       })
-      throw new Error(`Resend API error: ${errorText}`)
+      throw new Error(`Brevo API error: ${errorText}`)
     }
 
     const result = await res.json()
