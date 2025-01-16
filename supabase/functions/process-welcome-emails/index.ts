@@ -1,9 +1,9 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -40,10 +40,10 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`📝 Found ${pendingEmails?.length || 0} pending welcome emails`)
     
     if (!pendingEmails?.length) {
-      return new Response(JSON.stringify({ message: 'No pending emails' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      })
+      return new Response(
+        JSON.stringify({ message: 'No pending emails' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     // Traiter chaque email
@@ -60,25 +60,14 @@ const handler = async (req: Request): Promise<Response> => {
             email: emailData.email,
             name: emailData.first_name || 'Utilisateur'
           }],
-          subject: 'Bienvenue sur PedagoIA !',
-          htmlContent: `
-            <h1>Bienvenue ${emailData.first_name || 'sur PedagoIA'} !</h1>
-            <p>Nous sommes ravis de vous accueillir sur PedagoIA.</p>
-            <p>Notre assistant pédagogique intelligent est là pour vous aider à créer des contenus pédagogiques innovants et personnalisés.</p>
-            <p>N'hésitez pas à explorer toutes nos fonctionnalités :</p>
-            <ul>
-              <li>Création de séquences pédagogiques</li>
-              <li>Génération d'exercices différenciés</li>
-              <li>Rédaction de correspondances</li>
-            </ul>
-            <p>Si vous avez des questions, notre équipe est là pour vous accompagner.</p>
-            <p>Bonne découverte !</p>
-            <p>L'équipe PedagoIA</p>
-          `
+          templateId: 8, // ID du template "Bienvenue ! - Confirmation (Nouveau user)"
+          params: {
+            FIRSTNAME: emailData.first_name || 'Utilisateur'
+          }
         }
 
         console.log('📤 Sending email via Brevo API...')
-        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
           headers: {
             'Accept': 'application/json',
@@ -88,12 +77,17 @@ const handler = async (req: Request): Promise<Response> => {
           body: JSON.stringify(emailContent)
         })
 
-        if (!response.ok) {
-          const errorText = await response.text()
+        if (!res.ok) {
+          const errorText = await res.text()
+          console.error('❌ Brevo API error:', {
+            status: res.status,
+            statusText: res.statusText,
+            error: errorText
+          })
           throw new Error(`Brevo API error: ${errorText}`)
         }
 
-        const result = await response.json()
+        const result = await res.json()
         console.log('✅ Email sent successfully:', result)
 
         // Mettre à jour le statut dans la base de données
