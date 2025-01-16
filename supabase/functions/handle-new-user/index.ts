@@ -11,7 +11,13 @@ const corsHeaders = {
 
 const supabase = createClient(
   SUPABASE_URL!,
-  SUPABASE_SERVICE_ROLE_KEY!
+  SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 )
 
 const handler = async (req: Request): Promise<Response> => {

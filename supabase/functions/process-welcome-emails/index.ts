@@ -24,110 +24,78 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Récupérer les emails en attente
-    console.log('📥 Fetching pending welcome emails...')
-    const { data: pendingEmails, error: fetchError } = await supabase
+    const { userId, email, firstName } = await req.json()
+    console.log('📧 Processing welcome email for:', { userId, email, firstName })
+
+    if (!BREVO_API_KEY) {
+      throw new Error('BREVO_API_KEY is not configured')
+    }
+
+    console.log('📤 Sending email via Brevo API...')
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'PedagoIA',
+          email: 'contact@pedagoia.fr'
+        },
+        to: [{
+          email: email,
+          name: firstName || 'Utilisateur'
+        }],
+        templateId: 8,
+        params: {
+          FIRSTNAME: firstName || 'Utilisateur'
+        }
+      })
+    })
+
+    const responseText = await res.text()
+    console.log('📨 Brevo API Response:', {
+      status: res.status,
+      statusText: res.statusText,
+      headers: Object.fromEntries(res.headers.entries()),
+      body: responseText
+    })
+
+    if (!res.ok) {
+      throw new Error(`Brevo API error: ${responseText}`)
+    }
+
+    const result = JSON.parse(responseText)
+    console.log('✅ Email sent successfully:', result)
+
+    // Mettre à jour le statut dans la base de données
+    const { error: updateError } = await supabase
       .from('welcome_emails')
-      .select('*')
-      .is('sent_at', null)
-      .is('error', null)
-    
-    if (fetchError) {
-      console.error('❌ Error fetching pending emails:', fetchError)
-      throw new Error(`Error fetching pending emails: ${fetchError.message}`)
+      .update({
+        sent_at: new Date().toISOString(),
+        status: 'sent'
+      })
+      .eq('user_id', userId)
+
+    if (updateError) {
+      console.error('❌ Error updating email status:', updateError)
+      throw updateError
     }
 
-    console.log(`📝 Found ${pendingEmails?.length || 0} pending welcome emails`)
-    
-    if (!pendingEmails?.length) {
-      return new Response(
-        JSON.stringify({ message: 'No pending emails' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // Traiter chaque email
-    const results = await Promise.all(pendingEmails.map(async (emailData) => {
-      console.log(`📧 Processing welcome email for user ${emailData.user_id}`)
-      
-      try {
-        const emailContent = {
-          sender: {
-            name: 'PedagoIA',
-            email: 'contact@pedagoia.fr'
-          },
-          to: [{
-            email: emailData.email,
-            name: emailData.first_name || 'Utilisateur'
-          }],
-          templateId: 8, // ID du template "Bienvenue ! - Confirmation (Nouveau user)"
-          params: {
-            FIRSTNAME: emailData.first_name || 'Utilisateur'
-          }
-        }
-
-        console.log('📤 Sending email via Brevo API...')
-        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'api-key': BREVO_API_KEY!,
-          },
-          body: JSON.stringify(emailContent)
-        })
-
-        if (!res.ok) {
-          const errorText = await res.text()
-          console.error('❌ Brevo API error:', {
-            status: res.status,
-            statusText: res.statusText,
-            error: errorText
-          })
-          throw new Error(`Brevo API error: ${errorText}`)
-        }
-
-        const result = await res.json()
-        console.log('✅ Email sent successfully:', result)
-
-        // Mettre à jour le statut dans la base de données
-        const { error: updateError } = await supabase
-          .from('welcome_emails')
-          .update({
-            sent_at: new Date().toISOString(),
-            status: 'sent'
-          })
-          .eq('id', emailData.id)
-
-        if (updateError) {
-          console.error('❌ Error updating email status:', updateError)
-          throw updateError
-        }
-
-        return { success: true, userId: emailData.user_id }
-      } catch (error) {
-        console.error('❌ Error processing email:', error)
-        
-        // Mettre à jour le statut d'erreur
-        await supabase
-          .from('welcome_emails')
-          .update({
-            error: error.message,
-            status: 'error'
-          })
-          .eq('id', emailData.id)
-
-        return { success: false, userId: emailData.user_id, error: error.message }
-      }
-    }))
-
-    console.log('✨ Finished processing all emails')
-    return new Response(JSON.stringify({ results }), {
+    return new Response(JSON.stringify({ success: true, messageId: result.messageId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error('❌ Unexpected error:', error)
+    console.error('❌ Error in process-welcome-emails:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause
+    })
+
     return new Response(JSON.stringify({ 
       error: error.message,
       stack: error.stack,
