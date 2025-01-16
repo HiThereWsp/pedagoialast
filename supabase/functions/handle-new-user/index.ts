@@ -32,7 +32,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Envoyer l'email de bienvenue
     console.log('📧 Tentative d\'envoi de l\'email de bienvenue...')
-    const welcomeEmailResponse = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
+    const welcomeEmailResponse = await fetch(`${SUPABASE_URL}/functions/v1/process-welcome-emails`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
