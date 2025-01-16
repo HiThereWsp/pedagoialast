@@ -64,7 +64,7 @@ const handler = async (req: Request): Promise<Response> => {
               email: email.email,
               name: email.first_name || 'Utilisateur'
             }],
-            templateId: 8,
+            templateId: 4,
             params: {
               FIRSTNAME: email.first_name || 'Utilisateur'
             }
