@@ -26,7 +26,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: 'PedagoIA <onboarding@resend.dev>',
-        to: ['test@example.com'], // Remplacez par votre email pour le test
+        to: ['test@example.com'], // Remplacez par votre email de test
         subject: 'Test Email - PedagoIA',
         html: `
           <h1>Bienvenue sur PedagoIA !</h1>
