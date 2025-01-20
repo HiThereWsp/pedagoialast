@@ -16,7 +16,7 @@ serve(async (req) => {
 
   try {
     const { email, firstName, teachingLevel } = await req.json()
-    console.log('Processing welcome email for:', { email, firstName, teachingLevel })
+    console.log('Processing welcome email for:', { email, firstName: firstName, teachingLevel })
 
     if (!RESEND_API_KEY) {
       throw new Error('Missing RESEND_API_KEY')
