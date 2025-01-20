@@ -38,7 +38,7 @@ const Home = () => {
           .from('profiles')
           .select('first_name')
           .eq('id', session.user.id)
-          .single()
+          .maybeSingle()
         
         if (profileError) {
           console.error("Error fetching profile:", profileError)
@@ -52,6 +52,24 @@ const Home = () => {
         
         if (profile) {
           setFirstName(profile.first_name)
+        } else {
+          // Handle case where profile doesn't exist
+          console.log("No profile found for user, creating default profile")
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert([{ id: session.user.id, first_name: 'Anonymous' }])
+          
+          if (insertError) {
+            console.error("Error creating profile:", insertError)
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Impossible de créer votre profil"
+            })
+            return
+          }
+          
+          setFirstName('Anonymous')
         }
       } catch (error) {
         console.error("Error fetching user data:", error)
