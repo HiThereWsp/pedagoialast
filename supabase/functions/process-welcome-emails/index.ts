@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
@@ -48,17 +48,24 @@ const handler = async (req: Request): Promise<Response> => {
       console.log(`Processing email for: ${email.email}`)
       
       try {
-        const res = await fetch('https://api.resend.com/emails', {
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
           headers: {
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${RESEND_API_KEY}`,
+            'api-key': BREVO_API_KEY!,
           },
           body: JSON.stringify({
-            from: 'PedagoIA <onboarding@resend.dev>',
-            to: [email.email],
+            sender: {
+              name: 'PedagoIA',
+              email: 'contact@pedagoia.fr'
+            },
+            to: [{
+              email: email.email,
+              name: email.first_name || 'Utilisateur'
+            }],
             subject: 'Bienvenue sur PedagoIA !',
-            html: `
+            htmlContent: `
               <h1>Bonjour ${email.first_name || 'Utilisateur'} !</h1>
               <p>Bienvenue sur PedagoIA, votre assistant pédagogique intelligent.</p>
               <p>Nous sommes ravis de vous compter parmi nous et nous espérons que notre outil vous aidera à créer des contenus pédagogiques innovants et personnalisés.</p>
@@ -69,7 +76,7 @@ const handler = async (req: Request): Promise<Response> => {
         })
 
         const responseText = await res.text()
-        console.log('📨 Resend API Response:', {
+        console.log('📨 Brevo API Response:', {
           status: res.status,
           statusText: res.statusText,
           headers: Object.fromEntries(res.headers.entries()),
@@ -77,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
         })
 
         if (!res.ok) {
-          throw new Error(`Resend API error: ${responseText}`)
+          throw new Error(`Brevo API error: ${responseText}`)
         }
 
         // Mettre à jour le statut dans la base de données
