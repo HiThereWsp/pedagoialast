@@ -19,20 +19,20 @@ const handler = async (req: Request): Promise<Response> => {
   console.log('🚀 Starting process-welcome-emails function')
   
   if (req.method === 'OPTIONS') {
-    console.log('OPTIONS request received')
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    // Récupérer les emails non envoyés
+    // Récupérer les emails en attente
     const { data: pendingEmails, error: fetchError } = await supabase
       .from('welcome_emails')
       .select('*')
-      .is('sent_at', null)
+      .eq('status', 'pending')
       .is('error', null)
 
     if (fetchError) {
-      throw new Error(`Error fetching pending emails: ${fetchError.message}`)
+      console.error('❌ Error fetching pending emails:', fetchError)
+      throw fetchError
     }
 
     console.log(`📧 Found ${pendingEmails?.length || 0} pending welcome emails`)
@@ -75,16 +75,14 @@ const handler = async (req: Request): Promise<Response> => {
           })
         })
 
-        const responseText = await res.text()
-        console.log('📨 Brevo API Response:', {
-          status: res.status,
-          statusText: res.statusText,
-          headers: Object.fromEntries(res.headers.entries()),
-          body: responseText
-        })
-
         if (!res.ok) {
-          throw new Error(`Brevo API error: ${responseText}`)
+          const errorText = await res.text()
+          console.error('❌ Brevo API error:', {
+            status: res.status,
+            statusText: res.statusText,
+            error: errorText
+          })
+          throw new Error(`Brevo API error: ${errorText}`)
         }
 
         // Mettre à jour le statut dans la base de données
@@ -121,19 +119,9 @@ const handler = async (req: Request): Promise<Response> => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('❌ Error in process-welcome-emails:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack,
-      cause: error.cause
-    })
-
+    console.error('❌ Error in process-welcome-emails:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        stack: error.stack,
-        name: error.name
-      }),
+      JSON.stringify({ error: error.message }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
