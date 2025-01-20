@@ -1,9 +1,16 @@
-import { Routes, Route, Navigate } from "react-router-dom"
+import { Routes, Route } from "react-router-dom"
 import { ProtectedRoute } from "./ProtectedRoute"
 import { Suspense, lazy } from "react"
 import { Loader2 } from "lucide-react"
 
-// Lazy load components
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex h-screen w-full items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+)
+
+// Lazy load components with error boundaries
 const Index = lazy(() => import("@/pages/Index"))
 const Home = lazy(() => import("@/pages/Home"))
 const Login = lazy(() => import("@/pages/Login"))
@@ -19,24 +26,17 @@ const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
 const ExercisePage = lazy(() => import("@/pages/ExercisePage"))
 const DiscoverPage = lazy(() => import("@/pages/DiscoverPage"))
 
-// Loading component
-const LoadingSpinner = () => (
-  <div className="flex h-screen w-full items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-)
-
 export const AppRoutes = () => {
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <Routes>
-        {/* Route racine redirige vers /home ou /login selon l'authentification */}
+        {/* Public routes */}
         <Route path="/" element={<Landing />} />
         <Route path="/waitlist" element={<WaitlistLanding />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/login" element={<Login />} />
         
-        {/* Routes protégées nécessitant une authentification */}
+        {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
           <Route path="/chat" element={<Index />} />
@@ -49,7 +49,7 @@ export const AppRoutes = () => {
           <Route path="/discover" element={<DiscoverPage />} />
         </Route>
 
-        {/* Gestion des routes inconnues */}
+        {/* Catch all route */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
