@@ -65,6 +65,8 @@ export const WaitlistForm = () => {
             ),
           })
           setIsLoading(false)
+          // On ferme quand même la modal même si l'email est déjà inscrit
+          window.dispatchEvent(new CustomEvent('closeWaitlistModal'))
           return
         }
         
@@ -73,8 +75,8 @@ export const WaitlistForm = () => {
 
       console.log('Form submitted successfully')
       
-      const closeEvent = new Event('close')
-      window.dispatchEvent(closeEvent)
+      // Utilisation d'un CustomEvent au lieu d'un Event standard
+      window.dispatchEvent(new CustomEvent('closeWaitlistModal'))
 
       toast({
         duration: 3000,
