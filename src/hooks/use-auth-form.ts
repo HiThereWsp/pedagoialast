@@ -82,11 +82,17 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     try {
       console.log("Starting signup process with:", {
         email: formState.email,
+        firstName: formState.firstName
       })
 
       const { data, error } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
+        options: {
+          data: {
+            first_name: formState.firstName
+          }
+        }
       })
       
       if (error) throw error
