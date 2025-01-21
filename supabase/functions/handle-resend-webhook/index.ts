@@ -22,14 +22,17 @@ interface ResendWebhookPayload {
 }
 
 serve(async (req) => {
+  console.log('🎯 Received webhook request')
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('👍 Handling CORS preflight request')
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const payload: ResendWebhookPayload = await req.json()
-    console.log('Received webhook from Resend:', payload)
+    console.log('📨 Received webhook from Resend:', JSON.stringify(payload, null, 2))
 
     // Trouver l'email correspondant dans la table welcome_emails
     const { data: welcomeEmail, error: findError } = await supabase
@@ -39,12 +42,12 @@ serve(async (req) => {
       .single()
 
     if (findError) {
-      console.error('Error finding welcome email:', findError)
+      console.error('❌ Error finding welcome email:', findError)
       throw findError
     }
 
     if (!welcomeEmail) {
-      console.error('No welcome email found for:', payload.data.to)
+      console.error('⚠️ No welcome email found for:', payload.data.to)
       return new Response(
         JSON.stringify({ error: 'No welcome email found' }),
         { 
@@ -54,6 +57,8 @@ serve(async (req) => {
       )
     }
 
+    console.log('✉️ Found welcome email:', welcomeEmail)
+
     // Mettre à jour le statut en fonction du type d'événement
     let status = welcomeEmail.status
     let error = null
@@ -61,19 +66,25 @@ serve(async (req) => {
     switch (payload.type) {
       case 'email.delivered':
         status = 'delivered'
+        console.log('📬 Email marked as delivered')
         break
       case 'email.bounced':
         status = 'bounced'
         error = 'Email bounced'
+        console.log('↩️ Email marked as bounced')
         break
       case 'email.complained':
         status = 'complained'
         error = 'Recipient complained'
+        console.log('😠 Email marked as complained')
         break
       case 'email.delivery_delayed':
         status = 'delayed'
         error = 'Delivery delayed'
+        console.log('⏳ Email marked as delayed')
         break
+      default:
+        console.log('ℹ️ Unhandled event type:', payload.type)
     }
 
     // Mettre à jour la table welcome_emails
@@ -87,9 +98,11 @@ serve(async (req) => {
       .eq('id', welcomeEmail.id)
 
     if (updateError) {
-      console.error('Error updating welcome email:', updateError)
+      console.error('❌ Error updating welcome email:', updateError)
       throw updateError
     }
+
+    console.log('✅ Successfully processed webhook')
 
     return new Response(
       JSON.stringify({ success: true }),
@@ -99,7 +112,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error in handle-resend-webhook:', error)
+    console.error('❌ Error in handle-resend-webhook:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
