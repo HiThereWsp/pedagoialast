@@ -85,13 +85,12 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         firstName: formState.firstName?.trim() || 'Anonymous'
       })
 
+      // Modification ici : on n'inclut plus le first_name dans les options
       const { data, error } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
         options: {
-          data: {
-            first_name: formState.firstName?.trim() || 'Anonymous'
-          }
+          data: {} // On laisse les métadonnées vides
         }
       })
       
