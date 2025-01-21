@@ -30,6 +30,11 @@ const getErrorMessage = (error: AuthError) => {
         return "Format d'email invalide."
       case 429:
         return "Trop de tentatives. Veuillez réessayer plus tard."
+      case 500:
+        if (error.message.includes("Database error saving new user")) {
+          return "Erreur lors de la création du profil. Veuillez réessayer."
+        }
+        return "Une erreur serveur est survenue. Veuillez réessayer plus tard."
       default:
         return error.message
     }
@@ -85,7 +90,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         password: formState.password,
         options: {
           data: {
-            first_name: formState.firstName || 'Anonymous'
+            first_name: formState.firstName?.trim() || 'Anonymous'
           }
         }
       })
