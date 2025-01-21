@@ -56,28 +56,6 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     setFormState(prev => ({ ...prev, [field]: value }))
   }
 
-  const validateForm = () => {
-    if (!formState.email || !formState.password) {
-      toast({
-        variant: "destructive",
-        title: "Champs requis",
-        description: "Veuillez remplir tous les champs obligatoires.",
-      })
-      return false
-    }
-
-    if (formState.password.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Mot de passe invalide",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
-      })
-      return false
-    }
-
-    return true
-  }
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -90,35 +68,28 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       return
     }
 
-    if (!validateForm()) return
+    if (formState.password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Mot de passe invalide",
+        description: "Le mot de passe doit contenir au moins 6 caractères.",
+      })
+      return
+    }
 
     setField("isLoading", true)
 
     try {
       console.log("Starting signup process with:", {
         email: formState.email,
-        firstName: formState.firstName,
-        metadata: { first_name: formState.firstName }
       })
 
       const { data, error } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
-        options: {
-          data: {
-            first_name: formState.firstName
-          }
-        }
       })
       
-      if (error) {
-        console.error("Signup error details:", {
-          status: error.status,
-          message: error.message,
-          name: error.name
-        })
-        throw error
-      }
+      if (error) throw error
 
       console.log("Signup successful:", data)
 
@@ -141,9 +112,6 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (!validateForm()) return
-    
     setField("isLoading", true)
 
     try {
@@ -156,14 +124,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         password: formState.password
       })
       
-      if (error) {
-        console.error("Signin error details:", {
-          status: error.status,
-          message: error.message,
-          name: error.name
-        })
-        throw error
-      }
+      if (error) throw error
 
       console.log("Signin successful:", data)
 
