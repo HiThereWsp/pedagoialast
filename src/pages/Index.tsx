@@ -134,7 +134,7 @@ export default function Index() {
             ) : (
               <div className="flex h-full items-center justify-center">
                 <p className="text-muted-foreground">
-                  Sélectionnez une conversation ou créez-en une nouvelle
+                  Comment puis-je vous aider ?
                 </p>
               </div>
             )}
