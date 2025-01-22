@@ -1,203 +1,150 @@
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
-import { useNavigate } from "react-router-dom"
-import { ChatHistory } from "@/components/ChatHistory"
-import { QuickActions } from "@/components/QuickActions"
-import { WelcomeBanner } from "@/components/WelcomeBanner"
-import { ChatInput } from "@/components/ChatInput"
-import { useChat } from "@/hooks/useChat"
-import { useToast } from "@/hooks/use-toast"
 import { AppSidebar } from "@/components/AppSidebar"
-import { LoadingIndicator } from "@/components/chat/LoadingIndicator"
+import { useNavigate } from "react-router-dom"
+import { useToast } from "@/hooks/use-toast"
+import { useChat } from "@/hooks/useChat"
+import { ChatInput } from "@/components/ChatInput"
+import { ChatHistory } from "@/components/ChatHistory"
+import { SEO } from "@/components/SEO"
 
-const Index = () => {
-  const [userId, setUserId] = useState<string | null>(null)
-  const [firstName, setFirstName] = useState<string | null>(null)
+export default function Index() {
+  const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
+  const [currentConversationId, setCurrentConversationId] = useState<string>("")
+  const [firstName, setFirstName] = useState("")
   const navigate = useNavigate()
   const { toast } = useToast()
-  const { 
-    messages, 
-    setMessages,
-    isLoading, 
-    sendMessage, 
-    conversations,
-    loadConversationMessages,
-    currentConversationId,
-    deleteConversation
-  } = useChat(userId)
-  const [showQuickActions, setShowQuickActions] = useState(true)
-  const [inputValue, setInputValue] = useState("")
+
+  // Récupérer l'ID utilisateur depuis Supabase
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const fetchUserProfile = async () => {
       try {
-        // Vérifier d'abord si une session existe dans le localStorage
-        const currentSession = localStorage.getItem('pedagoia-auth-token')
-        if (!currentSession) {
-          console.log("No session found in localStorage")
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
           navigate('/login')
           return
         }
 
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.error("Session error:", error)
-          localStorage.removeItem('pedagoia-auth-token')
-          toast({
-            variant: "destructive",
-            title: "Erreur de session",
-            description: "Votre session a expiré. Veuillez vous reconnecter.",
-          })
-          navigate('/login')
-          return
-        }
+        setUserId(user.id)
 
-        if (!session) {
-          console.log("No valid session found")
-          localStorage.removeItem('pedagoia-auth-token')
-          navigate('/login')
-          return
-        }
-
-        setUserId(session.user.id)
-        
-        const { data: profileData, error: profileError } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('first_name')
-          .eq('id', session.user.id)
+          .eq('id', user.id)
           .single()
-          
-        if (profileError) {
-          console.error("Profile fetch error:", profileError)
-          toast({
-            variant: "destructive",
-            title: "Erreur",
-            description: "Impossible de charger votre profil"
-          })
-        } else {
-          setFirstName(profileData?.first_name)
+
+        if (profile) {
+          setFirstName(profile.first_name)
         }
       } catch (error) {
-        console.error("Auth error:", error)
-        localStorage.removeItem('pedagoia-auth-token')
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: "Veuillez vous reconnecter"
-        })
-        navigate('/login')
+        console.error('Error fetching user profile:', error)
       }
     }
 
-    checkAuth()
+    fetchUserProfile()
+  }, [navigate])
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session)
-      
-      if (event === 'SIGNED_OUT' || !session) {
-        localStorage.removeItem('pedagoia-auth-token')
-        navigate('/login')
-        return
-      }
-      
-      if (session) {
-        setUserId(session.user.id)
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [navigate, toast])
+  // Utiliser le hook useChat
+  const {
+    messages,
+    isLoading,
+    sendMessage,
+    conversations: chatConversations,
+    loadConversationMessages,
+    currentConversationId: activeChatId,
+    deleteConversation
+  } = useChat(userId)
 
   useEffect(() => {
-    if (messages.length > 0) {
-      setShowQuickActions(false)
+    if (chatConversations) {
+      setConversations(chatConversations)
     }
-  }, [messages])
+  }, [chatConversations])
 
-  const handleQuickAction = async (action: string) => {
-    await sendMessage(action)
-  }
-
-  const handleNewConversation = () => {
-    setMessages([])
-    setShowQuickActions(true)
-  }
-
-  const handlePromptSelect = (prompt: string) => {
-    setInputValue(prompt)
-  }
+  useEffect(() => {
+    if (activeChatId) {
+      setCurrentConversationId(activeChatId)
+    }
+  }, [activeChatId])
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
-      // Clear local storage on successful logout
-      localStorage.removeItem('pedagoia-auth-token')
+      await supabase.auth.signOut()
       navigate('/login')
     } catch (error) {
-      console.error("Logout error:", error)
-      // Force navigation to login even if logout fails
-      localStorage.removeItem('pedagoia-auth-token')
-      navigate('/login')
+      console.error('Error signing out:', error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la déconnexion.",
+      })
     }
   }
 
-  if (!userId) return (
-    <div className="flex h-screen items-center justify-center">
-      <LoadingIndicator />
-    </div>
-  )
+  const handleConversationSelect = async (conversationId: string) => {
+    setCurrentConversationId(conversationId)
+    await loadConversationMessages(conversationId)
+  }
+
+  const handleNewConversation = () => {
+    setCurrentConversationId("")
+  }
+
+  const handleDeleteConversation = async (conversationId: string) => {
+    try {
+      await deleteConversation(conversationId)
+      setConversations(prev => prev.filter(conv => conv.id !== conversationId))
+      if (currentConversationId === conversationId) {
+        setCurrentConversationId("")
+      }
+    } catch (error) {
+      console.error('Error deleting conversation:', error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression de la conversation.",
+      })
+    }
+  }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-900">
-      <div className="flex w-full">
-        <AppSidebar 
+    <>
+      <SEO 
+        title="Chat | PedagoIA - Assistant pédagogique intelligent"
+        description="Discutez avec PedagoIA pour créer des contenus pédagogiques personnalisés et innovants."
+      />
+      <div className="flex h-screen">
+        <AppSidebar
           conversations={conversations}
-          onConversationSelect={loadConversationMessages}
+          onConversationSelect={handleConversationSelect}
           currentConversationId={currentConversationId}
           onNewConversation={handleNewConversation}
-          onDeleteConversation={deleteConversation}
+          onDeleteConversation={handleDeleteConversation}
           firstName={firstName}
           onLogout={handleLogout}
         />
-        
-        <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <main className="flex-1 overflow-y-auto relative flex flex-col">
-            {!currentConversationId && (
-              <div className="flex-1 flex flex-col items-center justify-center px-6">
-                <WelcomeBanner />
-                <QuickActions 
-                  onActionClick={handleQuickAction} 
-                  visible={showQuickActions}
-                  onPromptSelect={handlePromptSelect}
-                />
-              </div>
-            )}
-            {currentConversationId && (
-              <div className="max-w-5xl mx-auto w-full px-6 py-6 pb-32">
+        <main className="flex-1 overflow-hidden">
+          <div className="flex h-full flex-col">
+            {messages && messages.length > 0 ? (
+              <div className="flex-1 overflow-y-auto p-4">
                 <ChatHistory messages={messages} isLoading={isLoading} />
               </div>
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-muted-foreground">
+                  Sélectionnez une conversation ou créez-en une nouvelle
+                </p>
+              </div>
             )}
-          </main>
-
-          <div className="fixed bottom-0 left-0 right-0 border-t bg-white dark:bg-gray-900 dark:border-gray-800 z-10">
-            <div className="max-w-5xl mx-auto px-6 py-4">
-              <ChatInput 
-                onSendMessage={sendMessage} 
-                isLoading={isLoading}
-                value={inputValue}
-                onChange={setInputValue}
-              />
-            </div>
+            <ChatInput 
+              onSendMessage={sendMessage}
+              isLoading={isLoading}
+            />
           </div>
-        </div>
+        </main>
       </div>
-    </div>
+    </>
   )
 }
-
-export default Index

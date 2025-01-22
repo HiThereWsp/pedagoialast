@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { BackButton } from "@/components/settings/BackButton"
 import { ProfileForm } from "@/components/settings/ProfileForm"
 import { PasswordForm } from "@/components/settings/PasswordForm"
+import { SEO } from "@/components/SEO"
 
 const Settings = () => {
   const navigate = useNavigate()
@@ -55,27 +56,33 @@ const Settings = () => {
   }, [navigate, toast])
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <BackButton />
+    <>
+      <SEO 
+        title="Paramètres | PedagoIA - Gérez votre compte"
+        description="Personnalisez votre expérience PedagoIA en gérant vos paramètres de compte et vos préférences."
+      />
+      <div className="min-h-screen bg-background p-6">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <BackButton />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Paramètres du profil</CardTitle>
-            <CardDescription>
-              Gérez vos informations personnelles et vos préférences
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <ProfileForm initialFirstName={firstName} />
-            
-            <Separator className="my-6" />
-            
-            <PasswordForm />
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Paramètres du profil</CardTitle>
+              <CardDescription>
+                Gérez vos informations personnelles et vos préférences
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <ProfileForm initialFirstName={firstName} />
+              
+              <Separator className="my-6" />
+              
+              <PasswordForm />
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 

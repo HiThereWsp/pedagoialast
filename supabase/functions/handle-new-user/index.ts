@@ -11,45 +11,67 @@ const corsHeaders = {
 
 const supabase = createClient(
   SUPABASE_URL!,
-  SUPABASE_SERVICE_ROLE_KEY!
+  SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 )
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log('🚀 handle-new-user function started')
+  
   if (req.method === 'OPTIONS') {
+    console.log('OPTIONS request received')
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const { record } = await req.json()
-    console.log('New user created:', record)
-
-    // Envoyer l'email de bienvenue
-    const welcomeEmailResponse = await fetch(`${SUPABASE_URL}/functions/v1/send-welcome-email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-      },
-      body: JSON.stringify({
-        userId: record.id,
-        email: record.email,
-        firstName: record.raw_user_meta_data?.first_name || 'Utilisateur'
-      })
+    console.log('📝 Nouvel utilisateur créé:', {
+      id: record.id,
+      email: record.email,
+      firstName: record.raw_user_meta_data?.first_name
     })
 
-    if (!welcomeEmailResponse.ok) {
-      console.error('Failed to trigger welcome email:', await welcomeEmailResponse.text())
-    } else {
-      console.log('Welcome email triggered successfully')
+    // Appeler la fonction process-welcome-emails
+    console.log('📧 Tentative de traitement de l\'email de bienvenue...')
+    const { data: welcomeEmailResponse, error: welcomeEmailError } = await supabase.functions.invoke(
+      'process-welcome-emails',
+      {
+        body: JSON.stringify({
+          userId: record.id,
+          email: record.email,
+          firstName: record.raw_user_meta_data?.first_name || 'Utilisateur'
+        })
+      }
+    )
+
+    if (welcomeEmailError) {
+      console.error('❌ Échec du traitement de l\'email de bienvenue:', welcomeEmailError)
+      throw welcomeEmailError
     }
+
+    console.log('✅ Email de bienvenue traité avec succès:', welcomeEmailResponse)
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
-    console.error('Error in handle-new-user function:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    console.error('❌ Erreur détaillée dans handle-new-user:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      cause: error.cause
+    })
+    return new Response(JSON.stringify({ 
+      error: error.message,
+      stack: error.stack,
+      name: error.name
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })

@@ -48,12 +48,13 @@ export const WaitlistForm = () => {
           toast({
             variant: "default",
             className: "bg-primary/10 border-primary/20",
-            title: "Vous êtes déjà inscrit ! 🎉",
+            title: "Vous faites déjà partie de l'aventure ! 🎉",
             description: (
               <div className="space-y-2">
-                <p>Merci pour votre enthousiasme ! Nous avons bien noté votre intérêt.</p>
+                <p>Merci pour votre enthousiasme ! Nous sommes ravis de voir que vous êtes impatient(e) de commencer.</p>
+                <p>Nous vous contacterons dès que possible pour vous donner accès à la plateforme.</p>
                 <p className="text-sm text-muted-foreground">
-                  Une question ? Contactez-nous à{" "}
+                  Une question en attendant ? Contactez-nous à{" "}
                   <a 
                     href="mailto:bonjour@pedagoia.fr" 
                     className="text-primary hover:underline"
@@ -65,6 +66,8 @@ export const WaitlistForm = () => {
             ),
           })
           setIsLoading(false)
+          // On ferme quand même la modal même si l'email est déjà inscrit
+          window.dispatchEvent(new CustomEvent('closeWaitlistModal'))
           return
         }
         
@@ -73,8 +76,8 @@ export const WaitlistForm = () => {
 
       console.log('Form submitted successfully')
       
-      const closeEvent = new Event('close')
-      window.dispatchEvent(closeEvent)
+      // Fermeture de la modal
+      window.dispatchEvent(new CustomEvent('closeWaitlistModal'))
 
       toast({
         duration: 3000,

@@ -19,7 +19,6 @@ export default function Login() {
         
         if (error) {
           console.error("Session error:", error)
-          // Si l'erreur est liée au refresh token, on déconnecte l'utilisateur
           if (error.message.includes("refresh_token")) {
             await supabase.auth.signOut()
             toast({
@@ -29,6 +28,7 @@ export default function Login() {
             })
           }
         } else if (session) {
+          // Si l'utilisateur est déjà connecté, on le redirige
           const returnUrl = location.state?.returnUrl || '/home'
           navigate(returnUrl, { replace: true })
         }
@@ -41,16 +41,13 @@ export default function Login() {
 
     checkUser()
 
+    // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_IN' && session) {
         const returnUrl = location.state?.returnUrl || '/home'
         navigate(returnUrl, { replace: true })
-      } else if (event === 'SIGNED_OUT') {
-        toast({
-          description: "Vous avez été déconnecté.",
-        })
       }
     })
 

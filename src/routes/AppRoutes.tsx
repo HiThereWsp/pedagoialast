@@ -18,6 +18,7 @@ const MetricsPage = lazy(() => import("@/pages/MetricsPage"))
 const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
 const ExercisePage = lazy(() => import("@/pages/ExercisePage"))
 const DiscoverPage = lazy(() => import("@/pages/DiscoverPage"))
+const ContactPage = lazy(() => import("@/pages/ContactPage"))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -35,6 +36,7 @@ export const AppRoutes = () => {
         <Route path="/waitlist" element={<WaitlistLanding />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/contact" element={<ContactPage />} />
         
         {/* Routes protégées nécessitant une authentification */}
         <Route element={<ProtectedRoute />}>
