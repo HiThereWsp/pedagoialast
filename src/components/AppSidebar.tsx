@@ -44,16 +44,16 @@ export function AppSidebar({
       </Button>
       <div
         className={cn(
-          "fixed inset-0 z-30 bg-background/80 backdrop-blur-sm md:hidden",
-          isMobileOpen ? "block" : "hidden"
+          "fixed inset-0 z-30 bg-background/80 backdrop-blur-sm transition-opacity duration-300 md:hidden",
+          isMobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={() => setIsMobileOpen(false)}
       />
       <aside
         className={cn(
-          "fixed left-0 top-0 z-30 flex h-full flex-col border-r bg-background transition-all duration-300 md:relative md:translate-x-0",
+          "fixed left-0 top-0 z-30 flex h-full flex-col border-r bg-background transition-all duration-300 ease-in-out md:relative",
           isCollapsed ? "w-0 md:w-0 opacity-0" : "w-64",
-          !isMobileOpen && "-translate-x-full"
+          !isMobileOpen && "-translate-x-full md:translate-x-0"
         )}
       >
         <TooltipProvider>
@@ -70,7 +70,7 @@ export function AppSidebar({
                 onClick={() => setIsCollapsed(!isCollapsed)}
               >
                 <ChevronLeft className={cn(
-                  "h-4 w-4 transition-transform",
+                  "h-4 w-4 transition-transform duration-300",
                   isCollapsed && "rotate-180"
                 )} />
               </Button>
@@ -96,7 +96,7 @@ export function AppSidebar({
         <Button
           variant="ghost"
           size="icon"
-          className="fixed left-4 top-4 z-40 hidden md:flex"
+          className="fixed left-4 top-4 z-40 hidden md:flex transition-opacity duration-300"
           onClick={() => setIsCollapsed(false)}
         >
           <Menu className="h-6 w-6" />
