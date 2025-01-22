@@ -1,16 +1,14 @@
 import { cn } from "@/lib/utils"
 import ReactMarkdown from 'react-markdown'
 import { FeedbackButtons } from "./FeedbackButtons"
-import { FileIcon } from "lucide-react"
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
   content: string
   index: number
-  attachments?: Array<{url: string, fileName: string, fileType: string, filePath: string}>
 }
 
-export const ChatMessage = ({ role, content, index, attachments }: ChatMessageProps) => {
+export const ChatMessage = ({ role, content, index }: ChatMessageProps) => {
   const formatMessage = (content: string) => {
     return content
       .replace(/###/g, "")
@@ -33,22 +31,6 @@ export const ChatMessage = ({ role, content, index, attachments }: ChatMessagePr
           ? 'bg-white border border-gray-100/20' 
           : 'bg-gradient-to-r from-[#FFDEE2]/10 to-[#FEF7CD]/10 border border-[#FFDEE2]/20'
       )}>
-        {attachments && attachments.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
-            {attachments.map((file, index) => (
-              <a
-                key={index}
-                href={file.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 bg-white/50 px-3 py-2 rounded-lg hover:bg-white/80 transition-colors"
-              >
-                <FileIcon className="h-4 w-4" />
-                <span className="text-sm truncate max-w-[200px]">{file.fileName}</span>
-              </a>
-            ))}
-          </div>
-        )}
         <div className="text-gray-800 whitespace-pre-wrap leading-relaxed">
           <ReactMarkdown
             components={{
