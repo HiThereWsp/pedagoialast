@@ -6,9 +6,15 @@ interface ChatMessageProps {
   role: 'user' | 'assistant'
   content: string
   index: number
+  attachments?: Array<{
+    url: string;
+    fileName: string;
+    fileType: string;
+    filePath: string;
+  }>;
 }
 
-export const ChatMessage = ({ role, content, index }: ChatMessageProps) => {
+export const ChatMessage = ({ role, content, index, attachments }: ChatMessageProps) => {
   const formatMessage = (content: string) => {
     return content
       .replace(/###/g, "")
@@ -72,6 +78,23 @@ export const ChatMessage = ({ role, content, index }: ChatMessageProps) => {
             {formatMessage(content)}
           </ReactMarkdown>
         </div>
+
+        {attachments && attachments.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {attachments.map((attachment, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                <a 
+                  href={attachment.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-600 underline"
+                >
+                  {attachment.fileName}
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
 
         {role === 'assistant' && (
           <FeedbackButtons messageId={index} content={content} />
