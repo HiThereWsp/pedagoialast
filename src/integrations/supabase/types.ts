@@ -12,6 +12,7 @@ export type Database = {
       chats: {
         Row: {
           action_type: string | null
+          attachments: Json | null
           completion_status: boolean | null
           conversation_id: string | null
           conversation_title: string | null
@@ -26,6 +27,7 @@ export type Database = {
         }
         Insert: {
           action_type?: string | null
+          attachments?: Json | null
           completion_status?: boolean | null
           conversation_id?: string | null
           conversation_title?: string | null
@@ -40,6 +42,7 @@ export type Database = {
         }
         Update: {
           action_type?: string | null
+          attachments?: Json | null
           completion_status?: boolean | null
           conversation_id?: string | null
           conversation_title?: string | null
