@@ -1,10 +1,15 @@
-import type { FC } from "react"
+import { Link } from "react-router-dom"
 
-export const Footer: FC = () => {
+export function Footer() {
   return (
-    <div className="mt-12 flex items-center gap-2">
-      <img src="/favicon.svg" alt="PedagoIA Logo" className="w-8 h-8" />
-      <p className="text-2xl font-semibold text-gray-800">PedagoIA</p>
-    </div>
+    <footer className="mt-8 text-center text-sm text-muted-foreground">
+      <div className="space-x-4">
+        <Link to="/contact" className="hover:text-primary transition-colors">
+          Nous contacter
+        </Link>
+        <span>•</span>
+        <span>© 2024 PedagoIA</span>
+      </div>
+    </footer>
   )
 }
