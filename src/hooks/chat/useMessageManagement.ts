@@ -23,7 +23,8 @@ export const useMessageManagement = (userId: string | null) => {
       if (messagesData) {
         const formattedMessages = messagesData.map(msg => ({
           role: msg.message_type as 'user' | 'assistant',
-          content: msg.message
+          content: msg.message,
+          attachments: msg.attachments
         }))
         setMessages(formattedMessages)
       }
@@ -36,16 +37,21 @@ export const useMessageManagement = (userId: string | null) => {
     message: string,
     conversationId: string,
     conversationTitle: string | undefined,
-    context: string
+    context: string,
+    attachments?: Array<{url: string, fileName: string, fileType: string, filePath: string}>
   ) => {
-    if (!message.trim() || isLoading || !userId) return
+    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return
 
     setIsLoading(true)
     const userMessage = message.trim()
 
     try {
       // Ajouter le message utilisateur à l'UI
-      const userChatMessage: ChatMessage = { role: 'user', content: userMessage }
+      const userChatMessage: ChatMessage = { 
+        role: 'user', 
+        content: userMessage,
+        attachments 
+      }
       setMessages(prev => [...prev, userChatMessage])
 
       // Sauvegarder le message utilisateur dans la base de données
@@ -56,7 +62,8 @@ export const useMessageManagement = (userId: string | null) => {
           user_id: userId,
           message_type: 'user',
           conversation_id: conversationId,
-          conversation_title: conversationTitle
+          conversation_title: conversationTitle,
+          attachments
         }])
 
       if (insertError) {
@@ -66,7 +73,15 @@ export const useMessageManagement = (userId: string | null) => {
 
       // Obtenir la réponse de l'IA
       const { data, error } = await supabase.functions.invoke('chat-with-openai', {
-        body: { message: userMessage, context }
+        body: { 
+          message: userMessage, 
+          context,
+          attachments: attachments?.map(a => ({
+            url: a.url,
+            fileName: a.fileName,
+            type: a.fileType
+          }))
+        }
       })
 
       if (error) throw error
