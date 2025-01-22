@@ -18,7 +18,6 @@ export default function ContactPage() {
   const handleEmailClick = () => {
     const mailtoUrl = `mailto:${email}`
     window.location.href = mailtoUrl
-    // Afficher un toast pour confirmer l'action
     toast({
       title: "Ouverture de votre client mail",
       description: "Votre client mail par défaut va s'ouvrir automatiquement.",
@@ -34,20 +33,22 @@ export default function ContactPage() {
               Contactez-nous
             </h1>
             <p className="text-lg text-muted-foreground">
-              Nous sommes actuellement en version bêta et travaillons constamment à améliorer PedagoIA pour vous offrir la meilleure expérience possible.
+              Nous sommes à votre écoute pour toute demande concernant PedagoIA et son utilisation dans votre établissement.
             </p>
           </div>
 
           <div className="space-y-6">
             <p className="text-muted-foreground">
-              Vos retours sont précieux pour nous aider à façonner un outil qui répond au mieux à vos besoins. N'hésitez pas à nous partager vos :
+              N'hésitez pas à nous contacter si :
             </p>
             
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
-              <li>Questions sur l'utilisation de PedagoIA</li>
-              <li>Suggestions d'amélioration</li>
-              <li>Retours d'expérience</li>
-              <li>Problèmes techniques rencontrés</li>
+              <li>Vous avez des questions sur l'utilisation de PedagoIA</li>
+              <li>Vous souhaitez nous faire part de vos suggestions d'amélioration</li>
+              <li>Vous souhaitez partager votre retour d'expérience</li>
+              <li>Vous rencontrez des problèmes techniques</li>
+              <li>Vous souhaitez adapter PedagoIA à votre établissement pour votre équipe pédagogique</li>
+              <li>Vous souhaitez devenir ambassadeur de PedagoIA</li>
             </ul>
 
             <div className="mt-8 text-center space-y-4">
