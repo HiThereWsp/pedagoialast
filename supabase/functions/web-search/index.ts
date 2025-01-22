@@ -15,13 +15,19 @@ serve(async (req) => {
   }
 
   try {
-    const { query } = await req.json()
-
     if (!sonarApiKey) {
+      console.error('SONAR_API_KEY is not configured')
       throw new Error('SONAR_API_KEY is not configured')
     }
 
-    console.log('Calling Sonar API with query:', query)
+    const { message } = await req.json()
+    
+    if (!message) {
+      console.error('No message provided in request')
+      throw new Error('No message provided in request')
+    }
+
+    console.log('Calling Sonar API with message:', message)
 
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
@@ -78,7 +84,7 @@ RÈGLES DE STYLE
 
 GESTION DES SOURCES WEB
 - Évaluez la fiabilité des sources avant citation
-- Privilégiez l'ordre : sources officielles > académiques > professionnelles > générales
+- Privilégez l'ordre : sources officielles > académiques > professionnelles > générales
 - Indiquez clairement quand une information provient d'une recherche web
 - Combinez les sources web avec votre expertise pédagogique
 
@@ -110,7 +116,7 @@ AMÉLIORATION CONTINUE
           },
           {
             role: "user",
-            content: query
+            content: message
           }
         ]
       })
@@ -125,7 +131,7 @@ AMÉLIORATION CONTINUE
     const data = await response.json()
     console.log('Successfully got response from Sonar')
 
-    return new Response(JSON.stringify({ results: data.choices[0].message.content }), {
+    return new Response(JSON.stringify({ response: data.choices[0].message.content }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
