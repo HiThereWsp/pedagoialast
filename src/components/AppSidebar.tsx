@@ -44,16 +44,17 @@ export function AppSidebar({
       </Button>
       <div
         className={cn(
-          "fixed inset-0 z-30 bg-background/80 backdrop-blur-sm transition-opacity duration-300 md:hidden",
+          "fixed inset-0 z-30 bg-background/80 backdrop-blur-sm transition-all duration-300 md:hidden",
           isMobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={() => setIsMobileOpen(false)}
       />
       <aside
         className={cn(
-          "fixed left-0 top-0 z-30 flex h-full flex-col border-r bg-background transition-all duration-300 ease-in-out md:relative",
-          isCollapsed ? "w-0 md:w-0 opacity-0" : "w-64",
-          !isMobileOpen && "-translate-x-full md:translate-x-0"
+          "fixed left-0 top-0 z-30 flex h-full flex-col border-r bg-background transition-transform duration-300 ease-in-out md:relative",
+          isCollapsed ? "w-0 md:w-0" : "w-64",
+          !isMobileOpen && "-translate-x-full md:translate-x-0",
+          isCollapsed && "md:-translate-x-full"
         )}
       >
         <TooltipProvider>
@@ -96,7 +97,7 @@ export function AppSidebar({
         <Button
           variant="ghost"
           size="icon"
-          className="fixed left-4 top-4 z-40 hidden md:flex transition-opacity duration-300"
+          className="fixed left-4 top-4 z-40 hidden md:flex"
           onClick={() => setIsCollapsed(false)}
         >
           <Menu className="h-6 w-6" />
