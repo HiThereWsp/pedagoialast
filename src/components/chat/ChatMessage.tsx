@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils"
 import ReactMarkdown from 'react-markdown'
 import { FeedbackButtons } from "./FeedbackButtons"
+import { useState } from "react"
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -15,12 +16,39 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage = ({ role, content, index, attachments }: ChatMessageProps) => {
+  const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
+
+  // Fonction pour extraire les citations du texte
+  const extractCitations = (text: string) => {
+    const citations = text.match(/\[\d+\]/g) || [];
+    return citations.map(c => parseInt(c.replace(/[\[\]]/g, '')));
+  };
+
+  // Fonction pour extraire les sources du texte
+  const extractSources = (text: string) => {
+    const sourceRegex = /Source \[(\d+)\]: (http[s]?:\/\/[^\s]+)/g;
+    const sources: { id: number; url: string }[] = [];
+    let match;
+    
+    while ((match = sourceRegex.exec(text)) !== null) {
+      sources.push({
+        id: parseInt(match[1]),
+        url: match[2]
+      });
+    }
+    
+    return sources;
+  };
+
   const formatMessage = (content: string) => {
     return content
       .replace(/###/g, "")
       .replace(/\*\*/g, "**")
       .trim()
-  }
+  };
+
+  const sources = extractSources(content);
+  const citations = extractCitations(content);
 
   return (
     <div
@@ -73,11 +101,44 @@ export const ChatMessage = ({ role, content, index, attachments }: ChatMessagePr
                   {children}
                 </li>
               ),
+              a: ({ children, href }) => {
+                const citationMatch = href?.match(/\[(\d+)\]/);
+                if (citationMatch) {
+                  const citationNumber = parseInt(citationMatch[1]);
+                  return (
+                    <button
+                      onClick={() => setSelectedCitation(selectedCitation === citationNumber ? null : citationNumber)}
+                      className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      [{citationNumber}]
+                    </button>
+                  );
+                }
+                return (
+                  <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 hover:underline">
+                    {children}
+                  </a>
+                );
+              }
             }}
           >
             {formatMessage(content)}
           </ReactMarkdown>
         </div>
+
+        {selectedCitation && sources.find(s => s.id === selectedCitation) && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h4 className="font-semibold text-sm text-gray-700 mb-2">Source [{selectedCitation}]</h4>
+            <a 
+              href={sources.find(s => s.id === selectedCitation)?.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+            >
+              {sources.find(s => s.id === selectedCitation)?.url}
+            </a>
+          </div>
+        )}
 
         {attachments && attachments.length > 0 && (
           <div className="mt-4 space-y-2">
