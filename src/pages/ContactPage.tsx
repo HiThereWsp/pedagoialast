@@ -1,8 +1,20 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Mail } from "lucide-react"
+import { Mail, Copy } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function ContactPage() {
+  const { toast } = useToast()
+  const email = "admin@pedagoia.fr"
+
+  const copyEmail = () => {
+    navigator.clipboard.writeText(email)
+    toast({
+      title: "Adresse email copiée !",
+      description: "L'adresse email a été copiée dans votre presse-papier.",
+    })
+  }
+
   return (
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
@@ -28,18 +40,32 @@ export default function ContactPage() {
               <li>Problèmes techniques rencontrés</li>
             </ul>
 
-            <div className="mt-8 text-center">
-              <Button
-                size="lg"
-                className="gap-2"
-                onClick={() => window.location.href = 'mailto:admin@pedagoia.fr'}
-              >
-                <Mail className="w-5 h-5" />
-                Écrivez-nous
-              </Button>
-              <p className="mt-4 text-sm text-muted-foreground">
-                Notre équipe vous répondra dans les meilleurs délais à admin@pedagoia.fr
-              </p>
+            <div className="mt-8 text-center space-y-4">
+              <div className="inline-flex items-center gap-2 bg-muted px-4 py-2 rounded-md">
+                <span className="text-muted-foreground select-all">{email}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={copyEmail}
+                  className="h-8 w-8"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <Button
+                  size="lg"
+                  className="gap-2"
+                  onClick={() => window.location.href = `mailto:${email}`}
+                >
+                  <Mail className="w-5 h-5" />
+                  Ouvrir dans votre client mail
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Notre équipe vous répondra dans les meilleurs délais
+                </p>
+              </div>
             </div>
           </div>
         </Card>
