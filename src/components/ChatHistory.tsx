@@ -16,6 +16,7 @@ export const ChatHistory = ({ messages, isLoading }: ChatHistoryProps) => {
           role={msg.role}
           content={msg.content}
           index={index}
+          attachments={msg.attachments}
         />
       ))}
       {isLoading && <LoadingIndicator />}

@@ -7,7 +7,7 @@ interface ChatMessageProps {
   role: 'user' | 'assistant'
   content: string
   index: number
-  attachments?: Array<{url: string, fileName: string, fileType: string}>
+  attachments?: Array<{url: string, fileName: string, fileType: string, filePath: string}>
 }
 
 export const ChatMessage = ({ role, content, index, attachments }: ChatMessageProps) => {
