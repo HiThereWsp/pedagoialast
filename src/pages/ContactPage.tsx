@@ -44,10 +44,9 @@ export default function ContactPage() {
             
             <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
               <li>Vous avez des questions sur l'utilisation de PedagoIA</li>
-              <li>Vous souhaitez nous faire part de vos suggestions d'amélioration</li>
               <li>Vous souhaitez partager votre retour d'expérience</li>
               <li>Vous rencontrez des problèmes techniques</li>
-              <li>Vous souhaitez adapter PedagoIA à votre établissement pour votre équipe pédagogique</li>
+              <li>Vous souhaitez déployer PedagoIA dans votre établissement</li>
               <li>Vous souhaitez devenir ambassadeur de PedagoIA</li>
             </ul>
 
