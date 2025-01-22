@@ -9,6 +9,7 @@ import { ActionButtons } from "@/components/home/ActionButtons"
 import { Footer } from "@/components/home/Footer"
 import { UpdateNotification } from "@/components/home/UpdateNotification"
 import { useToast } from "@/hooks/use-toast"
+import { SEO } from "@/components/SEO"
 
 const Home = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -79,13 +80,19 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col items-center px-6 py-8 max-w-md mx-auto">
+    <>
+      <SEO 
+        title="Tableau de bord | PedagoIA - Votre assistant pédagogique"
+        description="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé."
+      />
+      <div className="min-h-screen bg-white flex flex-col items-center px-6 py-8 max-w-md mx-auto">
       <UserMenu />
       <WelcomeMessage firstName={firstName} />
       <ActionButtons />
       <Footer />
       <UpdateNotification />
-    </div>
+      </div>
+    </>
   )
 }
 
