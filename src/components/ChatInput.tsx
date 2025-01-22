@@ -40,6 +40,11 @@ export const ChatInput = ({
       }
     } catch (error) {
       console.error("Error sending message:", error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du message",
+      })
     }
   }
 
@@ -58,7 +63,14 @@ export const ChatInput = ({
   }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || !e.target.files[0] || !conversationId) return
+    if (!e.target.files || !e.target.files[0] || !conversationId) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Veuillez sélectionner un fichier et vous assurer qu'une conversation est active",
+      })
+      return
+    }
 
     const file = e.target.files[0]
     
@@ -78,18 +90,34 @@ export const ChatInput = ({
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('conversationId', conversationId)
-      formData.append('userId', user.id)
+      // Créer un nom de fichier unique
+      const fileExt = file.name.split('.').pop()
+      const filePath = `${conversationId}/${crypto.randomUUID()}.${fileExt}`
 
-      const { data, error } = await supabase.functions.invoke('upload-chat-attachment', {
-        body: formData
+      // Upload du fichier
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('chat-attachments')
+        .upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      // Obtenir l'URL publique
+      const { data: { publicUrl } } = supabase.storage
+        .from('chat-attachments')
+        .getPublicUrl(filePath)
+
+      // Ajouter le fichier à la liste des pièces jointes
+      setAttachments(prev => [...prev, {
+        url: publicUrl,
+        fileName: file.name,
+        fileType: file.type,
+        filePath: filePath
+      }])
+
+      toast({
+        title: "Succès",
+        description: "Le fichier a été uploadé avec succès",
       })
-
-      if (error) throw error
-
-      setAttachments(prev => [...prev, data])
     } catch (error) {
       console.error('Upload error:', error)
       toast({
