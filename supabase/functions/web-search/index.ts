@@ -84,7 +84,7 @@ RÈGLES DE STYLE
 
 GESTION DES SOURCES WEB
 - Évaluez la fiabilité des sources avant citation
-- Privilégez l'ordre : sources officielles > académiques > professionnelles > générales
+- Privilégiez l'ordre : sources officielles > académiques > professionnelles > générales
 - Indiquez clairement quand une information provient d'une recherche web
 - Combinez les sources web avec votre expertise pédagogique
 
