@@ -133,7 +133,7 @@ export default function Index() {
               </div>
             ) : (
               <div className="flex h-full items-center justify-center">
-                <p className="text-muted-foreground">
+                <p className="text-2xl font-medium premium-text animate-pulse">
                   Comment puis-je vous aider ?
                 </p>
               </div>
