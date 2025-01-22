@@ -44,6 +44,8 @@ export const useChat = (userId: string | null) => {
     if (!message.trim() || isLoading || !userId) return
 
     try {
+      setMessages(prev => [...prev, { role: 'user', content: message }])
+      
       let currentId = currentConversationId
       let title: string | undefined
 
@@ -52,7 +54,6 @@ export const useChat = (userId: string | null) => {
         currentId = newConversation.conversationId
         title = newConversation.title
         setCurrentConversationId(currentId)
-        setMessages([])
       }
 
       const aiResponse = await sendMessage(message, currentId, title, conversationContext, undefined, useWebSearch)
@@ -65,6 +66,7 @@ export const useChat = (userId: string | null) => {
       await loadConversations()
     } catch (error) {
       console.error("Error in handleSendMessage:", error)
+      throw error
     }
   }
 
@@ -73,6 +75,7 @@ export const useChat = (userId: string | null) => {
     if (currentConversationId === conversationId) {
       setMessages([])
       clearContext()
+      setCurrentConversationId(null)
     }
   }
 
