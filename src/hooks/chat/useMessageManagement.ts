@@ -24,7 +24,7 @@ export const useMessageManagement = (userId: string | null) => {
         const formattedMessages = messagesData.map(msg => ({
           role: msg.message_type as 'user' | 'assistant',
           content: msg.message,
-          attachments: msg.attachments
+          attachments: msg.attachments as ChatMessage['attachments']
         }))
         setMessages(formattedMessages)
       }
@@ -38,7 +38,8 @@ export const useMessageManagement = (userId: string | null) => {
     conversationId: string,
     conversationTitle: string | undefined,
     context: string,
-    attachments?: Array<{url: string, fileName: string, fileType: string, filePath: string}>
+    attachments?: ChatMessage['attachments'],
+    useWebSearch?: boolean
   ) => {
     if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return
 
@@ -46,7 +47,6 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      // Ajouter le message utilisateur à l'UI
       const userChatMessage: ChatMessage = { 
         role: 'user', 
         content: userMessage,
@@ -54,7 +54,6 @@ export const useMessageManagement = (userId: string | null) => {
       }
       setMessages(prev => [...prev, userChatMessage])
 
-      // Sauvegarder le message utilisateur dans la base de données
       const { error: insertError } = await supabase
         .from('chats')
         .insert([{
@@ -71,8 +70,9 @@ export const useMessageManagement = (userId: string | null) => {
         throw insertError
       }
 
-      // Obtenir la réponse de l'IA
-      const { data, error } = await supabase.functions.invoke('chat-with-openai', {
+      let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
+      
+      const { data, error } = await supabase.functions.invoke(functionName, {
         body: { 
           message: userMessage, 
           context,
@@ -88,7 +88,6 @@ export const useMessageManagement = (userId: string | null) => {
 
       const aiResponse = data.response
 
-      // Sauvegarder la réponse de l'IA dans la base de données
       const { error: aiInsertError } = await supabase
         .from('chats')
         .insert([{
@@ -104,7 +103,6 @@ export const useMessageManagement = (userId: string | null) => {
         throw aiInsertError
       }
 
-      // Ajouter la réponse de l'IA à l'UI
       const aiChatMessage: ChatMessage = { role: 'assistant', content: aiResponse }
       setMessages(prev => [...prev, aiChatMessage])
 
