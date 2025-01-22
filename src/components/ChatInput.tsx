@@ -70,7 +70,7 @@ export const ChatInput = ({
             />
             <Label htmlFor="web-search" className="flex items-center gap-2 text-sm text-gray-600">
               <Globe className="h-4 w-4" />
-              Recherche web
+              Recherche web avancée
             </Label>
           </div>
           
