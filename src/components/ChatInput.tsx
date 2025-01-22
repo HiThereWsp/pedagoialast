@@ -60,9 +60,9 @@ export const ChatInput = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-100/20">
-      <div className="max-w-[800px] mx-auto">
+      <div className="max-w-[700px] mx-auto px-2">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 px-4">
+          <div className="flex items-center gap-2 px-2">
             <Switch
               id="web-search"
               checked={useWebSearch}
