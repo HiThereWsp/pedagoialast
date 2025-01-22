@@ -3,6 +3,9 @@ import { supabase } from "@/integrations/supabase/client"
 import { AppSidebar } from "@/components/AppSidebar"
 import { useNavigate } from "react-router-dom"
 import { useToast } from "@/hooks/use-toast"
+import { useChat } from "@/hooks/useChat"
+import { ChatInput } from "@/components/ChatInput"
+import { ChatHistory } from "@/components/ChatHistory"
 
 export default function Index() {
   const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
@@ -10,6 +13,9 @@ export default function Index() {
   const [firstName, setFirstName] = useState("")
   const navigate = useNavigate()
   const { toast } = useToast()
+
+  // Récupérer l'ID utilisateur depuis Supabase
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -19,6 +25,8 @@ export default function Index() {
           navigate('/login')
           return
         }
+
+        setUserId(user.id)
 
         const { data: profile } = await supabase
           .from('profiles')
@@ -37,6 +45,29 @@ export default function Index() {
     fetchUserProfile()
   }, [navigate])
 
+  // Utiliser le hook useChat
+  const {
+    messages,
+    isLoading,
+    sendMessage,
+    conversations: chatConversations,
+    loadConversationMessages,
+    currentConversationId: activeChatId,
+    deleteConversation
+  } = useChat(userId)
+
+  useEffect(() => {
+    if (chatConversations) {
+      setConversations(chatConversations)
+    }
+  }, [chatConversations])
+
+  useEffect(() => {
+    if (activeChatId) {
+      setCurrentConversationId(activeChatId)
+    }
+  }, [activeChatId])
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut()
@@ -53,19 +84,16 @@ export default function Index() {
 
   const handleConversationSelect = async (conversationId: string) => {
     setCurrentConversationId(conversationId)
+    await loadConversationMessages(conversationId)
   }
 
   const handleNewConversation = () => {
-    const newConversation = {
-      id: crypto.randomUUID(),
-      title: "Nouvelle conversation"
-    }
-    setConversations(prev => [...prev, newConversation])
-    setCurrentConversationId(newConversation.id)
+    setCurrentConversationId("")
   }
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
+      await deleteConversation(conversationId)
       setConversations(prev => prev.filter(conv => conv.id !== conversationId))
       if (currentConversationId === conversationId) {
         setCurrentConversationId("")
@@ -93,9 +121,9 @@ export default function Index() {
       />
       <main className="flex-1 overflow-hidden">
         <div className="flex h-full flex-col">
-          {currentConversationId ? (
+          {messages && messages.length > 0 ? (
             <div className="flex-1 overflow-y-auto p-4">
-              {/* Conversation content will go here */}
+              <ChatHistory messages={messages} />
             </div>
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -104,6 +132,10 @@ export default function Index() {
               </p>
             </div>
           )}
+          <ChatInput 
+            onSendMessage={sendMessage}
+            isLoading={isLoading}
+          />
         </div>
       </main>
     </div>
