@@ -23,19 +23,25 @@ serve(async (req) => {
 
     console.log('Calling Sonar API with query:', query)
 
-    const response = await fetch('https://api.sonar.com/v1/search', {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${sonarApiKey}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
       body: JSON.stringify({
-        query,
-        limit: 5, // Nombre de résultats à retourner
-        filters: {
-          language: 'fr', // Langue des résultats
-          type: 'web' // Type de recherche
-        }
+        model: "sonar-pro",
+        messages: [
+          {
+            role: "system",
+            content: "You are a search assistant. Provide relevant and precise results."
+          },
+          {
+            role: "user",
+            content: query
+          }
+        ]
       })
     })
 
@@ -48,7 +54,7 @@ serve(async (req) => {
     const data = await response.json()
     console.log('Successfully got response from Sonar')
 
-    return new Response(JSON.stringify({ results: data.results }), {
+    return new Response(JSON.stringify({ results: data.choices[0].message.content }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
