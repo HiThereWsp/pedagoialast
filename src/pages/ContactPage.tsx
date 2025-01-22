@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Mail, Copy } from "lucide-react"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
 
 export default function ContactPage() {
   const { toast } = useToast()
@@ -12,6 +12,16 @@ export default function ContactPage() {
     toast({
       title: "Adresse email copiée !",
       description: "L'adresse email a été copiée dans votre presse-papier.",
+    })
+  }
+
+  const handleEmailClick = () => {
+    const mailtoUrl = `mailto:${email}`
+    window.location.href = mailtoUrl
+    // Afficher un toast pour confirmer l'action
+    toast({
+      title: "Ouverture de votre client mail",
+      description: "Votre client mail par défaut va s'ouvrir automatiquement.",
     })
   }
 
@@ -57,7 +67,7 @@ export default function ContactPage() {
                 <Button
                   size="lg"
                   className="gap-2"
-                  onClick={() => window.location.href = `mailto:${email}`}
+                  onClick={handleEmailClick}
                 >
                   <Mail className="w-5 h-5" />
                   Ouvrir dans votre client mail
