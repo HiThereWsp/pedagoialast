@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Send, Image as ImageIcon, Search, Tools } from 'lucide-react';
+import { Loader2, Send, Image as ImageIcon, Search, Tool } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -89,7 +89,7 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-end gap-2 bg-white p-4 border-t">
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-white p-4 border-t">
       <div className="flex-1 relative">
         <textarea
           ref={textareaRef}
@@ -102,21 +102,21 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
         />
       </div>
       
-      <div className="flex gap-2">
+      <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               type="button"
               variant="outline"
               size="icon"
-              className="flex-shrink-0"
+              className="h-10 w-10"
             >
               {activeOption === 'image' ? (
                 <ImageIcon className="h-5 w-5 text-purple-500" />
               ) : activeOption === 'search' ? (
                 <Search className="h-5 w-5 text-orange-500" />
               ) : (
-                <Tools className="h-5 w-5 text-gray-500" />
+                <Tool className="h-5 w-5 text-gray-500" />
               )}
             </Button>
           </DropdownMenuTrigger>
@@ -139,7 +139,8 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
         <Button 
           type="submit" 
           disabled={isLoading || !message.trim()} 
-          className="flex-shrink-0"
+          className="h-10 w-10"
+          size="icon"
         >
           {isLoading || isGeneratingImage ? (
             <Loader2 className="h-5 w-5 animate-spin" />
