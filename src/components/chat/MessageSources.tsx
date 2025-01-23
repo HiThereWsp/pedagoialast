@@ -6,18 +6,18 @@ interface MessageSourcesProps {
 }
 
 export const MessageSources = ({ sources, isWebSearch }: MessageSourcesProps) => {
-  console.log('MessageSources - sources:', sources); // Debug log
-  console.log('MessageSources - isWebSearch:', isWebSearch); // Debug log
+  console.log('MessageSources - sources:', sources);
+  console.log('MessageSources - isWebSearch:', isWebSearch);
 
   if (!sources.length || !isWebSearch) {
-    console.log('MessageSources - No sources to display'); // Debug log
+    console.log('MessageSources - No sources to display');
     return null;
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <p className="text-sm font-medium text-search-accent">Sources :</p>
-      <div className="space-y-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {sources.map((source) => (
           <WebSourcePreview key={source.id} url={source.url} />
         ))}
