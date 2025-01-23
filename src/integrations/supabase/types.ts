@@ -123,6 +123,30 @@ export type Database = {
         }
         Relationships: []
       }
+      image_generation_usage: {
+        Row: {
+          generated_at: string | null
+          id: string
+          image_url: string | null
+          prompt: string
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string | null
+          id?: string
+          image_url?: string | null
+          prompt: string
+          user_id: string
+        }
+        Update: {
+          generated_at?: string | null
+          id?: string
+          image_url?: string | null
+          prompt?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
