@@ -51,30 +51,25 @@ serve(async (req) => {
 
     const imageUrl = data.data[0].url
 
-    // Try to record usage but don't fail if it doesn't work
+    // Record usage in background without affecting response
     try {
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      )
-
-      await supabaseClient
-        .from('image_generation_usage')
-        .insert({
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/rest/v1/image_generation_usage`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           prompt,
           image_url: imageUrl,
-        })
-    } catch (error) {
-      console.error('Error recording usage:', error)
-      return new Response(
-        JSON.stringify({ 
-          image: imageUrl,
-          warning: 'Image generated successfully but failed to record usage'
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      })
+    } catch (error) {
+      // Just log the error but don't affect the response
+      console.error('Error recording usage:', error)
     }
 
+    // Return just the image URL
     return new Response(
       JSON.stringify({ image: imageUrl }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
