@@ -61,7 +61,9 @@ export const ChatInput = ({
     <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-100/20">
       <div className="max-w-[700px] mx-auto">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2 px-2">
+          <div className={`flex items-center gap-2 px-2 rounded-lg transition-all duration-300 ${
+            useWebSearch ? 'bg-gradient-to-r from-pink-300 via-orange-300 to-yellow-200 p-2' : ''
+          }`}>
             <Switch
               id="web-search"
               checked={useWebSearch}
