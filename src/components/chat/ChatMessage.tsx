@@ -3,9 +3,9 @@ import { useState } from "react"
 import { FeedbackButtons } from "./FeedbackButtons"
 import { MessageContent } from "./MessageContent"
 import { CitationSource } from "./CitationSource"
-import { Badge } from "@/components/ui/badge"
-import { Globe } from "lucide-react"
-import { WebSourcePreview } from "./WebSourcePreview"
+import { MessageHeader } from "./MessageHeader"
+import { MessageSources } from "./MessageSources"
+import { MessageAttachments } from "./MessageAttachments"
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -39,7 +39,6 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   };
 
   const formatMessage = (content: string) => {
-    // Supprime les marqueurs de source et le format robotique du message principal
     return content
       .replace(/Source \[\d+\]: https?:\/\/[^\s\n]+\n?/g, '')
       .replace(/Compréhension de la demande :\n/g, '')
@@ -64,14 +63,7 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
             ? 'bg-search-light border-2 border-search-accent/20 shadow-lg'
             : 'bg-gray-50/80 backdrop-blur-sm'
       )}>
-        {role === 'assistant' && isWebSearch && (
-          <div className="flex items-center gap-2 mb-3">
-            <Badge variant="secondary" className="bg-search-accent/10 text-search-accent flex items-center gap-1">
-              <Globe className="w-3 h-3" />
-              Recherche Web
-            </Badge>
-          </div>
-        )}
+        {role === 'assistant' && <MessageHeader isWebSearch={isWebSearch} />}
         
         <div className={cn(
           "whitespace-pre-wrap leading-relaxed",
@@ -93,33 +85,8 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
           />
         )}
 
-        {sources.length > 0 && role === 'assistant' && isWebSearch && (
-          <div className="mt-4 pt-3 border-t border-search-accent/20">
-            <p className="text-sm font-medium text-search-accent mb-2">Sources :</p>
-            <div className="space-y-1">
-              {sources.map((source, i) => (
-                <WebSourcePreview key={i} url={source.url} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {attachments && attachments.length > 0 && (
-          <div className="mt-4 space-y-2">
-            {attachments.map((attachment, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
-                <a 
-                  href={attachment.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 underline"
-                >
-                  {attachment.fileName}
-                </a>
-              </div>
-            ))}
-          </div>
-        )}
+        <MessageSources sources={sources} isWebSearch={isWebSearch} />
+        <MessageAttachments attachments={attachments} />
 
         {role === 'assistant' && (
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -128,5 +95,5 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
         )}
       </div>
     </div>
-  )
-}
+  );
+};
