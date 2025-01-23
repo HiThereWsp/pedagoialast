@@ -1,8 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Send, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Send, Image as ImageIcon, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 interface ChatInputProps {
   onSendMessage: (message: string, attachments?: Array<{ url: string; fileName?: string; fileType?: string }>) => void;
@@ -12,6 +18,7 @@ interface ChatInputProps {
 export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
   const [message, setMessage] = useState('');
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [activeOption, setActiveOption] = useState<'image' | 'search' | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
@@ -19,8 +26,17 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
     e.preventDefault();
     if (!message.trim() || isLoading) return;
     
-    onSendMessage(message);
+    if (activeOption === 'image') {
+      await handleGenerateImage();
+    } else if (activeOption === 'search') {
+      // Handle web search
+      onSendMessage(message, undefined);
+    } else {
+      onSendMessage(message);
+    }
+    
     setMessage('');
+    setActiveOption(null);
     
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -87,27 +103,45 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
       </div>
       
       <div className="flex gap-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="icon"
-          onClick={handleGenerateImage}
-          disabled={isGeneratingImage || !message.trim()}
-          className="flex-shrink-0"
-        >
-          {isGeneratingImage ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <ImageIcon className="h-5 w-5" />
-          )}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="flex-shrink-0"
+            >
+              {activeOption === 'image' ? (
+                <ImageIcon className="h-5 w-5 text-coral-400" />
+              ) : activeOption === 'search' ? (
+                <Search className="h-5 w-5 text-blue-500" />
+              ) : (
+                <ImageIcon className="h-5 w-5 text-gray-500" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setActiveOption('image')}>
+              <ImageIcon 
+                className={`mr-2 h-4 w-4 ${activeOption === 'image' ? 'text-coral-400' : 'text-gray-500'}`}
+              />
+              Générer une image
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setActiveOption('search')}>
+              <Search 
+                className={`mr-2 h-4 w-4 ${activeOption === 'search' ? 'text-blue-500' : 'text-gray-500'}`}
+              />
+              Recherche web
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Button 
           type="submit" 
           disabled={isLoading || !message.trim()} 
           className="flex-shrink-0"
         >
-          {isLoading ? (
+          {isLoading || isGeneratingImage ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
             <Send className="h-5 w-5" />
