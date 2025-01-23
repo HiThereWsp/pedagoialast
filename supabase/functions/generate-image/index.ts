@@ -21,7 +21,7 @@ serve(async (req) => {
 
     console.log('Generating image with prompt:', prompt)
 
-    // Call OpenAI API to generate image
+    // Call OpenAI API to generate image with all DALL-E 3 parameters
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -34,12 +34,12 @@ serve(async (req) => {
         n: 1,
         size: "1024x1024",
         quality: "standard",
+        style: "vivid", // Using vivid style for more dramatic images
         response_format: "url",
       }),
     })
 
     const data = await response.json()
-
     console.log('OpenAI API response:', data)
 
     if (!response.ok) {
