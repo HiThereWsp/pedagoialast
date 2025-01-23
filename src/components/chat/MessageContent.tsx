@@ -73,11 +73,9 @@ export const MessageContent = ({
         <div className="mt-4 space-y-2">
           {sources.map((source, index) => (
             <CitationSource 
-              key={index} 
+              key={index}
               citationId={index + 1}
-              title={source.title}
               url={source.url}
-              snippet={source.snippet}
             />
           ))}
         </div>
