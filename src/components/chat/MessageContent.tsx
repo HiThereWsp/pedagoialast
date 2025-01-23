@@ -11,9 +11,7 @@ interface MessageContentProps {
     fileType?: string;
   }>;
   sources?: Array<{
-    title: string;
     url: string;
-    snippet: string;
   }>;
   onCitationClick?: (citationNumber: number) => void;
   selectedCitation?: number | null;
