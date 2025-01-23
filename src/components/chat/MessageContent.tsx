@@ -15,9 +15,17 @@ interface MessageContentProps {
     url: string;
     snippet: string;
   }>;
+  onCitationClick?: (citationNumber: number) => void;
+  selectedCitation?: number | null;
 }
 
-export const MessageContent = ({ content, attachments, sources }: MessageContentProps) => {
+export const MessageContent = ({ 
+  content, 
+  attachments, 
+  sources,
+  onCitationClick,
+  selectedCitation 
+}: MessageContentProps) => {
   const sanitizedContent = DOMPurify.sanitize(content);
 
   return (
@@ -51,10 +59,10 @@ export const MessageContent = ({ content, attachments, sources }: MessageContent
           ol: ({ node, ...props }) => (
             <ol {...props} className="list-decimal pl-4 my-2" />
           ),
-          code: ({ node, inline, ...props }) => (
-            inline ? 
-              <code {...props} className="bg-gray-100 rounded px-1 py-0.5" /> :
-              <code {...props} className="block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto" />
+          code: ({ node, className, children, ...props }) => (
+            className ? 
+              <code {...props} className="bg-gray-100 rounded px-1 py-0.5">{children}</code> :
+              <code {...props} className="block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">{children}</code>
           )
         }}>
           {sanitizedContent}
@@ -64,7 +72,13 @@ export const MessageContent = ({ content, attachments, sources }: MessageContent
       {sources && sources.length > 0 && (
         <div className="mt-4 space-y-2">
           {sources.map((source, index) => (
-            <CitationSource key={index} {...source} />
+            <CitationSource 
+              key={index} 
+              citationId={index + 1}
+              title={source.title}
+              url={source.url}
+              snippet={source.snippet}
+            />
           ))}
         </div>
       )}

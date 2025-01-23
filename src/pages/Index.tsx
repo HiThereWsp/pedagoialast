@@ -15,7 +15,6 @@ export default function Index() {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  // Récupérer l'ID utilisateur depuis Supabase
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -46,16 +45,23 @@ export default function Index() {
     fetchUserProfile()
   }, [navigate])
 
-  // Utiliser le hook useChat
   const {
     messages,
     isLoading,
-    sendMessage,
+    sendMessage: originalSendMessage,
     conversations: chatConversations,
     loadConversationMessages,
     currentConversationId: activeChatId,
     deleteConversation
   } = useChat(userId)
+
+  // Wrapper for sendMessage to match ChatInput's expected signature
+  const handleSendMessage = async (
+    message: string, 
+    attachments?: Array<{ url: string; fileName?: string; fileType?: string }>
+  ) => {
+    await originalSendMessage(message)
+  }
 
   useEffect(() => {
     if (chatConversations) {
@@ -142,7 +148,7 @@ export default function Index() {
               </div>
             )}
             <ChatInput 
-              onSendMessage={sendMessage}
+              onSendMessage={handleSendMessage}
               isLoading={isLoading}
             />
           </div>
