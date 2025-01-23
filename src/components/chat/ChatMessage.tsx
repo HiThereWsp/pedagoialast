@@ -5,6 +5,7 @@ import { MessageContent } from "./MessageContent"
 import { CitationSource } from "./CitationSource"
 import { Badge } from "@/components/ui/badge"
 import { Globe } from "lucide-react"
+import { WebSourcePreview } from "./WebSourcePreview"
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -93,15 +94,7 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
             <p className="text-sm font-medium text-search-accent mb-2">Sources :</p>
             <div className="space-y-1">
               {sources.map((source, i) => (
-                <a 
-                  key={i}
-                  href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-gray-600 hover:text-search-accent block truncate"
-                >
-                  {source.url}
-                </a>
+                <WebSourcePreview key={i} url={source.url} />
               ))}
             </div>
           </div>
