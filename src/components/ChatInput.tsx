@@ -1,9 +1,10 @@
 import { useState } from "react"
-import { Send, Globe } from "lucide-react"
+import { Send, Globe, Image } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { supabase } from "@/integrations/supabase/client"
 
 interface ChatInputProps {
   onSendMessage: (message: string, useWebSearch?: boolean) => Promise<void>
@@ -20,6 +21,7 @@ export const ChatInput = ({
 }: ChatInputProps) => {
   const [message, setMessage] = useState(value || "")
   const [useWebSearch, setUseWebSearch] = useState(false)
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false)
   const isMobile = useIsMobile()
   const { toast } = useToast()
 
@@ -40,6 +42,41 @@ export const ChatInput = ({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'envoi du message",
       })
+    }
+  }
+
+  const handleGenerateImage = async () => {
+    if (message.trim() === "") {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Veuillez entrer une description pour l'image",
+      })
+      return
+    }
+
+    setIsGeneratingImage(true)
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: { prompt: message }
+      })
+
+      if (error) throw error
+
+      await onSendMessage(`![Generated Image](${data.image})`)
+      setMessage("")
+      if (onChange) {
+        onChange("")
+      }
+    } catch (error) {
+      console.error("Error generating image:", error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération de l'image",
+      })
+    } finally {
+      setIsGeneratingImage(false)
     }
   }
 
@@ -86,13 +123,22 @@ export const ChatInput = ({
               onKeyDown={handleKeyDown}
               placeholder="Saisissez votre message ici"
               className="w-full px-4 py-3 rounded-xl focus:outline-none disabled:opacity-50"
-              disabled={isLoading}
+              disabled={isLoading || isGeneratingImage}
             />
             
-            <div className="px-3">
+            <div className="flex items-center px-3 gap-2">
+              <button
+                type="button"
+                onClick={handleGenerateImage}
+                disabled={message.trim() === "" || isLoading || isGeneratingImage}
+                className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Générer une image"
+              >
+                <Image size={20} />
+              </button>
               <button
                 type="submit"
-                disabled={message.trim() === "" || isLoading}
+                disabled={message.trim() === "" || isLoading || isGeneratingImage}
                 className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Envoyer le message"
               >
