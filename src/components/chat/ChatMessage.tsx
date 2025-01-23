@@ -52,7 +52,7 @@ export const ChatMessage = ({ role, content, index, attachments }: ChatMessagePr
         "rounded-2xl p-4",
         role === 'user' 
           ? 'bg-[#6366F1] text-white' 
-          : 'bg-gray-100'
+          : 'bg-gray-50'
       )}>
         <div className={cn(
           "whitespace-pre-wrap leading-relaxed",
@@ -92,7 +92,9 @@ export const ChatMessage = ({ role, content, index, attachments }: ChatMessagePr
         )}
 
         {role === 'assistant' && (
-          <FeedbackButtons messageId={index} content={content} />
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <FeedbackButtons messageId={index} content={content} />
+          </div>
         )}
       </div>
     </div>

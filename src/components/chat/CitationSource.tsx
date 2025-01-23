@@ -5,15 +5,15 @@ interface CitationSourceProps {
 
 export const CitationSource = ({ citationId, url }: CitationSourceProps) => {
   return (
-    <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <h4 className="font-semibold text-sm text-gray-700 mb-2">Source [{citationId}]</h4>
-      <a 
-        href={url} 
-        target="_blank" 
+    <div className="mt-2 text-sm">
+      <a
+        href={url}
+        target="_blank"
         rel="noopener noreferrer"
-        className="text-sm text-blue-600 hover:text-blue-800 hover:underline break-all"
+        className="text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-2 bg-white/50 p-2 rounded-xl"
       >
-        {url}
+        <span className="font-medium">Source [{citationId}]</span>
+        <span className="truncate flex-1">{url}</span>
       </a>
     </div>
   );
