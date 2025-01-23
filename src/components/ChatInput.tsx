@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Send, Search } from 'lucide-react';
+import { Loader2, Send, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ChatInputProps {
@@ -68,7 +68,7 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
           onClick={toggleSearchMode}
           disabled={isLoading}
         >
-          <Search className={`h-5 w-5 ${isSearchMode ? 'text-orange-600' : 'text-gray-500'}`} />
+          <Globe className={`h-5 w-5 ${isSearchMode ? 'text-orange-600' : 'text-gray-500'}`} />
         </Button>
 
         <Button 
