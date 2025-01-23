@@ -7,4 +7,5 @@ export interface ChatMessage {
     fileType: string;
     filePath: string;
   }>;
+  isWebSearch?: boolean;
 }

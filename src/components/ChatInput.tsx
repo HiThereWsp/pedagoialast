@@ -4,7 +4,7 @@ import { Loader2, Send, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ChatInputProps {
-  onSendMessage: (message: string, attachments?: Array<{ url: string; fileName?: string; fileType?: string }>) => void;
+  onSendMessage: (message: string, attachments?: Array<{ url: string; fileName?: string; fileType?: string }>, useWebSearch?: boolean) => void;
   isLoading?: boolean;
 }
 
@@ -18,7 +18,7 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
     e.preventDefault();
     if (!message.trim() || isLoading) return;
     
-    onSendMessage(message, undefined);
+    onSendMessage(message, undefined, isSearchMode);
     setMessage('');
     
     if (textareaRef.current) {

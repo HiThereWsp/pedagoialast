@@ -58,9 +58,10 @@ export default function Index() {
   // Wrapper for sendMessage to match ChatInput's expected signature
   const handleSendMessage = async (
     message: string, 
-    attachments?: Array<{ url: string; fileName?: string; fileType?: string }>
+    attachments?: Array<{ url: string; fileName?: string; fileType?: string }>,
+    useWebSearch?: boolean
   ) => {
-    await originalSendMessage(message)
+    await originalSendMessage(message, useWebSearch)
   }
 
   useEffect(() => {
