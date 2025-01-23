@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client"
 export const useMessageManagement = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [conversationContext, setConversationContext] = useState<string>("")
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
@@ -27,6 +28,13 @@ export const useMessageManagement = (userId: string | null) => {
           attachments: msg.attachments as ChatMessage['attachments']
         }))
         setMessages(formattedMessages)
+        
+        // Build conversation context from previous messages
+        const context = formattedMessages
+          .map(msg => `${msg.role}: ${msg.content}`)
+          .join('\n')
+        setConversationContext(context)
+        console.log("Loaded conversation context:", context)
       }
     } catch (error) {
       console.error("Error in loadConversationMessages:", error)
@@ -63,12 +71,13 @@ export const useMessageManagement = (userId: string | null) => {
         throw insertError
       }
 
+      // Include conversation context in the function call
       let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
       
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: { 
           message: userMessage, 
-          context,
+          context: conversationContext, // Send full conversation context
           attachments: attachments?.map(a => ({
             url: a.url,
             fileName: a.fileName,
@@ -96,7 +105,13 @@ export const useMessageManagement = (userId: string | null) => {
         throw aiInsertError
       }
 
-      // Reload messages from the database instead of updating state directly
+      // Update conversation context with new messages
+      const updatedContext = conversationContext + 
+        `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
+      setConversationContext(updatedContext)
+      console.log("Updated conversation context:", updatedContext)
+
+      // Reload messages from the database
       await loadConversationMessages(conversationId)
 
       return aiResponse
@@ -113,6 +128,7 @@ export const useMessageManagement = (userId: string | null) => {
     setMessages,
     isLoading,
     loadConversationMessages,
-    sendMessage
+    sendMessage,
+    conversationContext
   }
 }
