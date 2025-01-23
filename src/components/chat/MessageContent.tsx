@@ -37,22 +37,27 @@ export const MessageContent = ({ content, onCitationClick, selectedCitation }: M
             {children}
           </ol>
         ),
-        li: ({ children, ordered }) => (
+        li: ({ children, ...props }) => (
           <li className="relative flex gap-2">
-            {!ordered && (
+            {!props.ordered && (
               <span className="absolute left-[-1.25rem] top-[0.6rem] w-1.5 h-1.5 bg-gray-400 rounded-full flex-shrink-0" />
             )}
             <span className="flex-grow">{children}</span>
           </li>
         ),
         a: ({ children, href }) => {
+          // Gérer les citations au format [X]
           const citationMatch = href?.match(/\[(\d+)\]/);
           if (citationMatch) {
             const citationNumber = parseInt(citationMatch[1]);
             return (
               <button
                 onClick={() => onCitationClick(citationNumber)}
-                className="inline-flex items-center text-blue-600 hover:text-blue-800 hover:underline"
+                className={`inline-flex items-center ${
+                  selectedCitation === citationNumber 
+                    ? 'text-blue-800 font-semibold' 
+                    : 'text-blue-600'
+                } hover:text-blue-800 hover:underline`}
               >
                 [{citationNumber}]
               </button>
