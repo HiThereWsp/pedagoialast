@@ -15,7 +15,7 @@ export function SidebarHeader({ firstName, onNewConversation }: SidebarHeaderPro
           <Button 
             variant="ghost"
             size="icon"
-            className="w-full flex items-center justify-center rounded-2xl bg-gray-100/80 hover:bg-gray-200/80"
+            className="h-10 w-10 flex items-center justify-center rounded-2xl bg-gray-100/80 hover:bg-gray-200/80"
             onClick={onNewConversation}
           >
             <Plus className="h-5 w-5 text-gray-600" />
