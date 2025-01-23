@@ -7,12 +7,14 @@ interface WebSourcePreviewProps {
 
 export const WebSourcePreview = ({ url }: WebSourcePreviewProps) => {
   const [imageError, setImageError] = useState(false);
+  console.log('WebSourcePreview - url:', url); // Debug log
 
   const getDomainFromUrl = (url: string) => {
     try {
       const domain = new URL(url).hostname;
       return domain.replace(/^www\./, '');
     } catch {
+      console.error('Invalid URL:', url); // Debug log
       return url;
     }
   };
@@ -22,19 +24,20 @@ export const WebSourcePreview = ({ url }: WebSourcePreviewProps) => {
       const domain = new URL(url).origin;
       return `${domain}/favicon.ico`;
     } catch {
+      console.error('Invalid URL for favicon:', url); // Debug log
       return '';
     }
   };
 
   const domain = getDomainFromUrl(url);
   const faviconUrl = getFaviconUrl(url);
-
+  
   return (
     <a
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-2 p-2 rounded-lg hover:bg-search-light transition-colors duration-200 group"
+      className="flex items-center gap-2 p-2 rounded-lg hover:bg-search-light transition-colors duration-200 group cursor-pointer"
     >
       <div className="w-4 h-4 flex-shrink-0 flex items-center justify-center">
         {!imageError ? (

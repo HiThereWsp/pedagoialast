@@ -36,18 +36,24 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
       });
     }
     
+    console.log('Extracted sources:', sources); // Debug log
     return sources;
   };
 
   const formatMessage = (content: string) => {
-    // Nettoyer le message en retirant les références aux sources
-    return content
+    // Nettoyer le message en retirant les références aux sources tout en gardant les citations
+    const formattedContent = content
       .replace(/(?:Source )?\[(\d+)\]:\s*https?:\/\/[^\s\n]+\n?/g, '')
-      .replace(/\[(\d+)\]/g, '[$1]') // Garder les citations dans le texte
+      .replace(/\[(\d+)\]/g, (match) => `[${match.slice(1, -1)}]`)
       .trim();
+    
+    console.log('Formatted content:', formattedContent); // Debug log
+    return formattedContent;
   };
 
   const sources = extractSources(content);
+  console.log('Is web search?', isWebSearch); // Debug log
+  console.log('Sources length:', sources.length); // Debug log
 
   return (
     <div className={cn(
@@ -85,7 +91,9 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
         )}
 
         {sources.length > 0 && isWebSearch && (
-          <MessageSources sources={sources} isWebSearch={isWebSearch} />
+          <div className="mt-4 pt-3 border-t border-search-accent/20">
+            <MessageSources sources={sources} isWebSearch={isWebSearch} />
+          </div>
         )}
 
         <MessageAttachments attachments={attachments} />
