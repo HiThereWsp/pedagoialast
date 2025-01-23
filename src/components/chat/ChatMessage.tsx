@@ -24,14 +24,15 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
 
   const extractSources = (text: string) => {
-    const sourceRegex = /Source \[(\d+)\]: (http[s]?:\/\/[^\s]+)/g;
+    // Mise à jour de la regex pour capturer l'URL complète
+    const sourceRegex = /Source \[(\d+)\]: (https?:\/\/[^\s\n]+)/g;
     const sources: { id: number; url: string }[] = [];
     let match;
     
     while ((match = sourceRegex.exec(text)) !== null) {
       sources.push({
         id: parseInt(match[1]),
-        url: match[2]
+        url: match[2].trim()
       });
     }
     
@@ -39,10 +40,12 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   };
 
   const formatMessage = (content: string) => {
+    // Supprime les marqueurs de source du message principal
     return content
-      .replace(/###/g, "")
-      .replace(/\*\*/g, "**")
-      .trim()
+      .replace(/Source \[\d+\]: https?:\/\/[^\s\n]+\n?/g, '')
+      .replace(/###/g, '')
+      .replace(/\*\*/g, '**')
+      .trim();
   };
 
   const sources = extractSources(content);
