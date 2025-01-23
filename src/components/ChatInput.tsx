@@ -1,6 +1,4 @@
 import { useState } from "react"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
 import { Send, Globe } from "lucide-react"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useToast } from "@/hooks/use-toast"
@@ -25,7 +23,8 @@ export const ChatInput = ({
   const isMobile = useIsMobile()
   const { toast } = useToast()
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     if (message.trim() === "") return
     
     try {
@@ -60,7 +59,7 @@ export const ChatInput = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-100/20">
-      <div className="max-w-[700px] mx-auto px-2">
+      <div className="max-w-[700px] mx-auto">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2 px-2">
             <Switch
@@ -74,23 +73,34 @@ export const ChatInput = ({
             </Label>
           </div>
           
-          <div className="flex items-end gap-4 bg-gradient-to-r from-[#FFDEE2]/20 to-[#FEF7CD]/20 p-4 rounded-2xl border border-[#FFDEE2]/30 shadow-premium hover:shadow-premium-lg transition-all duration-300">
-            <Textarea
+          <form 
+            onSubmit={handleSubmit}
+            className="relative flex items-center w-full bg-white rounded-xl border border-gray-200 shadow-sm"
+          >
+            <input
+              type="text"
               value={message}
               onChange={(e) => handleChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Écrivez votre message ici..."
-              className="min-h-[60px] max-h-[200px] resize-none flex-1 bg-white/50 border-none focus-visible:ring-0 shadow-inner"
+              placeholder="Saisissez votre message ici"
+              className="w-full px-4 py-3 rounded-xl focus:outline-none disabled:opacity-50"
               disabled={isLoading}
             />
-            <Button 
-              onClick={handleSubmit}
-              disabled={message.trim() === "" || isLoading}
-              size="icon"
-              className="shrink-0 bg-[#FFDEE2] hover:bg-[#FFDEE2]/80 text-gray-700 shadow-premium hover:shadow-premium-lg transition-all duration-300"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+            
+            <div className="px-3">
+              <button
+                type="submit"
+                disabled={message.trim() === "" || isLoading}
+                className="p-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Envoyer le message"
+              >
+                <Send size={20} />
+              </button>
+            </div>
+          </form>
+          
+          <div className="mt-2 text-xs text-gray-400 text-center px-4">
+            Obtenez des réponses en temps réel en activant la recherche web avancée et accéder à l'actualité et des milliers de ressources en ligne.
           </div>
         </div>
       </div>
