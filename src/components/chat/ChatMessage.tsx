@@ -51,12 +51,12 @@ export const ChatMessage = ({ role, content, index, attachments }: ChatMessagePr
       <div className={cn(
         "rounded-2xl p-4",
         role === 'user' 
-          ? 'bg-[#6366F1] text-white' 
-          : 'bg-gray-50'
+          ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-gray-800' 
+          : 'bg-gray-50/80 backdrop-blur-sm'
       )}>
         <div className={cn(
           "whitespace-pre-wrap leading-relaxed",
-          role === 'user' ? 'text-white' : 'text-gray-800'
+          role === 'user' ? 'text-gray-800' : 'text-gray-800'
         )}>
           <MessageContent 
             content={formatMessage(content)}

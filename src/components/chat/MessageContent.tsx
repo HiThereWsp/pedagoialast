@@ -55,9 +55,9 @@ export const MessageContent = ({ content, onCitationClick, selectedCitation }: M
                 onClick={() => onCitationClick(citationNumber)}
                 className={`inline-flex items-center ${
                   selectedCitation === citationNumber 
-                    ? 'text-blue-800 font-semibold' 
-                    : 'text-blue-600'
-                } hover:text-blue-800 hover:underline`}
+                    ? 'text-amber-800 font-semibold' 
+                    : 'text-amber-600'
+                } hover:text-amber-800 hover:underline`}
               >
                 [{citationNumber}]
               </button>
@@ -72,7 +72,7 @@ export const MessageContent = ({ content, onCitationClick, selectedCitation }: M
                 href={href} 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                className="text-blue-600 hover:text-blue-800 hover:underline break-words"
+                className="text-amber-600 hover:text-amber-800 hover:underline break-words"
               >
                 {children}
               </a>
@@ -81,7 +81,7 @@ export const MessageContent = ({ content, onCitationClick, selectedCitation }: M
 
           // Pour tout autre type de lien
           return (
-            <span className="text-blue-600">
+            <span className="text-amber-600">
               {children}
             </span>
           );
