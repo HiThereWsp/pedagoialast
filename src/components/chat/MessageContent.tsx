@@ -28,19 +28,21 @@ export const MessageContent = ({ content, onCitationClick, selectedCitation }: M
           </h3>
         ),
         ul: ({ children }) => (
-          <ul className="mb-4 pl-6 space-y-2">
+          <ul className="mb-4 space-y-1 list-none pl-5">
             {children}
           </ul>
         ),
         ol: ({ children }) => (
-          <ol className="mb-4 pl-6 list-decimal space-y-2">
+          <ol className="mb-4 pl-5 list-decimal space-y-1">
             {children}
           </ol>
         ),
-        li: ({ children }) => (
-          <li className="relative pl-2">
-            <span className="absolute left-[-1rem] top-[0.6rem] w-2 h-2 bg-[#FFDEE2] rounded-full"></span>
-            {children}
+        li: ({ children, ordered }) => (
+          <li className="relative flex gap-2">
+            {!ordered && (
+              <span className="absolute left-[-1.25rem] top-[0.6rem] w-1.5 h-1.5 bg-gray-400 rounded-full flex-shrink-0" />
+            )}
+            <span className="flex-grow">{children}</span>
           </li>
         ),
         a: ({ children, href }) => {
@@ -57,7 +59,12 @@ export const MessageContent = ({ content, onCitationClick, selectedCitation }: M
             );
           }
           return (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 hover:underline">
+            <a 
+              href={href} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-blue-600 hover:text-blue-800 hover:underline"
+            >
               {children}
             </a>
           );
