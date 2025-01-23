@@ -47,13 +47,6 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      const userChatMessage: ChatMessage = { 
-        role: 'user', 
-        content: userMessage,
-        attachments 
-      }
-      setMessages(prev => [...prev, userChatMessage])
-
       const { error: insertError } = await supabase
         .from('chats')
         .insert([{
@@ -103,8 +96,8 @@ export const useMessageManagement = (userId: string | null) => {
         throw aiInsertError
       }
 
-      const aiChatMessage: ChatMessage = { role: 'assistant', content: aiResponse }
-      setMessages(prev => [...prev, aiChatMessage])
+      // Reload messages from the database instead of updating state directly
+      await loadConversationMessages(conversationId)
 
       return aiResponse
     } catch (error) {
