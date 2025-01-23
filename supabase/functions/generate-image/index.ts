@@ -19,6 +19,8 @@ serve(async (req) => {
       throw new Error('No prompt provided')
     }
 
+    console.log('Generating image with prompt:', prompt)
+
     // Call OpenAI API to generate image
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -30,11 +32,15 @@ serve(async (req) => {
         model: "dall-e-3",
         prompt,
         n: 1,
-        size: "1024x1024"
+        size: "1024x1024",
+        quality: "standard",
+        response_format: "url",
       }),
     })
 
     const data = await response.json()
+
+    console.log('OpenAI API response:', data)
 
     if (!response.ok) {
       console.error('OpenAI API error:', data)
