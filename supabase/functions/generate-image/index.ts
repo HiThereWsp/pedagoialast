@@ -19,6 +19,18 @@ serve(async (req) => {
 
     console.log('Generating image with prompt:', prompt)
 
+    // Construct the system prompt
+    const systemPrompt = `You are DALL-E, an AI image generation model. 
+    Your task is to create high-quality, detailed images based on user prompts.
+    You should:
+    - Generate images that are safe and appropriate
+    - Follow the user's prompt precisely
+    - Add artistic details when appropriate
+    - Maintain consistency in style and quality
+    Current prompt: ${prompt}`
+
+    console.log('System prompt:', systemPrompt)
+
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
