@@ -1,13 +1,9 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
-
-interface RequestBody {
-  prompt: string
 }
 
 serve(async (req) => {
@@ -17,63 +13,18 @@ serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    )
-
-    // Get the authorization header from the request
-    const authHeader = req.headers.get('Authorization')
-    if (!authHeader) {
-      throw new Error('No authorization header')
+    const { prompt } = await req.json()
+    
+    if (!prompt) {
+      throw new Error('No prompt provided')
     }
 
-    // Get the user from the auth header
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    )
-
-    if (userError || !user) {
-      console.error('Error getting user:', userError)
-      throw new Error('Error getting user')
-    }
-
-    // Get the request body
-    const { prompt } = await req.json() as RequestBody
-
-    // Check weekly usage
-    const weekStart = new Date()
-    weekStart.setDate(weekStart.getDate() - 7)
-
-    const { data: usageData, error: usageError } = await supabaseClient
-      .from('image_generation_usage')
-      .select('id')
-      .eq('user_id', user.id)
-      .gte('generated_at', weekStart.toISOString())
-
-    if (usageError) {
-      console.error('Error checking usage:', usageError)
-      throw new Error('Error checking usage')
-    }
-
-    if (usageData.length >= 3) {
-      return new Response(
-        JSON.stringify({ 
-          error: 'Weekly limit reached. You can generate up to 3 images per week.' 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 429 
-        }
-      )
-    }
-
-    // Generate image with DALL-E
+    // Call OpenAI API to generate image
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         model: "dall-e-3",
@@ -86,23 +37,41 @@ serve(async (req) => {
     const data = await response.json()
 
     if (!response.ok) {
-      console.error('OpenAI API error:', data.error)
-      throw new Error(data.error?.message || 'Error generating image')
+      console.error('OpenAI API error:', data)
+      throw new Error(data.error?.message || 'Failed to generate image')
     }
 
-    // Record usage with better error handling
-    const { error: insertError } = await supabaseClient
-      .from('image_generation_usage')
-      .insert({
-        user_id: user.id,
-        prompt,
-        image_url: data.data[0].url,
-        generated_at: new Date().toISOString()
-      })
+    if (!data.data?.[0]?.url) {
+      console.error('No image URL in response:', data)
+      throw new Error('No image URL received from OpenAI')
+    }
 
-    if (insertError) {
-      console.error('Error recording usage:', insertError)
-      // Log the error but don't throw, still return the generated image
+    // Try to record usage but don't fail if it doesn't work
+    try {
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      )
+
+      const { error: insertError } = await supabaseClient
+        .from('image_generation_usage')
+        .insert({
+          prompt,
+          image_url: data.data[0].url,
+        })
+
+      if (insertError) {
+        console.error('Error recording usage:', insertError)
+        return new Response(
+          JSON.stringify({ 
+            image: data.data[0].url,
+            warning: 'Image generated successfully but failed to record usage'
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } catch (error) {
+      console.error('Error recording usage:', error)
       return new Response(
         JSON.stringify({ 
           image: data.data[0].url,
@@ -120,7 +89,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('Function error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message || 'An unexpected error occurred'
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
