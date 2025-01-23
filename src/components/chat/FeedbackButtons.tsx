@@ -62,8 +62,8 @@ export const FeedbackButtons = ({ messageId, content }: FeedbackButtonsProps) =>
       <button
         onClick={() => handleFeedback('like')}
         className={cn(
-          "rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-emerald-500",
-          feedbackScore === 1 && "text-emerald-500"
+          "rounded p-1 text-gray-400 hover:bg-gray-50 hover:text-gray-600",
+          feedbackScore === 1 && "text-gray-600"
         )}
         aria-label="J'aime"
       >
@@ -72,8 +72,8 @@ export const FeedbackButtons = ({ messageId, content }: FeedbackButtonsProps) =>
       <button
         onClick={() => handleFeedback('dislike')}
         className={cn(
-          "rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-500",
-          feedbackScore === -1 && "text-red-500"
+          "rounded p-1 text-gray-400 hover:bg-gray-50 hover:text-gray-600",
+          feedbackScore === -1 && "text-gray-600"
         )}
         aria-label="Je n'aime pas"
       >
@@ -82,8 +82,8 @@ export const FeedbackButtons = ({ messageId, content }: FeedbackButtonsProps) =>
       <button
         onClick={handleCopy}
         className={cn(
-          "rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-500",
-          isCopied && "text-blue-500"
+          "rounded p-1 text-gray-400 hover:bg-gray-50 hover:text-gray-600",
+          isCopied && "text-gray-600"
         )}
         aria-label="Copier le message"
       >
