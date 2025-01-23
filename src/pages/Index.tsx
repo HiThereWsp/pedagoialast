@@ -14,40 +14,72 @@ export default function Index() {
   const [firstName, setFirstName] = useState("")
   const navigate = useNavigate()
   const { toast } = useToast()
-
   const [userId, setUserId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const checkSession = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) {
+        setIsLoading(true)
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Session error:', error)
           navigate('/login')
           return
         }
 
-        setUserId(user.id)
+        if (!session) {
+          console.log('No active session found')
+          navigate('/login')
+          return
+        }
 
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('first_name')
-          .eq('id', user.id)
-          .single()
+        // Set up auth state change listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+          async (event, currentSession) => {
+            console.log('Auth state changed:', event)
+            if (event === 'SIGNED_OUT' || !currentSession) {
+              navigate('/login')
+              return
+            }
+          }
+        )
 
-        if (profile) {
-          setFirstName(profile.first_name)
+        // Fetch user profile
+        if (session.user) {
+          setUserId(session.user.id)
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('first_name')
+            .eq('id', session.user.id)
+            .single()
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError)
+          } else if (profile) {
+            setFirstName(profile.first_name)
+          }
+        }
+
+        // Cleanup subscription on unmount
+        return () => {
+          subscription.unsubscribe()
         }
       } catch (error) {
-        console.error('Error fetching user profile:', error)
+        console.error('Error checking session:', error)
+        navigate('/login')
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    fetchUserProfile()
+    checkSession()
   }, [navigate])
 
   const {
     messages,
-    isLoading,
+    isLoading: chatLoading,
     sendMessage: originalSendMessage,
     conversations: chatConversations,
     loadConversationMessages,
@@ -55,7 +87,6 @@ export default function Index() {
     deleteConversation
   } = useChat(userId)
 
-  // Wrapper for sendMessage to match ChatInput's expected signature
   const handleSendMessage = async (
     message: string, 
     attachments?: Array<{ url: string; fileName?: string; fileType?: string }>,
@@ -78,7 +109,15 @@ export default function Index() {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      
+      // Clear any local state
+      setUserId(null)
+      setFirstName("")
+      setConversations([])
+      setCurrentConversationId("")
+      
       navigate('/login')
     } catch (error) {
       console.error('Error signing out:', error)
@@ -116,6 +155,14 @@ export default function Index() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
   return (
     <>
       <SEO 
@@ -136,7 +183,7 @@ export default function Index() {
           <div className="flex h-full flex-col">
             {messages && messages.length > 0 ? (
               <div className="flex-1 overflow-y-auto p-4">
-                <ChatHistory messages={messages} isLoading={isLoading} />
+                <ChatHistory messages={messages} isLoading={chatLoading} />
               </div>
             ) : (
               <div className="flex h-full items-center justify-center flex-col">
@@ -150,7 +197,7 @@ export default function Index() {
             )}
             <ChatInput 
               onSendMessage={handleSendMessage}
-              isLoading={isLoading}
+              isLoading={chatLoading}
             />
           </div>
         </main>
