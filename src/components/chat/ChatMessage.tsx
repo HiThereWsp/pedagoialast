@@ -2,10 +2,7 @@ import { cn } from "@/lib/utils"
 import { useState } from "react"
 import { FeedbackButtons } from "./FeedbackButtons"
 import { MessageContent } from "./MessageContent"
-import { CitationSource } from "./CitationSource"
 import { MessageHeader } from "./MessageHeader"
-import { MessageSources } from "./MessageSources"
-import { MessageAttachments } from "./MessageAttachments"
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -57,13 +54,13 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
         role === 'user' 
           ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-gray-800' 
           : isWebSearch 
-            ? 'bg-search-light border-2 border-search-accent/20 shadow-lg'
+            ? 'bg-search-light border border-search-accent/20'
             : 'bg-gray-50/80 backdrop-blur-sm'
       )}>
         {role === 'assistant' && <MessageHeader isWebSearch={isWebSearch} />}
         
         <div className={cn(
-          "whitespace-pre-wrap leading-relaxed",
+          "leading-relaxed",
           role === 'user' ? 'text-gray-800' : 'text-gray-800'
         )}>
           <MessageContent 
