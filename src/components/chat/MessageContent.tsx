@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import DOMPurify from 'dompurify';
+import Linkify from 'react-linkify';
 import { CitationSource } from './CitationSource';
 
 interface MessageContentProps {
@@ -26,6 +27,12 @@ export const MessageContent = ({
 }: MessageContentProps) => {
   const sanitizedContent = DOMPurify.sanitize(content);
 
+  const componentDecorator = (href: string, text: string, key: number) => (
+    <a href={href} key={key} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+      {text}
+    </a>
+  );
+
   return (
     <div className="space-y-4">
       {attachments?.map((attachment, index) => {
@@ -44,31 +51,34 @@ export const MessageContent = ({
       })}
       
       <div className="prose prose-sm max-w-none prose-pre:bg-gray-800 prose-pre:text-gray-100">
-        <ReactMarkdown components={{
-          a: ({ node, ...props }) => (
-            <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800" />
-          ),
-          li: ({ node, ...props }) => (
-            <li {...props} className="my-0" />
-          ),
-          ul: ({ node, ...props }) => (
-            <ul {...props} className="list-disc pl-4 my-2" />
-          ),
-          ol: ({ node, ...props }) => (
-            <ol {...props} className="list-decimal pl-4 my-2" />
-          ),
-          code: ({ node, className, children, ...props }) => (
-            className ? 
-              <code {...props} className="bg-gray-100 rounded px-1 py-0.5">{children}</code> :
-              <code {...props} className="block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">{children}</code>
-          )
-        }}>
-          {sanitizedContent}
-        </ReactMarkdown>
+        <Linkify componentDecorator={componentDecorator}>
+          <ReactMarkdown components={{
+            a: ({ node, ...props }) => (
+              <a {...props} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800" />
+            ),
+            li: ({ node, ...props }) => (
+              <li {...props} className="my-0" />
+            ),
+            ul: ({ node, ...props }) => (
+              <ul {...props} className="list-disc pl-4 my-2" />
+            ),
+            ol: ({ node, ...props }) => (
+              <ol {...props} className="list-decimal pl-4 my-2" />
+            ),
+            code: ({ node, className, children, ...props }) => (
+              className ? 
+                <code {...props} className="bg-gray-100 rounded px-1 py-0.5">{children}</code> :
+                <code {...props} className="block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">{children}</code>
+            )
+          }}>
+            {sanitizedContent}
+          </ReactMarkdown>
+        </Linkify>
       </div>
 
       {sources && sources.length > 0 && (
         <div className="mt-4 space-y-2">
+          <p className="text-sm font-medium text-search-accent">Sources :</p>
           {sources.map((source, index) => (
             <CitationSource 
               key={index}

@@ -24,7 +24,6 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
 
   const extractSources = (text: string) => {
-    // Amélioration du regex pour capturer les différents formats de sources
     const sourceRegex = /(?:Source )?\[(\d+)\]:\s*(https?:\/\/[^\s\n]+)/g;
     const sources: { id: number; url: string }[] = [];
     let match;
@@ -36,24 +35,17 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
       });
     }
     
-    console.log('Extracted sources:', sources); // Debug log
     return sources;
   };
 
   const formatMessage = (content: string) => {
-    // Nettoyer le message en retirant les références aux sources tout en gardant les citations
-    const formattedContent = content
+    return content
       .replace(/(?:Source )?\[(\d+)\]:\s*https?:\/\/[^\s\n]+\n?/g, '')
-      .replace(/\[(\d+)\]/g, (match) => `[${match.slice(1, -1)}]`)
       .trim();
-    
-    console.log('Formatted content:', formattedContent); // Debug log
-    return formattedContent;
   };
 
   const sources = extractSources(content);
-  console.log('Is web search?', isWebSearch); // Debug log
-  console.log('Sources length:', sources.length); // Debug log
+  const formattedContent = formatMessage(content);
 
   return (
     <div className={cn(
@@ -75,28 +67,15 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
           role === 'user' ? 'text-gray-800' : 'text-gray-800'
         )}>
           <MessageContent 
-            content={formatMessage(content)}
+            content={formattedContent}
+            attachments={attachments}
+            sources={sources.map(s => ({ url: s.url }))}
             onCitationClick={(citationNumber) => 
               setSelectedCitation(selectedCitation === citationNumber ? null : citationNumber)
             }
             selectedCitation={selectedCitation}
           />
         </div>
-
-        {selectedCitation && sources.find(s => s.id === selectedCitation) && (
-          <CitationSource 
-            citationId={selectedCitation}
-            url={sources.find(s => s.id === selectedCitation)!.url}
-          />
-        )}
-
-        {sources.length > 0 && isWebSearch && (
-          <div className="mt-4 pt-3 border-t border-search-accent/20">
-            <MessageSources sources={sources} isWebSearch={isWebSearch} />
-          </div>
-        )}
-
-        <MessageAttachments attachments={attachments} />
 
         {role === 'assistant' && (
           <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
