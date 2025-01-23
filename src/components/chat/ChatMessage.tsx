@@ -33,6 +33,7 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
       });
     }
     
+    console.log('Extracted sources:', sources); // Debug log
     return sources;
   };
 
@@ -44,6 +45,8 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
 
   const sources = extractSources(content);
   const formattedContent = formatMessage(content);
+
+  console.log('Message props:', { role, isWebSearch, sourcesLength: sources.length }); // Debug log
 
   return (
     <div className={cn(

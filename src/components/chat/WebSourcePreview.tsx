@@ -29,6 +29,8 @@ export const WebSourcePreview = ({ url }: WebSourcePreviewProps) => {
     }
   };
 
+  console.log('WebSourcePreview props:', { url, domain: getDomainFromUrl(url) }); // Debug log
+
   const domain = getDomainFromUrl(url);
   const faviconUrl = getFaviconUrl(url);
   
@@ -48,7 +50,10 @@ export const WebSourcePreview = ({ url }: WebSourcePreviewProps) => {
                   src={faviconUrl}
                   alt={`${domain} favicon`}
                   className="w-4 h-4 object-contain"
-                  onError={() => setImageError(true)}
+                  onError={() => {
+                    console.log('Favicon load error for:', url); // Debug log
+                    setImageError(true);
+                  }}
                 />
               ) : (
                 <Globe className="w-4 h-4 text-search-accent" />
