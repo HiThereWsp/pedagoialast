@@ -1,14 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Send, Image as ImageIcon, Search, Wrench } from 'lucide-react';
+import { Loader2, Send, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 
 interface ChatInputProps {
   onSendMessage: (message: string, attachments?: Array<{ url: string; fileName?: string; fileType?: string }>) => void;
@@ -17,75 +10,19 @@ interface ChatInputProps {
 
 export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
   const [message, setMessage] = useState('');
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [activeOption, setActiveOption] = useState<'image' | 'search' | null>(null);
+  const [isSearchMode, setIsSearchMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || isLoading || isGeneratingImage) return;
+    if (!message.trim() || isLoading) return;
     
-    if (activeOption === 'image') {
-      await handleGenerateImage();
-    } else if (activeOption === 'search') {
-      onSendMessage(message, undefined);
-    } else {
-      onSendMessage(message);
-    }
-    
+    onSendMessage(message, undefined);
     setMessage('');
-    setActiveOption(null);
     
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-    }
-  };
-
-  const handleGenerateImage = async () => {
-    if (!message.trim() || isGeneratingImage) return;
-
-    setIsGeneratingImage(true);
-    try {
-      const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: message }
-      });
-
-      if (imageError) {
-        console.error('Error from generate-image function:', imageError);
-        throw new Error(imageError.message || 'Failed to generate image');
-      }
-
-      if (!imageData || !imageData.image) {
-        console.error('No image data received:', imageData);
-        throw new Error('No image was generated');
-      }
-
-      // Send both the prompt and the generated image
-      onSendMessage(message, [{ 
-        url: imageData.image,
-        fileType: 'image/png',
-        fileName: 'generated-image.png'
-      }]);
-
-      if (imageData.warning) {
-        console.warn('Image generation warning:', imageData.warning);
-        toast({
-          title: "Image Generated",
-          description: imageData.warning,
-          variant: "default"
-        });
-      }
-
-    } catch (error: any) {
-      console.error('Error generating image:', error);
-      toast({
-        title: "Error generating image",
-        description: error.message || "An error occurred while generating the image",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGeneratingImage(false);
     }
   };
 
@@ -103,8 +40,8 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
     setMessage(textarea.value);
   };
 
-  const handleOptionClick = (option: 'image' | 'search') => {
-    setActiveOption(currentOption => currentOption === option ? null : option);
+  const toggleSearchMode = () => {
+    setIsSearchMode(!isSearchMode);
   };
 
   return (
@@ -115,55 +52,32 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
           value={message}
           onChange={handleTextareaInput}
           onKeyDown={handleKeyDown}
-          placeholder={activeOption === 'image' ? "Décrivez l'image que vous souhaitez générer..." : "Écrivez votre message..."}
+          placeholder={isSearchMode ? "Écrivez votre recherche..." : "Écrivez votre message..."}
           className="w-full resize-none overflow-hidden rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 p-3 pr-20 max-h-32"
           rows={1}
-          disabled={isLoading || isGeneratingImage}
+          disabled={isLoading}
         />
       </div>
       
       <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="h-10 w-10"
-              disabled={isLoading || isGeneratingImage}
-            >
-              {activeOption === 'image' ? (
-                <ImageIcon className="h-5 w-5 text-violet-600" />
-              ) : activeOption === 'search' ? (
-                <Search className="h-5 w-5 text-orange-600" />
-              ) : (
-                <Wrench className="h-5 w-5 text-gray-500" />
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleOptionClick('image')}>
-              <ImageIcon 
-                className={`mr-2 h-4 w-4 ${activeOption === 'image' ? 'text-violet-600' : 'text-gray-500'}`}
-              />
-              Générer une image
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleOptionClick('search')}>
-              <Search 
-                className={`mr-2 h-4 w-4 ${activeOption === 'search' ? 'text-orange-600' : 'text-gray-500'}`}
-              />
-              Recherche web
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-10 w-10"
+          onClick={toggleSearchMode}
+          disabled={isLoading}
+        >
+          <Search className={`h-5 w-5 ${isSearchMode ? 'text-orange-600' : 'text-gray-500'}`} />
+        </Button>
 
         <Button 
           type="submit" 
-          disabled={isLoading || isGeneratingImage || !message.trim()} 
+          disabled={isLoading || !message.trim()} 
           className="h-10 w-10"
           size="icon"
         >
-          {isLoading || isGeneratingImage ? (
+          {isLoading ? (
             <Loader2 className="h-5 w-5 animate-spin" />
           ) : (
             <Send className="h-5 w-5" />
