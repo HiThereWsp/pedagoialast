@@ -3,6 +3,8 @@ import { useState } from "react"
 import { FeedbackButtons } from "./FeedbackButtons"
 import { MessageContent } from "./MessageContent"
 import { CitationSource } from "./CitationSource"
+import { Badge } from "@/components/ui/badge"
+import { Globe } from "lucide-react"
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -14,9 +16,10 @@ interface ChatMessageProps {
     fileType: string;
     filePath: string;
   }>;
+  isWebSearch?: boolean;
 }
 
-export const ChatMessage = ({ role, content, index, attachments }: ChatMessageProps) => {
+export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: ChatMessageProps) => {
   const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
 
   const extractSources = (text: string) => {
@@ -52,8 +55,19 @@ export const ChatMessage = ({ role, content, index, attachments }: ChatMessagePr
         "rounded-2xl p-4",
         role === 'user' 
           ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-gray-800' 
-          : 'bg-gray-50/80 backdrop-blur-sm'
+          : isWebSearch 
+            ? 'bg-search-light border-2 border-search-accent/20 shadow-lg'
+            : 'bg-gray-50/80 backdrop-blur-sm'
       )}>
+        {role === 'assistant' && isWebSearch && (
+          <div className="flex items-center gap-2 mb-3">
+            <Badge variant="secondary" className="bg-search-accent/10 text-search-accent flex items-center gap-1">
+              <Globe className="w-3 h-3" />
+              Recherche Web
+            </Badge>
+          </div>
+        )}
+        
         <div className={cn(
           "whitespace-pre-wrap leading-relaxed",
           role === 'user' ? 'text-gray-800' : 'text-gray-800'
@@ -72,6 +86,25 @@ export const ChatMessage = ({ role, content, index, attachments }: ChatMessagePr
             citationId={selectedCitation}
             url={sources.find(s => s.id === selectedCitation)!.url}
           />
+        )}
+
+        {sources.length > 0 && role === 'assistant' && isWebSearch && (
+          <div className="mt-4 pt-3 border-t border-search-accent/20">
+            <p className="text-sm font-medium text-search-accent mb-2">Sources :</p>
+            <div className="space-y-1">
+              {sources.map((source, i) => (
+                <a 
+                  key={i}
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-600 hover:text-search-accent block truncate"
+                >
+                  {source.url}
+                </a>
+              ))}
+            </div>
+          </div>
         )}
 
         {attachments && attachments.length > 0 && (

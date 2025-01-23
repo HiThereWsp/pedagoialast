@@ -27,6 +27,10 @@ export default {
         coral: {
           400: '#ff8e7c'
         },
+        search: {
+          accent: '#8B5CF6',  // Violet vif pour la recherche avancée
+          light: '#E5DEFF'    // Violet clair pour le fond
+        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))'

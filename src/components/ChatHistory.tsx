@@ -17,6 +17,7 @@ export const ChatHistory = ({ messages, isLoading }: ChatHistoryProps) => {
           content={msg.content}
           index={index}
           attachments={msg.attachments}
+          isWebSearch={msg.isWebSearch}
         />
       ))}
       {isLoading && (
