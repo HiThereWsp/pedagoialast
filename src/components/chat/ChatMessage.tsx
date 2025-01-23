@@ -24,7 +24,6 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
 
   const extractSources = (text: string) => {
-    // Mise à jour de la regex pour capturer l'URL complète
     const sourceRegex = /Source \[(\d+)\]: (https?:\/\/[^\s\n]+)/g;
     const sources: { id: number; url: string }[] = [];
     let match;
@@ -40,9 +39,11 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   };
 
   const formatMessage = (content: string) => {
-    // Supprime les marqueurs de source du message principal
+    // Supprime les marqueurs de source et le format robotique du message principal
     return content
       .replace(/Source \[\d+\]: https?:\/\/[^\s\n]+\n?/g, '')
+      .replace(/Compréhension de la demande :\n/g, '')
+      .replace(/Réponse :\n/g, '')
       .replace(/###/g, '')
       .replace(/\*\*/g, '**')
       .trim();
