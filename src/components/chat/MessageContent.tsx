@@ -37,9 +37,9 @@ export const MessageContent = ({ content, onCitationClick, selectedCitation }: M
             {children}
           </ol>
         ),
-        li: ({ children, ...props }) => (
+        li: ({ children, ordered }) => (
           <li className="relative flex gap-2">
-            {!props.ordered && (
+            {!ordered && (
               <span className="absolute left-[-1.25rem] top-[0.6rem] w-1.5 h-1.5 bg-gray-400 rounded-full flex-shrink-0" />
             )}
             <span className="flex-grow">{children}</span>
@@ -63,15 +63,27 @@ export const MessageContent = ({ content, onCitationClick, selectedCitation }: M
               </button>
             );
           }
+
+          // Gérer les liens normaux
+          const isUrl = href?.match(/^https?:\/\//i);
+          if (isUrl) {
+            return (
+              <a 
+                href={href} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:text-blue-800 hover:underline break-words"
+              >
+                {children}
+              </a>
+            );
+          }
+
+          // Pour tout autre type de lien
           return (
-            <a 
-              href={href} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="text-blue-600 hover:text-blue-800 hover:underline"
-            >
+            <span className="text-blue-600">
               {children}
-            </a>
+            </span>
           );
         }
       }}
