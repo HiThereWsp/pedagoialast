@@ -24,7 +24,8 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
 
   const extractSources = (text: string) => {
-    const sourceRegex = /Source \[(\d+)\]: (https?:\/\/[^\s\n]+)/g;
+    // Amélioration du regex pour capturer les différents formats de sources
+    const sourceRegex = /(?:Source )?\[(\d+)\]:\s*(https?:\/\/[^\s\n]+)/g;
     const sources: { id: number; url: string }[] = [];
     let match;
     
@@ -39,12 +40,10 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   };
 
   const formatMessage = (content: string) => {
+    // Nettoyer le message en retirant les références aux sources
     return content
-      .replace(/Source \[\d+\]: https?:\/\/[^\s\n]+\n?/g, '')
-      .replace(/Compréhension de la demande :\n/g, '')
-      .replace(/Réponse :\n/g, '')
-      .replace(/###/g, '')
-      .replace(/\*\*/g, '**')
+      .replace(/(?:Source )?\[(\d+)\]:\s*https?:\/\/[^\s\n]+\n?/g, '')
+      .replace(/\[(\d+)\]/g, '[$1]') // Garder les citations dans le texte
       .trim();
   };
 
@@ -85,7 +84,10 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
           />
         )}
 
-        <MessageSources sources={sources} isWebSearch={isWebSearch} />
+        {sources.length > 0 && isWebSearch && (
+          <MessageSources sources={sources} isWebSearch={isWebSearch} />
+        )}
+
         <MessageAttachments attachments={attachments} />
 
         {role === 'assistant' && (
