@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2, Send, Image as ImageIcon, Search } from 'lucide-react';
+import { Loader2, Send, Image as ImageIcon, Search, Tools } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -112,24 +112,24 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
               className="flex-shrink-0"
             >
               {activeOption === 'image' ? (
-                <ImageIcon className="h-5 w-5 text-coral-400" />
+                <ImageIcon className="h-5 w-5 text-purple-500" />
               ) : activeOption === 'search' ? (
-                <Search className="h-5 w-5 text-blue-500" />
+                <Search className="h-5 w-5 text-orange-500" />
               ) : (
-                <ImageIcon className="h-5 w-5 text-gray-500" />
+                <Tools className="h-5 w-5 text-gray-500" />
               )}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => setActiveOption('image')}>
               <ImageIcon 
-                className={`mr-2 h-4 w-4 ${activeOption === 'image' ? 'text-coral-400' : 'text-gray-500'}`}
+                className={`mr-2 h-4 w-4 ${activeOption === 'image' ? 'text-purple-500' : 'text-gray-500'}`}
               />
               Générer une image
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActiveOption('search')}>
               <Search 
-                className={`mr-2 h-4 w-4 ${activeOption === 'search' ? 'text-blue-500' : 'text-gray-500'}`}
+                className={`mr-2 h-4 w-4 ${activeOption === 'search' ? 'text-orange-500' : 'text-gray-500'}`}
               />
               Recherche web
             </DropdownMenuItem>
