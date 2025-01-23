@@ -4,7 +4,6 @@ import { MetricsSection } from "@/components/landing/MetricsSection"
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection"
 import { FAQSection } from "@/components/landing/FAQSection"
-import { CTASection } from "@/components/landing/CTASection"
 import { Header } from "@/components/landing/Header"
 import { SEO } from "@/components/SEO"
 
@@ -22,7 +21,6 @@ const Landing = () => {
       <HowItWorksSection />
       <TestimonialsSection />
       <FAQSection />
-      <CTASection />
     </div>
   )
 }
