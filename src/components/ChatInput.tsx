@@ -88,6 +88,10 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
     setMessage(textarea.value);
   };
 
+  const handleOptionClick = (option: 'image' | 'search') => {
+    setActiveOption(currentOption => currentOption === option ? null : option);
+  };
+
   return (
     <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-white p-4 border-t">
       <div className="flex-1 relative">
@@ -121,13 +125,13 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setActiveOption('image')}>
+            <DropdownMenuItem onClick={() => handleOptionClick('image')}>
               <ImageIcon 
                 className={`mr-2 h-4 w-4 ${activeOption === 'image' ? 'text-violet-600' : 'text-gray-500'}`}
               />
               Générer une image
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setActiveOption('search')}>
+            <DropdownMenuItem onClick={() => handleOptionClick('search')}>
               <Search 
                 className={`mr-2 h-4 w-4 ${activeOption === 'search' ? 'text-orange-600' : 'text-gray-500'}`}
               />
