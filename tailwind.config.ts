@@ -28,8 +28,8 @@ export default {
           400: '#ff8e7c'
         },
         search: {
-          accent: '#8B5CF6',  // Violet vif pour la recherche avancée
-          light: '#E5DEFF'    // Violet clair pour le fond
+          accent: '#8B5CF6',
+          light: '#E5DEFF'
         },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
