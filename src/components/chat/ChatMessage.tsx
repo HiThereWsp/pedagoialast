@@ -44,21 +44,20 @@ export const ChatMessage = ({ role, content, index, attachments }: ChatMessagePr
   const sources = extractSources(content);
 
   return (
-    <div
-      className={cn(
-        "group relative px-4 transition-all duration-300 hover:scale-[1.01]",
-        role === 'user' 
-          ? 'ml-auto max-w-[85%] md:max-w-[80%]' 
-          : 'mr-auto max-w-[85%] md:max-w-[80%]'
-      )}
-    >
+    <div className={cn(
+      "group relative px-4 mb-4",
+      role === 'user' ? 'ml-auto max-w-[85%]' : 'mr-auto max-w-[85%]'
+    )}>
       <div className={cn(
-        "rounded-2xl p-4 transition-all shadow-premium hover:shadow-premium-lg",
+        "rounded-2xl p-4",
         role === 'user' 
-          ? 'bg-white border border-gray-100/20' 
-          : 'bg-gradient-to-r from-[#FFDEE2]/10 to-[#FEF7CD]/10 border border-[#FFDEE2]/20'
+          ? 'bg-[#6366F1] text-white' 
+          : 'bg-gray-100'
       )}>
-        <div className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+        <div className={cn(
+          "whitespace-pre-wrap leading-relaxed",
+          role === 'user' ? 'text-white' : 'text-gray-800'
+        )}>
           <MessageContent 
             content={formatMessage(content)}
             onCitationClick={(citationNumber) => 
