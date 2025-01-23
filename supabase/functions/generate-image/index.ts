@@ -34,6 +34,7 @@ serve(async (req) => {
     )
 
     if (userError || !user) {
+      console.error('Error getting user:', userError)
       throw new Error('Error getting user')
     }
 
@@ -51,6 +52,7 @@ serve(async (req) => {
       .gte('generated_at', weekStart.toISOString())
 
     if (usageError) {
+      console.error('Error checking usage:', usageError)
       throw new Error('Error checking usage')
     }
 
@@ -84,20 +86,30 @@ serve(async (req) => {
     const data = await response.json()
 
     if (!response.ok) {
+      console.error('OpenAI API error:', data.error)
       throw new Error(data.error?.message || 'Error generating image')
     }
 
-    // Record usage
-    const { error: insertError } = await supabaseClient
-      .from('image_generation_usage')
-      .insert({
-        user_id: user.id,
-        prompt,
-        image_url: data.data[0].url
-      })
+    // Record usage - with better error handling
+    try {
+      const { error: insertError } = await supabaseClient
+        .from('image_generation_usage')
+        .insert({
+          user_id: user.id,
+          prompt,
+          image_url: data.data[0].url,
+          generated_at: new Date().toISOString()
+        })
 
-    if (insertError) {
-      throw new Error('Error recording usage')
+      if (insertError) {
+        console.error('Error recording usage:', insertError)
+        // Don't throw here, still return the generated image
+        console.warn('Failed to record usage but image was generated')
+      }
+    } catch (insertError) {
+      console.error('Unexpected error recording usage:', insertError)
+      // Don't throw here either, still return the generated image
+      console.warn('Failed to record usage but image was generated')
     }
 
     return new Response(
@@ -106,6 +118,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
+    console.error('Function error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
