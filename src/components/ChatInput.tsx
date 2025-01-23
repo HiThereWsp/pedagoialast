@@ -100,7 +100,7 @@ export const ChatInput = ({
           </form>
           
           <div className="mt-2 text-xs text-gray-400 text-center px-4">
-            Obtenez des réponses en temps réel en activant la recherche web avancée et accéder à l'actualité et des milliers de ressources en ligne.
+            En activant la recherche avancée, obtenez des réponses en temps réel et accédez à l'actualité du monde entier
           </div>
         </div>
       </div>
