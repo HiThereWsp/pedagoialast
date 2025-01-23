@@ -24,12 +24,11 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || isLoading) return;
+    if (!message.trim() || isLoading || isGeneratingImage) return;
     
     if (activeOption === 'image') {
       await handleGenerateImage();
     } else if (activeOption === 'search') {
-      // Handle web search
       onSendMessage(message, undefined);
     } else {
       onSendMessage(message);
@@ -52,15 +51,31 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
         body: { prompt: message }
       });
 
-      if (imageError) throw imageError;
-      if (imageData.error) throw new Error(imageData.error);
+      if (imageError) {
+        console.error('Error from generate-image function:', imageError);
+        throw new Error(imageError.message || 'Failed to generate image');
+      }
 
+      if (!imageData || !imageData.image) {
+        console.error('No image data received:', imageData);
+        throw new Error('No image was generated');
+      }
+
+      // Send both the prompt and the generated image
       onSendMessage(message, [{ 
         url: imageData.image,
         fileType: 'image/png',
         fileName: 'generated-image.png'
       }]);
-      setMessage('');
+
+      if (imageData.warning) {
+        console.warn('Image generation warning:', imageData.warning);
+        toast({
+          title: "Image Generated",
+          description: imageData.warning,
+          variant: "default"
+        });
+      }
 
     } catch (error: any) {
       console.error('Error generating image:', error);
@@ -100,9 +115,10 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
           value={message}
           onChange={handleTextareaInput}
           onKeyDown={handleKeyDown}
-          placeholder="Écrivez votre message..."
+          placeholder={activeOption === 'image' ? "Décrivez l'image que vous souhaitez générer..." : "Écrivez votre message..."}
           className="w-full resize-none overflow-hidden rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 p-3 pr-20 max-h-32"
           rows={1}
+          disabled={isLoading || isGeneratingImage}
         />
       </div>
       
@@ -114,6 +130,7 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
               variant="outline"
               size="icon"
               className="h-10 w-10"
+              disabled={isLoading || isGeneratingImage}
             >
               {activeOption === 'image' ? (
                 <ImageIcon className="h-5 w-5 text-violet-600" />
@@ -142,7 +159,7 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
 
         <Button 
           type="submit" 
-          disabled={isLoading || !message.trim()} 
+          disabled={isLoading || isGeneratingImage || !message.trim()} 
           className="h-10 w-10"
           size="icon"
         >
