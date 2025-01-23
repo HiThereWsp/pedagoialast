@@ -8,7 +8,6 @@ interface WebSourcePreviewProps {
 
 export const WebSourcePreview = ({ url }: WebSourcePreviewProps) => {
   const [imageError, setImageError] = useState(false);
-  console.log('WebSourcePreview - url:', url);
 
   const getDomainFromUrl = (url: string) => {
     try {

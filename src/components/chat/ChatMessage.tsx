@@ -3,6 +3,7 @@ import { useState } from "react"
 import { FeedbackButtons } from "./FeedbackButtons"
 import { MessageContent } from "./MessageContent"
 import { MessageHeader } from "./MessageHeader"
+import { MessageSources } from "./MessageSources"
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -57,7 +58,16 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
             ? 'bg-search-light border border-search-accent/20'
             : 'bg-gray-50/80 backdrop-blur-sm'
       )}>
-        {role === 'assistant' && <MessageHeader isWebSearch={isWebSearch} />}
+        {role === 'assistant' && (
+          <>
+            <MessageHeader isWebSearch={isWebSearch} />
+            {isWebSearch && sources.length > 0 && (
+              <div className="mb-4">
+                <MessageSources sources={sources} isWebSearch={isWebSearch} />
+              </div>
+            )}
+          </>
+        )}
         
         <div className={cn(
           "leading-relaxed",
