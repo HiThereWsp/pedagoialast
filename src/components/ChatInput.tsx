@@ -1,75 +1,89 @@
-import { useState } from "react"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import { Send } from "lucide-react"
-import { useIsMobile } from "@/hooks/use-mobile"
+import React, { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Loader2, Send, Globe } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ChatInputProps {
-  onSendMessage: (message: string) => Promise<void>
-  isLoading?: boolean
-  value?: string
-  onChange?: (value: string) => void
+  onSendMessage: (message: string, attachments?: Array<{ url: string; fileName?: string; fileType?: string }>, useWebSearch?: boolean) => void;
+  isLoading?: boolean;
 }
 
-export const ChatInput = ({
-  onSendMessage,
-  isLoading = false,
-  value,
-  onChange,
-}: ChatInputProps) => {
-  const [message, setMessage] = useState(value || "")
-  const isMobile = useIsMobile()
+export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
+  const [message, setMessage] = useState('');
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { toast } = useToast();
 
-  const handleSubmit = async () => {
-    if (message.trim() === "") return
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() || isLoading) return;
     
-    try {
-      await onSendMessage(message)
-      setMessage("")
-      if (onChange) {
-        onChange("")
-      }
-    } catch (error) {
-      console.error("Error sending message:", error)
+    onSendMessage(message, undefined, isSearchMode);
+    setMessage('');
+    
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
     }
-  }
-
-  const handleChange = (value: string) => {
-    setMessage(value)
-    if (onChange) {
-      onChange(value)
-    }
-  }
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault()
-      handleSubmit()
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit(e);
     }
-  }
+  };
+
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target;
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
+    setMessage(textarea.value);
+  };
+
+  const toggleSearchMode = () => {
+    setIsSearchMode(!isSearchMode);
+  };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-sm border-t border-gray-100/20">
-      <div className="max-w-[800px] mx-auto">
-        <div className="flex items-end gap-4 bg-gradient-to-r from-[#FFDEE2]/20 to-[#FEF7CD]/20 p-4 rounded-2xl border border-[#FFDEE2]/30 shadow-premium hover:shadow-premium-lg transition-all duration-300">
-          <Textarea
-            value={message}
-            onChange={(e) => handleChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Écrivez votre message ici..."
-            className="min-h-[60px] max-h-[200px] resize-none flex-1 bg-white/50 border-none focus-visible:ring-0 shadow-inner"
-            disabled={isLoading}
-          />
-          <Button 
-            onClick={handleSubmit}
-            disabled={message.trim() === "" || isLoading}
-            size="icon"
-            className="shrink-0 bg-[#FFDEE2] hover:bg-[#FFDEE2]/80 text-gray-700 shadow-premium hover:shadow-premium-lg transition-all duration-300"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
+    <form onSubmit={handleSubmit} className="flex items-center gap-2 bg-white p-4 border-t">
+      <div className="flex-1 relative">
+        <textarea
+          ref={textareaRef}
+          value={message}
+          onChange={handleTextareaInput}
+          onKeyDown={handleKeyDown}
+          placeholder={isSearchMode ? "Écrivez votre recherche..." : "Écrivez votre message..."}
+          className="w-full resize-none overflow-hidden rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 p-3 pr-20 max-h-32"
+          rows={1}
+          disabled={isLoading}
+        />
       </div>
-    </div>
-  )
-}
+      
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          className="h-10 w-10"
+          onClick={toggleSearchMode}
+          disabled={isLoading}
+        >
+          <Globe className={`h-5 w-5 ${isSearchMode ? 'text-orange-600' : 'text-gray-500'}`} />
+        </Button>
+
+        <Button 
+          type="submit" 
+          disabled={isLoading || !message.trim()} 
+          className="h-10 w-10"
+          size="icon"
+        >
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Send className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+};

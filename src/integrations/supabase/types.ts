@@ -12,6 +12,7 @@ export type Database = {
       chats: {
         Row: {
           action_type: string | null
+          attachments: Json | null
           completion_status: boolean | null
           conversation_id: string | null
           conversation_title: string | null
@@ -26,6 +27,7 @@ export type Database = {
         }
         Insert: {
           action_type?: string | null
+          attachments?: Json | null
           completion_status?: boolean | null
           conversation_id?: string | null
           conversation_title?: string | null
@@ -40,6 +42,7 @@ export type Database = {
         }
         Update: {
           action_type?: string | null
+          attachments?: Json | null
           completion_status?: boolean | null
           conversation_id?: string | null
           conversation_title?: string | null
@@ -116,6 +119,30 @@ export type Database = {
           specific_needs?: string | null
           student_profile?: string
           subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      image_generation_usage: {
+        Row: {
+          generated_at: string | null
+          id: string
+          image_url: string | null
+          prompt: string
+          user_id: string
+        }
+        Insert: {
+          generated_at?: string | null
+          id?: string
+          image_url?: string | null
+          prompt: string
+          user_id: string
+        }
+        Update: {
+          generated_at?: string | null
+          id?: string
+          image_url?: string | null
+          prompt?: string
           user_id?: string
         }
         Relationships: []

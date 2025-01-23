@@ -1,6 +1,5 @@
-import { User } from "lucide-react"
+import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { MessageSquarePlus } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface SidebarHeaderProps {
@@ -10,24 +9,17 @@ interface SidebarHeaderProps {
 
 export function SidebarHeader({ firstName, onNewConversation }: SidebarHeaderProps) {
   return (
-    <div className="p-2">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          <span className="truncate group-data-[collapsible=icon]:hidden">
-            {firstName || 'Chargement...'}
-          </span>
-        </div>
-      </div>
+    <div className="p-2 space-y-2">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button 
-            className="group-data-[collapsible=icon]:!p-2 group-data-[collapsible=icon]:aspect-square bg-emerald-500 hover:bg-emerald-600 w-full transition-all duration-200" 
-            size="lg"
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 flex items-center justify-center rounded-2xl bg-gray-100/80 hover:bg-gray-200/80"
             onClick={onNewConversation}
           >
-            <MessageSquarePlus className="h-5 w-5" />
-            <span className="ml-2 truncate group-data-[collapsible=icon]:hidden">Nouvelle conversation</span>
+            <Plus className="h-5 w-5 text-gray-600" />
+            <span className="sr-only">Nouvelle conversation</span>
           </Button>
         </TooltipTrigger>
         <TooltipContent side="right">

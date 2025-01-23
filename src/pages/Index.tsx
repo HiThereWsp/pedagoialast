@@ -15,7 +15,6 @@ export default function Index() {
   const navigate = useNavigate()
   const { toast } = useToast()
 
-  // Récupérer l'ID utilisateur depuis Supabase
   const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -46,16 +45,24 @@ export default function Index() {
     fetchUserProfile()
   }, [navigate])
 
-  // Utiliser le hook useChat
   const {
     messages,
     isLoading,
-    sendMessage,
+    sendMessage: originalSendMessage,
     conversations: chatConversations,
     loadConversationMessages,
     currentConversationId: activeChatId,
     deleteConversation
   } = useChat(userId)
+
+  // Wrapper for sendMessage to match ChatInput's expected signature
+  const handleSendMessage = async (
+    message: string, 
+    attachments?: Array<{ url: string; fileName?: string; fileType?: string }>,
+    useWebSearch?: boolean
+  ) => {
+    await originalSendMessage(message, useWebSearch)
+  }
 
   useEffect(() => {
     if (chatConversations) {
@@ -132,14 +139,17 @@ export default function Index() {
                 <ChatHistory messages={messages} isLoading={isLoading} />
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-muted-foreground">
-                  Sélectionnez une conversation ou créez-en une nouvelle
+              <div className="flex h-full items-center justify-center flex-col">
+                <p className="text-2xl font-medium bg-gradient-to-r from-amber-400 via-orange-300 to-amber-200 bg-clip-text text-transparent mb-2">
+                  {firstName ? `Bonjour ${firstName},` : 'Bonjour,'}
+                </p>
+                <p className="text-2xl font-medium premium-text">
+                  Comment puis-je vous aider ?
                 </p>
               </div>
             )}
             <ChatInput 
-              onSendMessage={sendMessage}
+              onSendMessage={handleSendMessage}
               isLoading={isLoading}
             />
           </div>

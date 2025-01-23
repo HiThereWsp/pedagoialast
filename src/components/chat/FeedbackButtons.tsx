@@ -1,8 +1,8 @@
 import { useState } from "react"
-import { ThumbsDown, Heart, Copy } from "lucide-react"
+import { ThumbsUp, ThumbsDown, Copy, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
 
 interface FeedbackButtonsProps {
   messageId: number
@@ -10,16 +10,14 @@ interface FeedbackButtonsProps {
 }
 
 export const FeedbackButtons = ({ messageId, content }: FeedbackButtonsProps) => {
-  const { toast } = useToast()
-  const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null)
+  const [feedbackScore, setFeedbackScore] = useState<number | null>(null)
   const [isCopied, setIsCopied] = useState(false)
+  const { toast } = useToast()
 
   const handleFeedback = async (type: 'like' | 'dislike') => {
     const score = type === 'like' ? 1 : -1
     
     try {
-      setFeedbackScore(score)
-
       const { error } = await supabase
         .from('chats')
         .update({ feedback_score: score })
@@ -27,15 +25,18 @@ export const FeedbackButtons = ({ messageId, content }: FeedbackButtonsProps) =>
 
       if (error) throw error
 
+      setFeedbackScore(score)
+      
       toast({
-        description: type === 'like' ? "Merci pour votre retour positif !" : "Merci pour votre retour",
+        title: "Merci pour votre retour !",
+        description: "Votre feedback nous aide à améliorer nos réponses.",
       })
-    } catch (err) {
-      console.error('Erreur lors de l\'enregistrement du feedback:', err)
-      setFeedbackScore(null)
+    } catch (error) {
+      console.error('Error saving feedback:', error)
       toast({
         variant: "destructive",
-        description: "Erreur lors de l'enregistrement de votre retour",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement de votre feedback.",
       })
     }
   }
@@ -44,50 +45,57 @@ export const FeedbackButtons = ({ messageId, content }: FeedbackButtonsProps) =>
     try {
       await navigator.clipboard.writeText(content)
       setIsCopied(true)
-      toast({
-        description: "Message copié dans le presse-papier",
-        duration: 2000,
-      })
       setTimeout(() => setIsCopied(false), 2000)
-    } catch (err) {
+      
+      toast({
+        title: "Copié !",
+        description: "Le message a été copié dans votre presse-papier.",
+      })
+    } catch (error) {
+      console.error('Error copying to clipboard:', error)
       toast({
         variant: "destructive",
-        description: "Erreur lors de la copie du message",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la copie du message.",
       })
     }
   }
 
   return (
-    <div className="mt-2 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+    <div className="flex items-center justify-end gap-1 mt-2">
       <button
         onClick={() => handleFeedback('like')}
         className={cn(
-          "rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-emerald-500",
-          feedbackScore === 1 && "text-emerald-500"
+          "rounded p-1 text-gray-400 hover:text-gray-600 transition-colors",
+          feedbackScore === 1 && "text-gray-600"
         )}
         aria-label="J'aime"
       >
-        <Heart className="h-4 w-4" />
+        <ThumbsUp className="w-4 h-4" />
       </button>
       <button
         onClick={() => handleFeedback('dislike')}
         className={cn(
-          "rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-red-500",
-          feedbackScore === -1 && "text-red-500"
+          "rounded p-1 text-gray-400 hover:text-gray-600 transition-colors",
+          feedbackScore === -1 && "text-gray-600"
         )}
         aria-label="Je n'aime pas"
       >
-        <ThumbsDown className="h-4 w-4" />
+        <ThumbsDown className="w-4 h-4" />
       </button>
       <button
         onClick={handleCopy}
         className={cn(
-          "rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-500",
-          isCopied && "text-blue-500"
+          "rounded p-1 text-gray-400 hover:text-gray-600 transition-colors",
+          isCopied && "text-gray-600"
         )}
         aria-label="Copier le message"
       >
-        <Copy className="h-4 w-4" />
+        {isCopied ? (
+          <Check className="w-4 h-4" />
+        ) : (
+          <Copy className="w-4 h-4" />
+        )}
       </button>
     </div>
   )

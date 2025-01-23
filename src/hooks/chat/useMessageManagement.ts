@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client"
 export const useMessageManagement = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [conversationContext, setConversationContext] = useState("")
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
@@ -23,9 +24,17 @@ export const useMessageManagement = (userId: string | null) => {
       if (messagesData) {
         const formattedMessages = messagesData.map(msg => ({
           role: msg.message_type as 'user' | 'assistant',
-          content: msg.message
+          content: msg.message,
+          attachments: msg.attachments as ChatMessage['attachments']
         }))
         setMessages(formattedMessages)
+        
+        // Build conversation context from previous messages
+        const context = formattedMessages
+          .map(msg => `${msg.role}: ${msg.content}`)
+          .join('\n')
+        setConversationContext(context)
+        console.log("Loaded conversation context:", context)
       }
     } catch (error) {
       console.error("Error in loadConversationMessages:", error)
@@ -36,19 +45,16 @@ export const useMessageManagement = (userId: string | null) => {
     message: string,
     conversationId: string,
     conversationTitle: string | undefined,
-    context: string
+    context: string,
+    attachments?: ChatMessage['attachments'],
+    useWebSearch?: boolean
   ) => {
-    if (!message.trim() || isLoading || !userId) return
+    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return
 
     setIsLoading(true)
     const userMessage = message.trim()
 
     try {
-      // Ajouter le message utilisateur à l'UI
-      const userChatMessage: ChatMessage = { role: 'user', content: userMessage }
-      setMessages(prev => [...prev, userChatMessage])
-
-      // Sauvegarder le message utilisateur dans la base de données
       const { error: insertError } = await supabase
         .from('chats')
         .insert([{
@@ -56,7 +62,8 @@ export const useMessageManagement = (userId: string | null) => {
           user_id: userId,
           message_type: 'user',
           conversation_id: conversationId,
-          conversation_title: conversationTitle
+          conversation_title: conversationTitle,
+          attachments
         }])
 
       if (insertError) {
@@ -64,16 +71,24 @@ export const useMessageManagement = (userId: string | null) => {
         throw insertError
       }
 
-      // Obtenir la réponse de l'IA
-      const { data, error } = await supabase.functions.invoke('chat-with-openai', {
-        body: { message: userMessage, context }
+      let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
+      
+      const { data, error } = await supabase.functions.invoke(functionName, {
+        body: { 
+          message: userMessage, 
+          context: conversationContext,
+          attachments: attachments?.map(a => ({
+            url: a.url,
+            fileName: a.fileName,
+            type: a.fileType
+          }))
+        }
       })
 
       if (error) throw error
 
       const aiResponse = data.response
 
-      // Sauvegarder la réponse de l'IA dans la base de données
       const { error: aiInsertError } = await supabase
         .from('chats')
         .insert([{
@@ -89,9 +104,13 @@ export const useMessageManagement = (userId: string | null) => {
         throw aiInsertError
       }
 
-      // Ajouter la réponse de l'IA à l'UI
-      const aiChatMessage: ChatMessage = { role: 'assistant', content: aiResponse }
-      setMessages(prev => [...prev, aiChatMessage])
+      // Update conversation context with new messages
+      const updatedContext = conversationContext + 
+        `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
+      setConversationContext(updatedContext)
+      console.log("Updated conversation context:", updatedContext)
+
+      await loadConversationMessages(conversationId)
 
       return aiResponse
     } catch (error) {
@@ -107,6 +126,7 @@ export const useMessageManagement = (userId: string | null) => {
     setMessages,
     isLoading,
     loadConversationMessages,
-    sendMessage
+    sendMessage,
+    conversationContext
   }
 }
