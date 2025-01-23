@@ -1,4 +1,4 @@
-import { User, Plus } from "lucide-react"
+import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -9,15 +9,7 @@ interface SidebarHeaderProps {
 
 export function SidebarHeader({ firstName, onNewConversation }: SidebarHeaderProps) {
   return (
-    <div className="p-2">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          <span className="truncate group-data-[collapsible=icon]:hidden">
-            {firstName || 'Chargement...'}
-          </span>
-        </div>
-      </div>
+    <div className="p-2 space-y-2">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button 
