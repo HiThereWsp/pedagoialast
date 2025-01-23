@@ -90,26 +90,26 @@ serve(async (req) => {
       throw new Error(data.error?.message || 'Error generating image')
     }
 
-    // Record usage - with better error handling
-    try {
-      const { error: insertError } = await supabaseClient
-        .from('image_generation_usage')
-        .insert({
-          user_id: user.id,
-          prompt,
-          image_url: data.data[0].url,
-          generated_at: new Date().toISOString()
-        })
+    // Record usage with better error handling
+    const { error: insertError } = await supabaseClient
+      .from('image_generation_usage')
+      .insert({
+        user_id: user.id,
+        prompt,
+        image_url: data.data[0].url,
+        generated_at: new Date().toISOString()
+      })
 
-      if (insertError) {
-        console.error('Error recording usage:', insertError)
-        // Don't throw here, still return the generated image
-        console.warn('Failed to record usage but image was generated')
-      }
-    } catch (insertError) {
-      console.error('Unexpected error recording usage:', insertError)
-      // Don't throw here either, still return the generated image
-      console.warn('Failed to record usage but image was generated')
+    if (insertError) {
+      console.error('Error recording usage:', insertError)
+      // Log the error but don't throw, still return the generated image
+      return new Response(
+        JSON.stringify({ 
+          image: data.data[0].url,
+          warning: 'Image generated successfully but failed to record usage'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     return new Response(
