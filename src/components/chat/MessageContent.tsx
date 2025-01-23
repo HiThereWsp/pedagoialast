@@ -31,8 +31,18 @@ export const MessageContent = ({
     if (!sources) return content;
     
     let formattedContent = content;
+    
+    // Remove the "Sources utilisées :" section if it exists
     formattedContent = formattedContent.split(/Sources utilisées :/).shift() || formattedContent;
+    
+    // Remove any [object Object] artifacts
     formattedContent = formattedContent.replace(/,\s*\[object Object\]/g, '');
+    
+    // Clean up any trailing commas
+    formattedContent = formattedContent.replace(/,\s*$/g, '');
+    
+    // Remove any empty source brackets
+    formattedContent = formattedContent.replace(/\[\d+\]\s*,/g, '[$1]');
     
     return formattedContent.trim();
   };
