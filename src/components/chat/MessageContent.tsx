@@ -26,6 +26,21 @@ export const MessageContent = ({
   selectedCitation 
 }: MessageContentProps) => {
   const sanitizedContent = DOMPurify.sanitize(content);
+  
+  // Format the content to handle sources properly
+  const formatContentWithSources = (content: string) => {
+    if (!sources) return content;
+    
+    let formattedContent = content;
+    
+    // Remove the "Sources utilisées :" section and what follows
+    formattedContent = formattedContent.split(/Sources utilisées :/).shift() || formattedContent;
+    
+    // Clean up any trailing commas and [object Object] references
+    formattedContent = formattedContent.replace(/,\s*\[object Object\]/g, '');
+    
+    return formattedContent.trim();
+  };
 
   const componentDecorator = (href: string, text: string, key: number) => (
     <a href={href} key={key} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
@@ -71,7 +86,7 @@ export const MessageContent = ({
                 <code {...props} className="block bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto">{children}</code>
             )
           }}>
-            {sanitizedContent}
+            {formatContentWithSources(sanitizedContent)}
           </ReactMarkdown>
         </Linkify>
       </div>
