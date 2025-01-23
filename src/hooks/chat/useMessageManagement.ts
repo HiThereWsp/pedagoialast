@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client"
 export const useMessageManagement = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [conversationContext, setConversationContext] = useState<string>("")
+  const [conversationContext, setConversationContext] = useState("")
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
@@ -71,13 +71,12 @@ export const useMessageManagement = (userId: string | null) => {
         throw insertError
       }
 
-      // Include conversation context in the function call
       let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
       
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: { 
           message: userMessage, 
-          context: conversationContext, // Send full conversation context
+          context: conversationContext,
           attachments: attachments?.map(a => ({
             url: a.url,
             fileName: a.fileName,
@@ -111,7 +110,6 @@ export const useMessageManagement = (userId: string | null) => {
       setConversationContext(updatedContext)
       console.log("Updated conversation context:", updatedContext)
 
-      // Reload messages from the database
       await loadConversationMessages(conversationId)
 
       return aiResponse
