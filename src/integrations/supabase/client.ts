@@ -12,9 +12,14 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      storage: window?.localStorage,
+      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       storageKey: 'pedagoia-auth-token',
       flowType: 'pkce'
+    },
+    global: {
+      headers: {
+        'x-client-info': 'pedagoia-web'
+      }
     }
   }
 );
