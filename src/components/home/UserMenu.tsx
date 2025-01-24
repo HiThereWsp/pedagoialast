@@ -72,13 +72,13 @@ export const UserMenu = () => {
             <MessageSquare className="mr-2 h-4 w-4" />
             <span>Suggérer des fonctionnalités</span>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/contact')} className="cursor-pointer">
-            <Mail className="mr-2 h-4 w-4" />
-            <span>Nous contacter</span>
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             <span>Paramètres</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/contact')} className="cursor-pointer">
+            <Mail className="mr-2 h-4 w-4" />
+            <span>Nous contacter</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
