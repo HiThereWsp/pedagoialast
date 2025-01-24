@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useToast } from "./use-toast"
 import { supabase } from "@/integrations/supabase/client"
-import { AuthError, AuthApiError } from "@supabase/supabase-js"
+import { getAuthErrorMessage, validateAuthForm } from "@/utils/auth-error-handler"
 
 interface AuthFormState {
   email: string
@@ -13,36 +13,6 @@ interface AuthFormState {
 
 interface AuthFormProps {
   onSuccess?: () => void
-}
-
-const getErrorMessage = (error: AuthError) => {
-  if (error instanceof AuthApiError) {
-    switch (error.status) {
-      case 400:
-        if (error.message.includes("Email not confirmed")) {
-          return "Veuillez confirmer votre email avant de vous connecter."
-        }
-        if (error.message.includes("Invalid login credentials")) {
-          return "Email ou mot de passe incorrect."
-        }
-        if (error.message.includes("User already registered")) {
-          return "Un compte existe déjà avec cet email. Veuillez vous connecter."
-        }
-        return "Les identifiants fournis sont invalides."
-      case 422:
-        return "Format d'email invalide."
-      case 429:
-        return "Trop de tentatives. Veuillez réessayer plus tard."
-      case 500:
-        if (error.message.includes("Database error saving new user")) {
-          return "Une erreur est survenue lors de la création de votre compte. Veuillez réessayer avec un autre email."
-        }
-        return "Une erreur serveur est survenue. Veuillez réessayer plus tard."
-      default:
-        return "Une erreur est survenue. Veuillez réessayer."
-    }
-  }
-  return "Une erreur est survenue. Veuillez réessayer."
 }
 
 export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
@@ -59,41 +29,23 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     setFormState(prev => ({ ...prev, [field]: value }))
   }
 
-  const validateForm = () => {
-    if (!formState.email.trim()) {
+  const handleValidationErrors = (errors: string[]) => {
+    if (errors.length > 0) {
       toast({
         variant: "destructive",
-        title: "Email requis",
-        description: "Veuillez saisir votre email.",
+        title: "Erreur de validation",
+        description: errors[0],
       })
-      return false
+      return true
     }
-
-    if (!formState.password.trim()) {
-      toast({
-        variant: "destructive",
-        title: "Mot de passe requis",
-        description: "Veuillez saisir votre mot de passe.",
-      })
-      return false
-    }
-
-    if (formState.password.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Mot de passe invalide",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
-      })
-      return false
-    }
-
-    return true
+    return false
   }
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) return
+    const errors = validateAuthForm(formState.email, formState.password)
+    if (handleValidationErrors(errors)) return
 
     setField("isLoading", true)
 
@@ -128,11 +80,10 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       onSuccess?.()
     } catch (error: any) {
       console.error("Full signup error details:", error)
-      const errorMessage = getErrorMessage(error)
       toast({
         variant: "destructive",
         title: "Erreur lors de l'inscription",
-        description: errorMessage,
+        description: getAuthErrorMessage(error),
       })
     } finally {
       setField("isLoading", false)
@@ -142,7 +93,8 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) return
+    const errors = validateAuthForm(formState.email, formState.password)
+    if (handleValidationErrors(errors)) return
 
     setField("isLoading", true)
 
@@ -170,7 +122,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: getErrorMessage(error),
+        description: getAuthErrorMessage(error),
       })
     } finally {
       setField("isLoading", false)
