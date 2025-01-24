@@ -33,12 +33,15 @@ export const UpdateNotification = () => {
             .insert([
               { user_id: user.id, popup_key: POPUP_KEY }
             ])
-            .select()
-            .single()
 
-          // If insert fails due to race condition (another tab inserted at same time), that's ok
+          // Ignore duplicate key errors as they are expected in case of concurrent tabs
           if (insertError && !insertError.message.includes('duplicate key value')) {
-            throw insertError
+            console.error('Error inserting popup view:', insertError)
+            toast({
+              variant: "destructive",
+              title: "Erreur",
+              description: "Une erreur est survenue lors de l'enregistrement de la notification."
+            })
           }
         }
       } catch (error) {
