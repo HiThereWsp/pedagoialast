@@ -36,7 +36,7 @@ const getErrorMessage = (error: AuthError) => {
         }
         return "Une erreur serveur est survenue. Veuillez réessayer plus tard."
       default:
-        return error.message
+        return "Une erreur est survenue. Veuillez réessayer."
     }
   }
   return "Une erreur est survenue. Veuillez réessayer."
