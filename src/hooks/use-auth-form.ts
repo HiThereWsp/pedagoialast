@@ -32,7 +32,7 @@ const getErrorMessage = (error: AuthError) => {
         return "Trop de tentatives. Veuillez réessayer plus tard."
       case 500:
         if (error.message.includes("Database error saving new user")) {
-          return "Erreur lors de la création du profil. Veuillez réessayer."
+          return "Erreur lors de la création du profil. Veuillez réessayer avec un autre email."
         }
         return "Une erreur serveur est survenue. Veuillez réessayer plus tard."
       default:
@@ -56,6 +56,37 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     setFormState(prev => ({ ...prev, [field]: value }))
   }
 
+  const validateForm = () => {
+    if (!formState.email.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Email requis",
+        description: "Veuillez saisir votre email.",
+      })
+      return false
+    }
+
+    if (!formState.password.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Mot de passe requis",
+        description: "Veuillez saisir votre mot de passe.",
+      })
+      return false
+    }
+
+    if (formState.password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Mot de passe invalide",
+        description: "Le mot de passe doit contenir au moins 6 caractères.",
+      })
+      return false
+    }
+
+    return true
+  }
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -68,14 +99,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       return
     }
 
-    if (formState.password.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Mot de passe invalide",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
-      })
-      return
-    }
+    if (!validateForm()) return
 
     setField("isLoading", true)
 
@@ -86,13 +110,13 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       })
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formState.email,
+        email: formState.email.trim(),
         password: formState.password,
         options: {
           data: {
-            first_name: formState.firstName || null,
+            first_name: formState.firstName?.trim() || null,
           },
-          emailRedirectTo: window.location.origin + '/auth/callback'
+          emailRedirectTo: `${window.location.origin}/auth/callback`
         }
       })
       
@@ -119,6 +143,9 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!validateForm()) return
+
     setField("isLoading", true)
 
     try {
@@ -127,7 +154,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       })
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formState.email,
+        email: formState.email.trim(),
         password: formState.password
       })
       
