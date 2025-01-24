@@ -15,7 +15,6 @@ export const supabase = createClient<Database>(
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
       storageKey: 'pedagoia-auth-token',
       flowType: 'pkce',
-      redirectTo: 'https://pedagoia.fr/auth/callback'
     },
     global: {
       headers: {

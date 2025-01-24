@@ -116,7 +116,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
           data: {
             first_name: formState.firstName?.trim() || null,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`
+          emailRedirectTo: 'https://pedagoia.fr/auth/callback'
         }
       })
       
@@ -155,7 +155,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formState.email.trim(),
-        password: formState.password
+        password: formState.password,
       })
       
       if (error) throw error
