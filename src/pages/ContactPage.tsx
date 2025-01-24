@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card"
 import { Mail, Copy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { SEO } from "@/components/SEO"
+import { BackButton } from "@/components/settings/BackButton"
 
 export default function ContactPage() {
   const { toast } = useToast()
@@ -33,6 +34,7 @@ export default function ContactPage() {
       />
       <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
+          <BackButton />
           <Card className="p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold tracking-tight text-primary mb-4">
