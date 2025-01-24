@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client"
 import { LoginForm } from "@/components/landing/LoginForm"
 import { Card, CardContent } from "@/components/ui/card"
 import { SEO } from "@/components/SEO"
-import { useToast } from "@/components/ui/use-toast"
+import { useToast } from "@/hooks/use-toast"
+import { Link } from "react-router-dom"
 
 export default function Login() {
   const navigate = useNavigate()
@@ -68,12 +69,31 @@ export default function Login() {
         title="Connexion | PedagoIA - Assistant pédagogique intelligent"
         description="Connectez-vous à votre compte PedagoIA pour accéder à votre assistant pédagogique personnel et optimiser votre enseignement."
       />
-      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <LoginForm />
-          </CardContent>
-        </Card>
+      <div className="flex min-h-screen flex-col items-center justify-between bg-background">
+        <div className="w-full flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6">
+              <LoginForm />
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Footer */}
+        <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-14 items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              © 2024 PedagoIA. Tous droits réservés.
+            </p>
+            <div className="space-x-4">
+              <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">
+                Contact
+              </Link>
+              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
+                Tarifs
+              </Link>
+            </div>
+          </div>
+        </footer>
       </div>
     </>
   )

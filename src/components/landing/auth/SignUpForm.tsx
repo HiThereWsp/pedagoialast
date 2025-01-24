@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label"
 import { TermsDialog } from "@/components/terms/TermsDialog"
 import { useAuthForm } from "@/hooks/use-auth-form"
 import { AuthFormField } from "./AuthFormField"
+import { useToast } from "@/hooks/use-toast"
 
 interface SignUpFormProps {
   onToggleMode: () => void
@@ -11,9 +12,36 @@ interface SignUpFormProps {
 
 export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
   const { formState, setField, handleSignUp } = useAuthForm()
+  const { toast } = useToast()
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formState.acceptedTerms) {
+      toast({
+        variant: "destructive",
+        title: "Conditions d'utilisation",
+        description: "Veuillez accepter les conditions d'utilisation pour continuer.",
+      })
+      return
+    }
+
+    try {
+      await handleSignUp(e)
+    } catch (error: any) {
+      console.error("Signup error details:", error)
+      
+      // Afficher un message d'erreur plus détaillé
+      toast({
+        variant: "destructive",
+        title: "Erreur lors de l'inscription",
+        description: error?.message || "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+      })
+    }
+  }
 
   return (
-    <form onSubmit={handleSignUp} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <AuthFormField
         id="firstName"
         label="Prénom"

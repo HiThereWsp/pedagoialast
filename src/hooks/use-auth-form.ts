@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useToast } from "./use-toast"
 import { supabase } from "@/integrations/supabase/client"
-import { AuthError, AuthApiError } from "@supabase/supabase-js"
+import { getAuthErrorMessage, validateAuthForm } from "@/utils/auth-error-handler"
 
 interface AuthFormState {
   email: string
@@ -13,33 +13,6 @@ interface AuthFormState {
 
 interface AuthFormProps {
   onSuccess?: () => void
-}
-
-const getErrorMessage = (error: AuthError) => {
-  if (error instanceof AuthApiError) {
-    switch (error.status) {
-      case 400:
-        if (error.message.includes("Email not confirmed")) {
-          return "Veuillez confirmer votre email avant de vous connecter."
-        }
-        if (error.message.includes("Invalid login credentials")) {
-          return "Email ou mot de passe incorrect."
-        }
-        return "Les identifiants fournis sont invalides."
-      case 422:
-        return "Format d'email invalide."
-      case 429:
-        return "Trop de tentatives. Veuillez réessayer plus tard."
-      case 500:
-        if (error.message.includes("Database error saving new user")) {
-          return "Erreur lors de la création du profil. Veuillez réessayer."
-        }
-        return "Une erreur serveur est survenue. Veuillez réessayer plus tard."
-      default:
-        return error.message
-    }
-  }
-  return "Une erreur est survenue. Veuillez réessayer."
 }
 
 export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
@@ -56,42 +29,49 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     setFormState(prev => ({ ...prev, [field]: value }))
   }
 
+  const handleValidationErrors = (errors: string[]) => {
+    if (errors.length > 0) {
+      toast({
+        variant: "destructive",
+        title: "Erreur de validation",
+        description: errors[0],
+      })
+      return true
+    }
+    return false
+  }
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formState.acceptedTerms) {
-      toast({
-        variant: "destructive",
-        title: "Conditions d'utilisation",
-        description: "Veuillez accepter les conditions d'utilisation pour continuer.",
-      })
-      return
-    }
-
-    if (formState.password.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Mot de passe invalide",
-        description: "Le mot de passe doit contenir au moins 6 caractères.",
-      })
-      return
-    }
+    const errors = validateAuthForm(formState.email, formState.password)
+    if (handleValidationErrors(errors)) return
 
     setField("isLoading", true)
 
     try {
       console.log("Starting signup process with:", {
         email: formState.email,
+        firstName: formState.firstName,
       })
 
-      const { data, error } = await supabase.auth.signUp({
-        email: formState.email,
+      const origin = window.location.origin
+      const redirectTo = `${origin}/auth/callback`
+
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formState.email.trim(),
         password: formState.password,
+        options: {
+          data: {
+            first_name: formState.firstName?.trim() || null,
+          },
+          emailRedirectTo: redirectTo
+        }
       })
       
-      if (error) throw error
+      if (authError) throw authError
 
-      console.log("Signup successful:", data)
+      console.log("Auth signup successful:", authData)
 
       toast({
         title: "Inscription réussie",
@@ -102,8 +82,8 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       console.error("Full signup error details:", error)
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: getErrorMessage(error),
+        title: "Erreur lors de l'inscription",
+        description: getAuthErrorMessage(error),
       })
     } finally {
       setField("isLoading", false)
@@ -112,6 +92,10 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    const errors = validateAuthForm(formState.email, formState.password)
+    if (handleValidationErrors(errors)) return
+
     setField("isLoading", true)
 
     try {
@@ -120,8 +104,8 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       })
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: formState.email,
-        password: formState.password
+        email: formState.email.trim(),
+        password: formState.password,
       })
       
       if (error) throw error
@@ -138,7 +122,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: getErrorMessage(error),
+        description: getAuthErrorMessage(error),
       })
     } finally {
       setField("isLoading", false)

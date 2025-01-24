@@ -23,26 +23,42 @@ export const UpdateNotification = () => {
           .eq('popup_key', POPUP_KEY)
           .maybeSingle()
 
-        if (fetchError) throw fetchError
+        if (fetchError) {
+          console.error('Error fetching popup view:', fetchError)
+          return
+        }
 
         if (!popupView) {
           setOpen(true)
-          // Record that user has seen the popup
+          // Record that user has seen the popup using upsert to handle duplicates
           const { error: insertError } = await supabase
             .from('user_popup_views')
-            .insert([
-              { user_id: user.id, popup_key: POPUP_KEY }
-            ])
-            .select()
-            .single()
+            .upsert(
+              [{ 
+                user_id: user.id, 
+                popup_key: POPUP_KEY,
+                viewed_at: new Date().toISOString()
+              }],
+              { 
+                onConflict: 'user_id,popup_key',
+                ignoreDuplicates: true 
+              }
+            )
 
-          // If insert fails due to race condition (another tab inserted at same time), that's ok
-          if (insertError && !insertError.message.includes('duplicate key value')) {
-            throw insertError
+          if (insertError) {
+            console.error('Error recording popup view:', insertError)
+            // Only show toast for non-duplicate errors
+            if (!insertError.message.includes('duplicate key value')) {
+              toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Une erreur est survenue lors de l'enregistrement de la notification."
+              })
+            }
           }
         }
       } catch (error) {
-        console.error('Error checking popup view:', error)
+        console.error('Error in checkPopupView:', error)
         toast({
           variant: "destructive",
           title: "Erreur",
