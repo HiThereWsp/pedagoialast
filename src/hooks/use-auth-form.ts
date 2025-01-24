@@ -90,15 +90,6 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!formState.acceptedTerms) {
-      toast({
-        variant: "destructive",
-        title: "Conditions d'utilisation",
-        description: "Veuillez accepter les conditions d'utilisation pour continuer.",
-      })
-      return
-    }
-
     if (!validateForm()) return
 
     setField("isLoading", true)
@@ -131,11 +122,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       onSuccess?.()
     } catch (error: any) {
       console.error("Full signup error details:", error)
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: getErrorMessage(error),
-      })
+      throw error
     } finally {
       setField("isLoading", false)
     }
