@@ -25,6 +25,9 @@ const getErrorMessage = (error: AuthError) => {
         if (error.message.includes("Invalid login credentials")) {
           return "Email ou mot de passe incorrect."
         }
+        if (error.message.includes("User already registered")) {
+          return "Un compte existe déjà avec cet email. Veuillez vous connecter."
+        }
         return "Les identifiants fournis sont invalides."
       case 422:
         return "Format d'email invalide."
@@ -100,7 +103,6 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         firstName: formState.firstName,
       })
 
-      // Get the current URL's origin for the redirect
       const origin = window.location.origin
       const redirectTo = `${origin}/auth/callback`
 
