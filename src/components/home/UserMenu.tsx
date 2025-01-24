@@ -1,10 +1,11 @@
-import { Settings, LogOut, MessageSquare } from "lucide-react"
+import { Settings, LogOut, MessageSquare, Mail } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -71,10 +72,15 @@ export const UserMenu = () => {
             <MessageSquare className="mr-2 h-4 w-4" />
             <span>Suggérer des fonctionnalités</span>
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/contact')} className="cursor-pointer">
+            <Mail className="mr-2 h-4 w-4" />
+            <span>Nous contacter</span>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             <span>Paramètres</span>
           </DropdownMenuItem>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
             <LogOut className="mr-2 h-4 w-4" />
             <span>Se déconnecter</span>
