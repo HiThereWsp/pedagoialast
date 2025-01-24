@@ -32,7 +32,7 @@ const getErrorMessage = (error: AuthError) => {
         return "Trop de tentatives. Veuillez réessayer plus tard."
       case 500:
         if (error.message.includes("Database error saving new user")) {
-          return "Erreur lors de la création du profil. Veuillez réessayer avec un autre email."
+          return "Une erreur est survenue lors de la création de votre compte. Veuillez réessayer avec un autre email."
         }
         return "Une erreur serveur est survenue. Veuillez réessayer plus tard."
       default:
@@ -100,6 +100,10 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         firstName: formState.firstName,
       })
 
+      // Get the current URL's origin for the redirect
+      const origin = window.location.origin
+      const redirectTo = `${origin}/auth/callback`
+
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formState.email.trim(),
         password: formState.password,
@@ -107,7 +111,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
           data: {
             first_name: formState.firstName?.trim() || null,
           },
-          emailRedirectTo: 'https://pedagoia.fr/auth/callback'
+          emailRedirectTo: redirectTo
         }
       })
       
@@ -122,7 +126,12 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       onSuccess?.()
     } catch (error: any) {
       console.error("Full signup error details:", error)
-      throw error
+      const errorMessage = getErrorMessage(error)
+      toast({
+        variant: "destructive",
+        title: "Erreur lors de l'inscription",
+        description: errorMessage,
+      })
     } finally {
       setField("isLoading", false)
     }
