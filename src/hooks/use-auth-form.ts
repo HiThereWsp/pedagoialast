@@ -82,16 +82,38 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     try {
       console.log("Starting signup process with:", {
         email: formState.email,
+        firstName: formState.firstName,
       })
 
-      const { data, error } = await supabase.auth.signUp({
+      // Créer l'utilisateur avec Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
+        options: {
+          data: {
+            first_name: formState.firstName,
+          }
+        }
       })
       
-      if (error) throw error
+      if (authError) throw authError
 
-      console.log("Signup successful:", data)
+      console.log("Auth signup successful:", authData)
+
+      // Vérifier si le profil a été créé
+      if (authData.user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authData.user.id)
+          .single()
+
+        console.log("Profile check result:", { profileData, profileError })
+
+        if (profileError) {
+          console.error("Error checking profile:", profileError)
+        }
+      }
 
       toast({
         title: "Inscription réussie",
