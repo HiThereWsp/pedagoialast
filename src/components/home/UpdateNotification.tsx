@@ -30,22 +30,31 @@ export const UpdateNotification = () => {
 
         if (!popupView) {
           setOpen(true)
-          // Record that user has seen the popup
+          // Record that user has seen the popup using upsert to handle duplicates
           const { error: insertError } = await supabase
             .from('user_popup_views')
-            .upsert([
-              { user_id: user.id, popup_key: POPUP_KEY }
-            ], {
-              onConflict: 'user_id,popup_key'
-            })
+            .upsert(
+              [{ 
+                user_id: user.id, 
+                popup_key: POPUP_KEY,
+                viewed_at: new Date().toISOString()
+              }],
+              { 
+                onConflict: 'user_id,popup_key',
+                ignoreDuplicates: true 
+              }
+            )
 
           if (insertError) {
             console.error('Error recording popup view:', insertError)
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: "Une erreur est survenue lors de l'enregistrement de la notification."
-            })
+            // Only show toast for non-duplicate errors
+            if (!insertError.message.includes('duplicate key value')) {
+              toast({
+                variant: "destructive",
+                title: "Erreur",
+                description: "Une erreur est survenue lors de l'enregistrement de la notification."
+              })
+            }
           }
         }
       } catch (error) {
