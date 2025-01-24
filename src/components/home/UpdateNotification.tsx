@@ -23,20 +23,24 @@ export const UpdateNotification = () => {
           .eq('popup_key', POPUP_KEY)
           .maybeSingle()
 
-        if (fetchError) throw fetchError
+        if (fetchError) {
+          console.error('Error fetching popup view:', fetchError)
+          return
+        }
 
         if (!popupView) {
           setOpen(true)
           // Record that user has seen the popup
           const { error: insertError } = await supabase
             .from('user_popup_views')
-            .insert([
+            .upsert([
               { user_id: user.id, popup_key: POPUP_KEY }
-            ])
+            ], {
+              onConflict: 'user_id,popup_key'
+            })
 
-          // Ignore duplicate key errors as they are expected in case of concurrent tabs
-          if (insertError && !insertError.message.includes('duplicate key value')) {
-            console.error('Error inserting popup view:', insertError)
+          if (insertError) {
+            console.error('Error recording popup view:', insertError)
             toast({
               variant: "destructive",
               title: "Erreur",
@@ -45,7 +49,7 @@ export const UpdateNotification = () => {
           }
         }
       } catch (error) {
-        console.error('Error checking popup view:', error)
+        console.error('Error in checkPopupView:', error)
         toast({
           variant: "destructive",
           title: "Erreur",
