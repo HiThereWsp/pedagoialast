@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+// const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+const RESEND_API_KEY = "re_cmS8JUA4_3CjcfARe8fpYZVtNuEt87mfp"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
