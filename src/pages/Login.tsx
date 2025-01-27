@@ -16,18 +16,19 @@ export default function Login() {
   useEffect(() => {
     const checkUser = async () => {
       try {
+        // Clear any existing session data first
+        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
+        
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
-          if (error.message.includes("refresh_token")) {
-            await supabase.auth.signOut()
-            toast({
-              variant: "destructive",
-              title: "Session expirée",
-              description: "Veuillez vous reconnecter.",
-            })
-          }
+          await supabase.auth.signOut()
+          toast({
+            variant: "destructive",
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter.",
+          })
         } else if (session) {
           // Si l'utilisateur est déjà connecté, on le redirige
           const returnUrl = location.state?.returnUrl || '/home'
@@ -35,6 +36,7 @@ export default function Login() {
         }
       } catch (error) {
         console.error("Auth error:", error)
+        await supabase.auth.signOut()
       } finally {
         setIsLoading(false)
       }
