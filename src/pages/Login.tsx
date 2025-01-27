@@ -16,14 +16,14 @@ export default function Login() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        // Clear any existing session data first
-        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-        
+        setIsLoading(true)
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
+          // En cas d'erreur, on nettoie la session
           await supabase.auth.signOut()
+          localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
           toast({
             variant: "destructive",
             title: "Session expirée",
@@ -31,12 +31,14 @@ export default function Login() {
           })
         } else if (session) {
           // Si l'utilisateur est déjà connecté, on le redirige
-          const returnUrl = location.state?.returnUrl || '/home'
+          console.log("Session active trouvée, redirection...")
+          const returnUrl = location.state?.returnUrl || '/chat'
           navigate(returnUrl, { replace: true })
         }
       } catch (error) {
         console.error("Auth error:", error)
         await supabase.auth.signOut()
+        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
       } finally {
         setIsLoading(false)
       }
@@ -49,7 +51,8 @@ export default function Login() {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_IN' && session) {
-        const returnUrl = location.state?.returnUrl || '/home'
+        console.log("Utilisateur connecté, redirection...")
+        const returnUrl = location.state?.returnUrl || '/chat'
         navigate(returnUrl, { replace: true })
       }
     })
