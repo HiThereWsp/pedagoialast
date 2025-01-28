@@ -10,7 +10,8 @@ export const ActionButtons = () => {
 
   return (
     <div className="w-full space-y-6">
-      {utilityActions.slice(0, 1).map((action, index) => {
+      {/* Temporarily hidden utility actions */}
+      {false && utilityActions.slice(0, 1).map((action, index) => {
         const Icon = action.icon
         return (
           <Button
