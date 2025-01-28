@@ -17,11 +17,11 @@ export default function Login() {
     const checkUser = async () => {
       try {
         setIsLoading(true)
+        console.log("Checking session...")
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
-          // En cas d'erreur, on nettoie la session
           await supabase.auth.signOut()
           localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
           toast({
@@ -30,10 +30,12 @@ export default function Login() {
             description: "Veuillez vous reconnecter.",
           })
         } else if (session) {
-          // Si l'utilisateur est déjà connecté, on le redirige
-          console.log("Session active trouvée, redirection...")
+          console.log("Active session found:", session)
           const returnUrl = location.state?.returnUrl || '/chat'
+          console.log("Redirecting to:", returnUrl)
           navigate(returnUrl, { replace: true })
+        } else {
+          console.log("No active session found")
         }
       } catch (error) {
         console.error("Auth error:", error)
@@ -46,13 +48,13 @@ export default function Login() {
 
     checkUser()
 
-    // Écouter les changements d'état d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_IN' && session) {
-        console.log("Utilisateur connecté, redirection...")
+        console.log("User signed in, redirecting...")
         const returnUrl = location.state?.returnUrl || '/chat'
+        console.log("Redirecting to:", returnUrl)
         navigate(returnUrl, { replace: true })
       }
     })
@@ -83,7 +85,6 @@ export default function Login() {
           </Card>
         </div>
         
-        {/* Footer */}
         <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-14 items-center justify-between">
             <p className="text-sm text-muted-foreground">
