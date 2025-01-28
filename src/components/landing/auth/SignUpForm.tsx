@@ -5,6 +5,7 @@ import { TermsDialog } from "@/components/terms/TermsDialog"
 import { useAuthForm } from "@/hooks/use-auth-form"
 import { AuthFormField } from "./AuthFormField"
 import { useToast } from "@/hooks/use-toast"
+import { posthog } from "@/integrations/posthog/client"
 
 interface SignUpFormProps {
   onToggleMode: () => void
@@ -27,11 +28,25 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
     }
 
     try {
+      // Track signup attempt
+      posthog.capture('signup_started', {
+        has_first_name: !!formState.firstName
+      })
+
       await handleSignUp(e)
+      
+      // Track successful signup
+      posthog.capture('signup_completed', {
+        has_first_name: !!formState.firstName
+      })
     } catch (error: any) {
       console.error("Signup error details:", error)
       
-      // Afficher un message d'erreur plus détaillé
+      // Track signup error
+      posthog.capture('signup_error', {
+        error_type: error?.message || 'unknown'
+      })
+      
       toast({
         variant: "destructive",
         title: "Erreur lors de l'inscription",

@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast"
 import { WaitlistFormFields } from "./waitlist/WaitlistFormFields"
 import { SuccessToast } from "./waitlist/SuccessToast"
 import { useRateLimit } from "@/hooks/useRateLimit"
+import { posthog } from "@/integrations/posthog/client"
 
 interface WaitlistFormData {
   email: string
@@ -16,7 +17,7 @@ export const WaitlistForm = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const { register, handleSubmit, reset, formState: { errors } } = useForm<WaitlistFormData>()
-  const { checkRateLimit, isLimited } = useRateLimit({ maxRequests: 3, timeWindow: 300000 }) // 5 minutes
+  const { checkRateLimit, isLimited } = useRateLimit({ maxRequests: 3, timeWindow: 300000 })
 
   const onSubmit = async (data: WaitlistFormData) => {
     if (!checkRateLimit()) {
@@ -45,6 +46,12 @@ export const WaitlistForm = () => {
         console.error('Supabase error details:', supabaseError)
         
         if (supabaseError.code === '23505') {
+          // Track duplicate signup attempt
+          posthog.capture('waitlist_duplicate_signup', {
+            email: data.email,
+            teaching_level: data.teachingLevel
+          })
+          
           toast({
             variant: "default",
             className: "bg-primary/10 border-primary/20",
@@ -66,7 +73,6 @@ export const WaitlistForm = () => {
             ),
           })
           setIsLoading(false)
-          // On ferme quand même la modal même si l'email est déjà inscrit
           window.dispatchEvent(new CustomEvent('closeWaitlistModal'))
           return
         }
@@ -74,9 +80,13 @@ export const WaitlistForm = () => {
         throw supabaseError
       }
 
+      // Track successful waitlist signup
+      posthog.capture('waitlist_signup_success', {
+        teaching_level: data.teachingLevel
+      })
+
       console.log('Form submitted successfully')
       
-      // Fermeture de la modal
       window.dispatchEvent(new CustomEvent('closeWaitlistModal'))
 
       toast({
@@ -87,6 +97,12 @@ export const WaitlistForm = () => {
       reset()
     } catch (error) {
       console.error('Error submitting form:', error)
+      
+      // Track signup error
+      posthog.capture('waitlist_signup_error', {
+        error: error.message
+      })
+      
       toast({
         variant: "destructive",
         title: "Erreur",
