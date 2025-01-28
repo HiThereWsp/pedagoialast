@@ -103,10 +103,6 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         email: formState.email
       })
 
-      // Nettoyage de toute session existante
-      await supabase.auth.signOut()
-      localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formState.email.trim(),
         password: formState.password,

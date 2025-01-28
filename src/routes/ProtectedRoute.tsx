@@ -13,19 +13,10 @@ export const ProtectedRoute = () => {
       try {
         setIsLoading(true)
         
-        // Clear any stale session data
-        if (!localStorage.getItem('sb-jpelncawdaounkidvymu-auth-token')) {
-          setIsAuthenticated(false)
-          return
-        }
-        
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
-          // En cas d'erreur de session, on nettoie
-          await supabase.auth.signOut()
-          localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
           setIsAuthenticated(false)
           toast({
             variant: "destructive",
@@ -39,7 +30,6 @@ export const ProtectedRoute = () => {
       } catch (error) {
         console.error("Auth error:", error)
         setIsAuthenticated(false)
-        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
         toast({
           variant: "destructive",
           title: "Erreur d'authentification",
@@ -56,7 +46,6 @@ export const ProtectedRoute = () => {
       console.log("Auth state changed:", event)
       if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || !session) {
         setIsAuthenticated(false)
-        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
       } else {
         setIsAuthenticated(true)
       }

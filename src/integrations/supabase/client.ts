@@ -13,7 +13,7 @@ export const supabase = createClient<Database>(
       persistSession: true,
       detectSessionInUrl: true,
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      storageKey: 'pedagoia-auth-token',
+      storageKey: 'sb-jpelncawdaounkidvymu-auth-token',
       flowType: 'pkce',
     },
     global: {
