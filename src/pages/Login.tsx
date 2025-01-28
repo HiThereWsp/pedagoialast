@@ -49,25 +49,31 @@ export default function Login() {
   useEffect(() => {
     const checkUser = async () => {
       try {
+        setIsLoading(true)
+        console.log("Checking session...")
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
-          if (error.message.includes("refresh_token")) {
-            await supabase.auth.signOut()
-            toast({
-              variant: "destructive",
-              title: "Session expirée",
-              description: "Veuillez vous reconnecter.",
-            })
-          }
+          await supabase.auth.signOut()
+          localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
+          toast({
+            variant: "destructive",
+            title: "Session expirée",
+            description: "Veuillez vous reconnecter.",
+          })
         } else if (session) {
-          // Si l'utilisateur est déjà connecté, on le redirige
+          console.log("Active session found:", session)
           const returnUrl = location.state?.returnUrl || '/home'
+          console.log("Redirecting to:", returnUrl)
           navigate(returnUrl, { replace: true })
+        } else {
+          console.log("No active session found")
         }
       } catch (error) {
         console.error("Auth error:", error)
+        await supabase.auth.signOut()
+        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
       } finally {
         setIsLoading(false)
       }
@@ -75,12 +81,13 @@ export default function Login() {
 
     checkUser()
 
-    // Écouter les changements d'état d'authentification
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_IN' && session) {
+        console.log("User signed in, redirecting...")
         const returnUrl = location.state?.returnUrl || '/home'
+        console.log("Redirecting to:", returnUrl)
         navigate(returnUrl, { replace: true })
       }
     })
@@ -111,7 +118,6 @@ export default function Login() {
           </Card>
         </div>
         
-        {/* Footer */}
         <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-14 items-center justify-between">
             <p className="text-sm text-muted-foreground">
