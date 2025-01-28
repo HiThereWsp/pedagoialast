@@ -31,7 +31,7 @@ export default function Login() {
           })
         } else if (session) {
           console.log("Active session found:", session)
-          const returnUrl = location.state?.returnUrl || '/chat'
+          const returnUrl = location.state?.returnUrl || '/home'
           console.log("Redirecting to:", returnUrl)
           navigate(returnUrl, { replace: true })
         } else {
@@ -53,7 +53,7 @@ export default function Login() {
       
       if (event === 'SIGNED_IN' && session) {
         console.log("User signed in, redirecting...")
-        const returnUrl = location.state?.returnUrl || '/chat'
+        const returnUrl = location.state?.returnUrl || '/home'
         console.log("Redirecting to:", returnUrl)
         navigate(returnUrl, { replace: true })
       }
