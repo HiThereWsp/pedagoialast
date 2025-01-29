@@ -66,3 +66,14 @@ export const validatePasswordResetForm = (password: string, confirmPassword: str
 
   return errors
 }
+
+export const validateForgotPasswordForm = (email: string) => {
+  const errors: string[] = []
+
+  if (!email.trim()) {
+    errors.push("Veuillez saisir votre email.")
+  }
+
+
+  return errors
+}

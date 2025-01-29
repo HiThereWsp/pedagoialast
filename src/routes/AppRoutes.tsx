@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import { ProtectedRoute } from "./ProtectedRoute"
 import { Suspense, lazy } from "react"
 import { Loader2 } from "lucide-react"
+import ForgotPassword from "@/pages/ForgotPassword.tsx";
 
 // Lazy load components
 const Index = lazy(() => import("@/pages/Index"))
@@ -39,6 +40,7 @@ export const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         {/* Routes protégées nécessitant une authentification */}
         <Route element={<ProtectedRoute />}>
