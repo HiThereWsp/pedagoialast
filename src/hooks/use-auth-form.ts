@@ -23,6 +23,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     acceptedTerms: false,
     isLoading: false
   })
+  const [signUpSuccess, setSignupSuccess] = useState(false)
   const { toast } = useToast()
 
   const setField = (field: keyof AuthFormState, value: any) => {
@@ -78,6 +79,8 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
         description: "Vérifiez vos emails pour confirmer votre inscription.",
       })
       onSuccess?.()
+      setSignupSuccess(true)
+
     } catch (error: any) {
       console.error("Full signup error details:", error)
       toast({
@@ -111,7 +114,6 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       if (error) throw error
 
       console.log("Signin successful:", data)
-
       toast({
         title: "Connexion réussie",
         description: "Vous êtes maintenant connecté.",
@@ -133,7 +135,8 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     formState,
     setField,
     handleSignUp,
-    handleSignIn
+    handleSignIn,
+    signUpSuccess
   }
 }
 
