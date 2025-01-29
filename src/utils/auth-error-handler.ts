@@ -1,6 +1,7 @@
 import { AuthError, AuthApiError } from "@supabase/supabase-js"
 
 export const getAuthErrorMessage = (error: AuthError): string => {
+  console.log({error})
   if (error instanceof AuthApiError) {
     switch (error.status) {
       case 400:
@@ -27,7 +28,7 @@ export const getAuthErrorMessage = (error: AuthError): string => {
         return "Une erreur est survenue. Veuillez réessayer."
     }
   }
-  return "Une erreur est survenue. Veuillez réessayer."
+  return "aUne erreur est survenue. Veuillez réessayer."
 }
 
 export const validateAuthForm = (email: string, password: string) => {
@@ -43,6 +44,24 @@ export const validateAuthForm = (email: string, password: string) => {
 
   if (password.length < 6) {
     errors.push("Le mot de passe doit contenir au moins 6 caractères.")
+  }
+
+  return errors
+}
+
+export const validatePasswordResetForm = (password: string, confirmPassword: string) => {
+  const errors: string[] = []
+
+  if (!password.trim()) {
+    errors.push("Veuillez saisir votre mot de passe.")
+  }
+
+  if (password.length < 6) {
+    errors.push("Le mot de passe doit contenir au moins 6 caractères.")
+  }
+
+  if (password !== confirmPassword) {
+    errors.push("Les mots de passe ne correspondent pas.")
   }
 
   return errors

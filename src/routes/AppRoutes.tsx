@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react"
 const Index = lazy(() => import("@/pages/Index"))
 const Home = lazy(() => import("@/pages/Home"))
 const Login = lazy(() => import("@/pages/Login"))
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"))
 const Settings = lazy(() => import("@/pages/Settings"))
 const NotFound = lazy(() => import("@/pages/NotFound"))
 const LessonPlanPage = lazy(() => import("@/pages/LessonPlanPage"))
@@ -37,7 +38,8 @@ export const AppRoutes = () => {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<ContactPage />} />
-        
+        <Route path="/reset-password" element={<ResetPassword />} />
+
         {/* Routes protégées nécessitant une authentification */}
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />

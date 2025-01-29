@@ -56,7 +56,7 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
       })
 
       const origin = window.location.origin
-      const redirectTo = `${origin}/auth/callback`
+      const redirectTo = `${origin}/login`
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formState.email.trim(),
@@ -136,3 +136,4 @@ export const useAuthForm = ({ onSuccess }: AuthFormProps = {}) => {
     handleSignIn
   }
 }
+
