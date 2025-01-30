@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';

@@ -27,7 +27,11 @@ export function UTMGenerator() {
   }
 
   const saveUTMLink = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
     const { error } = await supabase.from("utm_links").insert({
+      user_id: user.id,
       base_url: baseUrl,
       utm_source: source,
       utm_medium: medium,
