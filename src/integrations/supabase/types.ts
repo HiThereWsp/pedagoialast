@@ -303,6 +303,39 @@ export type Database = {
         }
         Relationships: []
       }
+      utm_links: {
+        Row: {
+          base_url: string
+          created_at: string
+          id: string
+          user_id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          base_url: string
+          created_at?: string
+          id?: string
+          user_id: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          base_url?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Relationships: []
+      }
       waitlist: {
         Row: {
           created_at: string

@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card } from "@/components/ui/card"
 import { Copy, Link } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
 
 export function UTMGenerator() {
   const [baseUrl, setBaseUrl] = useState("https://pedagoia.fr")
@@ -25,10 +26,29 @@ export function UTMGenerator() {
     return `${baseUrl}?${params.toString()}`
   }
 
+  const saveUTMLink = async () => {
+    const { error } = await supabase.from("utm_links").insert({
+      base_url: baseUrl,
+      utm_source: source,
+      utm_medium: medium,
+      utm_campaign: campaign,
+      utm_content: content,
+    })
+
+    if (error) {
+      console.error("Error saving UTM link:", error)
+      toast({
+        variant: "destructive",
+        description: "Erreur lors de la sauvegarde du lien",
+      })
+    }
+  }
+
   const copyToClipboard = async () => {
     const link = generateUTMLink()
     try {
       await navigator.clipboard.writeText(link)
+      await saveUTMLink()
       toast({
         description: "Lien UTM copié dans le presse-papier !",
       })
