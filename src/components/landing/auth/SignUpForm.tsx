@@ -5,13 +5,15 @@ import { TermsDialog } from "@/components/terms/TermsDialog"
 import { useAuthForm } from "@/hooks/use-auth-form"
 import { AuthFormField } from "./AuthFormField"
 import { useToast } from "@/hooks/use-toast"
+import {useEffect, useState} from "react";
 
 interface SignUpFormProps {
   onToggleMode: () => void
 }
 
 export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
-  const { formState, setField, handleSignUp } = useAuthForm()
+  const { formState, setField, handleSignUp, signUpSuccess } = useAuthForm()
+
   const { toast } = useToast()
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -39,11 +41,16 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
       })
     }
   }
+  useEffect(() => {
 
-  return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <AuthFormField
-        id="firstName"
+  }, [signUpSuccess])
+
+    return signUpSuccess ? <>
+        <p>Thank you for registering! Please check your email ({formState.email}) for the confirmation link.</p>
+    </>: (
+        <form onSubmit={onSubmit} className="space-y-4">
+            <AuthFormField
+                id="firstName"
         label="Prénom"
         value={formState.firstName || ""}
         onChange={(value) => setField("firstName", value)}

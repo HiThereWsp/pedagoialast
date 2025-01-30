@@ -2,11 +2,13 @@ import { Routes, Route, Navigate } from "react-router-dom"
 import { ProtectedRoute } from "./ProtectedRoute"
 import { Suspense, lazy } from "react"
 import { Loader2 } from "lucide-react"
+import ForgotPassword from "@/pages/ForgotPassword.tsx";
 
 // Lazy load components
 const Index = lazy(() => import("@/pages/Index"))
 const Home = lazy(() => import("@/pages/Home"))
 const Login = lazy(() => import("@/pages/Login"))
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"))
 const Settings = lazy(() => import("@/pages/Settings"))
 const NotFound = lazy(() => import("@/pages/NotFound"))
 const LessonPlanPage = lazy(() => import("@/pages/LessonPlanPage"))
@@ -37,7 +39,9 @@ export const AppRoutes = () => {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<ContactPage />} />
-        
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
         {/* Routes protégées nécessitant une authentification */}
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
