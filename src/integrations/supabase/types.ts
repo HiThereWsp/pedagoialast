@@ -123,6 +123,45 @@ export type Database = {
         }
         Relationships: []
       }
+      friction_points: {
+        Row: {
+          action_completed_at: string | null
+          action_started_at: string | null
+          created_at: string | null
+          error_occurred: boolean | null
+          id: string
+          regeneration_count: number | null
+          tool_type: string
+          user_id: string | null
+          wait_duration_ms: number | null
+          was_abandoned: boolean | null
+        }
+        Insert: {
+          action_completed_at?: string | null
+          action_started_at?: string | null
+          created_at?: string | null
+          error_occurred?: boolean | null
+          id?: string
+          regeneration_count?: number | null
+          tool_type: string
+          user_id?: string | null
+          wait_duration_ms?: number | null
+          was_abandoned?: boolean | null
+        }
+        Update: {
+          action_completed_at?: string | null
+          action_started_at?: string | null
+          created_at?: string | null
+          error_occurred?: boolean | null
+          id?: string
+          regeneration_count?: number | null
+          tool_type?: string
+          user_id?: string | null
+          wait_duration_ms?: number | null
+          was_abandoned?: boolean | null
+        }
+        Relationships: []
+      }
       image_generation_usage: {
         Row: {
           generated_at: string | null
@@ -261,6 +300,45 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_patterns: {
+        Row: {
+          created_at: string | null
+          day_of_week: number | null
+          feature_complexity: string | null
+          hour_of_day: number | null
+          id: string
+          is_template_used: boolean | null
+          session_end: string | null
+          session_start: string | null
+          tool_type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week?: number | null
+          feature_complexity?: string | null
+          hour_of_day?: number | null
+          id?: string
+          is_template_used?: boolean | null
+          session_end?: string | null
+          session_start?: string | null
+          tool_type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number | null
+          feature_complexity?: string | null
+          hour_of_day?: number | null
+          id?: string
+          is_template_used?: boolean | null
+          session_end?: string | null
+          session_start?: string | null
+          tool_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_popup_views: {
         Row: {
           id: string
@@ -279,6 +357,42 @@ export type Database = {
           popup_key?: string
           user_id?: string | null
           viewed_at?: string | null
+        }
+        Relationships: []
+      }
+      user_retention: {
+        Row: {
+          created_at: string | null
+          days_active: number[] | null
+          first_seen_date: string
+          id: string
+          last_seen_date: string
+          retention_30_days: boolean | null
+          retention_7_days: boolean | null
+          retention_90_days: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          days_active?: number[] | null
+          first_seen_date: string
+          id?: string
+          last_seen_date: string
+          retention_30_days?: boolean | null
+          retention_7_days?: boolean | null
+          retention_90_days?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          days_active?: number[] | null
+          first_seen_date?: string
+          id?: string
+          last_seen_date?: string
+          retention_30_days?: boolean | null
+          retention_7_days?: boolean | null
+          retention_90_days?: boolean | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -415,6 +529,15 @@ export type Database = {
           day: string | null
           productive_conversations: number | null
           total_conversations: number | null
+        }
+        Relationships: []
+      }
+      dau_mau_ratio: {
+        Row: {
+          dau: number | null
+          dau_mau_ratio: number | null
+          mau: number | null
+          month: string | null
         }
         Relationships: []
       }
