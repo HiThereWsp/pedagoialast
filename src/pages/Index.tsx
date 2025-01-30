@@ -7,6 +7,7 @@ import { useChat } from "@/hooks/useChat"
 import { ChatInput } from "@/components/ChatInput"
 import { ChatHistory } from "@/components/ChatHistory"
 import { SEO } from "@/components/SEO"
+import { ImageGenerator } from "@/components/image-generation/ImageGenerator"
 
 export default function Index() {
   const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
@@ -186,13 +187,17 @@ export default function Index() {
                 <ChatHistory messages={messages} isLoading={chatLoading} />
               </div>
             ) : (
-              <div className="flex h-full items-center justify-center flex-col">
-                <p className="text-2xl font-medium bg-gradient-to-r from-amber-400 via-orange-300 to-amber-200 bg-clip-text text-transparent mb-2">
-                  {firstName ? `Bonjour ${firstName},` : 'Bonjour,'}
-                </p>
-                <p className="text-2xl font-medium premium-text">
-                  Comment puis-je vous aider ?
-                </p>
+              <div className="flex h-full items-center justify-center flex-col gap-8">
+                <div>
+                  <p className="text-2xl font-medium bg-gradient-to-r from-amber-400 via-orange-300 to-amber-200 bg-clip-text text-transparent mb-2">
+                    {firstName ? `Bonjour ${firstName},` : 'Bonjour,'}
+                  </p>
+                  <p className="text-2xl font-medium premium-text">
+                    Comment puis-je vous aider ?
+                  </p>
+                </div>
+                
+                <ImageGenerator />
               </div>
             )}
             <ChatInput 
