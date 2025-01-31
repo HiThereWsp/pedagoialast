@@ -2,7 +2,6 @@ import {
   MessageSquare,
   Sparkles,
   PenTool,
-  Brain,
   FileEdit,
   Image
 } from "lucide-react"
@@ -23,11 +22,6 @@ export const actions: Action[] = [
     title: "Générateur d'exercices",
     route: "/exercises",
     icon: PenTool,
-  },
-  {
-    title: "Différenciation pédagogique",
-    route: "/differenciation",
-    icon: Brain,
   },
   {
     title: "Assistant administratif",
