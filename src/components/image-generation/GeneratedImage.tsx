@@ -1,7 +1,7 @@
-import { Card } from '@/components/ui/card'
 import { ModificationForm } from './ModificationForm'
-import { FeedbackButtons } from './FeedbackButtons'
 import { DownloadButton } from './DownloadButton'
+import { FeedbackButtons } from './buttons/FeedbackButtons'
+import { ImageStyle } from './types'
 
 interface GeneratedImageProps {
   imageUrl: string
@@ -12,22 +12,20 @@ interface GeneratedImageProps {
 export const GeneratedImage = ({ imageUrl, onModify, isLoading }: GeneratedImageProps) => {
   return (
     <div className="mt-6 space-y-4">
-      <Card className="p-6">
+      <div className="relative aspect-square">
         <img
           src={imageUrl}
-          alt="Generated"
-          className="w-full h-auto rounded-lg shadow-lg mb-4"
+          alt="Generated image"
+          className="w-full h-full object-cover rounded-lg"
         />
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FeedbackButtons imageUrl={imageUrl} />
-            <DownloadButton imageUrl={imageUrl} />
-          </div>
-        </div>
-      </Card>
-      
-      <ModificationForm 
+      </div>
+
+      <div className="flex justify-between items-center">
+        <FeedbackButtons />
+        <DownloadButton imageUrl={imageUrl} />
+      </div>
+
+      <ModificationForm
         onSubmit={onModify}
         isLoading={isLoading}
       />

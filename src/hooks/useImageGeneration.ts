@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useToolMetrics } from '@/hooks/useToolMetrics'
-import { GenerationPrompt } from '@/components/image-generation/types'
+import { GenerationPrompt, ImageStyle } from '@/components/image-generation/types'
 
 export const useImageGeneration = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -53,15 +53,19 @@ export const useImageGeneration = () => {
     }
   }
 
-  const modifyImage = async (modificationPrompt: string) => {
+  const modifyImage = async (modificationPrompt: string, style: ImageStyle) => {
     if (!generatedImageUrl) return
     
     const startTime = Date.now()
     setIsLoading(true)
     try {
+      const enhancedPrompt = style === 'auto' 
+        ? modificationPrompt
+        : `${modificationPrompt} (in ${style} style)`
+
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: {
-          prompt: modificationPrompt,
+          prompt: enhancedPrompt,
           originalImageUrl: generatedImageUrl,
           size: "1024x1024"
         }
