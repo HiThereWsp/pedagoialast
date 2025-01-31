@@ -55,23 +55,21 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
           <div key={value} className="relative">
             <HoverCard>
               <HoverCardTrigger>
-                <div>
+                <Label
+                  htmlFor={value}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-background border-2 cursor-pointer
+                    transition-colors hover:bg-accent
+                    peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary
+                    peer-data-[state=checked]:bg-primary/5"
+                >
                   <RadioGroupItem
                     value={value}
                     id={value}
                     className="peer sr-only"
                   />
-                  <Label
-                    htmlFor={value}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-background border-2 cursor-pointer
-                      transition-colors hover:bg-accent
-                      peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary
-                      peer-data-[state=checked]:bg-primary/5"
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{label}</span>
-                  </Label>
-                </div>
+                  <Icon className="w-4 h-4" />
+                  <span>{label}</span>
+                </Label>
               </HoverCardTrigger>
               <HoverCardContent>
                 <p className="text-sm text-muted-foreground">{description}</p>
