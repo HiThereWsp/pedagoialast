@@ -7,7 +7,6 @@ import { useChat } from "@/hooks/useChat"
 import { ChatInput } from "@/components/ChatInput"
 import { ChatHistory } from "@/components/ChatHistory"
 import { SEO } from "@/components/SEO"
-import { ImageGenerator } from "@/components/image-generation/ImageGenerator"
 
 export default function Index() {
   const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
@@ -195,8 +194,6 @@ export default function Index() {
                     Comment puis-je vous aider ?
                   </p>
                 </div>
-                
-                <ImageGenerator />
               </div>
             ) : (
               <div className="flex-1 overflow-y-auto p-4">
