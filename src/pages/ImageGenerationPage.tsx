@@ -1,6 +1,7 @@
 import { SEO } from "@/components/SEO"
 import { ImageGenerator } from "@/components/image-generation/ImageGenerator"
 import { Image } from "lucide-react"
+import { BackButton } from "@/components/settings/BackButton"
 
 export default function ImageGenerationPage() {
   return (
@@ -10,6 +11,8 @@ export default function ImageGenerationPage() {
         description="Générez des images pour vos contenus pédagogiques avec PedagoIA"
       />
       <div className="container mx-auto py-8">
+        <BackButton />
+        
         <h1 className="text-3xl font-bold text-center mb-8">Générateur d'images</h1>
         
         <div className="text-center mb-12">
