@@ -55,7 +55,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
           <div key={value} className="relative">
             <HoverCard>
               <HoverCardTrigger>
-                <div 
+                <label
                   className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer
                     transition-all duration-200
                     ${selectedStyle === value 
@@ -69,7 +69,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
                   />
                   <Icon className="w-4 h-4" />
                   <span>{label}</span>
-                </div>
+                </label>
               </HoverCardTrigger>
               <HoverCardContent>
                 <p className="text-sm text-muted-foreground">{description}</p>

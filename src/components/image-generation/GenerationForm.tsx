@@ -44,7 +44,7 @@ export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => 
 
       <Button 
         type="submit" 
-        className="w-full"
+        className="w-full bg-gradient-to-r from-[#FEF7CD] via-[#FFDEE2] to-[#FEC6A1] text-gray-800 hover:opacity-90 transition-opacity"
         disabled={!userPrompt.trim() || isLoading}
       >
         Générer l'image
