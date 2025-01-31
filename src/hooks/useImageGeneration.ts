@@ -11,6 +11,7 @@ export const useImageGeneration = () => {
   const { logToolUsage } = useToolMetrics()
 
   const generateImage = async (prompt: string, style: ImageStyle) => {
+    const startTime = Date.now()
     setIsLoading(true)
 
     try {
@@ -31,7 +32,12 @@ export const useImageGeneration = () => {
 
       if (data.output) {
         setGeneratedImageUrl(data.output)
-        await logToolUsage('image_generation', 'generate')
+        await logToolUsage(
+          'image_generation',
+          'generate',
+          prompt.length,
+          Date.now() - startTime
+        )
       } else {
         throw new Error('Pas d\'URL d\'image dans la réponse')
       }
@@ -50,6 +56,7 @@ export const useImageGeneration = () => {
   const modifyImage = async (modificationPrompt: string) => {
     if (!generatedImageUrl) return
     
+    const startTime = Date.now()
     setIsLoading(true)
     try {
       const { data, error } = await supabase.functions.invoke('generate-image', {
@@ -65,7 +72,12 @@ export const useImageGeneration = () => {
 
       if (data.output) {
         setGeneratedImageUrl(data.output)
-        await logToolUsage('image_generation', 'modify')
+        await logToolUsage(
+          'image_generation',
+          'modify',
+          modificationPrompt.length,
+          Date.now() - startTime
+        )
       } else {
         throw new Error('Pas d\'URL d\'image dans la réponse')
       }
