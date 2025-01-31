@@ -1,34 +1,38 @@
 import { 
-  MessageSquare, 
+  Compass, 
+  BookOpen, 
+  PenSquare, 
   FileText, 
-  Brain,
-  Image
+  MessageSquare,
 } from "lucide-react"
-import type { Action } from "@/types/actions"
+import type { ActionType } from "@/types/actions"
 
-export const actions: Action[] = [
+export const actions: ActionType[] = [
   {
-    title: "Chat pédagogique",
-    icon: MessageSquare,
+    title: "Découvrir l'application",
+    route: "/discover",
+    icon: Compass,
+    isUtilityAction: true
+  },
+  {
+    title: "Chatter avec l'assistant",
     route: "/chat",
+    icon: MessageSquare,
     isUtilityAction: false
   },
   {
-    title: "Générer des images",
-    icon: Image,
-    route: "/image-generation", 
-    isUtilityAction: false
-  },
-  {
-    title: "Créer une séquence",
-    icon: FileText,
+    title: "Générer une séquence pédagogique",
     route: "/lesson-plan",
-    isUtilityAction: false
+    icon: BookOpen
   },
   {
-    title: "Différenciation pédagogique",
-    icon: Brain,
-    route: "/differenciation",
-    isUtilityAction: false
+    title: "Générer/Adapter un exercice",
+    route: "/exercises",
+    icon: PenSquare
+  },
+  {
+    title: "Rédiger un document administratif",
+    route: "/correspondence",
+    icon: FileText
   }
 ]
