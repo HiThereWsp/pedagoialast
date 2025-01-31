@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { ThumbsDown, Heart } from 'lucide-react'
+import { ThumbsDown, Heart, Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -19,31 +20,40 @@ export const FeedbackButtons = ({ imageUrl }: FeedbackButtonsProps) => {
     const score = type === 'like' ? 1 : -1
     
     try {
-      setFeedbackScore(score)
-      if (type === 'dislike') {
-        setShowNegativeFeedback(true)
-      } else {
+      if (type === 'like') {
+        setFeedbackScore(score)
         setShowNegativeFeedback(false)
-      }
-      
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
+        
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('User not authenticated')
 
-      const { error } = await supabase
-        .from('tool_metrics')
-        .insert({
-          user_id: user.id,
-          tool_type: 'image_generation',
-          action_type: 'generate',
-          feedback_score: score,
-          content_length: negativeComment.length || 0
+        const { error } = await supabase
+          .from('tool_metrics')
+          .insert({
+            user_id: user.id,
+            tool_type: 'image_generation',
+            action_type: 'generate',
+            feedback_score: score
+          })
+
+        if (error) throw error
+
+        toast({
+          description: "Merci pour votre retour positif !",
         })
-
-      if (error) throw error
-
-      toast({
-        description: type === 'like' ? "Merci pour votre retour positif !" : "Merci pour votre retour",
-      })
+      } else {
+        // Handle dislike button toggle
+        if (feedbackScore === -1) {
+          // If already disliked, turn it off
+          setFeedbackScore(null)
+          setShowNegativeFeedback(false)
+          setNegativeComment('')
+        } else {
+          // If not disliked, turn it on
+          setFeedbackScore(-1)
+          setShowNegativeFeedback(true)
+        }
+      }
     } catch (err) {
       console.error('Erreur lors de l\'enregistrement du feedback:', err)
       setFeedbackScore(null)
@@ -63,17 +73,19 @@ export const FeedbackButtons = ({ imageUrl }: FeedbackButtonsProps) => {
 
       const { error } = await supabase
         .from('tool_metrics')
-        .update({ content_length: negativeComment.length })
-        .eq('user_id', user.id)
-        .eq('tool_type', 'image_generation')
-        .eq('feedback_score', -1)
-        .is('content_length', null)
+        .insert({
+          user_id: user.id,
+          tool_type: 'image_generation',
+          action_type: 'generate',
+          feedback_score: -1,
+          content_length: negativeComment.length
+        })
 
       if (error) throw error
 
-      setShowNegativeFeedback(false)
+      setNegativeComment('')
       toast({
-        description: "Merci pour vos commentaires détaillés",
+        description: "Merci pour votre retour",
       })
     } catch (err) {
       console.error('Erreur lors de l\'enregistrement du commentaire:', err)
@@ -111,13 +123,22 @@ export const FeedbackButtons = ({ imageUrl }: FeedbackButtonsProps) => {
 
       {showNegativeFeedback && (
         <div className="mt-4 space-y-2">
-          <Input
-            placeholder="Dites-nous pourquoi..."
-            value={negativeComment}
-            onChange={(e) => setNegativeComment(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleNegativeSubmit()}
-            className="w-full"
-          />
+          <div className="flex gap-2">
+            <Input
+              placeholder="Dites-nous pourquoi..."
+              value={negativeComment}
+              onChange={(e) => setNegativeComment(e.target.value)}
+              className="flex-1"
+            />
+            <Button 
+              onClick={handleNegativeSubmit}
+              size="sm"
+              className="shrink-0"
+            >
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Envoyer</span>
+            </Button>
+          </div>
         </div>
       )}
     </div>
