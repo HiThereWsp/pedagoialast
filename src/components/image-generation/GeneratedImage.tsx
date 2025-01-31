@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ModificationForm } from './ModificationForm'
 import { Card } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
-import { ThumbsDown, Heart } from 'lucide-react'
+import { ThumbsDown, Heart, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
 import { supabase } from '@/integrations/supabase/client'
@@ -88,6 +88,31 @@ export const GeneratedImage = ({ imageUrl, onModify, isLoading }: GeneratedImage
     }
   }
 
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(imageUrl)
+      const blob = await response.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'generated-image.png'
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      
+      toast({
+        description: "Image téléchargée avec succès",
+      })
+    } catch (err) {
+      console.error('Erreur lors du téléchargement:', err)
+      toast({
+        variant: "destructive",
+        description: "Erreur lors du téléchargement de l'image",
+      })
+    }
+  }
+
   return (
     <div className="mt-6 space-y-4">
       <Card className="p-6">
@@ -118,6 +143,13 @@ export const GeneratedImage = ({ imageUrl, onModify, isLoading }: GeneratedImage
               aria-label="Je n'aime pas"
             >
               <ThumbsDown className="h-5 w-5" />
+            </button>
+            <button
+              onClick={handleDownload}
+              className="rounded-full p-2 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#6E59A5] transition-all duration-300 transform hover:scale-110"
+              aria-label="Télécharger l'image"
+            >
+              <Download className="h-5 w-5" />
             </button>
           </div>
         </div>
