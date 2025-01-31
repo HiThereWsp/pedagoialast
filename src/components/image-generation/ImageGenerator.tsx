@@ -13,8 +13,8 @@ export const ImageGenerator = () => {
   const { toast } = useToast()
   
   const { isLimited, checkRateLimit } = useRateLimit({
-    maxRequests: 10, // 10 generations par heure
-    timeWindow: 3600000 // 1 heure en millisecondes
+    maxRequests: 5, // 5 générations par mois
+    timeWindow: 2592000000 // 30 jours en millisecondes
   })
 
   const { 
@@ -30,7 +30,7 @@ export const ImageGenerator = () => {
       toast({
         variant: "destructive",
         title: "Limite atteinte",
-        description: "Vous avez atteint la limite de générations d'images. Veuillez réessayer dans une heure."
+        description: "Vous avez atteint la limite de générations d'images pour ce mois-ci."
       })
       return
     }
@@ -53,7 +53,8 @@ export const ImageGenerator = () => {
     }
 
     // Vérification du rate limit avant génération
-    if (!checkRateLimit()) {
+    const canProceed = await checkRateLimit()
+    if (!canProceed) {
       return
     }
 
@@ -67,7 +68,7 @@ export const ImageGenerator = () => {
       toast({
         variant: "destructive",
         title: "Limite atteinte",
-        description: "Vous avez atteint la limite de modifications d'images. Veuillez réessayer dans une heure."
+        description: "Vous avez atteint la limite de modifications d'images pour ce mois-ci."
       })
       return
     }
@@ -90,7 +91,8 @@ export const ImageGenerator = () => {
     }
 
     // Vérification du rate limit avant modification
-    if (!checkRateLimit()) {
+    const canProceed = await checkRateLimit()
+    if (!canProceed) {
       return
     }
 

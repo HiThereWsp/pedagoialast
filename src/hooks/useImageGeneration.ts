@@ -10,6 +10,28 @@ export const useImageGeneration = () => {
   const { toast } = useToast()
   const { logToolUsage } = useToolMetrics()
 
+  const updateMonthlyUsage = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
+    
+    const { data, error } = await supabase
+      .from('image_generation_usage')
+      .upsert({
+        user_id: user.id,
+        generation_month: currentMonth,
+        monthly_generation_count: 1
+      }, {
+        onConflict: 'user_id, generation_month',
+        ignoreDuplicates: false
+      });
+
+    if (error) {
+      console.error('Error updating usage:', error);
+    }
+  };
+
   const generateImage = async (generationPrompt: GenerationPrompt) => {
     const startTime = Date.now()
     setIsLoading(true)
@@ -32,12 +54,17 @@ export const useImageGeneration = () => {
 
       if (data.output) {
         setGeneratedImageUrl(data.output)
+        await updateMonthlyUsage()
         await logToolUsage(
           'image_generation',
           'generate',
           generationPrompt.user_prompt.length,
           Date.now() - startTime
         )
+        toast({
+          title: "Image générée avec succès",
+          description: "Votre image a été créée avec succès.",
+        })
       } else {
         throw new Error('Pas d\'URL d\'image dans la réponse')
       }
@@ -75,12 +102,17 @@ export const useImageGeneration = () => {
 
       if (data.output) {
         setGeneratedImageUrl(data.output)
+        await updateMonthlyUsage()
         await logToolUsage(
           'image_generation',
           'modify',
           modificationPrompt.length,
           Date.now() - startTime
         )
+        toast({
+          title: "Image modifiée avec succès",
+          description: "Votre image a été modifiée avec succès.",
+        })
       } else {
         throw new Error('Pas d\'URL d\'image dans la réponse')
       }

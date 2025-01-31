@@ -165,22 +165,28 @@ export type Database = {
       image_generation_usage: {
         Row: {
           generated_at: string | null
+          generation_month: string | null
           id: string
           image_url: string | null
+          monthly_generation_count: number | null
           prompt: string
           user_id: string
         }
         Insert: {
           generated_at?: string | null
+          generation_month?: string | null
           id?: string
           image_url?: string | null
+          monthly_generation_count?: number | null
           prompt: string
           user_id: string
         }
         Update: {
           generated_at?: string | null
+          generation_month?: string | null
           id?: string
           image_url?: string | null
+          monthly_generation_count?: number | null
           prompt?: string
           user_id?: string
         }

@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RateLimitConfig {
   maxRequests?: number;
@@ -10,26 +11,38 @@ export const useRateLimit = ({ maxRequests = 5, timeWindow = 60000 }: RateLimitC
   const requestCount = useRef(0);
   const resetTimeoutRef = useRef<NodeJS.Timeout>();
 
-  const checkRateLimit = useCallback(() => {
+  const checkRateLimit = useCallback(async () => {
     if (isLimited) return false;
 
-    requestCount.current += 1;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
 
-    if (requestCount.current === 1) {
-      // Réinitialiser le compteur après la fenêtre de temps
-      resetTimeoutRef.current = setTimeout(() => {
-        requestCount.current = 0;
-        setIsLimited(false);
-      }, timeWindow);
-    }
+      const { data: usageData, error } = await supabase
+        .from('image_generation_usage')
+        .select('monthly_generation_count')
+        .eq('user_id', user.id)
+        .eq('generation_month', new Date().toISOString().slice(0, 7) + '-01')
+        .single();
 
-    if (requestCount.current > maxRequests) {
-      setIsLimited(true);
+      if (error) {
+        console.error('Error checking rate limit:', error);
+        return false;
+      }
+
+      const currentCount = usageData?.monthly_generation_count || 0;
+      
+      if (currentCount >= maxRequests) {
+        setIsLimited(true);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in checkRateLimit:', error);
       return false;
     }
-
-    return true;
-  }, [isLimited, maxRequests, timeWindow]);
+  }, [isLimited, maxRequests]);
 
   return {
     isLimited,
