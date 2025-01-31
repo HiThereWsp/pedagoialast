@@ -1,8 +1,9 @@
 import { LucideIcon } from "lucide-react"
 
-export interface Action {
+export type Action = {
   title: string
   route: string
   icon: LucideIcon
   isUtilityAction?: boolean
+  isNew?: boolean
 }

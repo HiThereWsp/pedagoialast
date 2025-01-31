@@ -38,5 +38,6 @@ export const actions: Action[] = [
     title: "Générer une image",
     route: "/image-generation",
     icon: Image,
+    isNew: true
   }
 ]
