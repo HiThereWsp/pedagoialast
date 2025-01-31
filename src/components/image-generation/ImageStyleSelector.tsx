@@ -32,9 +32,9 @@ const STYLE_OPTIONS: StyleOption[] = [
   { 
     value: 'anime', 
     label: 'Anime', 
-    description: 'Un style inspiré de l'animation japonaise pour un aspect plus engageant',
+    description: "Un style inspiré de l'animation japonaise pour un aspect plus engageant",
     icon: Smile 
-  },
+  }
 ]
 
 interface ImageStyleSelectorProps {
