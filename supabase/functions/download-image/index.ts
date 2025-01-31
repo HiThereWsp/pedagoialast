@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,7 +12,7 @@ serve(async (req) => {
 
   try {
     const { imageUrl } = await req.json()
-    
+
     if (!imageUrl) {
       throw new Error('No image URL provided')
     }
@@ -25,28 +25,23 @@ serve(async (req) => {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`)
     }
 
-    const imageBuffer = await response.arrayBuffer()
-    const base64Data = btoa(String.fromCharCode(...new Uint8Array(imageBuffer)))
-
-    return new Response(
-      JSON.stringify({ imageBase64: base64Data }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        } 
+    const imageBlob = await response.blob()
+    
+    return new Response(imageBlob, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': response.headers.get('Content-Type') || 'image/png',
+        'Content-Disposition': 'attachment'
       }
-    )
+    })
+
   } catch (error) {
-    console.error('Error in download-image function:', error)
+    console.error('Error:', error.message)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         status: 400,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   }
