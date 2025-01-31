@@ -12,6 +12,7 @@ export default function Login() {
   const location = useLocation()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
+
   useEffect(() => {
     const verifyMagicLink = async () => {
       // Get the current URL's query parameters
@@ -126,9 +127,6 @@ export default function Login() {
             <div className="space-x-4">
               <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">
                 Contact
-              </Link>
-              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
-                Tarifs
               </Link>
             </div>
           </div>
