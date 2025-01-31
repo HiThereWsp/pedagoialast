@@ -10,28 +10,6 @@ export const useImageGeneration = () => {
   const { toast } = useToast()
   const { logToolUsage } = useToolMetrics()
 
-  const updateMonthlyUsage = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
-    
-    const { data, error } = await supabase
-      .from('image_generation_usage')
-      .upsert({
-        user_id: user.id,
-        generation_month: currentMonth,
-        monthly_generation_count: 1
-      }, {
-        onConflict: 'user_id, generation_month',
-        ignoreDuplicates: false
-      });
-
-    if (error) {
-      console.error('Error updating usage:', error);
-    }
-  };
-
   const generateImage = async (generationPrompt: GenerationPrompt) => {
     const startTime = Date.now()
     setIsLoading(true)
@@ -40,6 +18,11 @@ export const useImageGeneration = () => {
       const enhancedPrompt = generationPrompt.style === 'auto' 
         ? `${generationPrompt.context} ${generationPrompt.user_prompt}`
         : `${generationPrompt.context} ${generationPrompt.user_prompt} (in ${generationPrompt.style} style)`
+
+      // Vérification du contenu inapproprié
+      if (containsInappropriateContent(enhancedPrompt)) {
+        throw new Error('Le contenu de votre prompt ne respecte pas nos conditions d\'utilisation')
+      }
 
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: {
@@ -54,13 +37,27 @@ export const useImageGeneration = () => {
 
       if (data.output) {
         setGeneratedImageUrl(data.output)
-        await updateMonthlyUsage()
+        
+        // Enregistrement de l'utilisation
+        const { error: usageError } = await supabase
+          .from('image_generation_usage')
+          .insert({
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            prompt: generationPrompt.user_prompt,
+            image_url: data.output
+          })
+
+        if (usageError) {
+          console.error('Error logging usage:', usageError)
+        }
+
         await logToolUsage(
           'image_generation',
           'generate',
           generationPrompt.user_prompt.length,
           Date.now() - startTime
         )
+
         toast({
           title: "Image générée avec succès",
           description: "Votre image a été créée avec succès.",
@@ -68,12 +65,24 @@ export const useImageGeneration = () => {
       } else {
         throw new Error('Pas d\'URL d\'image dans la réponse')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating image:', error)
+      
+      // Messages d'erreur plus descriptifs
+      let errorMessage = 'Une erreur est survenue lors de la génération de l\'image'
+      
+      if (error.message.includes('timeout')) {
+        errorMessage = 'Le service de génération d\'images ne répond pas. Veuillez réessayer dans quelques instants.'
+      } else if (error.message.includes('quota')) {
+        errorMessage = 'Vous avez atteint votre limite de générations d\'images pour ce mois-ci.'
+      } else if (error.message.includes('inappropriate')) {
+        errorMessage = 'Le contenu demandé ne respecte pas nos conditions d\'utilisation.'
+      }
+
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la génération de l'image"
+        description: errorMessage
       })
     } finally {
       setIsLoading(false)
@@ -85,7 +94,13 @@ export const useImageGeneration = () => {
     
     const startTime = Date.now()
     setIsLoading(true)
+
     try {
+      // Vérification du contenu inapproprié
+      if (containsInappropriateContent(modificationPrompt)) {
+        throw new Error('Le contenu de votre modification ne respecte pas nos conditions d\'utilisation')
+      }
+
       const enhancedPrompt = style === 'auto' 
         ? modificationPrompt
         : `${modificationPrompt} (in ${style} style)`
@@ -102,13 +117,27 @@ export const useImageGeneration = () => {
 
       if (data.output) {
         setGeneratedImageUrl(data.output)
-        await updateMonthlyUsage()
+        
+        // Enregistrement de l'utilisation
+        const { error: usageError } = await supabase
+          .from('image_generation_usage')
+          .insert({
+            user_id: (await supabase.auth.getUser()).data.user?.id,
+            prompt: modificationPrompt,
+            image_url: data.output
+          })
+
+        if (usageError) {
+          console.error('Error logging usage:', usageError)
+        }
+
         await logToolUsage(
           'image_generation',
           'modify',
           modificationPrompt.length,
           Date.now() - startTime
         )
+
         toast({
           title: "Image modifiée avec succès",
           description: "Votre image a été modifiée avec succès.",
@@ -116,16 +145,39 @@ export const useImageGeneration = () => {
       } else {
         throw new Error('Pas d\'URL d\'image dans la réponse')
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error modifying image:', error)
+      
+      let errorMessage = 'Une erreur est survenue lors de la modification de l\'image'
+      
+      if (error.message.includes('timeout')) {
+        errorMessage = 'Le service de modification d\'images ne répond pas. Veuillez réessayer dans quelques instants.'
+      } else if (error.message.includes('quota')) {
+        errorMessage = 'Vous avez atteint votre limite de modifications d\'images pour ce mois-ci.'
+      } else if (error.message.includes('inappropriate')) {
+        errorMessage = 'Le contenu demandé ne respecte pas nos conditions d\'utilisation.'
+      }
+
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la modification de l'image"
+        description: errorMessage
       })
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Fonction utilitaire pour vérifier le contenu inapproprié
+  const containsInappropriateContent = (text: string): boolean => {
+    const inappropriateWords = [
+      'nude', 'naked', 'porn', 'sex', 'violence', 'gore', 'blood',
+      'death', 'kill', 'weapon', 'drug', 'cocaine', 'heroin'
+    ]
+    
+    return inappropriateWords.some(word => 
+      text.toLowerCase().includes(word.toLowerCase())
+    )
   }
 
   return {

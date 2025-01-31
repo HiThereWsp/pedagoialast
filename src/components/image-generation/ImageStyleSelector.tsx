@@ -54,7 +54,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
         {STYLE_OPTIONS.map(({ value, label, icon: Icon, description }) => (
           <div key={value} className="relative">
             <HoverCard>
-              <HoverCardTrigger asChild>
+              <HoverCardTrigger>
                 <div 
                   onClick={(e) => e.preventDefault()}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer
