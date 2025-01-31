@@ -1,51 +1,81 @@
-import { useState, useCallback, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useCallback } from 'react'
+import { supabase } from '@/integrations/supabase/client'
 
 interface RateLimitConfig {
-  maxRequests?: number;
-  timeWindow?: number; // en millisecondes
+  maxRequests?: number
+  timeWindow?: number // in milliseconds
 }
 
-export const useRateLimit = ({ maxRequests = 5, timeWindow = 60000 }: RateLimitConfig = {}) => {
-  const [isLimited, setIsLimited] = useState(false);
-  const requestCount = useRef(0);
-  const resetTimeoutRef = useRef<NodeJS.Timeout>();
+export const useRateLimit = ({ maxRequests = 5, timeWindow = 2592000000 }: RateLimitConfig = {}) => {
+  const [isLimited, setIsLimited] = useState(false)
 
   const checkRateLimit = useCallback(async () => {
-    if (isLimited) return false;
-
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return false
 
-      const { data: usageData, error } = await supabase
+      const currentMonth = new Date().toISOString().slice(0, 7) + '-01'
+
+      // Try to get the current usage
+      const { data: usageData, error: selectError } = await supabase
         .from('image_generation_usage')
         .select('monthly_generation_count')
         .eq('user_id', user.id)
-        .eq('generation_month', new Date().toISOString().slice(0, 7) + '-01')
-        .single();
+        .eq('generation_month', currentMonth)
+        .maybeSingle()
 
-      if (error) {
-        console.error('Error checking rate limit:', error);
-        return false;
+      if (selectError) {
+        console.error('Error checking rate limit:', selectError)
+        return false
       }
 
-      const currentCount = usageData?.monthly_generation_count || 0;
-      
-      if (currentCount >= maxRequests) {
-        setIsLimited(true);
-        return false;
+      if (!usageData) {
+        // If no record exists, create one
+        const { error: insertError } = await supabase
+          .from('image_generation_usage')
+          .insert({
+            user_id: user.id,
+            monthly_generation_count: 1,
+            generation_month: currentMonth
+          })
+
+        if (insertError) {
+          console.error('Error creating usage record:', insertError)
+          return false
+        }
+
+        return true
       }
 
-      return true;
+      // Check if user has reached the limit
+      if (usageData.monthly_generation_count >= maxRequests) {
+        setIsLimited(true)
+        return false
+      }
+
+      // Increment the counter
+      const { error: updateError } = await supabase
+        .from('image_generation_usage')
+        .update({ 
+          monthly_generation_count: (usageData.monthly_generation_count || 0) + 1 
+        })
+        .eq('user_id', user.id)
+        .eq('generation_month', currentMonth)
+
+      if (updateError) {
+        console.error('Error updating usage count:', updateError)
+        return false
+      }
+
+      return true
     } catch (error) {
-      console.error('Error in checkRateLimit:', error);
-      return false;
+      console.error('Error in checkRateLimit:', error)
+      return false
     }
-  }, [isLimited, maxRequests]);
+  }, [maxRequests])
 
   return {
     isLimited,
-    checkRateLimit,
-  };
-};
+    checkRateLimit
+  }
+}
