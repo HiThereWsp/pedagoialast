@@ -1,0 +1,1 @@
+export type ImageStyle = 'auto' | 'general' | 'realistic' | '3d' | 'anime'
