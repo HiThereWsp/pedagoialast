@@ -6,7 +6,8 @@ import {
   Sparkles,
   FileEdit,
   Brain,
-  PenTool
+  PenTool,
+  Plus
 } from "lucide-react"
 import { ToolCard } from "./ToolCard"
 
@@ -55,6 +56,15 @@ const tools = [
     bgColor: "bg-[#EEF2FF]",
     borderColor: "border-indigo-500/20",
     route: "/correspondence"
+  },
+  {
+    title: "Nouveau",
+    description: "Générez des images pour illustrer vos contenus pédagogiques",
+    icon: Plus,
+    color: "text-pink-500",
+    bgColor: "bg-[#FDF2F8]",
+    borderColor: "border-pink-500/20",
+    route: "/image-generation"
   }
 ]
 
@@ -63,7 +73,7 @@ export const ToolsCarousel = () => {
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 md:gap-8">
         {tools.map((tool, index) => (
           <div 
             key={index} 
