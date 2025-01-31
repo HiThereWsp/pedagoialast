@@ -37,33 +37,32 @@ serve(async (req) => {
     let response;
     
     if (originalImageUrl) {
-      // If we have an original image, use the edit endpoint
+      // For now, we'll use the generations endpoint with the original context
+      // as the edits endpoint requires specific image format requirements
+      // that are complex to handle in a serverless function
       try {
-        // First, fetch the original image
-        const imageResponse = await fetch(originalImageUrl)
-        if (!imageResponse.ok) throw new Error('Failed to fetch original image')
-        const imageBlob = await imageResponse.blob()
-        
-        // Create form data for the edit request
-        const formData = new FormData()
-        formData.append('image', imageBlob, 'image.png')
-        formData.append('prompt', prompt)
-        formData.append('n', '1')
-        formData.append('size', size)
-        
-        response = await fetch('https://api.openai.com/v1/images/edits', {
+        response = await fetch('https://api.openai.com/v1/images/generations', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${DALLE_API_KEY}`,
+            'Content-Type': 'application/json',
           },
-          body: formData
+          body: JSON.stringify({
+            model: "dall-e-3",
+            prompt: `Using this as reference: ${originalImageUrl}, ${prompt}`,
+            n: 1,
+            size,
+            quality,
+            style,
+            response_format: "url"
+          })
         })
       } catch (error) {
-        console.error("Error editing image:", error)
+        console.error("Error modifying image:", error)
         throw new Error('Erreur lors de la modification de l\'image')
       }
     } else {
-      // If no original image, use the standard generation endpoint
+      // Standard generation endpoint
       response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
