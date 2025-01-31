@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card'
 import { LoadingIndicator } from '@/components/chat/LoadingIndicator'
 import { GenerationForm } from './GenerationForm'
 import { GeneratedImage } from './GeneratedImage'
+import { RemainingCredits } from './RemainingCredits'
 import { useImageGeneration } from '@/hooks/useImageGeneration'
 import { useRateLimit } from '@/hooks/useRateLimit'
 import { useState } from 'react'
@@ -29,7 +30,7 @@ export const ImageGenerator = () => {
       toast({
         variant: "destructive",
         title: "Limite atteinte",
-        description: "Vous avez atteint la limite de générations d'images pour ce mois-ci."
+        description: "Vous avez atteint votre limite de 5 générations d'images pour ce mois-ci. Le compteur sera réinitialisé le mois prochain."
       })
       return
     }
@@ -67,7 +68,7 @@ export const ImageGenerator = () => {
       toast({
         variant: "destructive",
         title: "Limite atteinte",
-        description: "Vous avez atteint la limite de générations d'images pour ce mois-ci."
+        description: "Vous avez atteint votre limite de 5 générations d'images pour ce mois-ci. Le compteur sera réinitialisé le mois prochain."
       })
       return
     }
@@ -82,6 +83,8 @@ export const ImageGenerator = () => {
 
   return (
     <Card className="p-6 max-w-2xl mx-auto">
+      <RemainingCredits />
+      
       <GenerationForm 
         onSubmit={handleGenerateImage}
         isLoading={isLoading}
