@@ -13,6 +13,7 @@ interface NegativeFeedbackProps {
 export const NegativeFeedback = ({ imageUrl, isVisible }: NegativeFeedbackProps) => {
   const { toast } = useToast()
   const [comment, setComment] = useState('')
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleSubmit = async () => {
     if (!comment.trim()) return
@@ -34,6 +35,7 @@ export const NegativeFeedback = ({ imageUrl, isVisible }: NegativeFeedbackProps)
       if (error) throw error
 
       setComment('')
+      setIsSubmitted(true)
       toast({
         description: "Merci pour votre retour",
       })
@@ -46,7 +48,7 @@ export const NegativeFeedback = ({ imageUrl, isVisible }: NegativeFeedbackProps)
     }
   }
 
-  if (!isVisible) return null
+  if (!isVisible || isSubmitted) return null
 
   return (
     <div className="mt-4 space-y-2">

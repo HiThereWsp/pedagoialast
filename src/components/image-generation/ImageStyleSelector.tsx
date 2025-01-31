@@ -54,19 +54,20 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
         {STYLE_OPTIONS.map(({ value, label, icon: Icon, description }) => (
           <div key={value} className="relative">
             <HoverCard>
-              <HoverCardTrigger asChild>
+              <HoverCardTrigger>
                 <div>
                   <Label
                     htmlFor={value}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-background border-2 cursor-pointer
-                      transition-colors hover:bg-accent
-                      peer-data-[state=checked]:border-primary peer-data-[state=checked]:text-primary
-                      peer-data-[state=checked]:bg-primary/5"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer
+                      transition-all duration-200
+                      ${selectedStyle === value 
+                        ? 'bg-primary text-primary-foreground shadow-md scale-105' 
+                        : 'bg-background hover:bg-accent'}`}
                   >
                     <RadioGroupItem
                       value={value}
                       id={value}
-                      className="peer sr-only"
+                      className="sr-only"
                     />
                     <Icon className="w-4 h-4" />
                     <span>{label}</span>
