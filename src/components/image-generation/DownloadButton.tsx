@@ -11,13 +11,28 @@ export const DownloadButton = ({ imageUrl }: DownloadButtonProps) => {
 
   const handleDownload = async () => {
     try {
-      // First try to download directly
-      const response = await fetch(imageUrl)
-      if (!response.ok) {
-        throw new Error('Failed to fetch image')
+      console.log('Starting download process for:', imageUrl)
+      
+      const { data, error } = await supabase.functions.invoke('download-image', {
+        body: { imageUrl }
+      })
+      
+      if (error) throw error
+      
+      if (!data?.imageBase64) {
+        throw new Error('No image data received')
       }
       
-      const blob = await response.blob()
+      const byteCharacters = atob(data.imageBase64)
+      const byteNumbers = new Array(byteCharacters.length)
+      
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray], { type: 'image/png' })
+      
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -32,44 +47,10 @@ export const DownloadButton = ({ imageUrl }: DownloadButtonProps) => {
       })
     } catch (err) {
       console.error('Erreur lors du téléchargement:', err)
-      // If direct download fails, try through edge function
-      try {
-        const { data, error } = await supabase.functions.invoke('download-image', {
-          body: { imageUrl }
-        })
-        
-        if (error) throw error
-        
-        const base64Data = data.imageBase64
-        const byteCharacters = atob(base64Data)
-        const byteNumbers = new Array(byteCharacters.length)
-        
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i)
-        }
-        
-        const byteArray = new Uint8Array(byteNumbers)
-        const blob = new Blob([byteArray], { type: 'image/png' })
-        
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'generated-image.png'
-        document.body.appendChild(a)
-        a.click()
-        window.URL.revokeObjectURL(url)
-        document.body.removeChild(a)
-        
-        toast({
-          description: "Image téléchargée avec succès",
-        })
-      } catch (err) {
-        console.error('Erreur lors du téléchargement via edge function:', err)
-        toast({
-          variant: "destructive",
-          description: "Erreur lors du téléchargement de l'image",
-        })
-      }
+      toast({
+        variant: "destructive",
+        description: "Erreur lors du téléchargement de l'image",
+      })
     }
   }
 
