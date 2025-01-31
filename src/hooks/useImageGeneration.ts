@@ -62,9 +62,8 @@ export const useImageGeneration = () => {
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: {
           prompt: modificationPrompt,
-          size: "1024x1024",
-          quality: "standard",
-          style: "vivid"
+          originalImageUrl: generatedImageUrl,
+          size: "1024x1024"
         }
       })
 
