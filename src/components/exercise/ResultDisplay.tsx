@@ -81,8 +81,8 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   };
 
   return (
-    <Card className="relative bg-white p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="flex justify-between items-center mb-4">
+    <Card className="relative bg-white p-4 sm:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
         <HeaderSection exerciseCount={exercises} />
         <FeedbackButtons
           feedbackScore={feedbackScore}

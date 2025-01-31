@@ -123,25 +123,70 @@ export type Database = {
         }
         Relationships: []
       }
+      friction_points: {
+        Row: {
+          action_completed_at: string | null
+          action_started_at: string | null
+          created_at: string | null
+          error_occurred: boolean | null
+          id: string
+          regeneration_count: number | null
+          tool_type: string
+          user_id: string | null
+          wait_duration_ms: number | null
+          was_abandoned: boolean | null
+        }
+        Insert: {
+          action_completed_at?: string | null
+          action_started_at?: string | null
+          created_at?: string | null
+          error_occurred?: boolean | null
+          id?: string
+          regeneration_count?: number | null
+          tool_type: string
+          user_id?: string | null
+          wait_duration_ms?: number | null
+          was_abandoned?: boolean | null
+        }
+        Update: {
+          action_completed_at?: string | null
+          action_started_at?: string | null
+          created_at?: string | null
+          error_occurred?: boolean | null
+          id?: string
+          regeneration_count?: number | null
+          tool_type?: string
+          user_id?: string | null
+          wait_duration_ms?: number | null
+          was_abandoned?: boolean | null
+        }
+        Relationships: []
+      }
       image_generation_usage: {
         Row: {
           generated_at: string | null
+          generation_month: string | null
           id: string
           image_url: string | null
+          monthly_generation_count: number | null
           prompt: string
           user_id: string
         }
         Insert: {
           generated_at?: string | null
+          generation_month?: string | null
           id?: string
           image_url?: string | null
+          monthly_generation_count?: number | null
           prompt: string
           user_id: string
         }
         Update: {
           generated_at?: string | null
+          generation_month?: string | null
           id?: string
           image_url?: string | null
+          monthly_generation_count?: number | null
           prompt?: string
           user_id?: string
         }
@@ -261,6 +306,45 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_patterns: {
+        Row: {
+          created_at: string | null
+          day_of_week: number | null
+          feature_complexity: string | null
+          hour_of_day: number | null
+          id: string
+          is_template_used: boolean | null
+          session_end: string | null
+          session_start: string | null
+          tool_type: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week?: number | null
+          feature_complexity?: string | null
+          hour_of_day?: number | null
+          id?: string
+          is_template_used?: boolean | null
+          session_end?: string | null
+          session_start?: string | null
+          tool_type: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number | null
+          feature_complexity?: string | null
+          hour_of_day?: number | null
+          id?: string
+          is_template_used?: boolean | null
+          session_end?: string | null
+          session_start?: string | null
+          tool_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_popup_views: {
         Row: {
           id: string
@@ -282,6 +366,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_retention: {
+        Row: {
+          created_at: string | null
+          days_active: number[] | null
+          first_seen_date: string
+          id: string
+          last_seen_date: string
+          retention_30_days: boolean | null
+          retention_7_days: boolean | null
+          retention_90_days: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          days_active?: number[] | null
+          first_seen_date: string
+          id?: string
+          last_seen_date: string
+          retention_30_days?: boolean | null
+          retention_7_days?: boolean | null
+          retention_90_days?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          days_active?: number[] | null
+          first_seen_date?: string
+          id?: string
+          last_seen_date?: string
+          retention_30_days?: boolean | null
+          retention_7_days?: boolean | null
+          retention_90_days?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -300,6 +420,39 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"] | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      utm_links: {
+        Row: {
+          base_url: string
+          created_at: string
+          id: string
+          user_id: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+        }
+        Insert: {
+          base_url: string
+          created_at?: string
+          id?: string
+          user_id: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+        }
+        Update: {
+          base_url?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: []
       }
@@ -385,6 +538,15 @@ export type Database = {
         }
         Relationships: []
       }
+      dau_mau_ratio: {
+        Row: {
+          dau: number | null
+          dau_mau_ratio: number | null
+          mau: number | null
+          month: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_chat: {
@@ -417,7 +579,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
-      tool_type: "differentiation" | "sequence" | "administrative" | "general"
+      tool_type:
+        | "differentiation"
+        | "sequence"
+        | "administrative"
+        | "general"
+        | "image_generation"
     }
     CompositeTypes: {
       [_ in never]: never

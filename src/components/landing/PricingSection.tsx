@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
+import { posthog } from '@/integrations/posthog/client';
 
 const PricingCard = ({ 
   title, 
@@ -65,16 +66,35 @@ const PricingCard = ({
 
 export const PricingSection = () => {
   const handleFreePlan = () => {
+    posthog.capture('pricing_plan_selected', {
+      plan: 'free',
+      location: 'pricing_page'
+    })
     console.log('Free plan selected');
   };
 
   const handlePremiumPlan = () => {
+    posthog.capture('pricing_plan_selected', {
+      plan: 'premium',
+      location: 'pricing_page'
+    })
     console.log('Premium plan selected');
   };
 
   const handleEnterprisePlan = () => {
+    posthog.capture('pricing_plan_selected', {
+      plan: 'enterprise',
+      location: 'pricing_page'
+    })
     console.log('Enterprise plan selected');
   };
+
+  // Track pricing page view
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      posthog.capture('pricing_page_viewed')
+    }
+  }, [])
 
   return (
     <section className="py-20 bg-gradient-to-b from-background to-secondary/20">

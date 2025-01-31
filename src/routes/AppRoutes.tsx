@@ -21,6 +21,8 @@ const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
 const ExercisePage = lazy(() => import("@/pages/ExercisePage"))
 const DiscoverPage = lazy(() => import("@/pages/DiscoverPage"))
 const ContactPage = lazy(() => import("@/pages/ContactPage"))
+const UTMLinksPage = lazy(() => import("@/pages/UTMLinksPage"))
+const ImageGenerationPage = lazy(() => import("@/pages/ImageGenerationPage"))
 
 // Loading component
 const LoadingSpinner = () => (
@@ -53,6 +55,8 @@ export const AppRoutes = () => {
           <Route path="/metrics" element={<MetricsPage />} />
           <Route path="/suggestions" element={<SuggestionsPage />} />
           <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/myutmlinks" element={<UTMLinksPage />} />
+          <Route path="/image-generation" element={<ImageGenerationPage />} />
         </Route>
 
         {/* Gestion des routes inconnues */}

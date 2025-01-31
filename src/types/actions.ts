@@ -1,6 +1,9 @@
-export type ActionType = {
+import { LucideIcon } from "lucide-react"
+
+export type Action = {
   title: string
   route: string
-  icon: React.ComponentType<{ className?: string }>
+  icon: LucideIcon
   isUtilityAction?: boolean
+  isNew?: boolean
 }

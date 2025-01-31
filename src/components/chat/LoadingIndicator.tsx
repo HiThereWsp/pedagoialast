@@ -1,11 +1,12 @@
+import { Loader2 } from "lucide-react"
+
 export const LoadingIndicator = () => {
   return (
-    <div className="flex items-center justify-center p-4">
-      <div className="flex space-x-2">
-        <div className="w-3 h-3 rounded-full bg-[#FEF7CD] animate-[float_1s_ease-in-out_infinite]" />
-        <div className="w-3 h-3 rounded-full bg-[#FFDEE2] animate-[float_1s_ease-in-out_0.33s_infinite]" />
-        <div className="w-3 h-3 rounded-full bg-[#FEF7CD] animate-[float_1s_ease-in-out_0.66s_infinite]" />
-      </div>
+    <div className="flex flex-col items-center justify-center p-6">
+      <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      <p className="mt-4 text-sm font-medium text-muted-foreground">
+        Génération en cours...
+      </p>
     </div>
   )
 }

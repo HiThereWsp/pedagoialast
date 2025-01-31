@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { useAuthForm } from "@/hooks/use-auth-form"
 import { AuthFormField } from "./AuthFormField"
-import {useNavigate} from "react-router-dom";
+import { useToast } from "@/hooks/use-toast"
+import { posthog } from "@/integrations/posthog/client"
+import { useNavigate } from "react-router-dom"
 
 interface SignInFormProps {
   onToggleMode: () => void
@@ -9,9 +11,38 @@ interface SignInFormProps {
 
 export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
   const { formState, setField, handleSignIn } = useAuthForm()
-    const navigate = useNavigate()
+  const { toast } = useToast()
+  const navigate = useNavigate()
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    try {
+      // Track login attempt
+      posthog.capture('login_started')
+      
+      await handleSignIn(e)
+      
+      // Track successful login
+      posthog.capture('login_completed')
+    } catch (error: any) {
+      console.error("Login error:", error)
+      
+      // Track login error
+      posthog.capture('login_error', {
+        error_type: error?.message || 'unknown'
+      })
+      
+      toast({
+        variant: "destructive",
+        title: "Erreur de connexion",
+        description: error?.message || "Une erreur est survenue lors de la connexion. Veuillez réessayer.",
+      })
+    }
+  }
+
   return (
-    <form onSubmit={handleSignIn} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <AuthFormField
         id="email"
         label="Email"
@@ -42,14 +73,15 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
       >
         Pas encore de compte ? S'inscrire
       </Button>
-        <Button
-            type="button"
-            variant="ghost"
-            className="w-full"
-            onClick={() => navigate("/forgot-password")}
-        >
-            Mot de passe oublié ? Réinitialisez ici
-        </Button>
+
+      <Button
+        type="button"
+        variant="ghost"
+        className="w-full"
+        onClick={() => navigate("/forgot-password")}
+      >
+        Mot de passe oublié ? Réinitialisez ici
+      </Button>
     </form>
   )
 }
