@@ -1,6 +1,5 @@
 import { Download } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { supabase } from '@/integrations/supabase/client'
 
 interface DownloadButtonProps {
   imageUrl: string
@@ -11,36 +10,18 @@ export const DownloadButton = ({ imageUrl }: DownloadButtonProps) => {
 
   const handleDownload = async () => {
     try {
-      console.log('Starting download process for:', imageUrl)
+      console.log('Starting direct download for:', imageUrl)
       
-      const { data, error } = await supabase.functions.invoke('download-image', {
-        body: { imageUrl }
-      })
+      // Create a temporary link element
+      const link = document.createElement('a')
+      link.href = imageUrl
+      link.download = 'generated-image.png' // Set the filename
+      link.target = '_blank' // Open in new tab if download fails
       
-      if (error) throw error
-      
-      if (!data?.imageBase64) {
-        throw new Error('No image data received')
-      }
-      
-      const byteCharacters = atob(data.imageBase64)
-      const byteNumbers = new Array(byteCharacters.length)
-      
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i)
-      }
-      
-      const byteArray = new Uint8Array(byteNumbers)
-      const blob = new Blob([byteArray], { type: 'image/png' })
-      
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'generated-image.png'
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      // Trigger the download
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
       
       toast({
         description: "Image téléchargée avec succès",
