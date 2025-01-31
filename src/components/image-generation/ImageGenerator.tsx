@@ -6,7 +6,7 @@ import { LoadingIndicator } from '@/components/chat/LoadingIndicator'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
-import { Sparkles, Palette, Image, Cube, Smile } from 'lucide-react'
+import { Sparkles, Palette, Image, Box, Smile } from 'lucide-react'
 
 type ImageStyle = 'auto' | 'general' | 'realistic' | '3d' | 'anime'
 
@@ -14,7 +14,7 @@ const STYLE_OPTIONS = [
   { value: 'auto', label: 'Auto', icon: Sparkles },
   { value: 'general', label: 'Général', icon: Palette },
   { value: 'realistic', label: 'Réaliste', icon: Image },
-  { value: '3d', label: '3D', icon: Cube },
+  { value: '3d', label: '3D', icon: Box },
   { value: 'anime', label: 'Anime', icon: Smile },
 ] as const
 
