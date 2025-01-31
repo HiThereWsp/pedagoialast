@@ -49,18 +49,17 @@ serve(async (req) => {
     console.log("Generating image with prompt:", body.prompt)
     try {
       const output = await replicate.run(
-        "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+        "black-forest-labs/flux-schnell",
         {
           input: {
             prompt: body.prompt,
-            negative_prompt: "ugly, blurry, poor quality, distorted",
-            width: 1024,
-            height: 1024,
+            go_fast: true,
+            megapixels: "1",
             num_outputs: 1,
-            scheduler: "K_EULER",
-            num_inference_steps: 50,
-            guidance_scale: 7.5,
-            prompt_strength: 0.8,
+            aspect_ratio: "1:1",
+            output_format: "webp",
+            output_quality: 80,
+            num_inference_steps: 4
           }
         }
       )
