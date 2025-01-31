@@ -14,25 +14,25 @@ const STYLE_OPTIONS: StyleOption[] = [
   { 
     value: 'sketch', 
     label: 'Croquis', 
-    description: 'Un rendu en dessin au crayon ou en esquisse, idéal pour les schémas et explications',
+    description: "Un rendu en dessin au crayon ou en esquisse, idéal pour les schémas et explications",
     icon: Pencil 
   },
   { 
     value: 'realistic', 
     label: 'Réaliste', 
-    description: 'Un rendu photoréaliste pour des représentations fidèles à la réalité',
+    description: "Un rendu photoréaliste pour des représentations fidèles à la réalité",
     icon: Image 
   },
   { 
     value: '3d', 
     label: '3D', 
-    description: 'Un rendu en trois dimensions pour visualiser des concepts complexes',
+    description: "Un rendu en trois dimensions pour visualiser des concepts complexes",
     icon: Box 
   },
   { 
     value: 'anime', 
     label: 'Anime', 
-    description: "Un style inspiré de l'animation japonaise pour un aspect plus engageant",
+    description: "Un style inspiré de l\"animation japonaise pour un aspect plus engageant",
     icon: Smile 
   }
 ]
@@ -45,7 +45,7 @@ interface ImageStyleSelectorProps {
 export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleSelectorProps) => {
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium">Style de l'image</Label>
+      <Label>Style de l'image</Label>
       <RadioGroup
         value={selectedStyle}
         onValueChange={(value) => onStyleChange(value as ImageStyle)}
@@ -54,7 +54,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
         {STYLE_OPTIONS.map(({ value, label, icon: Icon, description }) => (
           <div key={value} className="relative">
             <HoverCard>
-              <HoverCardTrigger>
+              <HoverCardTrigger asChild>
                 <div>
                   <RadioGroupItem
                     value={value}

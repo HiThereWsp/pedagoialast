@@ -3,15 +3,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ImageStyleSelector } from './ImageStyleSelector'
 import { ImageStyle, GenerationPrompt } from './types'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Info } from 'lucide-react'
 
 interface GenerationFormProps {
   onSubmit: (prompt: GenerationPrompt) => void
   isLoading: boolean
 }
 
-const EDUCATIONAL_CONTEXT = "Création d'images éducatives pour des enseignants, adaptées de la maternelle au lycée, avec un focus sur la clarté, l'engagement visuel et la pédagogie."
+const EDUCATIONAL_CONTEXT = "Création d'images éducatives pour des enseignants, avec un focus sur la clarté, l'engagement visuel et la pédagogie."
 
 export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => {
   const [userPrompt, setUserPrompt] = useState('')
@@ -28,13 +26,6 @@ export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertDescription>
-          {EDUCATIONAL_CONTEXT}
-        </AlertDescription>
-      </Alert>
-
       <div className="space-y-2">
         <label htmlFor="prompt" className="text-sm font-medium">
           Décrivez l'image que vous souhaitez générer
