@@ -1,5 +1,6 @@
-import { Download } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface DownloadButtonProps {
   imageUrl: string
@@ -36,12 +37,21 @@ export const DownloadButton = ({ imageUrl }: DownloadButtonProps) => {
   }
 
   return (
-    <button
-      onClick={handleDownload}
-      className="rounded-full p-2 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#6E59A5] transition-all duration-300 transform hover:scale-110"
-      aria-label="Télécharger l'image"
-    >
-      <Download className="h-5 w-5" />
-    </button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={handleDownload}
+            className="rounded-full p-2 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#6E59A5] transition-all duration-300 transform hover:scale-110"
+            aria-label="Ouvrir et enregistrer l'image"
+          >
+            <ExternalLink className="h-5 w-5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Ouvrir et enregistrer</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   )
 }
