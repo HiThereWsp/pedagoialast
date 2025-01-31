@@ -164,6 +164,9 @@ export default function Index() {
     )
   }
 
+  const showEmptyState = !messages || messages.length === 0
+  const isNewChat = !currentConversationId
+
   return (
     <>
       <SEO 
@@ -182,11 +185,7 @@ export default function Index() {
         />
         <main className="flex-1 overflow-hidden">
           <div className="flex h-full flex-col">
-            {messages && messages.length > 0 ? (
-              <div className="flex-1 overflow-y-auto p-4">
-                <ChatHistory messages={messages} isLoading={chatLoading} />
-              </div>
-            ) : (
+            {showEmptyState && isNewChat ? (
               <div className="flex h-full items-center justify-center flex-col gap-8">
                 <div>
                   <p className="text-2xl font-medium bg-gradient-to-r from-amber-400 via-orange-300 to-amber-200 bg-clip-text text-transparent mb-2">
@@ -198,6 +197,10 @@ export default function Index() {
                 </div>
                 
                 <ImageGenerator />
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto p-4">
+                <ChatHistory messages={messages} isLoading={chatLoading} />
               </div>
             )}
             <ChatInput 
