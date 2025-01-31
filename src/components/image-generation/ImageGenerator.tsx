@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Card } from '@/components/ui/card'
 import { LoadingIndicator } from '@/components/chat/LoadingIndicator'
-import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useToolMetrics } from '@/hooks/useToolMetrics'
 import { GenerationForm } from './GenerationForm'
@@ -17,17 +16,24 @@ export const ImageGenerator = () => {
 
   const checkPredictionStatus = async (predictionId: string) => {
     try {
-      const { data: statusData, error: statusError } = await supabase.functions.invoke('generate-image', {
-        body: { predictionId }
+      const response = await fetch(`https://api.replicate.com/v1/predictions/${predictionId}`, {
+        headers: {
+          'Authorization': `Token ${import.meta.env.VITE_REPLICATE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
       })
 
-      if (statusError) throw statusError
+      if (!response.ok) {
+        throw new Error('Erreur lors de la vérification du statut')
+      }
 
-      if (statusData.status === 'succeeded' && statusData.output) {
-        setGeneratedImageUrl(Array.isArray(statusData.output) ? statusData.output[0] : statusData.output)
+      const data = await response.json()
+
+      if (data.status === 'succeeded' && data.output) {
+        setGeneratedImageUrl(Array.isArray(data.output) ? data.output[0] : data.output)
         setIsLoading(false)
         await logToolUsage('image_generation', 'generate')
-      } else if (statusData.status === 'failed') {
+      } else if (data.status === 'failed') {
         throw new Error('La génération a échoué')
       } else {
         setTimeout(() => checkPredictionStatus(predictionId), 1000)
@@ -51,19 +57,36 @@ export const ImageGenerator = () => {
         ? prompt 
         : `${prompt} (in ${style} style)`
 
-      const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: enhancedPrompt }
+      const response = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${import.meta.env.VITE_REPLICATE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          version: "black-forest-labs/flux-schnell",
+          input: {
+            prompt: enhancedPrompt,
+            go_fast: true,
+            megapixels: "1",
+            num_outputs: 1,
+            aspect_ratio: "1:1",
+            output_format: "webp",
+            output_quality: 80,
+            num_inference_steps: 4
+          }
+        })
       })
 
-      if (error) throw error
+      if (!response.ok) {
+        throw new Error('Erreur lors de la génération')
+      }
 
-      if (data.predictionId) {
-        setPredictionId(data.predictionId)
-        checkPredictionStatus(data.predictionId)
-      } else if (data.output) {
-        setGeneratedImageUrl(Array.isArray(data.output) ? data.output[0] : data.output)
-        setIsLoading(false)
-        await logToolUsage('image_generation', 'generate')
+      const data = await response.json()
+
+      if (data.id) {
+        setPredictionId(data.id)
+        checkPredictionStatus(data.id)
       }
     } catch (error) {
       console.error('Error generating image:', error)
@@ -81,22 +104,37 @@ export const ImageGenerator = () => {
     
     setIsLoading(true)
     try {
-      const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { 
-          prompt: modificationPrompt,
-          image: generatedImageUrl
-        }
+      const response = await fetch('https://api.replicate.com/v1/predictions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${import.meta.env.VITE_REPLICATE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          version: "black-forest-labs/flux-schnell",
+          input: {
+            prompt: modificationPrompt,
+            image: generatedImageUrl,
+            go_fast: true,
+            megapixels: "1",
+            num_outputs: 1,
+            aspect_ratio: "1:1",
+            output_format: "webp",
+            output_quality: 80,
+            num_inference_steps: 4
+          }
+        })
       })
 
-      if (error) throw error
+      if (!response.ok) {
+        throw new Error('Erreur lors de la modification')
+      }
 
-      if (data.predictionId) {
-        setPredictionId(data.predictionId)
-        checkPredictionStatus(data.predictionId)
-      } else if (data.output) {
-        setGeneratedImageUrl(Array.isArray(data.output) ? data.output[0] : data.output)
-        setIsLoading(false)
-        await logToolUsage('image_generation', 'modify')
+      const data = await response.json()
+
+      if (data.id) {
+        setPredictionId(data.id)
+        checkPredictionStatus(data.id)
       }
     } catch (error) {
       console.error('Error modifying image:', error)
