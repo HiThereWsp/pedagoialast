@@ -11,7 +11,7 @@ export const WelcomeMessage: FC<WelcomeMessageProps> = ({ firstName }) => {
         Bonjour {firstName} 
         <span role="img" aria-label="wave">👋</span>
       </h1>
-      <p className="text-xl text-gray-600 flex items-center justify-center whitespace-nowrap">
+      <p className="text-xl text-gray-600 flex items-center justify-center px-4 sm:px-0">
         Sur quoi souhaitez-vous travailler aujourd'hui ?
       </p>
     </div>
