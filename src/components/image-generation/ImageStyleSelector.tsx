@@ -54,7 +54,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
         {STYLE_OPTIONS.map(({ value, label, icon: Icon, description }) => (
           <div key={value} className="relative">
             <HoverCard>
-              <HoverCardTrigger>
+              <HoverCardTrigger asChild>
                 <div>
                   <RadioGroupItem
                     value={value}
@@ -73,7 +73,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
                   </Label>
                 </div>
               </HoverCardTrigger>
-              <HoverCardContent className="w-80">
+              <HoverCardContent>
                 <p className="text-sm text-muted-foreground">{description}</p>
               </HoverCardContent>
             </HoverCard>

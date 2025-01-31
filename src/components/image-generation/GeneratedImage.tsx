@@ -90,7 +90,12 @@ export const GeneratedImage = ({ imageUrl, onModify, isLoading }: GeneratedImage
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(imageUrl)
+      const response = await fetch(imageUrl, {
+        mode: 'no-cors',
+        headers: {
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
