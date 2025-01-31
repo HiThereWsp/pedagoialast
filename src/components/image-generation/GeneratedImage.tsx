@@ -90,12 +90,12 @@ export const GeneratedImage = ({ imageUrl, onModify, isLoading }: GeneratedImage
 
   const handleDownload = async () => {
     try {
-      const response = await fetch(imageUrl, {
-        mode: 'no-cors',
-        headers: {
-          'Access-Control-Allow-Origin': '*'
-        }
-      })
+      // First try to download directly
+      const response = await fetch(imageUrl)
+      if (!response.ok) {
+        throw new Error('Failed to fetch image')
+      }
+      
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -111,10 +111,44 @@ export const GeneratedImage = ({ imageUrl, onModify, isLoading }: GeneratedImage
       })
     } catch (err) {
       console.error('Erreur lors du téléchargement:', err)
-      toast({
-        variant: "destructive",
-        description: "Erreur lors du téléchargement de l'image",
-      })
+      // If direct download fails, try through edge function
+      try {
+        const { data, error } = await supabase.functions.invoke('download-image', {
+          body: { imageUrl }
+        })
+        
+        if (error) throw error
+        
+        const base64Data = data.imageBase64
+        const byteCharacters = atob(base64Data)
+        const byteNumbers = new Array(byteCharacters.length)
+        
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i)
+        }
+        
+        const byteArray = new Uint8Array(byteNumbers)
+        const blob = new Blob([byteArray], { type: 'image/png' })
+        
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'generated-image.png'
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        
+        toast({
+          description: "Image téléchargée avec succès",
+        })
+      } catch (err) {
+        console.error('Erreur lors du téléchargement via edge function:', err)
+        toast({
+          variant: "destructive",
+          description: "Erreur lors du téléchargement de l'image",
+        })
+      }
     }
   }
 
