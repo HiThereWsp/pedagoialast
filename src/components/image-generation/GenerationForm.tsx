@@ -2,33 +2,48 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ImageStyleSelector } from './ImageStyleSelector'
-import { ImageStyle } from './types'
+import { ImageStyle, GenerationPrompt } from './types'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Info } from 'lucide-react'
 
 interface GenerationFormProps {
-  onSubmit: (prompt: string, style: ImageStyle) => void
+  onSubmit: (prompt: GenerationPrompt) => void
   isLoading: boolean
 }
 
+const EDUCATIONAL_CONTEXT = "Création d'images éducatives pour des enseignants, adaptées à des élèves de primaire et collège, avec un focus sur la clarté, l'engagement visuel et la pédagogie."
+
 export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => {
-  const [prompt, setPrompt] = useState('')
+  const [userPrompt, setUserPrompt] = useState('')
   const [selectedStyle, setSelectedStyle] = useState<ImageStyle>('auto')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(prompt, selectedStyle)
+    onSubmit({
+      context: EDUCATIONAL_CONTEXT,
+      user_prompt: userPrompt,
+      style: selectedStyle
+    })
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          {EDUCATIONAL_CONTEXT}
+        </AlertDescription>
+      </Alert>
+
       <div className="space-y-2">
         <label htmlFor="prompt" className="text-sm font-medium">
           Décrivez l'image que vous souhaitez générer
         </label>
         <Input
           id="prompt"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Un chat siamois blanc jouant avec une pelote de laine bleue..."
+          value={userPrompt}
+          onChange={(e) => setUserPrompt(e.target.value)}
+          placeholder="Un croquis d'une cellule animale avec des légendes pour chaque organite..."
           className="w-full"
         />
       </div>
@@ -41,7 +56,7 @@ export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => 
       <Button 
         type="submit" 
         className="w-full"
-        disabled={!prompt.trim() || isLoading}
+        disabled={!userPrompt.trim() || isLoading}
       >
         Générer l'image
       </Button>
