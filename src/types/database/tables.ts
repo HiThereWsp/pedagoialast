@@ -45,7 +45,7 @@ export interface ToolMetricRow {
   id: string;
   user_id: string;
   tool_type: 'exercise' | 'lesson_plan' | 'correspondence' | 'image_generation';
-  action_type: 'generate' | 'feedback' | 'share' | 'copy';
+  action_type: 'generate' | 'feedback' | 'share' | 'copy' | 'modify';
   content_length: number | null;
   generation_time_ms: number | null;
   feedback_score: number | null;
