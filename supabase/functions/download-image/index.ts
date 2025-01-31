@@ -6,7 +6,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -20,11 +19,7 @@ serve(async (req) => {
 
     console.log('Attempting to download image from:', imageUrl)
 
-    const response = await fetch(imageUrl, {
-      headers: {
-        'Accept': 'image/*'
-      }
-    })
+    const response = await fetch(imageUrl)
 
     if (!response.ok) {
       throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`)
