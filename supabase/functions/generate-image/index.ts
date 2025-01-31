@@ -15,7 +15,8 @@ serve(async (req) => {
   try {
     const REPLICATE_API_KEY = Deno.env.get('REPLICATE_API_KEY')
     if (!REPLICATE_API_KEY) {
-      throw new Error('REPLICATE_API_KEY is not set')
+      console.error('REPLICATE_API_KEY is not set')
+      throw new Error('Configuration API manquante')
     }
 
     const replicate = new Replicate({
@@ -37,7 +38,7 @@ serve(async (req) => {
     // If it's a generation request
     if (!body.prompt) {
       return new Response(
-        JSON.stringify({ error: "Missing required field: prompt" }), {
+        JSON.stringify({ error: "Le prompt est requis" }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400,
         }
@@ -69,7 +70,18 @@ serve(async (req) => {
     })
   } catch (error) {
     console.error("Error in generate-image function:", error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    let errorMessage = "Une erreur est survenue lors de la génération de l'image"
+    
+    if (error.message.includes('API key')) {
+      errorMessage = "Erreur de configuration de l'API"
+    } else if (error.message.includes('prompt')) {
+      errorMessage = "Le prompt est invalide ou manquant"
+    }
+    
+    return new Response(JSON.stringify({ 
+      error: errorMessage,
+      details: error.message 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })
