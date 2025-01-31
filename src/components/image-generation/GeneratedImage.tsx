@@ -35,7 +35,7 @@ export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading }: GeneratedI
                 Régénérer
               </Button>
               <DownloadButton imageUrl={imageUrl} />
-              <FeedbackButtons />
+              <FeedbackButtons imageUrl={imageUrl} />
             </div>
           </div>
         )}
