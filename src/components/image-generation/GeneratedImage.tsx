@@ -1,6 +1,6 @@
 import { ModificationForm } from './ModificationForm'
 import { DownloadButton } from './DownloadButton'
-import { FeedbackButtons } from './buttons/FeedbackButtons'
+import { FeedbackButtons } from './FeedbackButtons'
 import { ImageStyle } from './types'
 
 interface GeneratedImageProps {
@@ -21,7 +21,7 @@ export const GeneratedImage = ({ imageUrl, onModify, isLoading }: GeneratedImage
       </div>
 
       <div className="flex justify-between items-center">
-        <FeedbackButtons />
+        <FeedbackButtons imageUrl={imageUrl} />
         <DownloadButton imageUrl={imageUrl} />
       </div>
 
