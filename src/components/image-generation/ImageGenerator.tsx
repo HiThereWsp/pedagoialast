@@ -7,6 +7,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Sparkles, Palette, Image, Box, Smile } from 'lucide-react'
+import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
+import { useToolMetrics } from '@/hooks/useToolMetrics'
 
 type ImageStyle = 'auto' | 'general' | 'realistic' | '3d' | 'anime'
 
@@ -24,14 +27,71 @@ export const ImageGenerator = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [generatedImageUrl, setGeneratedImageUrl] = useState<string | null>(null)
   const [selectedStyle, setSelectedStyle] = useState<ImageStyle>('auto')
+  const { toast } = useToast()
+  const { logToolUsage } = useToolMetrics()
+  const [predictionId, setPredictionId] = useState<string | null>(null)
+
+  const checkPredictionStatus = async (predictionId: string) => {
+    try {
+      const { data: statusData, error: statusError } = await supabase.functions.invoke('generate-image', {
+        body: { predictionId }
+      })
+
+      if (statusError) throw statusError
+
+      if (statusData.status === 'succeeded' && statusData.output) {
+        setGeneratedImageUrl(Array.isArray(statusData.output) ? statusData.output[0] : statusData.output)
+        setIsLoading(false)
+        await logToolUsage('image_generation', 'generate')
+      } else if (statusData.status === 'failed') {
+        throw new Error('La génération a échoué')
+      } else {
+        // Continue checking if still processing
+        setTimeout(() => checkPredictionStatus(predictionId), 1000)
+      }
+    } catch (error) {
+      console.error('Error checking prediction status:', error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la vérification du statut de la génération"
+      })
+      setIsLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Pour l'instant, on simule juste le chargement
-    setTimeout(() => {
+
+    try {
+      const enhancedPrompt = selectedStyle === 'auto' 
+        ? prompt 
+        : `${prompt} (in ${selectedStyle} style)`
+
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: { prompt: enhancedPrompt }
+      })
+
+      if (error) throw error
+
+      if (data.predictionId) {
+        setPredictionId(data.predictionId)
+        checkPredictionStatus(data.predictionId)
+      } else if (data.output) {
+        setGeneratedImageUrl(Array.isArray(data.output) ? data.output[0] : data.output)
+        setIsLoading(false)
+        await logToolUsage('image_generation', 'generate')
+      }
+    } catch (error) {
+      console.error('Error generating image:', error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération de l'image"
+      })
       setIsLoading(false)
-    }, 2000)
+    }
   }
 
   const handleModify = async (e: React.FormEvent) => {
@@ -39,10 +99,33 @@ export const ImageGenerator = () => {
     if (!generatedImageUrl) return
     
     setIsLoading(true)
-    // Pour l'instant, on simule juste le chargement de la modification
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: { 
+          prompt: modificationPrompt,
+          image: generatedImageUrl // Pour une future implémentation de img2img
+        }
+      })
+
+      if (error) throw error
+
+      if (data.predictionId) {
+        setPredictionId(data.predictionId)
+        checkPredictionStatus(data.predictionId)
+      } else if (data.output) {
+        setGeneratedImageUrl(Array.isArray(data.output) ? data.output[0] : data.output)
+        setIsLoading(false)
+        await logToolUsage('image_generation', 'modify')
+      }
+    } catch (error) {
+      console.error('Error modifying image:', error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la modification de l'image"
+      })
       setIsLoading(false)
-    }, 2000)
+    }
   }
 
   return (
