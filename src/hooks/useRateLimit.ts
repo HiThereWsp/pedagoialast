@@ -36,7 +36,8 @@ export const useRateLimit = ({ maxRequests = 5, timeWindow = 2592000000 }: RateL
           .insert({
             user_id: user.id,
             monthly_generation_count: 1,
-            generation_month: currentMonth
+            generation_month: currentMonth,
+            prompt: 'Initial rate limit check' // Adding required prompt field
           })
 
         if (insertError) {
