@@ -40,7 +40,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
       <label className="text-sm font-medium">
         Style de l'image
       </label>
-      <div className="flex flex-wrap gap-2">
+      <RadioGroup value={selectedStyle} onValueChange={onStyleChange} className="flex flex-wrap gap-2">
         {styles.map(({ value, label, description, Icon }) => (
           <div key={value} className="relative">
             <HoverCard>
@@ -56,10 +56,8 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
                     }`}
                 >
                   <RadioGroupItem 
-                    checked={selectedStyle === value}
                     value={value}
                     className="sr-only"
-                    onClick={() => onStyleChange(value)}
                   />
                   <Icon className="w-4 h-4" />
                   <span>{label}</span>
@@ -71,7 +69,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
             </HoverCard>
           </div>
         ))}
-      </div>
+      </RadioGroup>
     </div>
   )
 }
