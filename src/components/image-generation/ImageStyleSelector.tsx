@@ -1,75 +1,69 @@
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
-import { Sparkles, Pencil, Image, Box, Smile } from 'lucide-react'
-import { ImageStyle, StyleOption } from './types'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-
-const STYLE_OPTIONS: StyleOption[] = [
-  { 
-    value: 'auto', 
-    label: 'Auto', 
-    description: "L'IA choisit automatiquement le style le plus adapté",
-    icon: Sparkles 
-  },
-  { 
-    value: 'sketch', 
-    label: 'Croquis', 
-    description: "Un rendu en dessin au crayon ou en esquisse",
-    icon: Pencil 
-  },
-  { 
-    value: 'realistic', 
-    label: 'Réaliste', 
-    description: "Un rendu photoréaliste",
-    icon: Image 
-  },
-  { 
-    value: '3d', 
-    label: '3D', 
-    description: "Un rendu en trois dimensions",
-    icon: Box 
-  },
-  { 
-    value: 'anime', 
-    label: 'Anime', 
-    description: "Un style inspiré de l'animation japonaise",
-    icon: Smile 
-  }
-]
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
+import { ImageStyle } from "./types"
+import { Radio } from "@/components/ui/radio"
+import { Paintbrush, Wand2, Palette } from "lucide-react"
 
 interface ImageStyleSelectorProps {
   selectedStyle: ImageStyle
   onStyleChange: (style: ImageStyle) => void
 }
 
+const styles: Array<{
+  value: ImageStyle
+  label: string
+  description: string
+  Icon: React.ComponentType<{ className?: string }>
+}> = [
+  {
+    value: "auto",
+    label: "Auto",
+    description: "Laissez PedagoIA choisir le style le plus adapté",
+    Icon: Wand2
+  },
+  {
+    value: "realistic",
+    label: "Réaliste",
+    description: "Un style photoréaliste pour des images authentiques",
+    Icon: Paintbrush
+  },
+  {
+    value: "artistic",
+    label: "Artistique",
+    description: "Un style plus créatif et expressif",
+    Icon: Palette
+  }
+]
+
 export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleSelectorProps) => {
   return (
-    <div className="space-y-3">
-      <Label>Style de l'image</Label>
-      <RadioGroup
-        value={selectedStyle}
-        onValueChange={(value) => onStyleChange(value as ImageStyle)}
-        className="flex flex-wrap gap-2"
-      >
-        {STYLE_OPTIONS.map(({ value, label, icon: Icon, description }) => (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">
+        Style de l'image
+      </label>
+      <div className="flex flex-wrap gap-2">
+        {styles.map(({ value, label, description, Icon }) => (
           <div key={value} className="relative">
             <HoverCard>
-              <HoverCardTrigger>
-                <label
+              <HoverCardTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => onStyleChange(value)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer
                     transition-all duration-200
                     ${selectedStyle === value 
-                      ? 'bg-primary text-primary-foreground shadow-md scale-105' 
-                      : 'bg-background hover:bg-accent'}`}
+                      ? 'bg-gradient-to-r from-[#FFD700] via-[#FF69B4] to-[#FF8C00] text-black font-medium shadow-md' 
+                      : 'bg-secondary hover:bg-secondary/80'
+                    }`}
                 >
-                  <RadioGroupItem
+                  <Radio 
+                    checked={selectedStyle === value}
                     value={value}
-                    id={value}
                     className="sr-only"
+                    onCheckedChange={() => onStyleChange(value)}
                   />
                   <Icon className="w-4 h-4" />
                   <span>{label}</span>
-                </label>
+                </button>
               </HoverCardTrigger>
               <HoverCardContent>
                 <p className="text-sm text-muted-foreground">{description}</p>
@@ -77,7 +71,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
             </HoverCard>
           </div>
         ))}
-      </RadioGroup>
+      </div>
     </div>
   )
 }
