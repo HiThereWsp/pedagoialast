@@ -11,7 +11,7 @@ interface GenerationFormProps {
   isLoading: boolean
 }
 
-const EDUCATIONAL_CONTEXT = "Création d'images éducatives pour des enseignants, adaptées à des élèves de primaire et collège, avec un focus sur la clarté, l'engagement visuel et la pédagogie."
+const EDUCATIONAL_CONTEXT = "Création d'images éducatives pour des enseignants, adaptées de la maternelle au lycée, avec un focus sur la clarté, l'engagement visuel et la pédagogie."
 
 export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => {
   const [userPrompt, setUserPrompt] = useState('')
