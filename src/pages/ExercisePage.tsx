@@ -39,26 +39,28 @@ const ExercisePage = () => {
         title="Générateur d'exercices | PedagoIA - Créez des exercices adaptés"
         description="Créez facilement des exercices personnalisés et adaptés à vos besoins pédagogiques avec notre générateur intelligent."
       />
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto px-4 py-8">
         <BackButton />
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
             Générateur d'exercices
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
             Créez facilement des exercices adaptés à vos besoins et objectifs d'apprentissage.
           </p>
         </div>
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            <ExerciseForm 
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-            />
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8">
+            <div className="w-full overflow-x-hidden">
+              <ExerciseForm 
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+              />
+            </div>
             {exercises && (
-              <div className="xl:sticky xl:top-8">
+              <div className="xl:sticky xl:top-8 w-full">
                 <ResultDisplay exercises={exercises} />
               </div>
             )}
