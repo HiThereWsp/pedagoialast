@@ -16,9 +16,10 @@ serve(async (req) => {
     const REPLICATE_API_KEY = Deno.env.get('REPLICATE_API_KEY')
     if (!REPLICATE_API_KEY) {
       console.error('REPLICATE_API_KEY is not set')
-      throw new Error('Configuration API manquante')
+      throw new Error('La clé API Replicate n\'est pas configurée')
     }
 
+    console.log("Initializing Replicate client...")
     const replicate = new Replicate({
       auth: REPLICATE_API_KEY,
     })
@@ -46,36 +47,42 @@ serve(async (req) => {
     }
 
     console.log("Generating image with prompt:", body.prompt)
-    const output = await replicate.run(
-      "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-      {
-        input: {
-          prompt: body.prompt,
-          negative_prompt: "ugly, blurry, poor quality, distorted",
-          width: 1024,
-          height: 1024,
-          num_outputs: 1,
-          scheduler: "K_EULER",
-          num_inference_steps: 50,
-          guidance_scale: 7.5,
-          prompt_strength: 0.8,
+    try {
+      const output = await replicate.run(
+        "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+        {
+          input: {
+            prompt: body.prompt,
+            negative_prompt: "ugly, blurry, poor quality, distorted",
+            width: 1024,
+            height: 1024,
+            num_outputs: 1,
+            scheduler: "K_EULER",
+            num_inference_steps: 50,
+            guidance_scale: 7.5,
+            prompt_strength: 0.8,
+          }
         }
-      }
-    )
+      )
 
-    console.log("Generation response:", output)
-    return new Response(JSON.stringify({ output }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 200,
-    })
+      console.log("Generation response:", output)
+      return new Response(JSON.stringify({ output }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      })
+    } catch (error) {
+      console.error("Replicate API error:", error)
+      if (error.message.includes('401')) {
+        throw new Error('La clé API Replicate est invalide ou expirée')
+      }
+      throw error
+    }
   } catch (error) {
     console.error("Error in generate-image function:", error)
     let errorMessage = "Une erreur est survenue lors de la génération de l'image"
     
-    if (error.message.includes('API key')) {
-      errorMessage = "Erreur de configuration de l'API"
-    } else if (error.message.includes('prompt')) {
-      errorMessage = "Le prompt est invalide ou manquant"
+    if (error.message.includes('API')) {
+      errorMessage = error.message
     }
     
     return new Response(JSON.stringify({ 
