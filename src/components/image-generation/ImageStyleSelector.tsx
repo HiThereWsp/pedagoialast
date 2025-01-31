@@ -8,31 +8,31 @@ const STYLE_OPTIONS: StyleOption[] = [
   { 
     value: 'auto', 
     label: 'Auto', 
-    description: "L'IA choisit automatiquement le style le plus adapté au contexte pédagogique",
+    description: "L'IA choisit automatiquement le style le plus adapté",
     icon: Sparkles 
   },
   { 
     value: 'sketch', 
     label: 'Croquis', 
-    description: "Un rendu en dessin au crayon ou en esquisse, idéal pour les schémas et explications",
+    description: "Un rendu en dessin au crayon ou en esquisse",
     icon: Pencil 
   },
   { 
     value: 'realistic', 
     label: 'Réaliste', 
-    description: "Un rendu photoréaliste pour des représentations fidèles à la réalité",
+    description: "Un rendu photoréaliste",
     icon: Image 
   },
   { 
     value: '3d', 
     label: '3D', 
-    description: "Un rendu en trois dimensions pour visualiser des concepts complexes",
+    description: "Un rendu en trois dimensions",
     icon: Box 
   },
   { 
     value: 'anime', 
     label: 'Anime', 
-    description: "Un style inspiré de l\"animation japonaise pour un aspect plus engageant",
+    description: "Un style inspiré de l'animation japonaise",
     icon: Smile 
   }
 ]
