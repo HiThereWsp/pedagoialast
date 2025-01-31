@@ -12,10 +12,10 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
-    if (!OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY is not set')
-      throw new Error('La clé API OpenAI n\'est pas configurée')
+    const DALLE_API_KEY = Deno.env.get('DALLE_API_KEY')
+    if (!DALLE_API_KEY) {
+      console.error('DALLE_API_KEY is not set')
+      throw new Error('La clé API DALL-E n\'est pas configurée')
     }
 
     const body = await req.json()
@@ -36,7 +36,7 @@ serve(async (req) => {
       const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Authorization': `Bearer ${DALLE_API_KEY}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
