@@ -1,7 +1,7 @@
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { ImageStyle } from "./types"
-import { Radio } from "@/components/ui/radio"
-import { Paintbrush, Wand2, Palette } from "lucide-react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Paintbrush, Wand2, Image } from "lucide-react"
 
 interface ImageStyleSelectorProps {
   selectedStyle: ImageStyle
@@ -27,10 +27,10 @@ const styles: Array<{
     Icon: Paintbrush
   },
   {
-    value: "artistic",
-    label: "Artistique",
-    description: "Un style plus créatif et expressif",
-    Icon: Palette
+    value: "3d",
+    label: "3D",
+    description: "Un style en trois dimensions",
+    Icon: Image
   }
 ]
 
@@ -55,11 +55,11 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
                       : 'bg-secondary hover:bg-secondary/80'
                     }`}
                 >
-                  <Radio 
+                  <RadioGroupItem 
                     checked={selectedStyle === value}
                     value={value}
                     className="sr-only"
-                    onCheckedChange={() => onStyleChange(value)}
+                    onClick={() => onStyleChange(value)}
                   />
                   <Icon className="w-4 h-4" />
                   <span>{label}</span>
