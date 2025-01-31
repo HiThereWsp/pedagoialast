@@ -1,5 +1,6 @@
 import { SEO } from "@/components/SEO"
 import { ImageGenerator } from "@/components/image-generation/ImageGenerator"
+import { Sparkles } from "lucide-react"
 
 export default function ImageGenerationPage() {
   return (
@@ -13,7 +14,7 @@ export default function ImageGenerationPage() {
         
         <div className="text-center mb-12">
           <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-            <span className="text-4xl text-gray-400">?</span>
+            <Sparkles className="w-10 h-10 text-primary animate-pulse" />
           </div>
           <p className="text-lg text-gray-600">Qu'est ce que l'on crée aujourd'hui ?</p>
         </div>
