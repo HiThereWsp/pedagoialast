@@ -44,7 +44,7 @@ export interface SessionMetricRow {
 export interface ToolMetricRow {
   id: string;
   user_id: string;
-  tool_type: 'exercise' | 'lesson_plan' | 'correspondence';
+  tool_type: 'exercise' | 'lesson_plan' | 'correspondence' | 'image_generation';
   action_type: 'generate' | 'feedback' | 'share' | 'copy';
   content_length: number | null;
   generation_time_ms: number | null;

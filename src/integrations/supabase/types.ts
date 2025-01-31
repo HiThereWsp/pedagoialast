@@ -573,7 +573,12 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
-      tool_type: "differentiation" | "sequence" | "administrative" | "general"
+      tool_type:
+        | "differentiation"
+        | "sequence"
+        | "administrative"
+        | "general"
+        | "image_generation"
     }
     CompositeTypes: {
       [_ in never]: never
