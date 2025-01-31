@@ -3,6 +3,7 @@ import { useAuthForm } from "@/hooks/use-auth-form"
 import { AuthFormField } from "./AuthFormField"
 import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
+import { useNavigate } from "react-router-dom"
 
 interface SignInFormProps {
   onToggleMode: () => void
@@ -11,6 +12,7 @@ interface SignInFormProps {
 export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
   const { formState, setField, handleSignIn } = useAuthForm()
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -70,6 +72,15 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
         onClick={onToggleMode}
       >
         Pas encore de compte ? S'inscrire
+      </Button>
+
+      <Button
+        type="button"
+        variant="ghost"
+        className="w-full"
+        onClick={() => navigate("/forgot-password")}
+      >
+        Mot de passe oublié ? Réinitialisez ici
       </Button>
     </form>
   )

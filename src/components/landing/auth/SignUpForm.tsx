@@ -6,13 +6,14 @@ import { useAuthForm } from "@/hooks/use-auth-form"
 import { AuthFormField } from "./AuthFormField"
 import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
+import { useEffect } from "react"
 
 interface SignUpFormProps {
   onToggleMode: () => void
 }
 
 export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
-  const { formState, setField, handleSignUp } = useAuthForm()
+  const { formState, setField, handleSignUp, signUpSuccess } = useAuthForm()
   const { toast } = useToast()
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -55,7 +56,17 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
     }
   }
 
-  return (
+  // Gestion de l'état de succès de l'inscription
+  useEffect(() => {
+    if (signUpSuccess) {
+      // Vous pouvez ajouter des actions supplémentaires ici si nécessaire
+      console.log("Inscription réussie !")
+    }
+  }, [signUpSuccess])
+
+  return signUpSuccess ? (
+    <p>Merci pour votre inscription ! Veuillez vérifier votre email ({formState.email}) pour le lien de confirmation.</p>
+  ) : (
     <form onSubmit={onSubmit} className="space-y-4">
       <AuthFormField
         id="firstName"
