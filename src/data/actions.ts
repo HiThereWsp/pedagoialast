@@ -29,7 +29,7 @@ export const actions: Action[] = [
     icon: FileEdit,
   },
   {
-    title: "Générer une image",
+    title: "Générateur d'images",
     route: "/image-generation",
     icon: Image,
     isNew: true
