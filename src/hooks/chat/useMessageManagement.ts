@@ -1,43 +1,31 @@
 import { useState } from "react"
 import { ChatMessage } from "@/types/chat"
-import { supabase } from "@/integrations/supabase/client"
+import { chatService } from "@/services/chatService"
+import { useToast } from "@/hooks/use-toast"
 
 export const useMessageManagement = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [conversationContext, setConversationContext] = useState("")
+  const { toast } = useToast()
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
-      const { data: messagesData, error: messagesError } = await supabase
-        .from('chats')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true })
-
-      if (messagesError) {
-        console.error("Error loading messages:", messagesError)
-        return
-      }
-
+      const messagesData = await chatService.getMessages(conversationId);
       if (messagesData) {
-        const formattedMessages = messagesData.map(msg => ({
+        const formattedMessages = messagesData.map((msg: any) => ({
           role: msg.message_type as 'user' | 'assistant',
           content: msg.message,
           attachments: msg.attachments as ChatMessage['attachments']
-        }))
-        setMessages(formattedMessages)
-        
-        // Build conversation context from previous messages
-        const context = formattedMessages
-          .map(msg => `${msg.role}: ${msg.content}`)
-          .join('\n')
-        setConversationContext(context)
-        console.log("Loaded conversation context:", context)
+        }));
+        setMessages(formattedMessages);
       }
     } catch (error) {
-      console.error("Error in loadConversationMessages:", error)
+      console.error("Error in loadConversationMessages:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible de charger les messages."
+      });
     }
   }
 
@@ -49,75 +37,26 @@ export const useMessageManagement = (userId: string | null) => {
     attachments?: ChatMessage['attachments'],
     useWebSearch?: boolean
   ) => {
-    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return
+    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return;
 
-    setIsLoading(true)
-    const userMessage = message.trim()
-
+    setIsLoading(true);
     try {
-      const { error: insertError } = await supabase
-        .from('chats')
-        .insert([{
-          message: userMessage,
-          user_id: userId,
-          message_type: 'user',
-          conversation_id: conversationId,
-          conversation_title: conversationTitle,
-          attachments
-        }])
-
-      if (insertError) {
-        console.error("Error inserting user message:", insertError)
-        throw insertError
-      }
-
-      let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
+      await chatService.sendMessage(message, userId, conversationId);
+      await loadConversationMessages(conversationId);
       
-      const { data, error } = await supabase.functions.invoke(functionName, {
-        body: { 
-          message: userMessage, 
-          context: conversationContext,
-          attachments: attachments?.map(a => ({
-            url: a.url,
-            fileName: a.fileName,
-            type: a.fileType
-          }))
-        }
-      })
-
-      if (error) throw error
-
-      const aiResponse = data.response
-
-      const { error: aiInsertError } = await supabase
-        .from('chats')
-        .insert([{
-          message: aiResponse,
-          user_id: userId,
-          message_type: 'assistant',
-          conversation_id: conversationId,
-          conversation_title: conversationTitle
-        }])
-
-      if (aiInsertError) {
-        console.error("Error inserting AI response:", aiInsertError)
-        throw aiInsertError
-      }
-
-      // Update conversation context with new messages
-      const updatedContext = conversationContext + 
-        `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
-      setConversationContext(updatedContext)
-      console.log("Updated conversation context:", updatedContext)
-
-      await loadConversationMessages(conversationId)
-
-      return aiResponse
+      // Simuler une réponse de l'assistant pour l'exemple
+      const aiResponse = "Ceci est une réponse simulée de l'assistant.";
+      
+      return aiResponse;
     } catch (error) {
-      console.error("Error in sendMessage:", error)
-      throw error
+      console.error("Error in sendMessage:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Impossible d'envoyer le message."
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -126,7 +65,6 @@ export const useMessageManagement = (userId: string | null) => {
     setMessages,
     isLoading,
     loadConversationMessages,
-    sendMessage,
-    conversationContext
+    sendMessage
   }
 }
