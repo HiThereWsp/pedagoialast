@@ -4,6 +4,7 @@ import { FeedbackButtons } from "./FeedbackButtons"
 import { MessageContent } from "./MessageContent"
 import { MessageHeader } from "./MessageHeader"
 import { MessageSources } from "./MessageSources"
+import { extractSources, formatMessage } from "@/utils/messageFormatting"
 
 interface ChatMessageProps {
   role: 'user' | 'assistant'
@@ -20,33 +21,8 @@ interface ChatMessageProps {
 
 export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: ChatMessageProps) => {
   const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
-
-  const extractSources = (text: string) => {
-    const sourceRegex = /(?:Source )?\[(\d+)\]:\s*(https?:\/\/[^\s\n]+)/g;
-    const sources: { id: number; url: string }[] = [];
-    let match;
-    
-    while ((match = sourceRegex.exec(text)) !== null) {
-      sources.push({
-        id: parseInt(match[1]),
-        url: match[2].trim()
-      });
-    }
-    
-    console.log('Extracted sources:', sources); // Debug log
-    return sources;
-  };
-
-  const formatMessage = (content: string) => {
-    return content
-      .replace(/(?:Source )?\[(\d+)\]:\s*https?:\/\/[^\s\n]+\n?/g, '')
-      .trim();
-  };
-
   const sources = extractSources(content);
   const formattedContent = formatMessage(content);
-
-  console.log('Message props:', { role, isWebSearch, sourcesLength: sources.length }); // Debug log
 
   return (
     <div className={cn(
