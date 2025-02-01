@@ -7,7 +7,7 @@ export const ActionButtons = () => {
   const navigate = useNavigate()
   
   const utilityActions = actions.filter(action => action.isUtilityAction)
-  const mainActions = actions.filter(action => !action.isUtilityAction)
+  const mainActions = actions.filter(action => !action.isUtilityAction && action.route !== "/pricing")
 
   return (
     <div className="w-full space-y-6">
