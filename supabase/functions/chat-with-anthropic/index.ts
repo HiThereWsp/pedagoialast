@@ -1,7 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
-
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,49 +12,56 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
+  if (!ANTHROPIC_API_KEY) {
+    return new Response(
+      JSON.stringify({ error: 'ANTHROPIC_API_KEY is not set' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
   try {
     const { message, context } = await req.json()
-    console.log('Received request:', { message, context })
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'anthropic-version': '2024-01-01',
-        'x-api-key': ANTHROPIC_API_KEY!,
+        'x-api-key': ANTHROPIC_API_KEY,
       },
       body: JSON.stringify({
         model: 'claude-3-opus-20240229',
         max_tokens: 1024,
         messages: [
-          { role: 'user', content: message }
-        ],
-      }),
+          {
+            role: 'user',
+            content: context ? `Context: ${context}\n\nMessage: ${message}` : message
+          }
+        ]
+      })
     })
 
     if (!response.ok) {
       const error = await response.text()
       console.error('Anthropic API error:', error)
-      throw new Error(`Anthropic API error: ${error}`)
+      return new Response(
+        JSON.stringify({ error: 'Error calling Anthropic API' }),
+        { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
     }
 
     const data = await response.json()
-    console.log('Anthropic response:', data)
-
-    return new Response(JSON.stringify({ 
-      response: data.content[0].text 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return new Response(
+      JSON.stringify({ response: data.content[0].text }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
 
   } catch (error) {
-    console.error('Error in chat-with-anthropic function:', error)
+    console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
