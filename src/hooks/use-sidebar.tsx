@@ -24,10 +24,11 @@ export function useSidebar() {
 
 interface SidebarProviderProps {
   children: React.ReactNode
+  defaultOpen?: boolean
 }
 
-export function SidebarProvider({ children }: SidebarProviderProps) {
-  const [open, setOpen] = React.useState(true)
+export function SidebarProvider({ children, defaultOpen = true }: SidebarProviderProps) {
+  const [open, setOpen] = React.useState(defaultOpen)
   const [openMobile, setOpenMobile] = React.useState(false)
   const isMobile = window.innerWidth < 768
 
@@ -50,7 +51,9 @@ export function SidebarProvider({ children }: SidebarProviderProps) {
 
   return (
     <SidebarContext.Provider value={value}>
-      {children}
+      <div className="flex h-screen w-full">
+        {children}
+      </div>
     </SidebarContext.Provider>
   )
 }

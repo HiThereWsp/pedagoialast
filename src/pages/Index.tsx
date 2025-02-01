@@ -93,7 +93,7 @@ export default function Index() {
         title="Chat | PedagoIA - Assistant pédagogique intelligent"
         description="Discutez avec PedagoIA pour créer des contenus pédagogiques personnalisés et innovants."
       />
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={true}>
         <div className="flex h-screen w-full">
           <AppSidebar
             conversations={conversations}
