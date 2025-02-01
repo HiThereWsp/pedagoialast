@@ -6,4 +6,5 @@ export type Action = {
   icon: LucideIcon
   isUtilityAction?: boolean
   isNew?: boolean
+  maintenanceLabel?: string
 }
