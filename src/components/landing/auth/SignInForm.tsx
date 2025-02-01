@@ -6,7 +6,7 @@ import { posthog } from "@/integrations/posthog/client"
 import { useNavigate } from "react-router-dom"
 
 interface SignInFormProps {
-  onToggleMode: () => void
+  onToggleMode?: () => void
 }
 
 export const SignInForm = ({ onToggleMode }: SignInFormProps) => {

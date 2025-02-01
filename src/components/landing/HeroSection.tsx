@@ -4,6 +4,7 @@ import { Button } from '../ui/button'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../ui/dialog'
 import { WaitlistForm } from './WaitlistForm'
 import { DynamicText } from './DynamicText'
+import { SEO } from '../SEO'
 
 export function HeroSection() {
   const [showWaitlistForm, setShowWaitlistForm] = React.useState(false)
@@ -18,7 +19,12 @@ export function HeroSection() {
   }, [])
 
   return (
-    <section className="relative py-12 sm:py-16 md:py-20 overflow-hidden bg-gradient-to-b from-white to-secondary/5">
+    <>
+      <SEO 
+        title="PedagoIA - L'assistant qui révolutionne la préparation des cours"
+        description="Créez des contenus pédagogiques personnalisés et innovants en quelques clics grâce à l'intelligence artificielle."
+      />
+      <section className="relative py-12 sm:py-16 md:py-20 overflow-hidden bg-gradient-to-b from-white to-secondary/5">
       <div className="absolute inset-0 bg-grid-black/[0.02] -z-10" />
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -65,6 +71,7 @@ export function HeroSection() {
           <WaitlistForm />
         </DialogContent>
       </Dialog>
-    </section>
+      </section>
+    </>
   )
 }

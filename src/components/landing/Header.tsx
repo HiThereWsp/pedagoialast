@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@supabase/auth-helpers-react"
+import { useAuth } from "@supabase/auth-ui-react"
 
 export const Header = () => {
   const auth = useAuth()
