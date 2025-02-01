@@ -25,6 +25,17 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
       
       // Track successful login
       posthog.capture('login_completed')
+
+      // Show welcome toast
+      toast({
+        title: "Connexion réussie",
+        description: "Content de vous revoir ! 👋",
+        duration: 3000,
+      })
+
+      // Redirect to home page
+      navigate('/home', { replace: true })
+      
     } catch (error: any) {
       console.error("Login error:", error)
       
