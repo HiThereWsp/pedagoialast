@@ -53,7 +53,7 @@ export const useMessageManagement = (userId: string | null) => {
     setIsLoading(true)
 
     try {
-      // Insertion du message utilisateur
+      // Insert user message
       const { error: userMessageError } = await supabase
         .from('chats')
         .insert({
@@ -70,7 +70,7 @@ export const useMessageManagement = (userId: string | null) => {
         throw userMessageError
       }
 
-      // Appel de l'edge function appropriée
+      // Call appropriate edge function
       const functionName = useWebSearch ? 'web-search' : 'chat-with-anthropic'
       console.log("Calling edge function:", functionName)
       
@@ -93,7 +93,7 @@ export const useMessageManagement = (userId: string | null) => {
 
       const aiResponse = data.response
 
-      // Insertion de la réponse AI
+      // Insert AI response
       const { error: aiMessageError } = await supabase
         .from('chats')
         .insert({
