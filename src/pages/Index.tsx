@@ -8,7 +8,6 @@ import { EmptyState } from "@/components/chat/EmptyState"
 import { useChatAuth } from "@/components/chat/ChatAuth"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { SidebarProvider } from "@/hooks/use-sidebar"
 
 export default function Index() {
   const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
@@ -93,34 +92,32 @@ export default function Index() {
         title="Chat | PedagoIA - Assistant pédagogique intelligent"
         description="Discutez avec PedagoIA pour créer des contenus pédagogiques personnalisés et innovants."
       />
-      <SidebarProvider defaultOpen={true}>
-        <div className="flex h-screen w-full">
-          <AppSidebar
-            conversations={conversations}
-            onConversationSelect={handleConversationSelect}
-            currentConversationId={currentConversationId}
-            onNewConversation={handleNewConversation}
-            onDeleteConversation={handleDeleteConversation}
-            firstName={firstName}
-            onLogout={handleLogout}
-          />
-          <main className="flex-1 overflow-hidden">
-            <div className="flex h-full flex-col">
-              {showEmptyState && isNewChat ? (
-                <EmptyState firstName={firstName} />
-              ) : (
-                <div className="flex-1 overflow-y-auto p-4">
-                  <ChatHistory messages={messages} isLoading={chatLoading} />
-                </div>
-              )}
-              <ChatInput 
-                onSendMessage={handleSendMessage}
-                isLoading={chatLoading}
-              />
-            </div>
-          </main>
-        </div>
-      </SidebarProvider>
+      <div className="flex h-screen">
+        <AppSidebar
+          conversations={conversations}
+          onConversationSelect={handleConversationSelect}
+          currentConversationId={currentConversationId}
+          onNewConversation={handleNewConversation}
+          onDeleteConversation={handleDeleteConversation}
+          firstName={firstName}
+          onLogout={handleLogout}
+        />
+        <main className="flex-1 overflow-hidden">
+          <div className="flex h-full flex-col">
+            {showEmptyState && isNewChat ? (
+              <EmptyState firstName={firstName} />
+            ) : (
+              <div className="flex-1 overflow-y-auto p-4">
+                <ChatHistory messages={messages} isLoading={chatLoading} />
+              </div>
+            )}
+            <ChatInput 
+              onSendMessage={handleSendMessage}
+              isLoading={chatLoading}
+            />
+          </div>
+        </main>
+      </div>
     </>
   )
 }

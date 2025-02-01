@@ -24,32 +24,15 @@ export function useSidebar() {
 
 interface SidebarProviderProps {
   children: React.ReactNode
-  defaultOpen?: boolean
 }
 
-export function SidebarProvider({ children, defaultOpen = true }: SidebarProviderProps) {
-  const [open, setOpen] = React.useState(defaultOpen)
+export function SidebarProvider({ children }: SidebarProviderProps) {
+  const [open, setOpen] = React.useState(true)
   const [openMobile, setOpenMobile] = React.useState(false)
-  const [isMobile, setIsMobile] = React.useState(false)
-
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    // Set initial value
-    handleResize()
-    
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  const isMobile = window.innerWidth < 768
 
   const toggleSidebar = React.useCallback(() => {
-    if (isMobile) {
-      setOpenMobile(prev => !prev)
-    } else {
-      setOpen(prev => !prev)
-    }
+    return isMobile ? setOpenMobile(prev => !prev) : setOpen(prev => !prev)
   }, [isMobile])
 
   const value = React.useMemo(

@@ -9,7 +9,7 @@ import { posthog } from "@/integrations/posthog/client"
 import { useEffect } from "react"
 
 interface SignUpFormProps {
-  onToggleMode?: () => void
+  onToggleMode: () => void
 }
 
 export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
