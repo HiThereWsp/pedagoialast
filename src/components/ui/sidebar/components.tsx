@@ -12,6 +12,45 @@ import { useSidebar } from "./context"
 import { SidebarProps } from "./types"
 import { SIDEBAR_WIDTH, SIDEBAR_WIDTH_MOBILE, SIDEBAR_WIDTH_ICON } from "./constants"
 
+export const SidebarGroup = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="group"
+    className={cn("flex w-full flex-col gap-4", className)}
+    {...props}
+  />
+))
+SidebarGroup.displayName = "SidebarGroup"
+
+export const SidebarGroupContent = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="group-content"
+    className={cn("flex w-full flex-col gap-1", className)}
+    {...props}
+  />
+))
+SidebarGroupContent.displayName = "SidebarGroupContent"
+
+export const SidebarFooter = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentProps<"div">
+>(({ className, ...props }, ref) => (
+  <div
+    ref={ref}
+    data-sidebar="footer"
+    className={cn("mt-auto flex w-full flex-col gap-4 p-4", className)}
+    {...props}
+  />
+))
+SidebarFooter.displayName = "SidebarFooter"
+
 export function Sidebar({
   side = "left",
   variant = "sidebar",
@@ -99,6 +138,3 @@ export function Sidebar({
     </div>
   )
 }
-
-// ... Autres composants de base (SidebarTrigger, SidebarRail, etc.)
-// Je ne les inclus pas tous ici pour garder la réponse concise

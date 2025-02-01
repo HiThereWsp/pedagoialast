@@ -1,7 +1,9 @@
 import * as React from "react"
-import { SidebarContext, SidebarProviderProps } from "./types"
+import type { SidebarContext, SidebarProviderProps } from "./types"
 import { SIDEBAR_COOKIE_NAME, SIDEBAR_COOKIE_MAX_AGE, SIDEBAR_KEYBOARD_SHORTCUT } from "./constants"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import { cn } from "@/lib/utils"
+import { useMediaQuery } from "@/hooks/use-media-query"
 
 const SidebarContext = React.createContext<SidebarContext | null>(null)
 
@@ -21,7 +23,7 @@ export function SidebarProvider({
   style,
   children,
 }: SidebarProviderProps) {
-  const isMobile = useIsMobile()
+  const isMobile = useMediaQuery("(max-width: 768px)")
   const [openMobile, setOpenMobile] = React.useState(false)
   const [_open, _setOpen] = React.useState(defaultOpen)
   
@@ -81,8 +83,8 @@ export function SidebarProvider({
         <div
           style={
             {
-              "--sidebar-width": SIDEBAR_WIDTH,
-              "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
+              "--sidebar-width": "16rem",
+              "--sidebar-width-icon": "4rem",
               ...style,
             } as React.CSSProperties
           }
