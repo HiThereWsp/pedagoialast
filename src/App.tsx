@@ -1,34 +1,49 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Chat } from '@/components/chat/Chat'
-import { Login } from '@/components/auth/Login'
-import { Register } from '@/components/auth/Register'
-import { ForgotPassword } from '@/components/auth/ForgotPassword'
-import { ResetPassword } from '@/components/auth/ResetPassword'
+import { BrowserRouter } from 'react-router-dom'
+import { AppRoutes } from './routes/AppRoutes'
 import { Toaster } from '@/components/ui/toaster'
+import { HelmetProvider } from 'react-helmet-async'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { RouteTracker } from './components/analytics/RouteTracker'
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+})
 
 function App() {
   return (
-    <div>
-      <button 
-        className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded"
-        onClick={() => {
-          throw new Error("Test Sentry Error!");
-        }}
-      >
-        Test Sentry
-      </button>
-      
-      <Router>
-        <Routes>
-          <Route path="/" element={<Chat />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-        </Routes>
-      </Router>
-      <Toaster />
-    </div>
+    <QueryClientProvider client={queryClient}>
+      <HelmetProvider>
+        <SidebarProvider>
+          <div className="flex min-h-screen w-full flex-col lg:flex-row">
+            <TooltipProvider>
+              <BrowserRouter>
+                <RouteTracker />
+                <button 
+                  className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded"
+                  onClick={() => {
+                    throw new Error("Test Sentry Error!");
+                  }}
+                >
+                  Test Sentry
+                </button>
+                <main className="flex-1 w-full px-4 lg:px-8 py-4 lg:py-8">
+                  <AppRoutes />
+                </main>
+                <Toaster />
+              </BrowserRouter>
+            </TooltipProvider>
+          </div>
+        </SidebarProvider>
+      </HelmetProvider>
+    </QueryClientProvider>
   )
 }
 
