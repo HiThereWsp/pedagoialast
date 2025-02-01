@@ -1,72 +1,52 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { MessageSquare, BookOpen, Image, FileText, Wrench } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useNavigate } from "react-router-dom"
+import { Button } from "@/components/ui/button"
+import { actions } from "@/data/actions"
 
 export const ActionButtons = () => {
-  // État de maintenance du chat
-  const isChatUnderMaintenance = true;
+  const navigate = useNavigate()
+  
+  const utilityActions = actions.filter(action => action.isUtilityAction)
+  const mainActions = actions.filter(action => !action.isUtilityAction)
 
   return (
-    <div className="w-full space-y-4 mt-8">
-      <div className="grid grid-cols-2 gap-4">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="relative">
-              <Button
-                variant="outline"
-                className="w-full h-24 flex flex-col items-center justify-center gap-2 bg-white disabled:opacity-80"
-                asChild={!isChatUnderMaintenance}
-                disabled={isChatUnderMaintenance}
-              >
-                {!isChatUnderMaintenance ? (
-                  <Link to="/chat" className="w-full h-full flex flex-col items-center justify-center gap-2">
-                    <MessageSquare className="h-6 w-6" />
-                    <span>Chat</span>
-                  </Link>
-                ) : (
-                  <>
-                    <MessageSquare className="h-6 w-6" />
-                    <span>Chat</span>
-                  </>
-                )}
-              </Button>
-              {isChatUnderMaintenance && (
-                <div className="absolute -top-2 -right-2 bg-orange-100 text-orange-600 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                  <Wrench className="h-3 w-3" />
-                  En maintenance
-                </div>
+    <div className="w-full space-y-6">
+      {/* Temporarily hidden utility actions */}
+      {false && utilityActions.slice(0, 1).map((action, index) => {
+        const Icon = action.icon
+        return (
+          <Button
+            key={index}
+            onClick={() => navigate(action.route)}
+            className="w-full h-12 bg-gradient-to-r from-blue-100/60 to-blue-200/60 hover:from-blue-100/80 hover:to-blue-200/80 text-gray-800 rounded-2xl border border-blue-200/50 shadow-sm transition-all duration-300 hover:shadow-md"
+            variant="ghost"
+          >
+            <Icon className="w-5 h-5 mr-2 flex-shrink-0 text-blue-600" />
+            <span className="flex-1 text-left">{action.title}</span>
+          </Button>
+        )}
+      )}
+
+      <div className="space-y-4">
+        {mainActions.map((action, index) => {
+          const Icon = action.icon
+          return (
+            <Button
+              key={index}
+              onClick={() => navigate(action.route)}
+              className="w-full h-14 bg-gradient-to-r from-[#FEF7CD]/60 to-[#FFDEE2]/60 hover:from-[#FEF7CD]/80 hover:to-[#FFDEE2]/80 text-gray-800 rounded-2xl border border-[#FEF7CD]/50 shadow-sm transition-all duration-300 hover:shadow-md relative"
+              variant="ghost"
+            >
+              <Icon className="w-5 h-5 mr-2 flex-shrink-0" />
+              <span className="flex-1 text-left">{action.title}</span>
+              {action.isNew && (
+                <span className="absolute -top-2 -right-2 bg-primary text-white text-xs px-2 py-1 rounded-full animate-pulse">
+                  Nouveau
+                </span>
               )}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            {isChatUnderMaintenance ? "Le chat est temporairement indisponible pour maintenance" : "Discuter avec PedagoIA"}
-          </TooltipContent>
-        </Tooltip>
-
-        <Link to="/lesson-plan">
-          <Button variant="outline" className="w-full h-24 flex flex-col items-center justify-center gap-2 bg-white">
-            <BookOpen className="h-6 w-6" />
-            <span>Fiche de cours</span>
-          </Button>
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Link to="/exercises">
-          <Button variant="outline" className="w-full h-24 flex flex-col items-center justify-center gap-2 bg-white">
-            <FileText className="h-6 w-6" />
-            <span>Exercices</span>
-          </Button>
-        </Link>
-
-        <Link to="/image-generation">
-          <Button variant="outline" className="w-full h-24 flex flex-col items-center justify-center gap-2 bg-white">
-            <Image className="h-6 w-6" />
-            <span>Images</span>
-          </Button>
-        </Link>
+            </Button>
+          )
+        })}
       </div>
     </div>
-  );
-};
+  )
+}
