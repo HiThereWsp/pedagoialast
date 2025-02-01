@@ -4,38 +4,45 @@ import { ChatMessage } from '@/types/chat';
 export const chatService = {
   async sendMessage(message: string, userId: string, conversationId: string | null) {
     try {
-      // Vérifions d'abord si ce message existe déjà
-      if (conversationId) {
-        const { data: existingMessage } = await supabase
-          .from('chats')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('conversation_id', conversationId)
-          .eq('message', message)
-          .maybeSingle();
+      const currentTimestamp = new Date().toISOString();
+      
+      const messageData = {
+        message,
+        user_id: userId,
+        conversation_id: conversationId,
+        message_type: 'user',
+        created_at: currentTimestamp
+      };
 
-        if (existingMessage) {
-          console.log('Message already exists, skipping insertion');
-          return existingMessage;
-        }
-      }
-
-      // Si le message n'existe pas, on l'insère
       const { data, error } = await supabase
         .from('chats')
-        .insert({
-          message,
-          user_id: userId,
-          message_type: 'user',
-          conversation_id: conversationId,
-        })
+        .insert(messageData)
         .select()
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error sending message:', error);
+        
+        if (error.code === '23505') {
+          const { data: existingMessage } = await supabase
+            .from('chats')
+            .select('*')
+            .match({
+              conversation_id: conversationId,
+              user_id: userId,
+              message: message
+            })
+            .maybeSingle();
+            
+          return existingMessage;
+        }
+        
+        throw error;
+      }
+
       return data;
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error in sendMessage:', error);
       throw error;
     }
   },
