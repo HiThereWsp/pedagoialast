@@ -65,21 +65,44 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      console.log("Inserting user message to database")
-      const { error: insertError } = await supabase
+      // 1. Vérifier si le message existe déjà
+      console.log("Checking for existing message...")
+      const { data: existingMessage, error: selectError } = await supabase
         .from('chats')
-        .insert({
+        .select('id')
+        .match({
+          conversation_id: conversationId,
           message: userMessage,
           user_id: userId,
-          message_type: 'user',
-          conversation_id: conversationId,
-          conversation_title: conversationTitle,
-          attachments
+          message_type: 'user'
         })
+        .maybeSingle()
 
-      if (insertError) {
-        console.error("Error inserting user message:", insertError)
-        throw insertError
+      if (selectError) {
+        console.error("Error checking for existing message:", selectError)
+        throw selectError
+      }
+
+      // 2. Si le message n'existe pas, l'insérer
+      if (!existingMessage) {
+        console.log("Message doesn't exist, inserting new message...")
+        const { error: insertError } = await supabase
+          .from('chats')
+          .insert({
+            message: userMessage,
+            user_id: userId,
+            message_type: 'user',
+            conversation_id: conversationId,
+            conversation_title: conversationTitle,
+            attachments
+          })
+
+        if (insertError) {
+          console.error("Error inserting user message:", insertError)
+          throw insertError
+        }
+      } else {
+        console.log("Message already exists, skipping insertion")
       }
 
       let functionName = useWebSearch ? 'web-search' : 'chat-with-anthropic'
