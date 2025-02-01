@@ -2,7 +2,9 @@ import {
   Sparkles,
   PenTool,
   FileEdit,
-  Image
+  Image,
+  MessageSquare,
+  AlertTriangle
 } from "lucide-react"
 import type { Action } from "@/types/actions"
 
@@ -27,5 +29,11 @@ export const actions: Action[] = [
     route: "/image-generation",
     icon: Image,
     isNew: true
+  },
+  {
+    title: "Chat pédagogique",
+    route: "/chat",
+    icon: MessageSquare,
+    maintenanceLabel: "En maintenance"
   }
 ]
