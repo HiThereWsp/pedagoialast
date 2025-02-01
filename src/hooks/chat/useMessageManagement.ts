@@ -17,16 +17,20 @@ class ChatError extends Error {
 }
 
 // Fonction de retry pour les opérations qui peuvent échouer
-const retryOperation = async <T>(operation: () => Promise<T>, retries = 3): Promise<T> => {
-  try {
-    return await operation()
-  } catch (error) {
-    if (retries > 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      return retryOperation(operation, retries - 1)
+const retryOperation = async <T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> => {
+  let lastError: any
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await operation()
+    } catch (error) {
+      lastError = error
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, i)))
+        continue
+      }
     }
-    throw error
   }
+  throw lastError
 }
 
 export const useMessageManagement = (userId: string | null) => {
@@ -89,8 +93,6 @@ export const useMessageManagement = (userId: string | null) => {
           attachments
         })
         .select()
-        .onConflict('unique_chat_message')
-        .merge()
 
       if (error) {
         logger.error("Error inserting message:", error)
