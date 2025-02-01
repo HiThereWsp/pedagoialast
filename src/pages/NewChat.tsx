@@ -5,14 +5,13 @@ import { ChatHistory } from "@/components/ChatHistory"
 import { SEO } from "@/components/SEO"
 import { EmptyState } from "@/components/chat/EmptyState"
 import { useChatAuth } from "@/components/chat/ChatAuth"
+import { useChat } from "@/hooks/useChat"
 import { useToast } from "@/hooks/use-toast"
-import { AttachmentType, ChatMessage } from "@/types/chat"
-import { supabase } from "@/integrations/supabase/client"
+import { AttachmentType } from "@/types/chat"
 
 export default function NewChat() {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const { userId, firstName, isLoading: authLoading } = useChatAuth()
+  const { messages, sendMessage, isLoading, conversations, loadConversationMessages, currentConversationId, deleteConversation } = useChat(userId)
   const { toast } = useToast()
 
   const handleSendMessage = async (
@@ -23,31 +22,7 @@ export default function NewChat() {
     if (!message.trim() || isLoading) return
 
     try {
-      setIsLoading(true)
-      
-      // Ajouter le message de l'utilisateur à l'historique
-      setMessages(prev => [...prev, {
-        role: 'user',
-        content: message,
-        attachments
-      }])
-
-      // Appeler l'edge function chat-with-anthropic
-      const { data, error } = await supabase.functions.invoke('chat-with-anthropic', {
-        body: { message }
-      })
-
-      if (error) {
-        console.error('Error calling chat-with-anthropic:', error)
-        throw error
-      }
-
-      // Ajouter la réponse de Claude à l'historique
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: data.response
-      }])
-
+      await sendMessage(message, useWebSearch)
     } catch (error) {
       console.error('Error in handleSendMessage:', error)
       toast({
@@ -55,8 +30,6 @@ export default function NewChat() {
         title: "Erreur",
         description: "Une erreur est survenue lors de l'envoi du message.",
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -78,11 +51,11 @@ export default function NewChat() {
       />
       <div className="flex h-screen">
         <AppSidebar
-          conversations={[]}
-          onConversationSelect={() => {}}
-          currentConversationId=""
+          conversations={conversations}
+          onConversationSelect={loadConversationMessages}
+          currentConversationId={currentConversationId}
           onNewConversation={() => {}}
-          onDeleteConversation={() => {}}
+          onDeleteConversation={deleteConversation}
           firstName={firstName}
           onLogout={() => {}}
         />
