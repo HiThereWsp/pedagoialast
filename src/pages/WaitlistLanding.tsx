@@ -4,7 +4,7 @@ import { HeroSection } from "@/components/landing/HeroSection"
 import { MetricsSection } from "@/components/landing/MetricsSection"
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
 import { ChallengesSection } from "@/components/landing/ChallengesSection"
-import Footer from "@/components/landing/Footer"
+import { Footer } from "@/components/landing/Footer"
 
 const WaitlistLanding = () => {
   return (

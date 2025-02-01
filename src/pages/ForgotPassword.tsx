@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SEO } from "@/components/SEO"
 import { useToast } from "@/hooks/use-toast"
 import { Link } from "react-router-dom"
-import {ForgotPasswordForm} from "@/components/landing/auth/ForgotPassowrdForm";
+import { ForgotPasswordForm } from "@/components/landing/auth/ForgotPasswordForm"
 
 export default function ForgotPassword() {
   const navigate = useNavigate()
