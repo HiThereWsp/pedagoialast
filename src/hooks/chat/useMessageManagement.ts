@@ -2,6 +2,16 @@ import { useState } from "react"
 import { ChatMessage } from "@/types/chat"
 import { chatService } from "@/services/chatService"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
+
+interface SendMessageParams {
+  message: string
+  conversationId: string
+  conversationTitle?: string
+  context: string
+  attachments?: ChatMessage['attachments']
+  useWebSearch?: boolean
+}
 
 export const useMessageManagement = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
@@ -10,12 +20,21 @@ export const useMessageManagement = (userId: string | null) => {
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
-      const messagesData = await chatService.getMessages(conversationId);
+      const { data: messagesData, error } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
       if (messagesData) {
-        const formattedMessages = messagesData.map((msg: any) => ({
+        const formattedMessages = messagesData.map((msg) => ({
           role: msg.message_type as 'user' | 'assistant',
           content: msg.message,
-          attachments: msg.attachments as ChatMessage['attachments']
+          attachments: msg.attachments as ChatMessage['attachments'],
+          isWebSearch: msg.action_type === 'web_search'
         }));
         setMessages(formattedMessages);
       }
@@ -37,11 +56,44 @@ export const useMessageManagement = (userId: string | null) => {
     attachments?: ChatMessage['attachments'],
     useWebSearch?: boolean
   ) => {
-    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return;
+    if (!userId || (!message.trim() && (!attachments || attachments.length === 0))) return;
 
     setIsLoading(true);
     try {
-      await chatService.sendMessage(message, userId, conversationId);
+      // Vérification des messages similaires récents
+      const recentTimeWindow = new Date(Date.now() - 30 * 1000).toISOString();
+      const { data: existingMessage, error: checkError } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .eq('user_id', userId)
+        .eq('message', message)
+        .gt('created_at', recentTimeWindow)
+        .is('deleted_at', null)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking for existing message:', checkError);
+        throw checkError;
+      }
+
+      if (!existingMessage) {
+        const { error: insertError } = await supabase
+          .from('chats')
+          .insert({
+            message,
+            user_id: userId,
+            conversation_id: conversationId,
+            conversation_title: conversationTitle,
+            message_type: 'user',
+            action_type: useWebSearch ? 'web_search' : null,
+            attachments,
+            created_at: new Date().toISOString()
+          });
+
+        if (insertError) throw insertError;
+      }
+
       await loadConversationMessages(conversationId);
       
       // Simuler une réponse de l'assistant pour l'exemple
