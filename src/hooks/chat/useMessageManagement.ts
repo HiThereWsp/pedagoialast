@@ -1,7 +1,6 @@
 import { useState } from "react"
 import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
-import { chatService } from "@/services/chatService"
 
 export const useMessageManagement = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
@@ -70,21 +69,36 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      // Insérer le message utilisateur
-      const { error: insertError } = await supabase
+      // Vérifier d'abord si le message existe déjà
+      console.log("Checking for existing message...")
+      const { data: existingMessage } = await supabase
         .from('chats')
-        .insert({
-          message: userMessage,
-          user_id: userId,
-          conversation_id: conversationId,
-          message_type: 'user',
-          conversation_title: conversationTitle,
-          attachments
-        })
+        .select('id')
+        .eq('conversation_id', conversationId)
+        .eq('user_id', userId)
+        .eq('message', userMessage)
+        .eq('message_type', 'user')
+        .maybeSingle()
 
-      if (insertError) {
-        console.error("Error inserting user message:", insertError)
-        throw insertError
+      if (existingMessage) {
+        console.log("Message already exists, skipping insert")
+      } else {
+        console.log("Message doesn't exist, proceeding with insert")
+        const { error: insertError } = await supabase
+          .from('chats')
+          .insert({
+            message: userMessage,
+            user_id: userId,
+            conversation_id: conversationId,
+            message_type: 'user',
+            conversation_title: conversationTitle,
+            attachments
+          })
+
+        if (insertError) {
+          console.error("Error inserting user message:", insertError)
+          throw insertError
+        }
       }
 
       // Appeler l'edge function appropriée
@@ -111,20 +125,34 @@ export const useMessageManagement = (userId: string | null) => {
       const aiResponse = data.response
       console.log("AI response received, inserting to database")
 
-      // Insérer la réponse AI
-      const { error: aiInsertError } = await supabase
+      // Vérifier si la réponse AI existe déjà
+      const { data: existingAIResponse } = await supabase
         .from('chats')
-        .insert({
-          message: aiResponse,
-          user_id: userId,
-          conversation_id: conversationId,
-          message_type: 'assistant',
-          conversation_title: conversationTitle
-        })
+        .select('id')
+        .eq('conversation_id', conversationId)
+        .eq('user_id', userId)
+        .eq('message', aiResponse)
+        .eq('message_type', 'assistant')
+        .maybeSingle()
 
-      if (aiInsertError) {
-        console.error("Error inserting AI response:", aiInsertError)
-        throw aiInsertError
+      if (existingAIResponse) {
+        console.log("AI response already exists, skipping insert")
+      } else {
+        console.log("AI response doesn't exist, proceeding with insert")
+        const { error: aiInsertError } = await supabase
+          .from('chats')
+          .insert({
+            message: aiResponse,
+            user_id: userId,
+            conversation_id: conversationId,
+            message_type: 'assistant',
+            conversation_title: conversationTitle
+          })
+
+        if (aiInsertError) {
+          console.error("Error inserting AI response:", aiInsertError)
+          throw aiInsertError
+        }
       }
 
       const updatedContext = conversationContext + 
