@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
-import { supabase } from "@/integrations/supabase/client"
-import { LoginForm } from "@/components/landing/LoginForm"
-import { Card, CardContent } from "@/components/ui/card"
+import { Link, useLocation } from "react-router-dom"
+import { SignInForm } from "@/components/landing/auth/SignInForm"
+import { SignUpForm } from "@/components/landing/auth/SignUpForm"
+import { ForgotPassowrdForm } from "@/components/landing/auth/ForgotPassowrdForm"
+import { PasswordResetForm } from "@/components/landing/auth/PasswordResetForm"
 import { SEO } from "@/components/SEO"
 import { useToast } from "@/hooks/use-toast"
-import { Link } from "react-router-dom"
 
 export default function Login() {
-  const navigate = useNavigate()
   const location = useLocation()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
@@ -16,119 +15,78 @@ export default function Login() {
   useEffect(() => {
     const verifyMagicLink = async () => {
       // Get the current URL's query parameters
-      const queryParams = new URLSearchParams(window.location.search);
-      const token = queryParams.get("token_hash"); // Extract the token value
+      const params = new URLSearchParams(window.location.search)
+      const error = params.get("error")
+      const error_description = params.get("error_description")
 
-      if (token) {
-        console.log("Token:", token);
-
-        try {
-          // Verify the OTP using Supabase
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: "magiclink", // Adjust this based on your use case
-          });
-
-          if (error) {
-            console.error("Error verifying magic link:", error.message);
-          } else {
-            console.log("Magic link verified successfully!");
-            // Redirect the user to the dashboard or another page
-            // window.location.href = "/home"; // Adjust redirect as needed
-          }
-        } catch (err) {
-          console.error("Unexpected error during verification:", err);
-        }
-      } else {
-        console.log("No token found in the URL.");
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: error_description || "Une erreur est survenue lors de la connexion.",
+        })
       }
-    };
 
-    verifyMagicLink();
-  }, []);
-
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        setIsLoading(true)
-        console.log("Checking session...")
-        const { data: { session }, error } = await supabase.auth.getSession()
-        
-        if (error) {
-          console.error("Session error:", error)
-          await supabase.auth.signOut()
-          localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-          toast({
-            variant: "destructive",
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter.",
-          })
-        } else if (session) {
-          console.log("Active session found:", session)
-          const returnUrl = location.state?.returnUrl || '/home'
-          console.log("Redirecting to:", returnUrl)
-          navigate(returnUrl, { replace: true })
-        } else {
-          console.log("No active session found")
-        }
-      } catch (error) {
-        console.error("Auth error:", error)
-        await supabase.auth.signOut()
-        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-      } finally {
-        setIsLoading(false)
-      }
+      setIsLoading(false)
     }
 
-    checkUser()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session)
-      
-      if (event === 'SIGNED_IN' && session) {
-        console.log("User signed in, redirecting...")
-        const returnUrl = location.state?.returnUrl || '/home'
-        console.log("Redirecting to:", returnUrl)
-        navigate(returnUrl, { replace: true })
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [navigate, location.state, toast])
+    verifyMagicLink()
+  }, [toast])
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
   return (
     <>
-      <SEO 
+      <SEO
         title="Connexion | PedagoIA - Assistant pédagogique intelligent"
-        description="Connectez-vous à votre compte PedagoIA pour accéder à votre assistant pédagogique personnel et optimiser votre enseignement."
+        description="Connectez-vous à votre compte PedagoIA pour accéder à votre assistant pédagogique intelligent."
       />
-      <div className="flex min-h-screen flex-col items-center justify-between bg-background">
-        <div className="w-full flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-          <Card className="w-full max-w-md">
-            <CardContent className="pt-6">
-              <LoginForm />
-            </CardContent>
-          </Card>
+      <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+        <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
+          <div className="absolute inset-0 bg-primary" />
+          <Link to="/" className="relative z-20 flex items-center text-lg font-medium">
+            <img src="/lovable-uploads/a514063e-400f-4c84-b2f2-78114e277365.png" alt="PedagoIA Logo" className="h-8" />
+          </Link>
+          <div className="relative z-20 mt-auto">
+            <blockquote className="space-y-2">
+              <p className="text-lg">
+                "PedagoIA m'a permis de gagner un temps précieux dans la préparation de mes cours. Je peux maintenant me
+                concentrer sur l'essentiel : l'accompagnement de mes élèves."
+              </p>
+              <footer className="text-sm">Sophie Dubois</footer>
+            </blockquote>
+          </div>
         </div>
-        
-        <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              © 2024 PedagoIA. Tous droits réservés.
-            </p>
-            <div className="space-x-4">
-              <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">
-                Contact
-              </Link>
+        <div className="lg:p-8">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+            <div className="flex flex-col space-y-2 text-center">
+              <h1 className="text-2xl font-semibold tracking-tight">Bienvenue sur PedagoIA</h1>
+              <p className="text-sm text-muted-foreground">
+                Connectez-vous à votre compte pour accéder à votre assistant pédagogique
+              </p>
             </div>
+            {location.pathname === "/login/signup" ? (
+              <SignUpForm />
+            ) : location.pathname === "/login/forgot-password" ? (
+              <ForgotPassowrdForm />
+            ) : location.pathname === "/login/reset-password" ? (
+              <PasswordResetForm />
+            ) : (
+              <SignInForm />
+            )}
+          </div>
+        </div>
+        <footer className="absolute bottom-0 left-0 right-0 p-4 text-center lg:hidden">
+          <div className="flex justify-center space-x-4">
+            <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">
+              Contact
+            </Link>
           </div>
         </footer>
       </div>
