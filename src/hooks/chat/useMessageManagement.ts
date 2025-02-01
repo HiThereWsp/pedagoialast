@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
+import { chatService } from "@/services/chatService"
 
 export const useMessageManagement = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
@@ -50,13 +51,17 @@ export const useMessageManagement = (userId: string | null) => {
     attachments?: ChatMessage['attachments'],
     useWebSearch?: boolean
   ) => {
+    if (!userId) {
+      console.error("No user ID provided")
+      return
+    }
+
     console.log("Sending message:", { message, conversationId, useWebSearch })
-    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) {
+    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading) {
       console.log("Message send cancelled:", { 
         emptyMessage: !message.trim(), 
         noAttachments: !attachments || attachments.length === 0,
-        isLoading,
-        noUserId: !userId 
+        isLoading
       })
       return
     }
@@ -65,46 +70,25 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      // 1. Vérifier si le message existe déjà
-      console.log("Checking for existing message...")
-      const { data: existingMessage, error: selectError } = await supabase
-        .from('chats')
-        .select('id')
-        .match({
-          conversation_id: conversationId,
-          message: userMessage,
-          user_id: userId,
-          message_type: 'user'
-        })
-        .maybeSingle()
+      // Vérifier si le message existe déjà
+      const existingMessage = await chatService.checkExistingMessage(
+        conversationId,
+        userMessage,
+        userId
+      )
 
-      if (selectError) {
-        console.error("Error checking for existing message:", selectError)
-        throw selectError
-      }
-
-      // 2. Si le message n'existe pas, l'insérer
+      // Si le message n'existe pas, l'insérer
       if (!existingMessage) {
-        console.log("Message doesn't exist, inserting new message...")
-        const { error: insertError } = await supabase
-          .from('chats')
-          .insert({
-            message: userMessage,
-            user_id: userId,
-            message_type: 'user',
-            conversation_id: conversationId,
-            conversation_title: conversationTitle,
-            attachments
-          })
-
-        if (insertError) {
-          console.error("Error inserting user message:", insertError)
-          throw insertError
-        }
-      } else {
-        console.log("Message already exists, skipping insertion")
+        await chatService.insertUserMessage(
+          userMessage,
+          userId,
+          conversationId,
+          conversationTitle,
+          attachments
+        )
       }
 
+      // Appeler l'edge function appropriée
       let functionName = useWebSearch ? 'web-search' : 'chat-with-anthropic'
       console.log("Calling edge function:", functionName)
       
@@ -128,20 +112,12 @@ export const useMessageManagement = (userId: string | null) => {
       const aiResponse = data.response
       console.log("AI response received, inserting to database")
 
-      const { error: aiInsertError } = await supabase
-        .from('chats')
-        .insert({
-          message: aiResponse,
-          user_id: userId,
-          message_type: 'assistant',
-          conversation_id: conversationId,
-          conversation_title: conversationTitle
-        })
-
-      if (aiInsertError) {
-        console.error("Error inserting AI response:", aiInsertError)
-        throw aiInsertError
-      }
+      await chatService.insertAIResponse(
+        aiResponse,
+        userId,
+        conversationId,
+        conversationTitle
+      )
 
       const updatedContext = conversationContext + 
         `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
