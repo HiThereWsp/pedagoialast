@@ -9,7 +9,7 @@ export const chatService = {
   ) {
     const { data, error } = await supabase
       .from('chats')
-      .select('id')
+      .select('*')
       .match({
         conversation_id: conversationId,
         message,
