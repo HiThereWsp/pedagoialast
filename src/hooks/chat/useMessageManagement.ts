@@ -29,7 +29,6 @@ export const useMessageManagement = (userId: string | null) => {
         }))
         setMessages(formattedMessages)
         
-        // Build conversation context from previous messages
         const context = formattedMessages
           .map(msg => `${msg.role}: ${msg.content}`)
           .join('\n')
@@ -71,7 +70,7 @@ export const useMessageManagement = (userId: string | null) => {
         throw insertError
       }
 
-      let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
+      let functionName = useWebSearch ? 'web-search' : 'chat-with-anthropic'
       
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: { 
@@ -104,7 +103,6 @@ export const useMessageManagement = (userId: string | null) => {
         throw aiInsertError
       }
 
-      // Update conversation context with new messages
       const updatedContext = conversationContext + 
         `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
       setConversationContext(updatedContext)
