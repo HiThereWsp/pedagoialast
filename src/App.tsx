@@ -5,7 +5,6 @@ import { HelmetProvider } from 'react-helmet-async'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { RouteTracker } from './components/analytics/RouteTracker'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -26,14 +25,6 @@ function App() {
             <TooltipProvider>
               <BrowserRouter>
                 <RouteTracker />
-                <button 
-                  className="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded"
-                  onClick={() => {
-                    throw new Error("Test Sentry Error!");
-                  }}
-                >
-                  Test Sentry
-                </button>
                 <main className="flex-1 w-full px-4 lg:px-8 py-4 lg:py-8">
                   <AppRoutes />
                 </main>
