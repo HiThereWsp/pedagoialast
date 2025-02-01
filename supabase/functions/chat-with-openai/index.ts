@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY')
+const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY')
 const MONTHLY_TOKEN_LIMIT = 100000
 
 const corsHeaders = {
@@ -17,9 +17,9 @@ serve(async (req) => {
   try {
     const { message, type } = await req.json()
 
-    if (!openAIApiKey) {
-      console.error('OpenAI API key not configured')
-      throw new Error('OpenAI API key not configured')
+    if (!anthropicApiKey) {
+      console.error('Anthropic API key not configured')
+      throw new Error('Anthropic API key not configured')
     }
 
     const systemPrompt = type === 'title-generation'
@@ -43,7 +43,7 @@ serve(async (req) => {
          4. Adapte le contenu au niveau mentionné
          5. Ne fais JAMAIS référence à d'autres conversations`
 
-    console.log('Calling OpenAI API with message:', message)
+    console.log('Calling Anthropic API with message:', message)
 
     const estimatedTokens = Math.ceil((message.length + systemPrompt.length) / 4)
 
@@ -59,36 +59,36 @@ serve(async (req) => {
       )
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'x-api-key': anthropicApiKey,
+        'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: message }
-        ],
-        temperature: 0.7,
-        top_p: 1.0,
-        frequency_penalty: 0.3,
-        presence_penalty: 0.3,
+        model: 'claude-3-opus-20240229',
         max_tokens: Math.min(4000, MONTHLY_TOKEN_LIMIT - estimatedTokens),
+        messages: [
+          {
+            role: 'user',
+            content: message
+          }
+        ],
+        system: systemPrompt
       }),
     })
 
     if (!response.ok) {
       const error = await response.json()
-      console.error('OpenAI API error:', error)
-      throw new Error(error.error?.message || 'Error calling OpenAI API')
+      console.error('Anthropic API error:', error)
+      throw new Error(error.error?.message || 'Error calling Anthropic API')
     }
 
     const data = await response.json()
-    const aiResponse = data.choices[0].message.content
+    const aiResponse = data.content[0].text
 
-    console.log('Successfully got response from OpenAI')
+    console.log('Successfully got response from Anthropic')
 
     return new Response(JSON.stringify({ response: aiResponse }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
