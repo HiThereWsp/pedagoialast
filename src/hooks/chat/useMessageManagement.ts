@@ -54,17 +54,16 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      // Insert user message without ON CONFLICT clause
       const { error: insertError } = await supabase
         .from('chats')
-        .insert({
+        .insert([{
           message: userMessage,
           user_id: userId,
           message_type: 'user',
           conversation_id: conversationId,
           conversation_title: conversationTitle,
           attachments
-        })
+        }])
 
       if (insertError) {
         console.error("Error inserting user message:", insertError)
@@ -89,16 +88,15 @@ export const useMessageManagement = (userId: string | null) => {
 
       const aiResponse = data.response
 
-      // Insert AI response without ON CONFLICT clause
       const { error: aiInsertError } = await supabase
         .from('chats')
-        .insert({
+        .insert([{
           message: aiResponse,
           user_id: userId,
           message_type: 'assistant',
           conversation_id: conversationId,
           conversation_title: conversationTitle
-        })
+        }])
 
       if (aiInsertError) {
         console.error("Error inserting AI response:", aiInsertError)
