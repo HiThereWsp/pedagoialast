@@ -68,14 +68,14 @@ export const useMessageManagement = (userId: string | null) => {
       console.log("Inserting user message to database")
       const { error: insertError } = await supabase
         .from('chats')
-        .insert([{
+        .insert({
           message: userMessage,
           user_id: userId,
           message_type: 'user',
           conversation_id: conversationId,
           conversation_title: conversationTitle,
           attachments
-        }])
+        })
 
       if (insertError) {
         console.error("Error inserting user message:", insertError)
@@ -107,13 +107,13 @@ export const useMessageManagement = (userId: string | null) => {
 
       const { error: aiInsertError } = await supabase
         .from('chats')
-        .insert([{
+        .insert({
           message: aiResponse,
           user_id: userId,
           message_type: 'assistant',
           conversation_id: conversationId,
           conversation_title: conversationTitle
-        }])
+        })
 
       if (aiInsertError) {
         console.error("Error inserting AI response:", aiInsertError)
