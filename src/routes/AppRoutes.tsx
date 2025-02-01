@@ -6,6 +6,7 @@ import ForgotPassword from "@/pages/ForgotPassword.tsx";
 
 // Lazy load components
 const Index = lazy(() => import("@/pages/Index"))
+const NewChat = lazy(() => import("@/pages/NewChat"))
 const Home = lazy(() => import("@/pages/Home"))
 const Login = lazy(() => import("@/pages/Login"))
 const ResetPassword = lazy(() => import("@/pages/ResetPassword"))
@@ -48,6 +49,7 @@ export const AppRoutes = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/home" element={<Home />} />
           <Route path="/chat" element={<Index />} />
+          <Route path="/new-chat" element={<NewChat />} />
           <Route path="/lesson-plan" element={<LessonPlanPage />} />
           <Route path="/correspondence" element={<CorrespondencePage />} />
           <Route path="/exercises" element={<ExercisePage />} />
