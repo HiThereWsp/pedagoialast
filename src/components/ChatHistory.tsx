@@ -26,5 +26,5 @@ export const ChatHistory = ({ messages, isLoading }: ChatHistoryProps) => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};

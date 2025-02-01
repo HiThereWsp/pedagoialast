@@ -21,13 +21,25 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || isLoading) return;
     
-    onSendMessage(message, undefined, isSearchMode);
-    setMessage('');
-    
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
+    if (!message.trim() || isLoading) {
+      return;
+    }
+
+    try {
+      await onSendMessage(message, undefined, isSearchMode);
+      setMessage('');
+      
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du message.",
+      });
     }
   };
 
@@ -47,6 +59,12 @@ export const ChatInput = ({ onSendMessage, isLoading }: ChatInputProps) => {
 
   const toggleSearchMode = () => {
     setIsSearchMode(!isSearchMode);
+    toast({
+      title: isSearchMode ? "Mode chat standard activé" : "Mode recherche web activé",
+      description: isSearchMode 
+        ? "Les réponses seront basées sur le contexte de la conversation" 
+        : "Les réponses incluront des informations du web",
+    });
   };
 
   return (
