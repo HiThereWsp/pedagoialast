@@ -8,7 +8,7 @@ import { EmptyState } from "@/components/chat/EmptyState"
 import { useChatAuth } from "@/components/chat/ChatAuth"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/hooks/use-sidebar"
 
 export default function Index() {
   const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
