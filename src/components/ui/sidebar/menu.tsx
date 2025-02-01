@@ -1,32 +1,27 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Slot } from "@radix-ui/react-slot"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { useSidebar } from "./context"
-import { SidebarMenuButtonProps } from "./types"
-import { sidebarMenuButtonVariants } from "./variants"
 
 export const SidebarMenu = React.forwardRef<
-  HTMLUListElement,
-  React.ComponentProps<"ul">
+  HTMLDivElement,
+  React.ComponentProps<"div">
 >(({ className, ...props }, ref) => (
-  <ul
+  <div
     ref={ref}
     data-sidebar="menu"
-    className={cn("flex w-full min-w-0 flex-col gap-1", className)}
+    className={cn("flex w-full flex-col gap-1", className)}
     {...props}
   />
 ))
 SidebarMenu.displayName = "SidebarMenu"
 
 export const SidebarMenuItem = React.forwardRef<
-  HTMLLIElement,
-  React.ComponentProps<"li">
+  HTMLDivElement,
+  React.ComponentProps<"div">
 >(({ className, ...props }, ref) => (
-  <li
+  <div
     ref={ref}
     data-sidebar="menu-item"
-    className={cn("group/menu-item relative", className)}
+    className={cn("flex w-full", className)}
     {...props}
   />
 ))
@@ -34,57 +29,20 @@ SidebarMenuItem.displayName = "SidebarMenuItem"
 
 export const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
-  SidebarMenuButtonProps
->(
-  (
-    {
-      asChild = false,
-      isActive = false,
-      variant = "default",
-      size = "default",
-      tooltip,
-      className,
-      ...props
-    },
-    ref
-  ) => {
-    const Comp = asChild ? Slot : "button"
-    const { isMobile, state } = useSidebar()
-
-    const button = (
-      <Comp
-        ref={ref}
-        data-sidebar="menu-button"
-        data-size={size}
-        data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        {...props}
-      />
-    )
-
-    if (!tooltip) {
-      return button
-    }
-
-    if (typeof tooltip === "string") {
-      tooltip = {
-        children: tooltip,
-      }
-    }
-
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{button}</TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          hidden={state !== "collapsed" || isMobile}
-          {...tooltip}
-        />
-      </Tooltip>
-    )
-  }
-)
+  React.ComponentProps<"button">
+>(({ className, ...props }, ref) => (
+  <button
+    ref={ref}
+    data-sidebar="menu-button"
+    className={cn(
+      "flex w-full items-center rounded-lg px-3 py-2 text-sm",
+      "hover:bg-accent hover:text-accent-foreground",
+      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+      "disabled:pointer-events-none disabled:opacity-50",
+      "data-[active=true]:bg-accent data-[active=true]:text-accent-foreground",
+      className
+    )}
+    {...props}
+  />
+))
 SidebarMenuButton.displayName = "SidebarMenuButton"
-
-// ... Autres composants de menu (SidebarMenuAction, SidebarMenuBadge, etc.)
