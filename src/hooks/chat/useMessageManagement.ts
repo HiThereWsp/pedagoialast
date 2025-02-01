@@ -25,11 +25,10 @@ export const useMessageManagement = (userId: string | null) => {
         const formattedMessages = messagesData.map(msg => ({
           role: msg.message_type as 'user' | 'assistant',
           content: msg.message,
-          attachments: msg.attachments as ChatMessage['attachments']
+          attachments: msg.attachments
         }))
         setMessages(formattedMessages)
         
-        // Build conversation context from previous messages
         const context = formattedMessages
           .map(msg => `${msg.role}: ${msg.content}`)
           .join('\n')
@@ -57,14 +56,14 @@ export const useMessageManagement = (userId: string | null) => {
     try {
       const { error: insertError } = await supabase
         .from('chats')
-        .insert([{
+        .insert({
           message: userMessage,
           user_id: userId,
           message_type: 'user',
           conversation_id: conversationId,
           conversation_title: conversationTitle,
           attachments
-        }])
+        })
 
       if (insertError) {
         console.error("Error inserting user message:", insertError)
@@ -80,7 +79,8 @@ export const useMessageManagement = (userId: string | null) => {
           attachments: attachments?.map(a => ({
             url: a.url,
             fileName: a.fileName,
-            type: a.fileType
+            fileType: a.fileType,
+            filePath: a.filePath
           }))
         }
       })
@@ -91,20 +91,19 @@ export const useMessageManagement = (userId: string | null) => {
 
       const { error: aiInsertError } = await supabase
         .from('chats')
-        .insert([{
+        .insert({
           message: aiResponse,
           user_id: userId,
           message_type: 'assistant',
           conversation_id: conversationId,
           conversation_title: conversationTitle
-        }])
+        })
 
       if (aiInsertError) {
         console.error("Error inserting AI response:", aiInsertError)
         throw aiInsertError
       }
 
-      // Update conversation context with new messages
       const updatedContext = conversationContext + 
         `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
       setConversationContext(updatedContext)

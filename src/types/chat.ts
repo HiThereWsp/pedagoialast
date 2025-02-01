@@ -9,3 +9,10 @@ export interface ChatMessage {
   }>;
   isWebSearch?: boolean;
 }
+
+export interface AttachmentType {
+  url: string;
+  fileName: string;
+  fileType: string;
+  filePath: string;
+}

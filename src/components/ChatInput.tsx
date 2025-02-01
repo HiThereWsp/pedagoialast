@@ -2,9 +2,14 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, Send, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AttachmentType } from '@/types/chat';
 
 interface ChatInputProps {
-  onSendMessage: (message: string, attachments?: Array<{ url: string; fileName?: string; fileType?: string }>, useWebSearch?: boolean) => void;
+  onSendMessage: (
+    message: string, 
+    attachments?: Array<AttachmentType>, 
+    useWebSearch?: boolean
+  ) => void;
   isLoading?: boolean;
 }
 
