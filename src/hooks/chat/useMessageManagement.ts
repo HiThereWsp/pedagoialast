@@ -22,10 +22,11 @@ export const useMessageManagement = (userId: string | null) => {
       }
 
       if (messagesData) {
-        const formattedMessages = messagesData.map(msg => ({
+        const formattedMessages: ChatMessage[] = messagesData.map(msg => ({
           role: msg.message_type as 'user' | 'assistant',
           content: msg.message,
-          attachments: msg.attachments
+          attachments: msg.attachments as ChatMessage['attachments'],
+          isWebSearch: false
         }))
         setMessages(formattedMessages)
         
