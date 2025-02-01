@@ -4,6 +4,23 @@ import { ChatMessage } from '@/types/chat';
 export const chatService = {
   async sendMessage(message: string, userId: string, conversationId: string | null) {
     try {
+      // Vérifions d'abord si ce message existe déjà
+      if (conversationId) {
+        const { data: existingMessage } = await supabase
+          .from('chats')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('conversation_id', conversationId)
+          .eq('message', message)
+          .maybeSingle();
+
+        if (existingMessage) {
+          console.log('Message already exists, skipping insertion');
+          return existingMessage;
+        }
+      }
+
+      // Si le message n'existe pas, on l'insère
       const { data, error } = await supabase
         .from('chats')
         .insert({
@@ -11,7 +28,9 @@ export const chatService = {
           user_id: userId,
           message_type: 'user',
           conversation_id: conversationId,
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
       return data;
