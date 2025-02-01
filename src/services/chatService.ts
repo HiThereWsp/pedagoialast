@@ -4,43 +4,25 @@ import { ChatMessage } from '@/types/chat';
 export const chatService = {
   async sendMessage(message: string, userId: string, conversationId: string | null) {
     try {
-      const currentTimestamp = new Date().toISOString();
-      
       const messageData = {
         message,
         user_id: userId,
         conversation_id: conversationId,
         message_type: 'user',
-        created_at: currentTimestamp
+        created_at: new Date().toISOString()
       };
 
       const { data, error } = await supabase
         .from('chats')
         .insert(messageData)
-        .select()
-        .maybeSingle();
+        .select();
 
       if (error) {
         console.error('Error sending message:', error);
-        
-        if (error.code === '23505') {
-          const { data: existingMessage } = await supabase
-            .from('chats')
-            .select('*')
-            .match({
-              conversation_id: conversationId,
-              user_id: userId,
-              message: message
-            })
-            .maybeSingle();
-            
-          return existingMessage;
-        }
-        
         throw error;
       }
 
-      return data;
+      return data[0];
     } catch (error) {
       console.error('Error in sendMessage:', error);
       throw error;
