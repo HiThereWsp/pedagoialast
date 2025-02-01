@@ -9,6 +9,7 @@ export const useMessageManagement = (userId: string | null) => {
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
+      console.log("Loading messages for conversation:", conversationId)
       const { data: messagesData, error: messagesError } = await supabase
         .from('chats')
         .select('*')
@@ -55,24 +56,40 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      const { error: insertError } = await supabase
+      console.log("Attempting to insert user message:", {
+        message: userMessage,
+        userId,
+        conversationId,
+        conversationTitle
+      })
+
+      // Simplifier l'insertion en retirant toute logique d'upsert implicite
+      const { data: insertData, error: insertError } = await supabase
         .from('chats')
-        .insert({
+        .insert([{
           message: userMessage,
           user_id: userId,
           message_type: 'user',
           conversation_id: conversationId,
           conversation_title: conversationTitle,
           attachments
-        })
+        }])
+        .select()
 
       if (insertError) {
-        console.error("Error inserting user message:", insertError)
+        console.error("Detailed insert error:", {
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint
+        })
         throw insertError
       }
 
+      console.log("Successfully inserted user message:", insertData)
+
       let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
       
+      console.log("Calling edge function:", functionName)
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: { 
           message: userMessage, 
@@ -86,24 +103,30 @@ export const useMessageManagement = (userId: string | null) => {
         }
       })
 
-      if (error) throw error
+      if (error) {
+        console.error("Edge function error:", error)
+        throw error
+      }
 
       const aiResponse = data.response
+      console.log("Received AI response, attempting to save")
 
       const { error: aiInsertError } = await supabase
         .from('chats')
-        .insert({
+        .insert([{
           message: aiResponse,
           user_id: userId,
           message_type: 'assistant',
           conversation_id: conversationId,
           conversation_title: conversationTitle
-        })
+        }])
 
       if (aiInsertError) {
         console.error("Error inserting AI response:", aiInsertError)
         throw aiInsertError
       }
+
+      console.log("Successfully saved AI response")
 
       const updatedContext = conversationContext + 
         `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
