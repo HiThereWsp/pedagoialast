@@ -1,5 +1,4 @@
 import {
-  MessageSquare,
   Sparkles,
   PenTool,
   FileEdit,
@@ -8,11 +7,6 @@ import {
 import type { Action } from "@/types/actions"
 
 export const actions: Action[] = [
-  {
-    title: "Chat pédagogique",
-    route: "/chat",
-    icon: MessageSquare,
-  },
   {
     title: "Générateur de séquences",
     route: "/lesson-plan",
