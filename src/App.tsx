@@ -5,6 +5,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { RouteTracker } from './components/analytics/RouteTracker'
 
 // Create a client
 const queryClient = new QueryClient({
