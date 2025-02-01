@@ -70,22 +70,21 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      // Vérifier si le message existe déjà
-      const existingMessage = await chatService.checkExistingMessage(
-        conversationId,
-        userMessage,
-        userId
-      )
-
-      // Si le message n'existe pas, l'insérer
-      if (!existingMessage) {
-        await chatService.insertUserMessage(
-          userMessage,
-          userId,
-          conversationId,
-          conversationTitle,
+      // Insérer le message utilisateur
+      const { error: insertError } = await supabase
+        .from('chats')
+        .insert({
+          message: userMessage,
+          user_id: userId,
+          conversation_id: conversationId,
+          message_type: 'user',
+          conversation_title: conversationTitle,
           attachments
-        )
+        })
+
+      if (insertError) {
+        console.error("Error inserting user message:", insertError)
+        throw insertError
       }
 
       // Appeler l'edge function appropriée
@@ -112,12 +111,21 @@ export const useMessageManagement = (userId: string | null) => {
       const aiResponse = data.response
       console.log("AI response received, inserting to database")
 
-      await chatService.insertAIResponse(
-        aiResponse,
-        userId,
-        conversationId,
-        conversationTitle
-      )
+      // Insérer la réponse AI
+      const { error: aiInsertError } = await supabase
+        .from('chats')
+        .insert({
+          message: aiResponse,
+          user_id: userId,
+          conversation_id: conversationId,
+          message_type: 'assistant',
+          conversation_title: conversationTitle
+        })
+
+      if (aiInsertError) {
+        console.error("Error inserting AI response:", aiInsertError)
+        throw aiInsertError
+      }
 
       const updatedContext = conversationContext + 
         `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
