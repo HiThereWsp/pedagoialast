@@ -30,7 +30,16 @@ interface SidebarProviderProps {
 export function SidebarProvider({ children, defaultOpen = true }: SidebarProviderProps) {
   const [open, setOpen] = React.useState(defaultOpen)
   const [openMobile, setOpenMobile] = React.useState(false)
-  const isMobile = window.innerWidth < 768
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768)
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile(prev => !prev) : setOpen(prev => !prev)
@@ -51,9 +60,7 @@ export function SidebarProvider({ children, defaultOpen = true }: SidebarProvide
 
   return (
     <SidebarContext.Provider value={value}>
-      <div className="flex h-screen w-full">
-        {children}
-      </div>
+      {children}
     </SidebarContext.Provider>
   )
 }
