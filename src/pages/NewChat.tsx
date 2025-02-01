@@ -7,6 +7,7 @@ import { EmptyState } from "@/components/chat/EmptyState"
 import { useChatAuth } from "@/components/chat/ChatAuth"
 import { useToast } from "@/hooks/use-toast"
 import { AttachmentType, ChatMessage } from "@/types/chat"
+import { supabase } from "@/integrations/supabase/client"
 
 export default function NewChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -31,14 +32,21 @@ export default function NewChat() {
         attachments
       }])
 
-      // Simuler une réponse après un délai
-      setTimeout(() => {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: "Ceci est une réponse simulée. Pour implémenter la vraie logique, nous devrons connecter ce composant à un backend.",
-        }])
-        setIsLoading(false)
-      }, 1000)
+      // Appeler l'edge function chat-with-anthropic
+      const { data, error } = await supabase.functions.invoke('chat-with-anthropic', {
+        body: { message }
+      })
+
+      if (error) {
+        console.error('Error calling chat-with-anthropic:', error)
+        throw error
+      }
+
+      // Ajouter la réponse de Claude à l'historique
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: data.response
+      }])
 
     } catch (error) {
       console.error('Error in handleSendMessage:', error)
@@ -47,6 +55,7 @@ export default function NewChat() {
         title: "Erreur",
         description: "Une erreur est survenue lors de l'envoi du message.",
       })
+    } finally {
       setIsLoading(false)
     }
   }
