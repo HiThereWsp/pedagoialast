@@ -6,6 +6,7 @@ const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
@@ -22,8 +23,8 @@ serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'anthropic-version': '2024-01-01',
         'x-api-key': ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
         model: 'claude-3-opus-20240229',
