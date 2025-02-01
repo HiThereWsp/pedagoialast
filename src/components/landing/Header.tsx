@@ -1,32 +1,55 @@
-import { Link } from "react-router-dom"
-import { Button } from "@/components/ui/button"
-import { useSession } from "@supabase/auth-helpers-react"
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
-export const Header = () => {
-  const session = useSession()
+export function Header() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLoginClick = () => {
+    if (isAuthenticated) {
+      navigate('/home');
+    } else {
+      navigate('/login');
+    }
+  };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2">
-          <img src="/lovable-uploads/a514063e-400f-4c84-b2f2-78114e277365.png" alt="PedagoIA Logo" className="h-8" />
-        </Link>
-
-        <div className="flex items-center gap-4">
-          <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">
-            Contact
-          </Link>
-          {session ? (
-            <Button asChild>
-              <Link to="/chat">Accéder à l'app</Link>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center gap-2">
+            <img src="/favicon.svg" alt="PedagoIA Logo" className="w-6 h-6 sm:w-8 sm:h-8" />
+            <span className="text-lg sm:text-xl font-semibold">PedagoIA</span>
+          </div>
+          <div>
+            <Button 
+              variant="outline"
+              onClick={handleLoginClick}
+              className="font-medium text-sm sm:text-base"
+            >
+              Se connecter
             </Button>
-          ) : (
-            <Button asChild>
-              <Link to="/login">Se connecter</Link>
-            </Button>
-          )}
+          </div>
         </div>
-      </nav>
+      </div>
     </header>
-  )
+  );
 }

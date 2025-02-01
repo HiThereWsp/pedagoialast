@@ -1,27 +1,67 @@
-import { Routes, Route } from "react-router-dom"
+import { Routes, Route, Navigate } from "react-router-dom"
 import { ProtectedRoute } from "./ProtectedRoute"
-import Index from "@/pages/Index"
-import NewChat from "@/pages/NewChat"
-import Login from "@/pages/Login"
-import ForgotPassword from "@/pages/ForgotPassword"
-import ResetPassword from "@/pages/ResetPassword"
-import Settings from "@/pages/Settings"
-import NotFound from "@/pages/NotFound"
+import { Suspense, lazy } from "react"
+import { Loader2 } from "lucide-react"
+import ForgotPassword from "@/pages/ForgotPassword.tsx";
 
-export function AppRoutes() {
+// Lazy load components
+const Index = lazy(() => import("@/pages/Index"))
+const Home = lazy(() => import("@/pages/Home"))
+const Login = lazy(() => import("@/pages/Login"))
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"))
+const Settings = lazy(() => import("@/pages/Settings"))
+const NotFound = lazy(() => import("@/pages/NotFound"))
+const LessonPlanPage = lazy(() => import("@/pages/LessonPlanPage"))
+const CorrespondencePage = lazy(() => import("@/pages/CorrespondencePage"))
+const Landing = lazy(() => import("@/pages/Landing"))
+const WaitlistLanding = lazy(() => import("@/pages/WaitlistLanding"))
+const Pricing = lazy(() => import("@/pages/Pricing"))
+const MetricsPage = lazy(() => import("@/pages/MetricsPage"))
+const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
+const ExercisePage = lazy(() => import("@/pages/ExercisePage"))
+const DiscoverPage = lazy(() => import("@/pages/DiscoverPage"))
+const ContactPage = lazy(() => import("@/pages/ContactPage"))
+const UTMLinksPage = lazy(() => import("@/pages/UTMLinksPage"))
+const ImageGenerationPage = lazy(() => import("@/pages/ImageGenerationPage"))
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="flex h-screen w-full items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+)
+
+export const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      
-      <Route element={<ProtectedRoute />}>
-        <Route path="/" element={<Index />} />
-        <Route path="/new-chat" element={<NewChat />} />
-        <Route path="/settings" element={<Settings />} />
-      </Route>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Routes>
+        {/* Route racine redirige vers /home ou /login selon l'authentification */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/waitlist" element={<WaitlistLanding />} />
+        <Route path="/pricing" element={<Pricing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+        {/* Routes protégées nécessitant une authentification */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/home" element={<Home />} />
+          <Route path="/chat" element={<Index />} />
+          <Route path="/lesson-plan" element={<LessonPlanPage />} />
+          <Route path="/correspondence" element={<CorrespondencePage />} />
+          <Route path="/exercises" element={<ExercisePage />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/metrics" element={<MetricsPage />} />
+          <Route path="/suggestions" element={<SuggestionsPage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/myutmlinks" element={<UTMLinksPage />} />
+          <Route path="/image-generation" element={<ImageGenerationPage />} />
+        </Route>
+
+        {/* Gestion des routes inconnues */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   )
 }

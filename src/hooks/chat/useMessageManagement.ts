@@ -1,19 +1,45 @@
 import { useState } from "react"
 import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
-import { useMessageInsert } from "./useMessageInsert"
-import { useMessageLoad } from "./useMessageLoad"
-import { logger } from "./utils/logger"
 
 export const useMessageManagement = (userId: string | null) => {
+  const [messages, setMessages] = useState<Array<ChatMessage>>([])
   const [isLoading, setIsLoading] = useState(false)
-  const { insertMessage } = useMessageInsert(userId)
-  const { 
-    messages, 
-    setMessages, 
-    loadConversationMessages, 
-    conversationContext 
-  } = useMessageLoad()
+  const [conversationContext, setConversationContext] = useState("")
+
+  const loadConversationMessages = async (conversationId: string) => {
+    try {
+      const { data: messagesData, error: messagesError } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true })
+
+      if (messagesError) {
+        console.error("Error loading messages:", messagesError)
+        return
+      }
+
+      if (messagesData) {
+        const formattedMessages = messagesData.map(msg => ({
+          role: msg.message_type as 'user' | 'assistant',
+          content: msg.message,
+          attachments: msg.attachments as ChatMessage['attachments']
+        }))
+        setMessages(formattedMessages)
+        
+        // Build conversation context from previous messages
+        const context = formattedMessages
+          .map(msg => `${msg.role}: ${msg.content}`)
+          .join('\n')
+        setConversationContext(context)
+        console.log("Loaded conversation context:", context)
+      }
+    } catch (error) {
+      console.error("Error in loadConversationMessages:", error)
+    }
+  }
 
   const sendMessage = async (
     message: string,
@@ -23,35 +49,29 @@ export const useMessageManagement = (userId: string | null) => {
     attachments?: ChatMessage['attachments'],
     useWebSearch?: boolean
   ) => {
-    if (!userId) {
-      logger.error("No user ID provided")
-      return
-    }
-
-    logger.debug(`Sending message: ${message.substring(0, 50)}...`)
-    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading) {
-      logger.debug("Message send cancelled", { 
-        emptyMessage: !message.trim(), 
-        noAttachments: !attachments || attachments.length === 0,
-        isLoading
-      })
-      return
-    }
+    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return
 
     setIsLoading(true)
     const userMessage = message.trim()
 
     try {
-      await insertMessage(
-        userMessage,
-        conversationId,
-        'user',
-        conversationTitle,
-        attachments
-      )
+      const { error: insertError } = await supabase
+        .from('chats')
+        .insert([{
+          message: userMessage,
+          user_id: userId,
+          message_type: 'user',
+          conversation_id: conversationId,
+          conversation_title: conversationTitle,
+          attachments
+        }])
 
-      let functionName = useWebSearch ? 'web-search' : 'chat-with-anthropic'
-      logger.debug(`Calling edge function: ${functionName}`)
+      if (insertError) {
+        console.error("Error inserting user message:", insertError)
+        throw insertError
+      }
+
+      let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
       
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: { 
@@ -65,26 +85,36 @@ export const useMessageManagement = (userId: string | null) => {
         }
       })
 
-      if (error) {
-        logger.error("Error from edge function:", error)
-        throw error
-      }
+      if (error) throw error
 
       const aiResponse = data.response
-      logger.debug("AI response received")
 
-      await insertMessage(
-        aiResponse,
-        conversationId,
-        'assistant',
-        conversationTitle
-      )
+      const { error: aiInsertError } = await supabase
+        .from('chats')
+        .insert([{
+          message: aiResponse,
+          user_id: userId,
+          message_type: 'assistant',
+          conversation_id: conversationId,
+          conversation_title: conversationTitle
+        }])
+
+      if (aiInsertError) {
+        console.error("Error inserting AI response:", aiInsertError)
+        throw aiInsertError
+      }
+
+      // Update conversation context with new messages
+      const updatedContext = conversationContext + 
+        `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
+      setConversationContext(updatedContext)
+      console.log("Updated conversation context:", updatedContext)
 
       await loadConversationMessages(conversationId)
 
       return aiResponse
     } catch (error) {
-      logger.error("Error in sendMessage:", error)
+      console.error("Error in sendMessage:", error)
       throw error
     } finally {
       setIsLoading(false)

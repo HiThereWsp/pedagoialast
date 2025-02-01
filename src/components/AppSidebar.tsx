@@ -2,12 +2,12 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { ChevronLeft, Menu } from "lucide-react"
+import { useState } from "react"
 import { useLocation } from "react-router-dom"
 import { ConversationList } from "./sidebar/ConversationList"
 import { SidebarHeader } from "./sidebar/SidebarHeader"
 import { SidebarFooter } from "./sidebar/SidebarFooter"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { useSidebar } from "@/hooks/use-sidebar"
 
 interface AppSidebarProps {
   conversations: Array<{id: string, title: string}>
@@ -28,9 +28,9 @@ export function AppSidebar({
   firstName,
   onLogout
 }: AppSidebarProps) {
-  const { state, openMobile, setOpenMobile, toggleSidebar } = useSidebar()
+  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
   const location = useLocation()
-  const isCollapsed = state === "collapsed"
 
   return (
     <>
@@ -38,22 +38,22 @@ export function AppSidebar({
         variant="ghost"
         size="icon"
         className="fixed left-4 top-4 z-40 md:hidden"
-        onClick={() => setOpenMobile(!openMobile)}
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
         <Menu className="h-6 w-6" />
       </Button>
       <div
         className={cn(
           "fixed inset-0 z-30 bg-background/80 backdrop-blur-sm md:hidden",
-          openMobile ? "block" : "hidden"
+          isMobileOpen ? "block" : "hidden"
         )}
-        onClick={() => setOpenMobile(false)}
+        onClick={() => setIsMobileOpen(false)}
       />
       <aside
         className={cn(
           "fixed left-0 top-0 z-30 flex h-full flex-col border-r bg-background transition-all duration-300 md:relative md:translate-x-0",
           isCollapsed ? "w-0 md:w-0 opacity-0" : "w-64",
-          !openMobile && "-translate-x-full"
+          !isMobileOpen && "-translate-x-full"
         )}
       >
         <TooltipProvider>
@@ -67,7 +67,7 @@ export function AppSidebar({
                 variant="ghost"
                 size="icon"
                 className="hidden md:flex"
-                onClick={toggleSidebar}
+                onClick={() => setIsCollapsed(!isCollapsed)}
               >
                 <ChevronLeft className={cn(
                   "h-4 w-4 transition-transform",
@@ -97,7 +97,7 @@ export function AppSidebar({
           variant="ghost"
           size="icon"
           className="fixed left-4 top-4 z-40 hidden md:flex"
-          onClick={toggleSidebar}
+          onClick={() => setIsCollapsed(false)}
         >
           <Menu className="h-6 w-6" />
         </Button>

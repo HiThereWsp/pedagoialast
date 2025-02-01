@@ -1,28 +1,32 @@
 import { HeroSection } from "@/components/landing/HeroSection"
-import { Header } from "@/components/landing/Header"
-import { Footer } from "@/components/landing/Footer"
+import { ChallengesSection } from "@/components/landing/ChallengesSection"
+import { MetricsSection } from "@/components/landing/MetricsSection"
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection"
 import { FAQSection } from "@/components/landing/FAQSection"
+import { Header } from "@/components/landing/Header"
 import { SEO } from "@/components/SEO"
+import Footer from "@/components/landing/Footer"
 
-export default function Landing() {
+const Landing = () => {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <SEO 
-        title="PedagoIA - L'assistant qui révolutionne la préparation des cours"
-        description="Créez des contenus pédagogiques personnalisés et innovants en quelques clics grâce à l'intelligence artificielle."
+        title="PedagoIA - Assistant pédagogique intelligent" 
+        description="Votre assistant pédagogique qui vous aide à adapter vos cours, effectuer vos tâches administratives et préparer vos cours plus efficacement."
       />
-      <div className="flex min-h-screen flex-col">
-        <Header />
-        <main className="flex-1">
-          <HeroSection />
-          <HowItWorksSection />
-          <TestimonialsSection />
-          <FAQSection />
-        </main>
-        <Footer />
-      </div>
-    </>
+      <Header />
+      <main className="flex-grow">
+        <HeroSection />
+        <ChallengesSection />
+        <MetricsSection />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <FAQSection />
+      </main>
+      <Footer />
+    </div>
   )
 }
+
+export default Landing

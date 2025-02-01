@@ -1,20 +1,41 @@
-import { BrowserRouter } from "react-router-dom"
-import { AppRoutes } from "./routes/AppRoutes"
-import { Toaster } from "@/components/ui/toaster"
-import { HelmetProvider } from "react-helmet-async"
-import { SessionContextProvider } from "@supabase/auth-helpers-react"
-import { supabase } from "./integrations/supabase/client"
+import { BrowserRouter } from 'react-router-dom'
+import { AppRoutes } from './routes/AppRoutes'
+import { Toaster } from '@/components/ui/toaster'
+import { HelmetProvider } from 'react-helmet-async'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { RouteTracker } from './components/analytics/RouteTracker'
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+})
 
 function App() {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
+    <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <BrowserRouter>
-          <AppRoutes />
-          <Toaster />
-        </BrowserRouter>
+        <SidebarProvider>
+          <div className="flex min-h-screen w-full flex-col lg:flex-row">
+            <TooltipProvider>
+              <BrowserRouter>
+                <RouteTracker />
+                <main className="flex-1 w-full px-4 lg:px-8 py-4 lg:py-8">
+                  <AppRoutes />
+                </main>
+                <Toaster />
+              </BrowserRouter>
+            </TooltipProvider>
+          </div>
+        </SidebarProvider>
       </HelmetProvider>
-    </SessionContextProvider>
+    </QueryClientProvider>
   )
 }
 
