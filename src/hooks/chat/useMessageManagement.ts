@@ -8,6 +8,7 @@ export const useMessageManagement = (userId: string | null) => {
   const [conversationContext, setConversationContext] = useState("")
 
   const loadConversationMessages = async (conversationId: string) => {
+    console.log("Loading messages for conversation:", conversationId)
     try {
       const { data: messagesData, error: messagesError } = await supabase
         .from('chats')
@@ -22,6 +23,7 @@ export const useMessageManagement = (userId: string | null) => {
       }
 
       if (messagesData) {
+        console.log("Messages loaded successfully:", messagesData.length)
         const formattedMessages = messagesData.map(msg => ({
           role: msg.message_type as 'user' | 'assistant',
           content: msg.message,
@@ -33,7 +35,7 @@ export const useMessageManagement = (userId: string | null) => {
           .map(msg => `${msg.role}: ${msg.content}`)
           .join('\n')
         setConversationContext(context)
-        console.log("Loaded conversation context:", context)
+        console.log("Conversation context updated")
       }
     } catch (error) {
       console.error("Error in loadConversationMessages:", error)
@@ -48,12 +50,22 @@ export const useMessageManagement = (userId: string | null) => {
     attachments?: ChatMessage['attachments'],
     useWebSearch?: boolean
   ) => {
-    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return
+    console.log("Sending message:", { message, conversationId, useWebSearch })
+    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) {
+      console.log("Message send cancelled:", { 
+        emptyMessage: !message.trim(), 
+        noAttachments: !attachments || attachments.length === 0,
+        isLoading,
+        noUserId: !userId 
+      })
+      return
+    }
 
     setIsLoading(true)
     const userMessage = message.trim()
 
     try {
+      console.log("Inserting user message to database")
       const { error: insertError } = await supabase
         .from('chats')
         .insert([{
@@ -71,6 +83,7 @@ export const useMessageManagement = (userId: string | null) => {
       }
 
       let functionName = useWebSearch ? 'web-search' : 'chat-with-anthropic'
+      console.log("Calling edge function:", functionName)
       
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: { 
@@ -84,9 +97,13 @@ export const useMessageManagement = (userId: string | null) => {
         }
       })
 
-      if (error) throw error
+      if (error) {
+        console.error("Error from edge function:", error)
+        throw error
+      }
 
       const aiResponse = data.response
+      console.log("AI response received, inserting to database")
 
       const { error: aiInsertError } = await supabase
         .from('chats')
@@ -106,7 +123,7 @@ export const useMessageManagement = (userId: string | null) => {
       const updatedContext = conversationContext + 
         `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
       setConversationContext(updatedContext)
-      console.log("Updated conversation context:", updatedContext)
+      console.log("Conversation context updated")
 
       await loadConversationMessages(conversationId)
 

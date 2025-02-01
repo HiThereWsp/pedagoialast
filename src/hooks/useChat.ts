@@ -30,18 +30,28 @@ export const useChat = (userId: string | null) => {
 
   useEffect(() => {
     if (userId) {
+      console.log("Loading conversations for user:", userId)
       loadConversations()
     }
   }, [userId])
 
   const handleLoadConversationMessages = async (conversationId: string) => {
+    console.log("Loading conversation:", conversationId)
     await loadConversationMessages(conversationId)
     await loadContext(conversationId)
     setCurrentConversationId(conversationId)
   }
 
   const handleSendMessage = async (message: string, useWebSearch?: boolean) => {
-    if (!message.trim() || isLoading || !userId) return
+    console.log("Handling send message:", { message, useWebSearch })
+    if (!message.trim() || isLoading || !userId) {
+      console.log("Message send cancelled:", { 
+        emptyMessage: !message.trim(), 
+        isLoading, 
+        noUserId: !userId 
+      })
+      return
+    }
 
     try {
       setMessages(prev => [...prev, { role: 'user', content: message }])
@@ -50,6 +60,7 @@ export const useChat = (userId: string | null) => {
       let title: string | undefined
 
       if (!currentId) {
+        console.log("Creating new conversation")
         const newConversation = await createNewConversation(message)
         currentId = newConversation.conversationId
         title = newConversation.title
@@ -59,6 +70,7 @@ export const useChat = (userId: string | null) => {
       const aiResponse = await sendMessage(message, currentId, title, conversationContext, undefined, useWebSearch)
       
       if (aiResponse) {
+        console.log("Updating context with AI response")
         await updateContext(currentId, message, aiResponse)
       }
 
@@ -71,6 +83,7 @@ export const useChat = (userId: string | null) => {
   }
 
   const handleDeleteConversation = async (conversationId: string) => {
+    console.log("Deleting conversation:", conversationId)
     await deleteConversation(conversationId)
     if (currentConversationId === conversationId) {
       setMessages([])
