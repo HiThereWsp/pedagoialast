@@ -18,6 +18,7 @@ serve(async (req) => {
     const { message, type } = await req.json()
 
     if (!openAIApiKey) {
+      console.error('OpenAI API key not configured')
       throw new Error('OpenAI API key not configured')
     }
 
@@ -65,7 +66,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }
