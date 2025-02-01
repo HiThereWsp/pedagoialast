@@ -13,8 +13,7 @@ export const supabase = createClient<Database>(
       persistSession: true,
       detectSessionInUrl: true,
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      storageKey: 'sb-jpelncawdaounkidvymu-auth-token',
-      flowType: 'pkce',
+      storageKey: 'sb-jpelncawdaounkidvymu-auth-token'
     },
     global: {
       headers: {
