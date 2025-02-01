@@ -1,27 +1,32 @@
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useSidebar } from "./context"
+import { SidebarMenuButtonProps } from "./types"
+import { sidebarMenuButtonVariants } from "./variants"
 
 export const SidebarMenu = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
+  HTMLUListElement,
+  React.ComponentProps<"ul">
 >(({ className, ...props }, ref) => (
-  <div
+  <ul
     ref={ref}
     data-sidebar="menu"
-    className={cn("flex w-full flex-col gap-1", className)}
+    className={cn("flex w-full min-w-0 flex-col gap-1", className)}
     {...props}
   />
 ))
 SidebarMenu.displayName = "SidebarMenu"
 
 export const SidebarMenuItem = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div">
+  HTMLLIElement,
+  React.ComponentProps<"li">
 >(({ className, ...props }, ref) => (
-  <div
+  <li
     ref={ref}
     data-sidebar="menu-item"
-    className={cn("flex w-full", className)}
+    className={cn("group/menu-item relative", className)}
     {...props}
   />
 ))
@@ -29,20 +34,55 @@ SidebarMenuItem.displayName = "SidebarMenuItem"
 
 export const SidebarMenuButton = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button">
->(({ className, ...props }, ref) => (
-  <button
-    ref={ref}
-    data-sidebar="menu-button"
-    className={cn(
-      "flex w-full items-center rounded-lg px-3 py-2 text-sm",
-      "hover:bg-accent hover:text-accent-foreground",
-      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-      "disabled:pointer-events-none disabled:opacity-50",
-      "data-[active=true]:bg-accent data-[active=true]:text-accent-foreground",
-      className
-    )}
-    {...props}
-  />
-))
+  SidebarMenuButtonProps
+>(
+  (
+    {
+      asChild = false,
+      isActive = false,
+      variant = "default",
+      size = "default",
+      tooltip,
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    const Comp = asChild ? Slot : "button"
+    const { isMobile, state } = useSidebar()
+
+    const button = (
+      <Comp
+        ref={ref}
+        data-sidebar="menu-button"
+        data-size={size}
+        data-active={isActive}
+        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        {...props}
+      />
+    )
+
+    if (!tooltip) {
+      return button
+    }
+
+    if (typeof tooltip === "string") {
+      tooltip = {
+        children: tooltip,
+      }
+    }
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent
+          side="right"
+          align="center"
+          hidden={state !== "collapsed" || isMobile}
+          {...tooltip}
+        />
+      </Tooltip>
+    )
+  }
+)
 SidebarMenuButton.displayName = "SidebarMenuButton"
