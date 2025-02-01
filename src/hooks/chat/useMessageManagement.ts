@@ -35,7 +35,6 @@ export const useMessageManagement = (userId: string | null) => {
           .map(msg => `${msg.role}: ${msg.content}`)
           .join('\n')
         setConversationContext(context)
-        console.log("Loaded conversation context:", context)
       }
     } catch (error) {
       console.error("Error in loadConversationMessages:", error)
@@ -56,15 +55,8 @@ export const useMessageManagement = (userId: string | null) => {
     const userMessage = message.trim()
 
     try {
-      console.log("Attempting to insert user message:", {
-        message: userMessage,
-        userId,
-        conversationId,
-        conversationTitle
-      })
-
-      // Simplifier l'insertion en retirant la clause ON CONFLICT
-      const { data: insertData, error: insertError } = await supabase
+      // Insert user message
+      const { error: insertError } = await supabase
         .from('chats')
         .insert({
           message: userMessage,
@@ -76,19 +68,12 @@ export const useMessageManagement = (userId: string | null) => {
         })
 
       if (insertError) {
-        console.error("Detailed insert error:", {
-          message: insertError.message,
-          details: insertError.details,
-          hint: insertError.hint
-        })
+        console.error("Error inserting user message:", insertError)
         throw insertError
       }
 
-      console.log("Successfully inserted user message:", insertData)
-
       let functionName = useWebSearch ? 'web-search' : 'chat-with-openai'
       
-      console.log("Calling edge function:", functionName)
       const { data, error } = await supabase.functions.invoke(functionName, {
         body: { 
           message: userMessage, 
@@ -108,8 +93,8 @@ export const useMessageManagement = (userId: string | null) => {
       }
 
       const aiResponse = data.response
-      console.log("Received AI response, attempting to save")
 
+      // Insert AI response
       const { error: aiInsertError } = await supabase
         .from('chats')
         .insert({
@@ -125,12 +110,9 @@ export const useMessageManagement = (userId: string | null) => {
         throw aiInsertError
       }
 
-      console.log("Successfully saved AI response")
-
       const updatedContext = conversationContext + 
         `\nUser: ${userMessage}\nAssistant: ${aiResponse}`
       setConversationContext(updatedContext)
-      console.log("Updated conversation context:", updatedContext)
 
       await loadConversationMessages(conversationId)
 
