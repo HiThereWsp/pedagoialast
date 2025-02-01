@@ -9,7 +9,10 @@ import { SEO } from "@/components/SEO"
 export default function Landing() {
   return (
     <>
-      <SEO />
+      <SEO 
+        title="PedagoIA - L'assistant qui révolutionne la préparation des cours"
+        description="Créez des contenus pédagogiques personnalisés et innovants en quelques clics grâce à l'intelligence artificielle."
+      />
       <div className="flex min-h-screen flex-col">
         <Header />
         <main className="flex-1">

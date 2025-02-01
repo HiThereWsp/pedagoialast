@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { SignInForm } from "@/components/landing/auth/SignInForm"
 import { SignUpForm } from "@/components/landing/auth/SignUpForm"
-import { ForgotPassowrdForm } from "@/components/landing/auth/ForgotPassowrdForm"
+import { ForgotPasswordForm } from "@/components/landing/auth/ForgotPasswordForm"
 import { PasswordResetForm } from "@/components/landing/auth/PasswordResetForm"
 import { SEO } from "@/components/SEO"
 import { useToast } from "@/hooks/use-toast"
@@ -74,7 +74,7 @@ export default function Login() {
             {location.pathname === "/login/signup" ? (
               <SignUpForm />
             ) : location.pathname === "/login/forgot-password" ? (
-              <ForgotPassowrdForm />
+              <ForgotPasswordForm />
             ) : location.pathname === "/login/reset-password" ? (
               <PasswordResetForm />
             ) : (
