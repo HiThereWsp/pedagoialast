@@ -29,7 +29,7 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
       // Show welcome toast
       toast({
         title: "Connexion réussie",
-        description: "Content de vous revoir ! 👋",
+        description: "Content de vous revoir !",
         duration: 3000,
       })
 
