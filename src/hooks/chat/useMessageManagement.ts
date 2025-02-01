@@ -63,18 +63,17 @@ export const useMessageManagement = (userId: string | null) => {
         conversationTitle
       })
 
-      // Simplifier l'insertion en retirant toute logique d'upsert implicite
+      // Simplifier l'insertion en retirant la clause ON CONFLICT
       const { data: insertData, error: insertError } = await supabase
         .from('chats')
-        .insert([{
+        .insert({
           message: userMessage,
           user_id: userId,
           message_type: 'user',
           conversation_id: conversationId,
           conversation_title: conversationTitle,
           attachments
-        }])
-        .select()
+        })
 
       if (insertError) {
         console.error("Detailed insert error:", {
@@ -113,13 +112,13 @@ export const useMessageManagement = (userId: string | null) => {
 
       const { error: aiInsertError } = await supabase
         .from('chats')
-        .insert([{
+        .insert({
           message: aiResponse,
           user_id: userId,
           message_type: 'assistant',
           conversation_id: conversationId,
           conversation_title: conversationTitle
-        }])
+        })
 
       if (aiInsertError) {
         console.error("Error inserting AI response:", aiInsertError)
