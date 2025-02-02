@@ -23,7 +23,7 @@ export default function Privacy() {
         <p>Nous collectons uniquement les informations nécessaires à la fourniture de nos services :</p>
         <ul className="list-disc pl-5 mb-4">
           <li>Votre adresse email professionnelle ou personnelle</li>
-          <li>Votre prénom et nom</li>
+          <li>Votre prénom</li>
           <li>Votre niveau d'enseignement</li>
           <li>Vos matières enseignées</li>
           <li>Vos préférences de personnalisation</li>
