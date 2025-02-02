@@ -2,6 +2,7 @@ import { useState } from "react"
 import { ChatMessage } from "@/types/chat"
 import { chatService } from "@/services/chatService"
 import { useToast } from "@/hooks/use-toast"
+import { supabase } from "@/integrations/supabase/client"
 
 export const useMessageManagement = (userId: string | null) => {
   const [messages, setMessages] = useState<Array<ChatMessage>>([])
@@ -41,13 +42,41 @@ export const useMessageManagement = (userId: string | null) => {
 
     setIsLoading(true);
     try {
+      // Store user message
       await chatService.sendMessage(message, userId, conversationId);
+      
+      console.log("Calling OpenAI edge function with message:", message);
+      
+      // Get AI response from edge function
+      const { data: aiResponseData, error: aiError } = await supabase.functions.invoke('chat-with-openai', {
+        body: { 
+          message,
+          context,
+          type: 'chat'
+        }
+      });
+
+      if (aiError) {
+        console.error("Error from edge function:", aiError);
+        throw aiError;
+      }
+
+      console.log("Received AI response:", aiResponseData);
+
+      // Store AI response
+      if (aiResponseData?.response) {
+        await chatService.sendMessage(
+          aiResponseData.response,
+          userId,
+          conversationId,
+          'assistant'
+        );
+      }
+
+      // Reload messages to show the new conversation
       await loadConversationMessages(conversationId);
       
-      // Simuler une réponse de l'assistant pour l'exemple
-      const aiResponse = "Ceci est une réponse simulée de l'assistant.";
-      
-      return aiResponse;
+      return aiResponseData?.response;
     } catch (error) {
       console.error("Error in sendMessage:", error);
       toast({

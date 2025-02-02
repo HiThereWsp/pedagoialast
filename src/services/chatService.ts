@@ -2,13 +2,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { ChatMessage } from '@/types/chat';
 
 export const chatService = {
-  async sendMessage(message: string, userId: string, conversationId: string | null) {
+  async sendMessage(
+    message: string, 
+    userId: string, 
+    conversationId: string | null,
+    messageType: 'user' | 'assistant' = 'user'
+  ) {
     try {
       const messageData = {
         message,
         user_id: userId,
         conversation_id: conversationId,
-        message_type: 'user',
+        message_type: messageType,
         created_at: new Date().toISOString()
       };
 
