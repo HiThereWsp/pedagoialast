@@ -6,13 +6,11 @@ export default function Legal() {
   const legalDocuments = [
     {
       to: "/terms",
-      title: "Conditions Générales d'Utilisation",
-      description: "Découvrez les conditions d'utilisation de PedagoIA, l'assistant qui révolutionne la préparation des cours grâce à l'intelligence artificielle."
+      title: "Conditions Générales d'Utilisation"
     },
     {
       to: "/privacy",
-      title: "Politique de Confidentialité",
-      description: "Découvrez comment PedagoIA protège vos données personnelles et respecte votre vie privée."
+      title: "Politique de Confidentialité"
     }
   ]
 
@@ -34,7 +32,6 @@ export default function Legal() {
               key={index}
               to={doc.to}
               title={doc.title}
-              description={doc.description}
             />
           ))}
         </div>
