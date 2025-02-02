@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { useConversationContext } from "./chat/useConversationContext"
 import { useConversationManagement } from "./chat/useConversationManagement"
 import { useMessageManagement } from "./chat/useMessageManagement"
+import { ChatMessage } from "@/types/chat"
 
 export const useChat = (userId: string | null) => {
   const {
@@ -52,7 +53,12 @@ export const useChat = (userId: string | null) => {
       console.log("[useChat] Starting to send message:", message)
       setMessages(prev => {
         console.log("[useChat] Previous messages:", prev)
-        const newMessages = [...prev, { role: 'user', content: message }]
+        const newMessages: ChatMessage[] = [...prev, { 
+          role: 'user' as const, 
+          content: message,
+          attachments: [],
+          isWebSearch: false
+        }]
         console.log("[useChat] Updated messages:", newMessages)
         return newMessages
       })
