@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast'
 import { supabase } from '@/integrations/supabase/client'
 import { Loader2, Upload } from 'lucide-react'
 import { PdfChat } from "./PdfChat"
-import { Box, Center, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 
 export const PdfUploader = () => {
   const [file, setFile] = useState<File | null>(null)
@@ -84,37 +83,27 @@ export const PdfUploader = () => {
   }
 
   return (
-    <Center h="calc(100vh - 200px)">
-      <Box 
-        maxW="xl" 
-        w="full" 
-        p={8} 
-        borderRadius="xl" 
-        bg="white" 
-        shadow="xl"
-        border="2px"
-        borderColor="gray.100"
-        borderStyle="dashed"
-      >
-        <form onSubmit={handleUpload}>
-          <VStack gap={6}>
-            <Icon as={Upload} boxSize={12} color="gray.400" />
+    <div className="min-h-[calc(100vh-200px)] flex items-center justify-center">
+      <div className="max-w-xl w-full p-8 rounded-xl bg-white shadow-xl border-2 border-dashed border-gray-100">
+        <form onSubmit={handleUpload} className="space-y-6">
+          <div className="flex flex-col items-center gap-6">
+            <Upload className="w-12 h-12 text-gray-400" />
             
-            <VStack gap={2}>
-              <Text fontSize="xl" fontWeight="semibold">
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-semibold">
                 Upload a PDF to Start
-              </Text>
-              <Text color="gray.500">
+              </h3>
+              <p className="text-gray-500">
                 Drag & drop a PDF here, or click to select
-              </Text>
-            </VStack>
+              </p>
+            </div>
 
             <Input
               type="file"
               accept=".pdf"
               onChange={handleFileChange}
               disabled={isUploading}
-              style={{ display: 'none' }}
+              className="hidden"
               id="file-upload"
             />
             
@@ -126,8 +115,8 @@ export const PdfUploader = () => {
             </Label>
 
             {file && (
-              <VStack gap={4} w="full">
-                <Box w="full">
+              <div className="w-full space-y-4">
+                <div className="w-full">
                   <Label htmlFor="title">Titre du document</Label>
                   <Input
                     id="title"
@@ -135,7 +124,7 @@ export const PdfUploader = () => {
                     onChange={(e) => setTitle(e.target.value)}
                     disabled={isUploading}
                   />
-                </Box>
+                </div>
 
                 <Button
                   type="submit"
@@ -154,11 +143,11 @@ export const PdfUploader = () => {
                     </>
                   )}
                 </Button>
-              </VStack>
+              </div>
             )}
-          </VStack>
+          </div>
         </form>
-      </Box>
-    </Center>
+      </div>
+    </div>
   )
 }

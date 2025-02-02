@@ -109,6 +109,7 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
               onLoadSuccess={onDocumentLoadSuccess}
               loading={<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />}
               error={<div className="text-red-500">Erreur de chargement du PDF</div>}
+              className="flex flex-col items-center gap-4"
             >
               {Array.from(new Array(numPages), (_, index) => (
                 <Page 
