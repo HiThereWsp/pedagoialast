@@ -1,8 +1,21 @@
 import { SEO } from "@/components/SEO"
 import { BackButton } from "@/components/settings/BackButton"
-import { Link } from "react-router-dom"
+import { LegalCard } from "@/components/legal/LegalCard"
 
 export default function Legal() {
+  const legalDocuments = [
+    {
+      to: "/terms",
+      title: "Conditions Générales d'Utilisation",
+      description: "Découvrez les conditions d'utilisation de PedagoIA, l'assistant qui révolutionne la préparation des cours grâce à l'intelligence artificielle."
+    },
+    {
+      to: "/privacy",
+      title: "Politique de Confidentialité",
+      description: "Découvrez comment PedagoIA protège vos données personnelles et respecte votre vie privée."
+    }
+  ]
+
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
       <SEO 
@@ -16,23 +29,14 @@ export default function Legal() {
         <h1 className="text-3xl font-bold mb-8">Mentions Légales - PedagoIA</h1>
         
         <div className="space-y-6">
-          <div className="p-6 border rounded-lg hover:border-primary transition-colors">
-            <Link to="/terms" className="no-underline">
-              <h2 className="text-2xl font-semibold mb-4">Conditions Générales d'Utilisation</h2>
-              <p className="text-muted-foreground">
-                Découvrez les conditions d'utilisation de PedagoIA, l'assistant qui révolutionne la préparation des cours grâce à l'intelligence artificielle.
-              </p>
-            </Link>
-          </div>
-
-          <div className="p-6 border rounded-lg hover:border-primary transition-colors">
-            <Link to="/privacy" className="no-underline">
-              <h2 className="text-2xl font-semibold mb-4">Politique de Confidentialité</h2>
-              <p className="text-muted-foreground">
-                Découvrez comment PedagoIA protège vos données personnelles et respecte votre vie privée.
-              </p>
-            </Link>
-          </div>
+          {legalDocuments.map((doc, index) => (
+            <LegalCard
+              key={index}
+              to={doc.to}
+              title={doc.title}
+              description={doc.description}
+            />
+          ))}
         </div>
       </article>
     </div>
