@@ -6,6 +6,7 @@ import { SidebarProvider } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouteTracker } from '@/components/analytics/RouteTracker'
+import { MotionConfig } from 'framer-motion'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -22,17 +23,19 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <SidebarProvider>
-          <div className="flex min-h-screen w-full flex-col lg:flex-row">
-            <TooltipProvider>
-              <BrowserRouter>
-                <RouteTracker />
-                <main className="flex-1 w-full px-4 lg:px-8 py-4 lg:py-8">
-                  <AppRoutes />
-                </main>
-                <Toaster />
-              </BrowserRouter>
-            </TooltipProvider>
-          </div>
+          <MotionConfig reducedMotion="user">
+            <div className="flex min-h-screen w-full flex-col lg:flex-row">
+              <TooltipProvider>
+                <BrowserRouter>
+                  <RouteTracker />
+                  <main className="flex-1 w-full px-4 lg:px-8 py-4 lg:py-8">
+                    <AppRoutes />
+                  </main>
+                  <Toaster />
+                </BrowserRouter>
+              </TooltipProvider>
+            </div>
+          </MotionConfig>
         </SidebarProvider>
       </HelmetProvider>
     </QueryClientProvider>
