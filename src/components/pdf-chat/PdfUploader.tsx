@@ -1,180 +1,139 @@
-import { useState } from 'react'
-import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card } from "@/components/ui/card"
-import { FileText, Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
+import { Loader2, Upload } from "lucide-react"
+import { PdfChat } from "./PdfChat"
 
-export function PdfUploader() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const { toast } = useToast()
+export const PdfUploader = () => {
   const [file, setFile] = useState<File | null>(null)
-  const [title, setTitle] = useState('')
+  const [title, setTitle] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadedDocId, setUploadedDocId] = useState<string | null>(null)
+  const { toast } = useToast()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0]
-      if (selectedFile.type !== 'application/pdf') {
-        toast({
-          variant: "destructive",
-          title: "Format invalide",
-          description: "Veuillez sélectionner un fichier PDF"
-        })
-        return
-      }
+    const selectedFile = e.target.files?.[0]
+    if (selectedFile) {
       setFile(selectedFile)
-      // Set default title from filename without extension
-      setTitle(selectedFile.name.replace(/\.[^/.]+$/, ""))
+      setTitle(selectedFile.name.replace('.pdf', ''))
     }
   }
 
-  const processPdf = async (documentId: string) => {
-    setIsProcessing(true)
-    try {
-      const { error } = await supabase.functions.invoke('process-pdf', {
-        body: { documentId }
-      })
-
-      if (error) throw error
-
-      toast({
-        title: "Succès",
-        description: "Document traité avec succès"
-      })
-    } catch (error) {
-      console.error('Processing error:', error)
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Erreur lors du traitement du document"
-      })
-    } finally {
-      setIsProcessing(false)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!file) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Veuillez sélectionner un fichier"
-      })
-      return
-    }
-
-    setIsLoading(true)
+    if (!file || isUploading) return
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('Non authentifié')
-
-      // Upload file to Supabase Storage
-      const fileExt = file.name.split('.').pop()
-      const filePath = `${crypto.randomUUID()}.${fileExt}`
+      setIsUploading(true)
+      const user = await supabase.auth.getUser()
       
+      if (!user.data.user) {
+        throw new Error("User not authenticated")
+      }
+
+      // Upload file to storage
+      const fileName = `${crypto.randomUUID()}-${file.name}`
       const { error: uploadError } = await supabase.storage
         .from('lesson-documents')
-        .upload(filePath, file)
+        .upload(fileName, file)
 
       if (uploadError) throw uploadError
 
-      // Save document metadata to database
-      const { data: document, error: dbError } = await supabase
+      // Get file URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('lesson-documents')
+        .getPublicUrl(fileName)
+
+      // Save document metadata
+      const { data: doc, error: dbError } = await supabase
         .from('pdf_documents')
         .insert({
           title,
-          file_path: filePath,
-          user_id: user.id
+          file_path: fileName,
+          user_id: user.data.user.id
         })
         .select()
         .single()
 
       if (dbError) throw dbError
 
-      toast({
-        title: "Succès",
-        description: "Document téléchargé avec succès"
-      })
+      // Process the document
+      const { error: processError } = await supabase.functions
+        .invoke('process-pdf', {
+          body: { documentId: doc.id }
+        })
 
-      // Process the PDF
-      if (document) {
-        await processPdf(document.id)
-      }
+      if (processError) throw processError
 
-      // Reset form
-      setFile(null)
-      setTitle('')
+      setUploadedDocId(doc.id)
       
+      toast({
+        title: "Document téléchargé avec succès",
+        description: "Vous pouvez maintenant discuter avec le contenu du document."
+      })
     } catch (error) {
-      console.error('Upload error:', error)
+      console.error('Error uploading document:', error)
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: error.message || "Erreur lors du téléchargement"
+        description: "Une erreur est survenue lors du téléchargement du document."
       })
     } finally {
-      setIsLoading(false)
+      setIsUploading(false)
     }
   }
 
+  if (uploadedDocId) {
+    return <PdfChat documentId={uploadedDocId} title={title} />
+  }
+
   return (
-    <Card className="p-6 max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="max-w-xl mx-auto p-6">
+      <form onSubmit={handleUpload} className="space-y-6">
         <div className="space-y-2">
-          <Label htmlFor="title">Titre du document</Label>
+          <Label htmlFor="file">Sélectionnez un fichier PDF</Label>
           <Input
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Mon document"
-            required
+            id="file"
+            type="file"
+            accept=".pdf"
+            onChange={handleFileChange}
+            disabled={isUploading}
           />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="file">Fichier PDF</Label>
-          <div className="flex items-center gap-4">
+        {file && (
+          <div className="space-y-2">
+            <Label htmlFor="title">Titre du document</Label>
             <Input
-              id="file"
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={isUploading}
             />
-            {file && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <FileText className="w-4 h-4" />
-                {file.name}
-              </div>
-            )}
           </div>
-        </div>
+        )}
 
-        <Button 
-          type="submit" 
-          disabled={isLoading || isProcessing || !file} 
+        <Button
+          type="submit"
+          disabled={!file || !title || isUploading}
           className="w-full"
         >
-          {isLoading ? (
+          {isUploading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Téléchargement...
-            </>
-          ) : isProcessing ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Traitement...
+              Traitement en cours...
             </>
           ) : (
-            'Télécharger le document'
+            <>
+              <Upload className="mr-2 h-4 w-4" />
+              Télécharger
+            </>
           )}
         </Button>
       </form>
-    </Card>
+    </div>
   )
 }
