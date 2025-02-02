@@ -1,11 +1,12 @@
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/integrations/supabase/client"
-import { Loader2, Upload } from "lucide-react"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useToast } from '@/hooks/use-toast'
+import { supabase } from '@/integrations/supabase/client'
+import { Loader2, Upload } from 'lucide-react'
 import { PdfChat } from "./PdfChat"
+import { Box, Center, Flex, Icon, Text, VStack } from "@chakra-ui/react"
 
 export const PdfUploader = () => {
   const [file, setFile] = useState<File | null>(null)
@@ -91,49 +92,81 @@ export const PdfUploader = () => {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <form onSubmit={handleUpload} className="space-y-6">
-        <div className="space-y-2">
-          <Label htmlFor="file">Sélectionnez un fichier PDF</Label>
-          <Input
-            id="file"
-            type="file"
-            accept=".pdf"
-            onChange={handleFileChange}
-            disabled={isUploading}
-          />
-        </div>
+    <Center h="calc(100vh - 200px)">
+      <Box 
+        maxW="xl" 
+        w="full" 
+        p={8} 
+        borderRadius="xl" 
+        bg="white" 
+        shadow="xl"
+        border="2px"
+        borderColor="gray.100"
+        borderStyle="dashed"
+      >
+        <form onSubmit={handleUpload}>
+          <VStack spacing={6}>
+            <Icon as={Upload} boxSize={12} color="gray.400" />
+            
+            <VStack spacing={2}>
+              <Text fontSize="xl" fontWeight="semibold">
+                Upload a PDF to Start
+              </Text>
+              <Text color="gray.500">
+                Drag & drop a PDF here, or click to select
+              </Text>
+            </VStack>
 
-        {file && (
-          <div className="space-y-2">
-            <Label htmlFor="title">Titre du document</Label>
             <Input
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
               disabled={isUploading}
+              style={{ display: 'none' }}
+              id="file-upload"
             />
-          </div>
-        )}
+            
+            <Label 
+              htmlFor="file-upload"
+              className="cursor-pointer hover:bg-gray-50 w-full text-center py-3 border rounded-lg"
+            >
+              Choose a file
+            </Label>
 
-        <Button
-          type="submit"
-          disabled={!file || !title || isUploading}
-          className="w-full"
-        >
-          {isUploading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Traitement en cours...
-            </>
-          ) : (
-            <>
-              <Upload className="mr-2 h-4 w-4" />
-              Télécharger
-            </>
-          )}
-        </Button>
-      </form>
-    </div>
+            {file && (
+              <VStack spacing={4} w="full">
+                <Box w="full">
+                  <Label htmlFor="title">Titre du document</Label>
+                  <Input
+                    id="title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    disabled={isUploading}
+                  />
+                </Box>
+
+                <Button
+                  type="submit"
+                  disabled={!file || !title || isUploading}
+                  className="w-full"
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Traitement en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Télécharger
+                    </>
+                  )}
+                </Button>
+              </VStack>
+            )}
+          </VStack>
+        </form>
+      </Box>
+    </Center>
   )
 }

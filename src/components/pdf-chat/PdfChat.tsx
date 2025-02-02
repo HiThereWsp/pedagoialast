@@ -4,6 +4,13 @@ import { ChatInput } from "@/components/ChatInput"
 import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { Document, Page, pdfjs } from 'react-pdf'
+import { Box, Flex, Spinner, Text } from "@chakra-ui/react"
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
 
 interface PdfChatProps {
   documentId: string
@@ -13,7 +20,39 @@ interface PdfChatProps {
 export const PdfChat = ({ documentId, title }: PdfChatProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [pdfUrl, setPdfUrl] = useState<string>("")
+  const [numPages, setNumPages] = useState<number>(1)
   const { toast } = useToast()
+
+  // Fetch PDF URL when component mounts
+  useState(() => {
+    const fetchPdfUrl = async () => {
+      try {
+        const { data: document } = await supabase
+          .from('pdf_documents')
+          .select('file_path')
+          .eq('id', documentId)
+          .single()
+
+        if (document) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('lesson-documents')
+            .getPublicUrl(document.file_path)
+          
+          setPdfUrl(publicUrl)
+        }
+      } catch (error) {
+        console.error('Error fetching PDF:', error)
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger le PDF."
+        })
+      }
+    }
+
+    fetchPdfUrl()
+  }, [documentId])
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim() || isLoading) return
@@ -58,24 +97,76 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
     }
   }
 
-  return (
-    <div className="flex flex-col h-[calc(100vh-200px)]">
-      <div className="bg-white shadow-sm border-b px-4 py-3 mb-4">
-        <h2 className="text-lg font-semibold text-gray-800">
-          Discussion avec : {title}
-        </h2>
-      </div>
-      
-      <div className="flex-1 overflow-y-auto">
-        <ChatHistory messages={messages} isLoading={isLoading} />
-      </div>
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages)
+  }
 
-      <div className="mt-auto">
-        <ChatInput 
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-        />
-      </div>
-    </div>
+  return (
+    <Flex h="calc(100vh - 100px)" gap={6} p={6}>
+      {/* PDF Viewer */}
+      <Box 
+        flex="1" 
+        overflowY="auto" 
+        borderRadius="lg"
+        bg="white"
+        shadow="lg"
+        p={4}
+      >
+        <Text fontSize="lg" fontWeight="semibold" mb={4}>
+          {title}
+        </Text>
+        
+        <Box 
+          overflowY="auto" 
+          maxH="full"
+          sx={{
+            '& .react-pdf__Document': {
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem'
+            }
+          }}
+        >
+          <Document
+            file={pdfUrl}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={<Spinner />}
+            error={<Text color="red.500">Erreur de chargement du PDF</Text>}
+          >
+            {Array.from(new Array(numPages), (_, index) => (
+              <Page 
+                key={`page_${index + 1}`}
+                pageNumber={index + 1} 
+                width={450}
+                renderTextLayer={true}
+                renderAnnotationLayer={true}
+              />
+            ))}
+          </Document>
+        </Box>
+      </Box>
+
+      {/* Chat Interface */}
+      <Flex 
+        flex="1" 
+        flexDirection="column" 
+        borderRadius="lg"
+        bg="white"
+        shadow="lg"
+        overflow="hidden"
+      >
+        <Box flex="1" overflowY="auto" px={4}>
+          <ChatHistory messages={messages} isLoading={isLoading} />
+        </Box>
+
+        <Box p={4} borderTop="1px" borderColor="gray.200">
+          <ChatInput 
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+          />
+        </Box>
+      </Flex>
+    </Flex>
   )
 }
