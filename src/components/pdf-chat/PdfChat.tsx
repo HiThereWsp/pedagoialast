@@ -5,7 +5,6 @@ import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { Document, Page, pdfjs } from 'react-pdf'
-import { Box, Flex, Spinner, Text } from "@chakra-ui/react"
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 
@@ -97,69 +96,46 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
   }
 
   return (
-    <Flex h="calc(100vh - 100px)" gap={6} p={6}>
-      <Box 
-        flex="1" 
-        overflowY="auto" 
-        borderRadius="lg"
-        bg="white"
-        shadow="lg"
-        p={4}
-      >
-        <Text fontSize="lg" fontWeight="semibold" mb={4}>
+    <div className="flex h-[calc(100vh-100px)] gap-6 p-6">
+      <div className="flex-1 overflow-y-auto rounded-lg bg-white p-4 shadow-lg">
+        <h2 className="mb-4 text-lg font-semibold">
           {title}
-        </Text>
+        </h2>
         
-        <Box 
-          overflowY="auto" 
-          maxH="full"
-          style={{
-            '& .react-pdf__Document': {
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: '1rem'
-            }
-          }}
-        >
-          <Document
-            file={pdfUrl}
-            onLoadSuccess={onDocumentLoadSuccess}
-            loading={<Spinner />}
-            error={<Text color="red.500">Erreur de chargement du PDF</Text>}
-          >
-            {Array.from(new Array(numPages), (_, index) => (
-              <Page 
-                key={`page_${index + 1}`}
-                pageNumber={index + 1} 
-                width={450}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-              />
-            ))}
-          </Document>
-        </Box>
-      </Box>
+        <div className="max-h-full overflow-y-auto">
+          <div className="flex flex-col items-center gap-4">
+            <Document
+              file={pdfUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              loading={<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />}
+              error={<div className="text-red-500">Erreur de chargement du PDF</div>}
+            >
+              {Array.from(new Array(numPages), (_, index) => (
+                <Page 
+                  key={`page_${index + 1}`}
+                  pageNumber={index + 1} 
+                  width={450}
+                  renderTextLayer={true}
+                  renderAnnotationLayer={true}
+                />
+              ))}
+            </Document>
+          </div>
+        </div>
+      </div>
 
-      <Flex 
-        flex="1" 
-        flexDirection="column" 
-        borderRadius="lg"
-        bg="white"
-        shadow="lg"
-        overflow="hidden"
-      >
-        <Box flex="1" overflowY="auto" px={4}>
+      <div className="flex flex-1 flex-col rounded-lg bg-white shadow-lg overflow-hidden">
+        <div className="flex-1 overflow-y-auto px-4">
           <ChatHistory messages={messages} isLoading={isLoading} />
-        </Box>
+        </div>
 
-        <Box p={4} borderTop="1px" borderColor="gray.200">
+        <div className="border-t border-gray-200 p-4">
           <ChatInput 
             onSendMessage={handleSendMessage}
             isLoading={isLoading}
           />
-        </Box>
-      </Flex>
-    </Flex>
+        </div>
+      </div>
+    </div>
   )
 }
