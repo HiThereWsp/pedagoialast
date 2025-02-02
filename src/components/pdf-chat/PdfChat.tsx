@@ -113,7 +113,7 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
         <Box 
           overflowY="auto" 
           maxH="full"
-          _css={{
+          css={{
             '& .react-pdf__Document': {
               display: 'flex',
               flexDirection: 'column',
