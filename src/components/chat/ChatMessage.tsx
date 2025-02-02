@@ -1,14 +1,10 @@
-import { cn } from "@/lib/utils"
-import { useState } from "react"
-import { FeedbackButtons } from "./FeedbackButtons"
-import { MessageContent } from "./MessageContent"
-import { MessageHeader } from "./MessageHeader"
-import { MessageSources } from "./MessageSources"
+import { cn } from "@/lib/utils";
+import { MessageWrapper } from "./MessageWrapper";
 
 interface ChatMessageProps {
-  role: 'user' | 'assistant'
-  content: string
-  index: number
+  role: 'user' | 'assistant';
+  content: string;
+  index: number;
   attachments?: Array<{
     url: string;
     fileName: string;
@@ -18,94 +14,25 @@ interface ChatMessageProps {
   isWebSearch?: boolean;
 }
 
-export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: ChatMessageProps) => {
-  const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
-
-  const extractSources = (text: string | undefined) => {
-    if (!text) {
-      console.log('No text provided to extractSources');
-      return [];
-    }
-    
-    const sourceRegex = /(?:Source )?\[(\d+)\]:\s*(https?:\/\/[^\s\n]+)/g;
-    const sources: { id: number; url: string }[] = [];
-    let match;
-    
-    while ((match = sourceRegex.exec(text)) !== null) {
-      sources.push({
-        id: parseInt(match[1]),
-        url: match[2].trim()
-      });
-    }
-    
-    console.log('Extracted sources:', sources);
-    return sources;
-  };
-
-  const formatMessage = (text: string | undefined) => {
-    if (!text) {
-      console.log('No text provided to formatMessage');
-      return '';
-    }
-
-    // Ensure we're working with a string
-    const stringContent = String(text);
-    
-    return stringContent
-      .replace(/(?:Source )?\[(\d+)\]:\s*https?:\/\/[^\s\n]+\n?/g, '')
-      .trim();
-  };
-
-  const sources = extractSources(content);
-  const formattedContent = formatMessage(content);
-
-  console.log('Message props:', { role, content, isWebSearch, sourcesLength: sources.length });
-
+export const ChatMessage = ({ 
+  role, 
+  content, 
+  index, 
+  attachments, 
+  isWebSearch 
+}: ChatMessageProps) => {
   return (
     <div className={cn(
       "group relative px-4 mb-4",
       role === 'user' ? 'ml-auto max-w-[85%]' : 'mr-auto max-w-[85%]'
     )}>
-      <div className={cn(
-        "rounded-2xl p-4",
-        role === 'user' 
-          ? 'bg-gradient-to-r from-amber-100 to-orange-100 text-gray-800' 
-          : isWebSearch 
-            ? 'bg-search-light border border-search-accent/20'
-            : 'bg-gray-50/80 backdrop-blur-sm'
-      )}>
-        {role === 'assistant' && (
-          <>
-            <MessageHeader isWebSearch={isWebSearch} />
-            {isWebSearch && sources.length > 0 && (
-              <div className="mb-4">
-                <MessageSources sources={sources} isWebSearch={isWebSearch} />
-              </div>
-            )}
-          </>
-        )}
-        
-        <div className={cn(
-          "leading-relaxed",
-          role === 'user' ? 'text-gray-800' : 'text-gray-800'
-        )}>
-          <MessageContent 
-            content={formattedContent}
-            attachments={attachments}
-            sources={sources.map(s => ({ url: s.url }))}
-            onCitationClick={(citationNumber) => 
-              setSelectedCitation(selectedCitation === citationNumber ? null : citationNumber)
-            }
-            selectedCitation={selectedCitation}
-          />
-        </div>
-
-        {role === 'assistant' && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <FeedbackButtons messageId={index} content={content} />
-          </div>
-        )}
-      </div>
+      <MessageWrapper
+        role={role}
+        content={content}
+        index={index}
+        attachments={attachments}
+        isWebSearch={isWebSearch}
+      />
     </div>
   );
 };
