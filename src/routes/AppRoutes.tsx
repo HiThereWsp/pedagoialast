@@ -17,6 +17,7 @@ const Landing = lazy(() => import("@/pages/Landing"))
 const WaitlistLanding = lazy(() => import("@/pages/WaitlistLanding"))
 const Pricing = lazy(() => import("@/pages/Pricing"))
 const Privacy = lazy(() => import("@/pages/Privacy"))
+const Legal = lazy(() => import("@/pages/Legal"))
 const MetricsPage = lazy(() => import("@/pages/MetricsPage"))
 const SuggestionsPage = lazy(() => import("@/pages/SuggestionsPage"))
 const ExercisePage = lazy(() => import("@/pages/ExercisePage"))
@@ -41,6 +42,7 @@ export const AppRoutes = () => {
         <Route path="/waitlist" element={<WaitlistLanding />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/legal" element={<Legal />} />
         <Route path="/login" element={<Login />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/reset-password" element={<ResetPassword />} />
