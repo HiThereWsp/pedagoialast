@@ -21,8 +21,11 @@ interface ChatMessageProps {
 export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: ChatMessageProps) => {
   const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
 
-  const extractSources = (text: string) => {
-    if (!text) return [];
+  const extractSources = (text: string | undefined) => {
+    if (!text) {
+      console.log('No text provided to extractSources');
+      return [];
+    }
     
     const sourceRegex = /(?:Source )?\[(\d+)\]:\s*(https?:\/\/[^\s\n]+)/g;
     const sources: { id: number; url: string }[] = [];
@@ -39,10 +42,16 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
     return sources;
   };
 
-  const formatMessage = (text: string) => {
-    if (!text) return '';
+  const formatMessage = (text: string | undefined) => {
+    if (!text) {
+      console.log('No text provided to formatMessage');
+      return '';
+    }
+
+    // Ensure we're working with a string
+    const stringContent = String(text);
     
-    return text
+    return stringContent
       .replace(/(?:Source )?\[(\d+)\]:\s*https?:\/\/[^\s\n]+\n?/g, '')
       .trim();
   };
@@ -50,7 +59,7 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   const sources = extractSources(content);
   const formattedContent = formatMessage(content);
 
-  console.log('Message props:', { role, isWebSearch, sourcesLength: sources.length });
+  console.log('Message props:', { role, content, isWebSearch, sourcesLength: sources.length });
 
   return (
     <div className={cn(
