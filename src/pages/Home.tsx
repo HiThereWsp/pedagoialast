@@ -10,6 +10,7 @@ import { Footer } from "@/components/home/Footer"
 import { UpdateNotification } from "@/components/home/UpdateNotification"
 import { useToast } from "@/hooks/use-toast"
 import { SEO } from "@/components/SEO"
+import { Tiles } from "@/components/ui/tiles"
 
 const Home = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -85,12 +86,22 @@ const Home = () => {
         title="Tableau de bord | PedagoIA - Votre assistant pédagogique"
         description="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé."
       />
-      <div className="min-h-screen bg-white flex flex-col items-center px-6 py-8 max-w-md mx-auto">
-      <UserMenu />
-      <WelcomeMessage firstName={firstName} />
-      <ActionButtons />
-      <Footer />
-      <UpdateNotification />
+      <div className="relative min-h-screen">
+        <div className="fixed inset-0 overflow-hidden">
+          <Tiles 
+            rows={50} 
+            cols={8}
+            tileSize="md"
+            className="opacity-30"
+          />
+        </div>
+        <div className="relative z-10 min-h-screen flex flex-col items-center px-6 py-8 max-w-md mx-auto">
+          <UserMenu />
+          <WelcomeMessage firstName={firstName} />
+          <ActionButtons />
+          <Footer />
+          <UpdateNotification />
+        </div>
       </div>
     </>
   )

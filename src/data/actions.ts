@@ -31,9 +31,9 @@ export const actions: Action[] = [
     isNew: true
   },
   {
-    title: "Chat pédagogique",
+    title: "Chat",
     route: "/chat",
     icon: MessageSquare,
-    maintenanceLabel: "En maintenance"
+    maintenanceLabel: "Maintenance"
   }
 ]

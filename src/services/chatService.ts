@@ -1,14 +1,27 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ChatMessage } from '@/types/chat';
+import { Json } from '@/types/database/json';
 
 export const chatService = {
-  async sendMessage(message: string, userId: string, conversationId: string | null) {
+  async sendMessage(
+    message: string, 
+    userId: string, 
+    conversationId: string | null,
+    messageType: 'user' | 'assistant' = 'user'
+  ) {
     try {
+      console.log('[chatService] Sending message:', {
+        message,
+        userId,
+        conversationId,
+        messageType
+      });
+
       const messageData = {
         message,
         user_id: userId,
         conversation_id: conversationId,
-        message_type: 'user',
+        message_type: messageType,
         created_at: new Date().toISOString()
       };
 
@@ -18,29 +31,68 @@ export const chatService = {
         .select();
 
       if (error) {
-        console.error('Error sending message:', error);
+        console.error('[chatService] Error sending message:', error);
         throw error;
       }
 
+      console.log('[chatService] Message sent successfully:', data[0]);
       return data[0];
     } catch (error) {
-      console.error('Error in sendMessage:', error);
+      console.error('[chatService] Error in sendMessage:', error);
       throw error;
     }
   },
 
-  async getMessages(conversationId: string) {
+  async getMessages(conversationId: string): Promise<ChatMessage[]> {
     try {
+      console.log('[chatService] Fetching messages for conversation:', conversationId);
+      
       const { data, error } = await supabase
         .from('chats')
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('[chatService] Error fetching messages:', error);
+        throw error;
+      }
+
+      console.log('[chatService] Raw messages from DB:', data);
+
+      if (!data || data.length === 0) {
+        console.log('[chatService] No messages found');
+        return [];
+      }
+
+      // Transform the data to match ChatMessage format
+      const formattedMessages: ChatMessage[] = data.map(msg => {
+        console.log('[chatService] Processing message:', msg);
+        
+        // Safely handle attachments
+        let attachments: ChatMessage['attachments'] = [];
+        
+        if (msg.attachments && Array.isArray(msg.attachments)) {
+          attachments = msg.attachments.map((attachment: any) => ({
+            url: attachment.url || '',
+            fileName: attachment.fileName || '',
+            fileType: attachment.fileType || '',
+            filePath: attachment.filePath || ''
+          }));
+        }
+
+        return {
+          role: msg.message_type as 'user' | 'assistant',
+          content: msg.message || '',
+          attachments,
+          isWebSearch: false
+        };
+      });
+
+      console.log('[chatService] Formatted messages:', formattedMessages);
+      return formattedMessages;
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('[chatService] Error in getMessages:', error);
       throw error;
     }
   }
