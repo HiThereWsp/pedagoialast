@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client"
 
 export function PdfUploader() {
   const [isLoading, setIsLoading] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   const { toast } = useToast()
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState('')
@@ -27,6 +28,31 @@ export function PdfUploader() {
       setFile(selectedFile)
       // Set default title from filename without extension
       setTitle(selectedFile.name.replace(/\.[^/.]+$/, ""))
+    }
+  }
+
+  const processPdf = async (documentId: string) => {
+    setIsProcessing(true)
+    try {
+      const { error } = await supabase.functions.invoke('process-pdf', {
+        body: { documentId }
+      })
+
+      if (error) throw error
+
+      toast({
+        title: "Succès",
+        description: "Document traité avec succès"
+      })
+    } catch (error) {
+      console.error('Processing error:', error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Erreur lors du traitement du document"
+      })
+    } finally {
+      setIsProcessing(false)
     }
   }
 
@@ -58,13 +84,15 @@ export function PdfUploader() {
       if (uploadError) throw uploadError
 
       // Save document metadata to database
-      const { error: dbError } = await supabase
+      const { data: document, error: dbError } = await supabase
         .from('pdf_documents')
         .insert({
           title,
           file_path: filePath,
           user_id: user.id
         })
+        .select()
+        .single()
 
       if (dbError) throw dbError
 
@@ -72,6 +100,11 @@ export function PdfUploader() {
         title: "Succès",
         description: "Document téléchargé avec succès"
       })
+
+      // Process the PDF
+      if (document) {
+        await processPdf(document.id)
+      }
 
       // Reset form
       setFile(null)
@@ -124,13 +157,18 @@ export function PdfUploader() {
 
         <Button 
           type="submit" 
-          disabled={isLoading || !file} 
+          disabled={isLoading || isProcessing || !file} 
           className="w-full"
         >
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Téléchargement...
+            </>
+          ) : isProcessing ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Traitement...
             </>
           ) : (
             'Télécharger le document'
