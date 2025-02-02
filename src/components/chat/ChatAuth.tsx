@@ -11,70 +11,97 @@ export const useChatAuth = () => {
   const { toast } = useToast()
 
   useEffect(() => {
+    let subscription: { data: { subscription: { unsubscribe: () => void } } }
+
     const checkSession = async () => {
       try {
         setIsLoading(true)
         
-        // Clear any stale session data
-        const currentSession = await supabase.auth.getSession()
+        // Initialize session
+        const { data: { session }, error } = await supabase.auth.getSession()
         
-        if (!currentSession.data.session) {
-          console.log('No active session found')
-          // Clear local storage to remove any stale tokens
-          localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-          navigate('/login')
+        if (error) {
+          console.error('Session error:', error)
+          await handleSignOut()
           return
         }
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          async (event, session) => {
-            console.log('Auth state changed:', event)
-            
-            if (event === 'TOKEN_REFRESHED') {
-              console.log('Token refreshed successfully')
-            }
-            
-            if (event === 'SIGNED_OUT' || !session) {
-              localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-              navigate('/login')
-              return
-            }
-          }
-        )
-
-        if (currentSession.data.session.user) {
-          setUserId(currentSession.data.session.user.id)
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('first_name')
-            .eq('id', currentSession.data.session.user.id)
-            .single()
-
-          if (profileError) {
-            console.error('Error fetching profile:', profileError)
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: "Impossible de charger votre profil"
-            })
-          } else if (profile) {
-            setFirstName(profile.first_name)
-          }
+        if (!session) {
+          console.log('No active session found')
+          await handleSignOut()
+          return
         }
 
-        return () => {
-          subscription.unsubscribe()
+        // Set up auth state change listener
+        subscription = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+          console.log('Auth state changed:', event)
+          
+          if (event === 'TOKEN_REFRESHED') {
+            console.log('Token refreshed successfully')
+          }
+          
+          if (event === 'SIGNED_OUT' || !currentSession) {
+            await handleSignOut()
+            return
+          }
+
+          // Update user data on session change
+          if (currentSession?.user) {
+            await updateUserData(currentSession.user.id)
+          }
+        })
+
+        // Initial user data setup
+        if (session.user) {
+          await updateUserData(session.user.id)
         }
+
       } catch (error) {
         console.error('Error checking session:', error)
-        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-        navigate('/login')
+        await handleSignOut()
       } finally {
         setIsLoading(false)
       }
     }
 
+    const updateUserData = async (userId: string) => {
+      setUserId(userId)
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name')
+        .eq('id', userId)
+        .single()
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError)
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger votre profil"
+        })
+      } else if (profile) {
+        setFirstName(profile.first_name)
+      }
+    }
+
+    const handleSignOut = async () => {
+      try {
+        await supabase.auth.signOut()
+      } catch (error) {
+        console.error('Error signing out:', error)
+      } finally {
+        setUserId(null)
+        setFirstName("")
+        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
+        navigate('/login')
+      }
+    }
+
     checkSession()
+
+    return () => {
+      subscription?.data?.subscription?.unsubscribe()
+    }
   }, [navigate, toast])
 
   return { userId, firstName, isLoading }

@@ -19,14 +19,14 @@ export default function Login() {
         setIsLoading(true)
         console.log("Checking session...")
         
-        // Clear any stale session data first
+        // Clear any stale session data
+        await supabase.auth.signOut()
         localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
         
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
-          await supabase.auth.signOut()
           toast({
             variant: "destructive",
             title: "Session expirée",
@@ -42,7 +42,6 @@ export default function Login() {
         }
       } catch (error) {
         console.error("Auth error:", error)
-        await supabase.auth.signOut()
       } finally {
         setIsLoading(false)
       }
