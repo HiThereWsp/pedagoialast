@@ -10,6 +10,9 @@ export const BackButton = () => {
     // Si on est sur une page légale (privacy ou terms), on retourne à la page legal
     if (location.pathname === '/privacy' || location.pathname === '/terms') {
       navigate('/legal')
+    } else if (location.pathname === '/legal') {
+      // Si on est sur la page legal, on retourne à la page home
+      navigate('/home')
     } else {
       navigate('/home')
     }
