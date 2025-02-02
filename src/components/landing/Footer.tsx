@@ -9,10 +9,10 @@ const Footer = () => {
           Nous contacter
         </a>
         <a 
-          href="/privacy"
+          href="/legal"
           className="text-sm text-muted-foreground hover:text-primary transition-colors"
         >
-          Politique de confidentialité
+          Mentions légales
         </a>
       </div>
     </footer>
