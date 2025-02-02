@@ -34,18 +34,35 @@ export const chatService = {
     }
   },
 
-  async getMessages(conversationId: string) {
+  async getMessages(conversationId: string): Promise<ChatMessage[]> {
     try {
+      console.log('Fetching messages for conversation:', conversationId);
+      
       const { data, error } = await supabase
         .from('chats')
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching messages:', error);
+        throw error;
+      }
+
+      console.log('Raw messages from DB:', data);
+
+      // Transform the data to match ChatMessage format
+      const formattedMessages: ChatMessage[] = data.map(msg => ({
+        role: msg.message_type as 'user' | 'assistant',
+        content: msg.message,
+        attachments: msg.attachments,
+        isWebSearch: false // Add this if needed based on your requirements
+      }));
+
+      console.log('Formatted messages:', formattedMessages);
+      return formattedMessages;
     } catch (error) {
-      console.error('Error fetching messages:', error);
+      console.error('Error in getMessages:', error);
       throw error;
     }
   }
