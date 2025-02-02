@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ChatMessage } from '@/types/chat';
+import { Json } from '@/types/database/json';
 
 export const chatService = {
   async sendMessage(
@@ -52,17 +53,26 @@ export const chatService = {
       console.log('Raw messages from DB:', data);
 
       // Transform the data to match ChatMessage format
-      const formattedMessages: ChatMessage[] = data.map(msg => ({
-        role: msg.message_type as 'user' | 'assistant',
-        content: msg.message || '',
-        attachments: msg.attachments ? msg.attachments.map((attachment: any) => ({
-          url: attachment.url || '',
-          fileName: attachment.fileName || '',
-          fileType: attachment.fileType || '',
-          filePath: attachment.filePath || ''
-        })) : [],
-        isWebSearch: false
-      }));
+      const formattedMessages: ChatMessage[] = data.map(msg => {
+        // Safely handle attachments
+        let attachments: ChatMessage['attachments'] = [];
+        
+        if (msg.attachments && Array.isArray(msg.attachments)) {
+          attachments = msg.attachments.map((attachment: any) => ({
+            url: attachment.url || '',
+            fileName: attachment.fileName || '',
+            fileType: attachment.fileType || '',
+            filePath: attachment.filePath || ''
+          }));
+        }
+
+        return {
+          role: msg.message_type as 'user' | 'assistant',
+          content: msg.message || '',
+          attachments,
+          isWebSearch: false
+        };
+      });
 
       console.log('Formatted messages:', formattedMessages);
       return formattedMessages;
