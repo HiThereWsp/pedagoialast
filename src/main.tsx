@@ -4,7 +4,7 @@ import App from './App'
 import './index.css'
 import { initPostHog } from './integrations/posthog/client'
 import * as Sentry from "@sentry/react"
-import { ChakraProvider, extendTheme } from '@chakra-ui/react'
+import { ChakraProvider } from '@chakra-ui/react'
 
 // Initialize PostHog
 initPostHog()
@@ -24,24 +24,9 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
-// Create the theme
-const theme = extendTheme({
-  config: {
-    initialColorMode: 'light',
-    useSystemColorMode: false,
-  },
-  styles: {
-    global: {
-      body: {
-        bg: 'white',
-      },
-    },
-  },
-})
-
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ChakraProvider theme={theme}>
+    <ChakraProvider>
       <App />
     </ChakraProvider>
   </React.StrictMode>,
