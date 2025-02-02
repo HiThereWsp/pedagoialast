@@ -1,47 +1,38 @@
-import { Home, MessageSquare, BookOpen, PenTool, Image, Wrench, FileSpreadsheet } from "lucide-react"
+import {
+  Sparkles,
+  PenTool,
+  FileEdit,
+  Image,
+  MessageSquare,
+  AlertTriangle
+} from "lucide-react"
+import type { Action } from "@/types/actions"
 
-export const actions = [
+export const actions: Action[] = [
   {
-    title: "Chat avec PedagoIA",
-    description: "Discutez avec notre assistant pédagogique",
-    icon: MessageSquare,
-    route: "/chat",
-    isNew: true,
-    maintenanceLabel: null // Removing the maintenance label to enable the chat
-  },
-  {
-    title: "Générateur de cours",
-    description: "Créez des plans de cours détaillés",
-    icon: BookOpen,
+    title: "Générateur de séquences",
     route: "/lesson-plan",
-    maintenanceLabel: "Bientôt disponible"
+    icon: Sparkles,
   },
   {
     title: "Générateur d'exercices",
-    description: "Créez des exercices différenciés",
+    route: "/exercises",
     icon: PenTool,
-    route: "/exercise",
-    maintenanceLabel: "Bientôt disponible"
+  },
+  {
+    title: "Assistant administratif",
+    route: "/correspondence",
+    icon: FileEdit,
   },
   {
     title: "Générateur d'images",
-    description: "Créez des images pour vos cours",
-    icon: Image,
     route: "/image-generation",
-    maintenanceLabel: "Bientôt disponible"
+    icon: Image,
+    isNew: true
   },
   {
-    isUtilityAction: true,
-    title: "Outils",
-    description: "Accédez à tous les outils",
-    icon: Wrench,
-    route: "/tools"
-  },
-  {
-    title: "Métriques",
-    description: "Consultez vos statistiques d'utilisation",
-    icon: FileSpreadsheet,
-    route: "/metrics",
-    maintenanceLabel: "Bientôt disponible"
+    title: "Chat pédagogique",
+    route: "/chat",
+    icon: MessageSquare
   }
 ]
