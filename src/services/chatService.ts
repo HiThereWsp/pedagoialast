@@ -10,6 +10,13 @@ export const chatService = {
     messageType: 'user' | 'assistant' = 'user'
   ) {
     try {
+      console.log('Sending message:', {
+        message,
+        userId,
+        conversationId,
+        messageType
+      });
+
       const messageData = {
         message,
         user_id: userId,
@@ -28,6 +35,7 @@ export const chatService = {
         throw error;
       }
 
+      console.log('Message sent successfully:', data[0]);
       return data[0];
     } catch (error) {
       console.error('Error in sendMessage:', error);
@@ -52,8 +60,15 @@ export const chatService = {
 
       console.log('Raw messages from DB:', data);
 
+      if (!data || data.length === 0) {
+        console.log('No messages found');
+        return [];
+      }
+
       // Transform the data to match ChatMessage format
       const formattedMessages: ChatMessage[] = data.map(msg => {
+        console.log('Processing message:', msg);
+        
         // Safely handle attachments
         let attachments: ChatMessage['attachments'] = [];
         

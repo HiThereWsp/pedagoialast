@@ -11,22 +11,35 @@ export const useMessageManagement = (userId: string | null) => {
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
-      const messagesData = await chatService.getMessages(conversationId);
+      console.log('Loading messages for conversation:', conversationId)
+      const messagesData = await chatService.getMessages(conversationId)
+      
       if (messagesData) {
+        console.log('Raw messages from DB:', messagesData)
         const formattedMessages = messagesData.map((msg: any) => ({
           role: msg.message_type as 'user' | 'assistant',
-          content: msg.message,
-          attachments: msg.attachments as ChatMessage['attachments']
-        }));
-        setMessages(formattedMessages);
+          content: msg.message || '',
+          attachments: Array.isArray(msg.attachments) ? msg.attachments.map((attachment: any) => ({
+            url: attachment.url || '',
+            fileName: attachment.fileName || '',
+            fileType: attachment.fileType || '',
+            filePath: attachment.filePath || ''
+          })) : [],
+          isWebSearch: false
+        }))
+        console.log('Formatted messages:', formattedMessages)
+        setMessages(formattedMessages)
+      } else {
+        console.log('No messages found for conversation:', conversationId)
+        setMessages([])
       }
     } catch (error) {
-      console.error("Error in loadConversationMessages:", error);
+      console.error("Error in loadConversationMessages:", error)
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Impossible de charger les messages."
-      });
+      })
     }
   }
 
@@ -38,54 +51,57 @@ export const useMessageManagement = (userId: string | null) => {
     attachments?: ChatMessage['attachments'],
     useWebSearch?: boolean
   ) => {
-    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) return;
+    if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) {
+      console.log("Message send blocked:", { message, attachments, isLoading, userId })
+      return
+    }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      // Store user message
-      await chatService.sendMessage(message, userId, conversationId);
+      console.log("Storing user message:", { message, conversationId, userId })
+      await chatService.sendMessage(message, userId, conversationId)
       
-      console.log("Calling OpenAI edge function with message:", message);
-      
-      // Get AI response from edge function
+      console.log("Calling OpenAI edge function with message:", message)
       const { data: aiResponseData, error: aiError } = await supabase.functions.invoke('chat-with-openai', {
         body: { 
           message,
           context,
           type: 'chat'
         }
-      });
+      })
 
       if (aiError) {
-        console.error("Error from edge function:", aiError);
-        throw aiError;
+        console.error("Error from edge function:", aiError)
+        throw aiError
       }
 
-      console.log("Received AI response:", aiResponseData);
+      console.log("Received AI response:", aiResponseData)
 
-      // Store AI response
       if (aiResponseData?.response) {
+        console.log("Storing AI response")
         await chatService.sendMessage(
           aiResponseData.response,
           userId,
           conversationId,
           'assistant'
-        );
+        )
+      } else {
+        console.error("No response data from AI")
       }
 
-      // Reload messages to show the new conversation
-      await loadConversationMessages(conversationId);
+      console.log("Reloading messages")
+      await loadConversationMessages(conversationId)
       
-      return aiResponseData?.response;
+      return aiResponseData?.response
     } catch (error) {
-      console.error("Error in sendMessage:", error);
+      console.error("Error in sendMessage:", error)
       toast({
         variant: "destructive",
         title: "Erreur",
         description: "Impossible d'envoyer le message."
-      });
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
