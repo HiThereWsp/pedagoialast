@@ -4,7 +4,8 @@ import App from './App'
 import './index.css'
 import { initPostHog } from './integrations/posthog/client'
 import * as Sentry from "@sentry/react"
-import { ChakraProvider } from '@chakra-ui/react'
+import { ChakraProvider, createStandaloneToast } from '@chakra-ui/react'
+import { theme } from './theme'
 
 // Initialize PostHog
 initPostHog()
@@ -24,10 +25,13 @@ Sentry.init({
   replaysOnErrorSampleRate: 1.0,
 });
 
+const { ToastContainer } = createStandaloneToast()
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <App />
+      <ToastContainer />
     </ChakraProvider>
   </React.StrictMode>,
 )
