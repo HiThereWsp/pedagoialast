@@ -22,6 +22,8 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   const [selectedCitation, setSelectedCitation] = useState<number | null>(null);
 
   const extractSources = (text: string) => {
+    if (!text) return [];
+    
     const sourceRegex = /(?:Source )?\[(\d+)\]:\s*(https?:\/\/[^\s\n]+)/g;
     const sources: { id: number; url: string }[] = [];
     let match;
@@ -33,12 +35,14 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
       });
     }
     
-    console.log('Extracted sources:', sources); // Debug log
+    console.log('Extracted sources:', sources);
     return sources;
   };
 
-  const formatMessage = (content: string) => {
-    return content
+  const formatMessage = (text: string) => {
+    if (!text) return '';
+    
+    return text
       .replace(/(?:Source )?\[(\d+)\]:\s*https?:\/\/[^\s\n]+\n?/g, '')
       .trim();
   };
@@ -46,7 +50,7 @@ export const ChatMessage = ({ role, content, index, attachments, isWebSearch }: 
   const sources = extractSources(content);
   const formattedContent = formatMessage(content);
 
-  console.log('Message props:', { role, isWebSearch, sourcesLength: sources.length }); // Debug log
+  console.log('Message props:', { role, isWebSearch, sourcesLength: sources.length });
 
   return (
     <div className={cn(

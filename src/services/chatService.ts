@@ -54,9 +54,14 @@ export const chatService = {
       // Transform the data to match ChatMessage format
       const formattedMessages: ChatMessage[] = data.map(msg => ({
         role: msg.message_type as 'user' | 'assistant',
-        content: msg.message,
-        attachments: msg.attachments,
-        isWebSearch: false // Add this if needed based on your requirements
+        content: msg.message || '',
+        attachments: msg.attachments ? msg.attachments.map((attachment: any) => ({
+          url: attachment.url || '',
+          fileName: attachment.fileName || '',
+          fileType: attachment.fileType || '',
+          filePath: attachment.filePath || ''
+        })) : [],
+        isWebSearch: false
       }));
 
       console.log('Formatted messages:', formattedMessages);
