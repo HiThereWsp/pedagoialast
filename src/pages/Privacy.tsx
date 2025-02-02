@@ -1,4 +1,5 @@
 import { SEO } from "@/components/SEO"
+import { BackButton } from "@/components/settings/BackButton"
 
 export default function Privacy() {
   return (
@@ -7,6 +8,8 @@ export default function Privacy() {
         title="Politique de Confidentialité | PedagoIA"
         description="Découvrez comment PedagoIA protège vos données personnelles et respecte votre vie privée."
       />
+      
+      <BackButton />
       
       <article className="prose prose-slate max-w-none">
         <h1 className="text-3xl font-bold mb-8">Politique de Confidentialité - PedagoIA</h1>
