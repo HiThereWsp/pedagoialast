@@ -30,13 +30,13 @@ export const useChat = (userId: string | null) => {
 
   useEffect(() => {
     if (userId) {
-      console.log("Loading conversations for user:", userId)
+      console.log("[useChat] Loading conversations for user:", userId)
       loadConversations()
     }
   }, [userId])
 
   const handleLoadConversationMessages = async (conversationId: string) => {
-    console.log("Loading messages for conversation:", conversationId)
+    console.log("[useChat] Loading messages for conversation:", conversationId)
     await loadConversationMessages(conversationId)
     await loadContext(conversationId)
     setCurrentConversationId(conversationId)
@@ -44,47 +44,52 @@ export const useChat = (userId: string | null) => {
 
   const handleSendMessage = async (message: string, useWebSearch?: boolean) => {
     if (!message.trim() || isLoading || !userId) {
-      console.log("Message send blocked:", { message, isLoading, userId })
+      console.log("[useChat] Message send blocked:", { message, isLoading, userId })
       return
     }
 
     try {
-      console.log("Starting to send message:", message)
-      setMessages(prev => [...prev, { role: 'user', content: message }])
+      console.log("[useChat] Starting to send message:", message)
+      setMessages(prev => {
+        console.log("[useChat] Previous messages:", prev)
+        const newMessages = [...prev, { role: 'user', content: message }]
+        console.log("[useChat] Updated messages:", newMessages)
+        return newMessages
+      })
       
       let currentId = currentConversationId
       let title: string | undefined
 
       if (!currentId) {
-        console.log("Creating new conversation")
+        console.log("[useChat] Creating new conversation")
         const newConversation = await createNewConversation(message)
         currentId = newConversation.conversationId
         title = newConversation.title
-        console.log("New conversation created:", { currentId, title })
+        console.log("[useChat] New conversation created:", { currentId, title })
         setCurrentConversationId(currentId)
       }
 
-      console.log("Sending message to AI")
+      console.log("[useChat] Sending message to AI")
       const aiResponse = await sendMessage(message, currentId, title, conversationContext, undefined, useWebSearch)
       
       if (aiResponse) {
-        console.log("Received AI response:", aiResponse)
+        console.log("[useChat] Received AI response:", aiResponse)
         await updateContext(currentId, message, aiResponse)
       } else {
-        console.error("No AI response received")
+        console.error("[useChat] No AI response received")
       }
 
-      console.log("Reloading conversation messages")
+      console.log("[useChat] Reloading conversation messages")
       await loadConversationMessages(currentId)
       await loadConversations()
     } catch (error) {
-      console.error("Error in handleSendMessage:", error)
+      console.error("[useChat] Error in handleSendMessage:", error)
       throw error
     }
   }
 
   const handleDeleteConversation = async (conversationId: string) => {
-    console.log("Deleting conversation:", conversationId)
+    console.log("[useChat] Deleting conversation:", conversationId)
     await deleteConversation(conversationId)
     if (currentConversationId === conversationId) {
       setMessages([])

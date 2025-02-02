@@ -11,30 +11,33 @@ export const useMessageManagement = (userId: string | null) => {
 
   const loadConversationMessages = async (conversationId: string) => {
     try {
-      console.log('Loading messages for conversation:', conversationId)
+      console.log('[useMessageManagement] Loading messages for conversation:', conversationId)
       const messagesData = await chatService.getMessages(conversationId)
       
       if (messagesData) {
-        console.log('Raw messages from DB:', messagesData)
-        const formattedMessages = messagesData.map((msg: any) => ({
-          role: msg.message_type as 'user' | 'assistant',
-          content: msg.message || '',
-          attachments: Array.isArray(msg.attachments) ? msg.attachments.map((attachment: any) => ({
-            url: attachment.url || '',
-            fileName: attachment.fileName || '',
-            fileType: attachment.fileType || '',
-            filePath: attachment.filePath || ''
-          })) : [],
-          isWebSearch: false
-        }))
-        console.log('Formatted messages:', formattedMessages)
+        console.log('[useMessageManagement] Raw messages from DB:', messagesData)
+        const formattedMessages = messagesData.map((msg: any) => {
+          console.log('[useMessageManagement] Processing message:', msg)
+          return {
+            role: msg.message_type as 'user' | 'assistant',
+            content: msg.message || '',
+            attachments: Array.isArray(msg.attachments) ? msg.attachments.map((attachment: any) => ({
+              url: attachment.url || '',
+              fileName: attachment.fileName || '',
+              fileType: attachment.fileType || '',
+              filePath: attachment.filePath || ''
+            })) : [],
+            isWebSearch: false
+          }
+        })
+        console.log('[useMessageManagement] Formatted messages:', formattedMessages)
         setMessages(formattedMessages)
       } else {
-        console.log('No messages found for conversation:', conversationId)
+        console.log('[useMessageManagement] No messages found for conversation:', conversationId)
         setMessages([])
       }
     } catch (error) {
-      console.error("Error in loadConversationMessages:", error)
+      console.error("[useMessageManagement] Error in loadConversationMessages:", error)
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -52,16 +55,16 @@ export const useMessageManagement = (userId: string | null) => {
     useWebSearch?: boolean
   ) => {
     if ((!message.trim() && (!attachments || attachments.length === 0)) || isLoading || !userId) {
-      console.log("Message send blocked:", { message, attachments, isLoading, userId })
+      console.log("[useMessageManagement] Message send blocked:", { message, attachments, isLoading, userId })
       return
     }
 
     setIsLoading(true)
     try {
-      console.log("Storing user message:", { message, conversationId, userId })
+      console.log("[useMessageManagement] Storing user message:", { message, conversationId, userId })
       await chatService.sendMessage(message, userId, conversationId)
       
-      console.log("Calling OpenAI edge function with message:", message)
+      console.log("[useMessageManagement] Calling OpenAI edge function with message:", message)
       const { data: aiResponseData, error: aiError } = await supabase.functions.invoke('chat-with-openai', {
         body: { 
           message,
@@ -71,14 +74,14 @@ export const useMessageManagement = (userId: string | null) => {
       })
 
       if (aiError) {
-        console.error("Error from edge function:", aiError)
+        console.error("[useMessageManagement] Error from edge function:", aiError)
         throw aiError
       }
 
-      console.log("Received AI response:", aiResponseData)
+      console.log("[useMessageManagement] Received AI response:", aiResponseData)
 
       if (aiResponseData?.response) {
-        console.log("Storing AI response")
+        console.log("[useMessageManagement] Storing AI response")
         await chatService.sendMessage(
           aiResponseData.response,
           userId,
@@ -86,15 +89,15 @@ export const useMessageManagement = (userId: string | null) => {
           'assistant'
         )
       } else {
-        console.error("No response data from AI")
+        console.error("[useMessageManagement] No response data from AI")
       }
 
-      console.log("Reloading messages")
+      console.log("[useMessageManagement] Reloading messages")
       await loadConversationMessages(conversationId)
       
       return aiResponseData?.response
     } catch (error) {
-      console.error("Error in sendMessage:", error)
+      console.error("[useMessageManagement] Error in sendMessage:", error)
       toast({
         variant: "destructive",
         title: "Erreur",
