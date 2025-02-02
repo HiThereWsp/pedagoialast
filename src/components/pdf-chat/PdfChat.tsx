@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChatHistory } from "@/components/ChatHistory"
 import { ChatInput } from "@/components/ChatInput"
 import { ChatMessage } from "@/types/chat"
@@ -24,8 +24,7 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
   const [numPages, setNumPages] = useState<number>(1)
   const { toast } = useToast()
 
-  // Fetch PDF URL when component mounts
-  useState(() => {
+  useEffect(() => {
     const fetchPdfUrl = async () => {
       try {
         const { data: document } = await supabase
@@ -52,7 +51,7 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
     }
 
     fetchPdfUrl()
-  }, [documentId])
+  }, [documentId, toast])
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim() || isLoading) return
@@ -60,7 +59,6 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
     try {
       setIsLoading(true)
       
-      // Add user message to chat
       const userMessage: ChatMessage = {
         role: 'user',
         content: message,
@@ -68,7 +66,6 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
       
       setMessages(prev => [...prev, userMessage])
 
-      // Call the edge function to get response based on PDF content
       const { data, error } = await supabase.functions.invoke('chat-with-pdf', {
         body: { 
           message,
@@ -78,7 +75,6 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
 
       if (error) throw error
 
-      // Add AI response to chat
       const aiMessage: ChatMessage = {
         role: 'assistant',
         content: data.response,
@@ -119,7 +115,7 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
         <Box 
           overflowY="auto" 
           maxH="full"
-          sx={{
+          css={{
             '& .react-pdf__Document': {
               display: 'flex',
               flexDirection: 'column',

@@ -35,7 +35,6 @@ export const PdfUploader = () => {
         throw new Error("User not authenticated")
       }
 
-      // Upload file to storage
       const fileName = `${crypto.randomUUID()}-${file.name}`
       const { error: uploadError } = await supabase.storage
         .from('lesson-documents')
@@ -43,12 +42,6 @@ export const PdfUploader = () => {
 
       if (uploadError) throw uploadError
 
-      // Get file URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('lesson-documents')
-        .getPublicUrl(fileName)
-
-      // Save document metadata
       const { data: doc, error: dbError } = await supabase
         .from('pdf_documents')
         .insert({
@@ -61,7 +54,6 @@ export const PdfUploader = () => {
 
       if (dbError) throw dbError
 
-      // Process the document
       const { error: processError } = await supabase.functions
         .invoke('process-pdf', {
           body: { documentId: doc.id }
@@ -105,10 +97,10 @@ export const PdfUploader = () => {
         borderStyle="dashed"
       >
         <form onSubmit={handleUpload}>
-          <VStack spacing={6}>
+          <VStack gap={6}>
             <Icon as={Upload} boxSize={12} color="gray.400" />
             
-            <VStack spacing={2}>
+            <VStack gap={2}>
               <Text fontSize="xl" fontWeight="semibold">
                 Upload a PDF to Start
               </Text>
@@ -134,7 +126,7 @@ export const PdfUploader = () => {
             </Label>
 
             {file && (
-              <VStack spacing={4} w="full">
+              <VStack gap={4} w="full">
                 <Box w="full">
                   <Label htmlFor="title">Titre du document</Label>
                   <Input
