@@ -9,7 +9,6 @@ import { Box, Flex, Spinner, Text } from "@chakra-ui/react"
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 
-// Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`
 
 interface PdfChatProps {
@@ -99,7 +98,6 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
 
   return (
     <Flex h="calc(100vh - 100px)" gap={6} p={6}>
-      {/* PDF Viewer */}
       <Box 
         flex="1" 
         overflowY="auto" 
@@ -115,7 +113,7 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
         <Box 
           overflowY="auto" 
           maxH="full"
-          css={{
+          _css={{
             '& .react-pdf__Document': {
               display: 'flex',
               flexDirection: 'column',
@@ -143,7 +141,6 @@ export const PdfChat = ({ documentId, title }: PdfChatProps) => {
         </Box>
       </Box>
 
-      {/* Chat Interface */}
       <Flex 
         flex="1" 
         flexDirection="column" 
