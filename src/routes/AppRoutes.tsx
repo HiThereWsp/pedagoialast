@@ -39,9 +39,9 @@ export function AppRoutes() {
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<Home />} />
+        <Route path="/exercises" element={<ExercisePage />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/pdf-chat" element={<PdfChatPage />} />
-        <Route path="/exercise" element={<ExercisePage />} />
         <Route path="/lesson-plan" element={<LessonPlanPage />} />
         <Route path="/image-generation" element={<ImageGenerationPage />} />
         <Route path="/correspondence" element={<CorrespondencePage />} />
