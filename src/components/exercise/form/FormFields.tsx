@@ -7,135 +7,160 @@ interface FieldProps {
   onChange: (field: string, value: string) => void;
 }
 
-const Subject = ({ value, onChange }: FieldProps) => (
+// Base components
+const InputField = ({ 
+  label, 
+  placeholder, 
+  value, 
+  onChange, 
+  field, 
+  required = false,
+  type = "text" 
+}: FieldProps & { 
+  label: string, 
+  placeholder: string, 
+  field: string,
+  required?: boolean,
+  type?: string 
+}) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-2">
-      Matière <span className="text-red-500">*</span>
+      {label} {required && <span className="text-red-500">*</span>}
     </label>
     <Input
-      placeholder="Par exemple : Mathématiques, Français..."
+      type={type}
+      placeholder={placeholder}
       value={value}
-      onChange={(e) => onChange("subject", e.target.value)}
+      onChange={(e) => onChange(field, e.target.value)}
       className="w-full"
-      required
+      required={required}
     />
   </div>
+);
+
+const TextareaField = ({ 
+  label, 
+  placeholder, 
+  value, 
+  onChange, 
+  field,
+  required = false 
+}: FieldProps & { 
+  label: string, 
+  placeholder: string, 
+  field: string,
+  required?: boolean 
+}) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <Textarea
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(field, e.target.value)}
+      className="min-h-[100px] w-full"
+      required={required}
+    />
+  </div>
+);
+
+// Specific field components
+const Subject = ({ value, onChange }: FieldProps) => (
+  <InputField
+    label="Matière"
+    placeholder="Par exemple : Mathématiques, Français..."
+    value={value}
+    onChange={onChange}
+    field="subject"
+    required
+  />
 );
 
 const ClassLevel = ({ value, onChange }: FieldProps) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Niveau de la classe <span className="text-red-500">*</span>
-    </label>
-    <Input
-      placeholder="Par exemple : 6ème, CM2..."
-      value={value}
-      onChange={(e) => onChange("classLevel", e.target.value)}
-      className="w-full"
-      required
-    />
-  </div>
+  <InputField
+    label="Niveau de la classe"
+    placeholder="Par exemple : 6ème, CM2..."
+    value={value}
+    onChange={onChange}
+    field="classLevel"
+    required
+  />
 );
 
 const NumberOfExercises = ({ value, onChange }: FieldProps) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Nombre d'exercices
-    </label>
-    <Input
-      type="number"
-      min="1"
-      max="5"
-      value={value}
-      onChange={(e) => onChange("numberOfExercises", e.target.value)}
-      className="w-full"
-    />
-  </div>
+  <InputField
+    label="Nombre d'exercices"
+    placeholder=""
+    value={value}
+    onChange={onChange}
+    field="numberOfExercises"
+    type="number"
+  />
 );
 
 const Objective = ({ value, onChange }: FieldProps) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Objectif pédagogique <span className="text-red-500">*</span>
-    </label>
-    <Textarea
-      placeholder="Quel est le but de cet exercice ?"
-      value={value}
-      onChange={(e) => onChange("objective", e.target.value)}
-      className="min-h-[100px] w-full"
-      required
-    />
-  </div>
+  <TextareaField
+    label="Objectif pédagogique"
+    placeholder="Quel est le but de cet exercice ?"
+    value={value}
+    onChange={onChange}
+    field="objective"
+    required
+  />
 );
 
 const ExerciseType = ({ value, onChange }: FieldProps) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Type d'exercice
-    </label>
-    <Input
-      placeholder="Par exemple : QCM, Questions ouvertes..."
-      value={value}
-      onChange={(e) => onChange("exerciseType", e.target.value)}
-      className="w-full"
-    />
-  </div>
-);
-
-const SpecificNeeds = ({ value, onChange }: FieldProps) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Besoins spécifiques
-    </label>
-    <Textarea
-      placeholder="Par exemple : dyslexie, TDAH..."
-      value={value}
-      onChange={(e) => onChange("specificNeeds", e.target.value)}
-      className="min-h-[100px] w-full"
-    />
-  </div>
+  <InputField
+    label="Type d'exercice"
+    placeholder="Par exemple : QCM, Questions ouvertes..."
+    value={value}
+    onChange={onChange}
+    field="exerciseType"
+  />
 );
 
 const Strengths = ({ value, onChange }: FieldProps) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Forces ou intérêts
-    </label>
-    <Textarea
-      placeholder="Par exemple : Facilité avec les images..."
-      value={value}
-      onChange={(e) => onChange("strengths", e.target.value)}
-      className="min-h-[100px] w-full"
-    />
-  </div>
-);
-
-const Challenges = ({ value, onChange }: FieldProps) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Défis ou obstacles
-    </label>
-    <Textarea
-      placeholder="Par exemple : Difficulté de concentration..."
-      value={value}
-      onChange={(e) => onChange("challenges", e.target.value)}
-      className="min-h-[100px] w-full"
-    />
-  </div>
+  <TextareaField
+    label="Forces ou intérêts"
+    placeholder="Par exemple : Facilité avec les images..."
+    value={value}
+    onChange={onChange}
+    field="strengths"
+  />
 );
 
 const AdditionalInstructions = ({ value, onChange }: FieldProps) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      Instructions supplémentaires
-    </label>
-    <Textarea
-      placeholder="Précisez toutes les exigences supplémentaires..."
-      value={value}
-      onChange={(e) => onChange("additionalInstructions", e.target.value)}
-      className="min-h-[100px] w-full"
-    />
-  </div>
+  <TextareaField
+    label="Instructions supplémentaires"
+    placeholder="Précisez ce qui vous semble important comme les notions déjà traitées ou les notions spécifiques que vous souhaitez aborder..."
+    value={value}
+    onChange={onChange}
+    field="additionalInstructions"
+  />
+);
+
+// For differentiation form
+const OriginalExercise = ({ value, onChange }: FieldProps) => (
+  <TextareaField
+    label="Exercice original"
+    placeholder="Collez ici l'exercice que vous souhaitez adapter..."
+    value={value}
+    onChange={onChange}
+    field="originalExercise"
+    required
+  />
+);
+
+const StudentProfile = ({ value, onChange }: FieldProps) => (
+  <TextareaField
+    label="Profil ou niveau de l'élève"
+    placeholder="Décrivez les caractéristiques de l'élève ou son niveau..."
+    value={value}
+    onChange={onChange}
+    field="studentProfile"
+    required
+  />
 );
 
 export const FormFields = {
@@ -144,8 +169,8 @@ export const FormFields = {
   NumberOfExercises,
   Objective,
   ExerciseType,
-  SpecificNeeds,
   Strengths,
-  Challenges,
   AdditionalInstructions,
+  OriginalExercise,
+  StudentProfile,
 };
