@@ -82,13 +82,55 @@ const ExerciseType = ({ value, onChange }: FieldProps) => (
   </div>
 );
 
+const SpecificNeeds = ({ value, onChange }: FieldProps) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Besoins spécifiques
+    </label>
+    <Textarea
+      placeholder="Par exemple : dyslexie, TDAH..."
+      value={value}
+      onChange={(e) => onChange("specificNeeds", e.target.value)}
+      className="min-h-[100px] w-full"
+    />
+  </div>
+);
+
+const Strengths = ({ value, onChange }: FieldProps) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Forces ou intérêts
+    </label>
+    <Textarea
+      placeholder="Par exemple : Facilité avec les images..."
+      value={value}
+      onChange={(e) => onChange("strengths", e.target.value)}
+      className="min-h-[100px] w-full"
+    />
+  </div>
+);
+
+const Challenges = ({ value, onChange }: FieldProps) => (
+  <div>
+    <label className="block text-sm font-medium text-gray-700 mb-2">
+      Défis ou obstacles
+    </label>
+    <Textarea
+      placeholder="Par exemple : Difficulté de concentration..."
+      value={value}
+      onChange={(e) => onChange("challenges", e.target.value)}
+      className="min-h-[100px] w-full"
+    />
+  </div>
+);
+
 const AdditionalInstructions = ({ value, onChange }: FieldProps) => (
   <div>
     <label className="block text-sm font-medium text-gray-700 mb-2">
       Instructions supplémentaires
     </label>
     <Textarea
-      placeholder="Précisez ce qui vous semble important comme les notions déjà traitées ou les notions spécifiques que vous souhaitez aborder..."
+      placeholder="Précisez toutes les exigences supplémentaires..."
       value={value}
       onChange={(e) => onChange("additionalInstructions", e.target.value)}
       className="min-h-[100px] w-full"
@@ -102,5 +144,8 @@ export const FormFields = {
   NumberOfExercises,
   Objective,
   ExerciseType,
+  SpecificNeeds,
+  Strengths,
+  Challenges,
   AdditionalInstructions,
 };
