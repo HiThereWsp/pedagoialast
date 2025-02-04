@@ -16,7 +16,7 @@ export const actions: Action[] = [
   },
   {
     title: "Générateur d'exercices",
-    route: "/exercises",
+    route: "/exercises",  // Updated from /exercise to /exercises
     icon: PenTool,
   },
   {
