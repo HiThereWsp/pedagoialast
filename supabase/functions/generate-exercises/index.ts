@@ -68,19 +68,20 @@ RESSOURCES COMPLÉMENTAIRES
 [Outils d'aide proposés]`
     } else {
       // Prompt pour la génération
-      prompt = `Créez ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel} sur l'objectif : ${objective}
-${exerciseType ? `Type d'exercice souhaité : ${exerciseType}` : ''}
+      prompt = `Créez ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
+Objectif pédagogique : ${objective}
+${exerciseType ? `Type d'exercice attendu : ${exerciseType}` : ''}
 ${questionsPerExercise ? `Nombre de questions par exercice : ${questionsPerExercise}` : 'Nombre de questions adapté selon pertinence'}
 
-Éléments contextuels :
+Contexte d'enseignement :
 ${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
 ${challenges ? `Points de vigilance : ${challenges}` : ''}
 ${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
 
 FORMAT ATTENDU :
 
-SÉQUENCE PÉDAGOGIQUE
--------------------
+FICHE ÉLÈVE
+-----------
 Exercice 1
 Consigne : 
 Questions :
@@ -90,19 +91,29 @@ etc.
 
 [Répéter selon nombre demandé]
 
-ÉLÉMENTS POUR L'ÉQUIPE PÉDAGOGIQUE
---------------------------------
+FICHE PÉDAGOGIQUE
+----------------
+PRÉPARATION :
+- Matériel nécessaire :
+- Durée conseillée :
+- Prérequis :
+
+CORRIGÉ ET AIDE À L'ACCOMPAGNEMENT :
 Exercice 1
 1. [Réponse]
    Explicitation : 
-   Points d'attention :
+   Points de vigilance :
+   Remédiations possibles :
 2. [Réponse]
    Explicitation :
-   Points d'attention :
+   Points de vigilance :
+   Remédiations possibles :
 etc.
 
-Prolongements possibles :
--`
+CONSEILS DE MISE EN ŒUVRE :
+- Organisation : 
+- Étayage possible :
+- Indices progressifs :`
     }
 
     console.log('Calling OpenAI with prompt:', prompt)
