@@ -24,21 +24,25 @@ export const initPostHog = () => {
       posthog.init(
         posthogKey,
         {
-          api_host: 'https://eu.posthog.com', // Fixed host URL
+          api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
           loaded: (posthog) => {
             console.log('PostHog loaded successfully')
             if (process.env.NODE_ENV === 'development') {
               console.log('PostHog instance:', posthog)
             }
           },
-          capture_pageview: false,
+          capture_pageview: false, // We'll handle this manually
           capture_pageleave: true,
           autocapture: true,
           persistence: 'localStorage',
           disable_session_recording: true,
           cross_subdomain_cookie: false,
           enable_recording_console_log: false,
-          debug: process.env.NODE_ENV === 'development'
+          debug: process.env.NODE_ENV === 'development',
+          bootstrap: {
+            distinctId: 'user-id-' + Math.random(),
+            isIdentified: false
+          }
         }
       )
 
