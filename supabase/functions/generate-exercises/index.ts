@@ -16,31 +16,121 @@ serve(async (req) => {
       subject, 
       classLevel, 
       numberOfExercises, 
+      questionsPerExercise,
       objective, 
       exerciseType, 
       additionalInstructions,
       specificNeeds,
-      strengths,
-      challenges
+      challenges,
+      originalExercise,
+      studentProfile,
+      learningDifficulties,
+      learningStyle
     } = await req.json()
 
-    const prompt = `En tant qu'expert en pédagogie, crée ${numberOfExercises} exercices pour la matière "${subject}" destinés à des élèves de niveau "${classLevel}". 
-    Ces exercices doivent correspondre à l'objectif suivant : "${objective}". 
-    ${exerciseType ? `Le type d'exercice souhaité est : "${exerciseType}".` : ''}
+    let prompt = ""
     
-    ${specificNeeds ? `Besoins spécifiques à prendre en compte : ${specificNeeds}` : ''}
-    ${strengths ? `Forces et intérêts de l'élève : ${strengths}` : ''}
-    ${challenges ? `Défis et obstacles à considérer : ${challenges}` : ''}
-    ${additionalInstructions ? `Instructions supplémentaires : ${additionalInstructions}` : ''}
-    
-    Format des exercices :
-    - Chaque exercice doit être clair et adapté au niveau de la classe
-    - Fournir une consigne précise
-    - Inclure une réponse ou une solution si nécessaire
-    - Adapter le format et la présentation en fonction des besoins spécifiques mentionnés
-    - Exploiter les forces et intérêts indiqués pour favoriser l'engagement
-    - Proposer des stratégies pour surmonter les défis mentionnés
-    - IMPORTANT : Ne pas créer d'exercices nécessitant des images ou des supports visuels. Les exercices doivent pouvoir être réalisés uniquement avec du texte.`
+    if (originalExercise) {
+      // Prompt pour la différenciation
+      prompt = `Adaptez cette activité selon le contexte suivant :
+
+SITUATION PÉDAGOGIQUE
+--------------------
+Activité de départ : "${originalExercise}"
+Discipline : "${subject}"
+Niveau : "${classLevel}"
+Objectif d'apprentissage : "${objective}"
+
+CONTEXTE D'APPRENTISSAGE
+-----------------------
+Observations de l'élève : "${studentProfile}"
+${learningStyle ? `Modalités d'apprentissage privilégiées : "${learningStyle}"` : ''}
+${learningDifficulties ? `Points de vigilance particuliers : "${learningDifficulties}"` : ''}
+
+FORMAT ATTENDU :
+
+FICHE ÉLÈVE
+-----------
+Consigne : 
+Questions :
+1.
+2.
+etc.
+
+FICHE PÉDAGOGIQUE
+----------------
+PRÉPARATION :
+- Matériel nécessaire :
+- Organisation spatiale :
+- Temps estimé :
+
+ACCOMPAGNEMENT :
+1. [Question 1]
+   • Réponse attendue :
+   • Étayage possible :
+   • Indices progressifs :
+   • Alternatives acceptables :
+
+2. [Question 2]
+   [Même structure]
+
+OBSERVATIONS POUR LE SUIVI :
+- Points d'attention :
+- Indicateurs de réussite :
+- Prolongements possibles :
+
+OUTILS COMPLÉMENTAIRES :
+- Supports spécifiques :
+- Aides méthodologiques :`
+    } else {
+      // Prompt pour la génération
+      prompt = `Créez ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
+Objectif pédagogique : ${objective}
+${exerciseType ? `Type d'exercice attendu : ${exerciseType}` : ''}
+${questionsPerExercise ? `Nombre de questions par exercice : ${questionsPerExercise}` : 'Nombre de questions adapté selon pertinence'}
+
+Contexte d'enseignement :
+${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
+${challenges ? `Points de vigilance : ${challenges}` : ''}
+${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
+
+FORMAT ATTENDU :
+
+FICHE ÉLÈVE
+-----------
+Exercice 1
+Consigne : 
+Questions :
+1.
+2.
+etc.
+
+[Répéter selon nombre demandé]
+
+FICHE PÉDAGOGIQUE
+----------------
+PRÉPARATION :
+- Matériel nécessaire :
+- Durée conseillée :
+- Prérequis :
+
+CORRIGÉ ET AIDE À L'ACCOMPAGNEMENT :
+Exercice 1
+1. [Réponse]
+   Explicitation : 
+   Points de vigilance :
+   Remédiations possibles :
+2. [Réponse]
+   Explicitation :
+   Points de vigilance :
+   Remédiations possibles :
+etc.
+
+CONSEILS DE MISE EN ŒUVRE :
+- Organisation : 
+- Étayage possible :
+- Indices progressifs :`
+    }
 
     console.log('Calling OpenAI with prompt:', prompt)
 
@@ -51,7 +141,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',

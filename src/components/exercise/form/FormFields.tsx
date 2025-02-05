@@ -65,6 +65,27 @@ const TextareaField = ({
   </div>
 );
 
+const QuestionsPerExercise = ({ value, onChange }: FieldProps) => (
+  <InputField
+    label="Nombre de questions par exercice"
+    placeholder="Laissez vide pour un nombre adapté automatiquement"
+    value={value}
+    onChange={onChange}
+    field="questionsPerExercise"
+    type="number"
+  />
+);
+
+const LearningDifficulties = ({ value, onChange }: FieldProps) => (
+  <TextareaField
+    label="Difficultés d'apprentissage"
+    placeholder="Ex: dyslexie, TDAH, troubles de l'attention, etc."
+    value={value}
+    onChange={onChange}
+    field="learningDifficulties"
+  />
+);
+
 // Specific field components
 const Subject = ({ value, onChange }: FieldProps) => (
   <InputField
@@ -102,7 +123,7 @@ const NumberOfExercises = ({ value, onChange }: FieldProps) => (
 const Objective = ({ value, onChange }: FieldProps) => (
   <TextareaField
     label="Objectif pédagogique"
-    placeholder="Quel est le but de cet exercice ?"
+    placeholder="Quel est l'objectif de votre séance ?"
     value={value}
     onChange={onChange}
     field="objective"
@@ -120,20 +141,10 @@ const ExerciseType = ({ value, onChange }: FieldProps) => (
   />
 );
 
-const Strengths = ({ value, onChange }: FieldProps) => (
-  <TextareaField
-    label="Forces ou intérêts"
-    placeholder="Par exemple : Facilité avec les images..."
-    value={value}
-    onChange={onChange}
-    field="strengths"
-  />
-);
-
 const AdditionalInstructions = ({ value, onChange }: FieldProps) => (
   <TextareaField
     label="Instructions supplémentaires"
-    placeholder="Précisez ce qui vous semble important comme les notions déjà traitées ou les notions spécifiques que vous souhaitez aborder..."
+    placeholder="Précisez ce qui vous semble important comme les notions déjà traitées, les centres d'intérêt des élèves ou les notions spécifiques que vous souhaitez aborder..."
     value={value}
     onChange={onChange}
     field="additionalInstructions"
@@ -167,10 +178,11 @@ export const FormFields = {
   Subject,
   ClassLevel,
   NumberOfExercises,
+  QuestionsPerExercise,
   Objective,
   ExerciseType,
-  Strengths,
   AdditionalInstructions,
   OriginalExercise,
   StudentProfile,
+  LearningDifficulties,
 };

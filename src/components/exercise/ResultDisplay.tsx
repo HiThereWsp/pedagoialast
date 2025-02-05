@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { HeaderSection } from './result/HeaderSection';
 import { FeedbackButtons } from './result/FeedbackButtons';
-import { MarkdownContent } from './result/MarkdownContent';
+import { ExerciseTabs } from './result/ExerciseTabs';
 import { ShareButton } from './result/ShareButton';
 
 interface ResultDisplayProps {
@@ -25,55 +25,44 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     });
   };
 
-  const formatText = (markdown: string) => {
-    let text = markdown.replace(/<[^>]*>/g, '');
-    text = text.replace(/### (.*?)\n/g, '$1\n');
-    text = text.replace(/## (.*?)\n/g, '$1\n');
-    text = text.replace(/# (.*?)\n/g, '$1\n');
-    text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-    text = text.replace(/\*(.*?)\*/g, '$1');
-    text = text.replace(/\\\((.*?)\\\)/g, '$1');
-    text = text.replace(/- /g, '\n- ');
-    text = text.replace(/\n{3,}/g, '\n\n');
-    return text.trim();
+  const splitContent = (content: string) => {
+    const parts = content.split('FICHE PÉDAGOGIQUE');
+    return {
+      studentSheet: parts[0].trim(),
+      teacherSheet: parts[1] ? `FICHE PÉDAGOGIQUE${parts[1]}` : ''
+    };
   };
 
-  const getShareableText = (formattedText: string) => {
-    return `Bonjour collègue, voici ce que j'ai pu créer avec PedagoIA aujourd'hui :\n\n${formattedText}`;
-  };
+  const { studentSheet, teacherSheet } = splitContent(exercises);
 
-  const handleCopy = async () => {
+  const handleCopy = async (text: string) => {
     try {
-      const formattedText = formatText(exercises);
-      const shareableText = getShareableText(formattedText);
-      await navigator.clipboard.writeText(shareableText);
+      await navigator.clipboard.writeText(text);
       setIsCopied(true);
       toast({
-        description: "Exercices copiés dans le presse-papier",
+        description: "Contenu copié dans le presse-papier",
         duration: 2000,
       });
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       toast({
         variant: "destructive",
-        description: "Erreur lors de la copie des exercices",
+        description: "Erreur lors de la copie du contenu",
       });
     }
   };
 
   const handleShare = async () => {
     try {
-      const formattedText = formatText(exercises);
-      const shareableText = getShareableText(formattedText);
       await navigator.share({
         title: 'Exercices générés par Pedagoia',
-        text: shareableText,
+        text: exercises,
       });
       toast({
         description: "Merci d'avoir partagé ces exercices !",
       });
     } catch (err) {
-      await handleCopy();
+      await handleCopy(exercises);
       toast({
         description: "Les exercices ont été copiés, vous pouvez maintenant les partager",
       });
@@ -88,10 +77,16 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           feedbackScore={feedbackScore}
           isCopied={isCopied}
           onFeedback={handleFeedback}
-          onCopy={handleCopy}
+          onCopy={() => handleCopy(exercises)}
         />
       </div>
-      <MarkdownContent content={exercises} />
+
+      <ExerciseTabs 
+        studentSheet={studentSheet}
+        teacherSheet={teacherSheet}
+        onCopy={handleCopy}
+      />
+
       <div className="mt-6 flex justify-end">
         <ShareButton onShare={handleShare} />
       </div>

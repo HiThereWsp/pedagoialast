@@ -11,6 +11,7 @@ const ExercisePage = () => {
     subject: '',
     classLevel: '',
     numberOfExercises: '',
+    questionsPerExercise: '',
     objective: '',
     exerciseType: '',
     additionalInstructions: '',
@@ -20,6 +21,7 @@ const ExercisePage = () => {
     originalExercise: '',
     studentProfile: '',
     learningStyle: '',
+    learningDifficulties: '',
   });
 
   const handleInputChange = (field: string, value: string) => {
