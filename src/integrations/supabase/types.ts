@@ -425,6 +425,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          created_at: string
+          id: number
+          user_email: string | null
+          user_id: string | null
+          welcome_email_sent: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          user_email?: string | null
+          user_id?: string | null
+          welcome_email_sent?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          user_email?: string | null
+          user_id?: string | null
+          welcome_email_sent?: boolean | null
+        }
+        Relationships: []
+      }
       user_retention: {
         Row: {
           created_at: string | null
@@ -612,6 +636,13 @@ export type Database = {
         Args: {
           user_id: string
           message: string
+        }
+        Returns: undefined
+      }
+      add_user_to_profiles: {
+        Args: {
+          user_id: string
+          user_email: string
         }
         Returns: undefined
       }
