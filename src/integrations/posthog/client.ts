@@ -14,24 +14,31 @@ export const initPostHog = () => {
 
   if (typeof window !== 'undefined') {
     try {
+      // Validate required environment variables
+      const posthogKey = import.meta.env.VITE_POSTHOG_KEY
+      if (!posthogKey) {
+        console.error('PostHog key is missing')
+        return
+      }
+
       posthog.init(
-        import.meta.env.VITE_POSTHOG_KEY,
+        posthogKey,
         {
-          api_host: import.meta.env.VITE_POSTHOG_HOST,
+          api_host: 'https://eu.posthog.com', // Fixed host URL
           loaded: (posthog) => {
             console.log('PostHog loaded successfully')
             if (process.env.NODE_ENV === 'development') {
               console.log('PostHog instance:', posthog)
             }
           },
-          capture_pageview: false, // On désactive la capture automatique pour la gérer nous-mêmes
+          capture_pageview: false,
           capture_pageleave: true,
           autocapture: true,
           persistence: 'localStorage',
           disable_session_recording: true,
           cross_subdomain_cookie: false,
           enable_recording_console_log: false,
-          debug: true
+          debug: process.env.NODE_ENV === 'development'
         }
       )
 
