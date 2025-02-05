@@ -26,7 +26,6 @@ export function GenerateExerciseForm({ formData, handleInputChange }: GenerateEx
       <FormFields.QuestionsPerExercise value={formData.questionsPerExercise} onChange={handleInputChange} />
       <FormFields.Objective value={formData.objective} onChange={handleInputChange} />
       <FormFields.ExerciseType value={formData.exerciseType} onChange={handleInputChange} />
-      <FormFields.Strengths value={formData.strengths} onChange={handleInputChange} />
       <FormFields.AdditionalInstructions value={formData.additionalInstructions} onChange={handleInputChange} />
     </>
   );

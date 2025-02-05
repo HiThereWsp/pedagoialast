@@ -141,20 +141,10 @@ const ExerciseType = ({ value, onChange }: FieldProps) => (
   />
 );
 
-const Strengths = ({ value, onChange }: FieldProps) => (
-  <TextareaField
-    label="Forces ou intérêts"
-    placeholder="Par exemple : Facilité avec les images..."
-    value={value}
-    onChange={onChange}
-    field="strengths"
-  />
-);
-
 const AdditionalInstructions = ({ value, onChange }: FieldProps) => (
   <TextareaField
     label="Instructions supplémentaires"
-    placeholder="Précisez ce qui vous semble important comme les notions déjà traitées ou les notions spécifiques que vous souhaitez aborder..."
+    placeholder="Précisez ce qui vous semble important comme les notions déjà traitées, les centres d'intérêt des élèves ou les notions spécifiques que vous souhaitez aborder..."
     value={value}
     onChange={onChange}
     field="additionalInstructions"
@@ -191,7 +181,6 @@ export const FormFields = {
   QuestionsPerExercise,
   Objective,
   ExerciseType,
-  Strengths,
   AdditionalInstructions,
   OriginalExercise,
   StudentProfile,
