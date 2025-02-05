@@ -20,7 +20,7 @@ import Terms from '@/pages/Terms'
 import Legal from '@/pages/Legal'
 import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
-import PricingPage from '@/pages/Pricing'
+import PricingPage from '@/pages/PricingPage'
 
 export function AppRoutes() {
   return (
