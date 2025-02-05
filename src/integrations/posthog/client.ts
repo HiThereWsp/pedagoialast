@@ -8,6 +8,10 @@ export const initPostHog = () => {
     return
   }
 
+  console.log('Initializing PostHog...')
+  console.log('Environment:', process.env.NODE_ENV)
+  console.log('Force analytics:', import.meta.env.VITE_FORCE_ANALYTICS)
+
   if (typeof window !== 'undefined') {
     try {
       posthog.init(
@@ -15,8 +19,9 @@ export const initPostHog = () => {
         {
           api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
           loaded: (posthog) => {
+            console.log('PostHog loaded successfully with key:', import.meta.env.VITE_POSTHOG_KEY)
             if (process.env.NODE_ENV === 'development') {
-              console.log('PostHog loaded:', posthog)
+              console.log('PostHog instance:', posthog)
             }
           },
           capture_pageview: false, // On désactive la capture automatique pour la gérer nous-mêmes
@@ -26,7 +31,7 @@ export const initPostHog = () => {
           disable_session_recording: true,
           cross_subdomain_cookie: false,
           enable_recording_console_log: false,
-          debug: process.env.NODE_ENV === 'development'
+          debug: true // Enable debug mode to see more logs
         }
       )
 
@@ -39,7 +44,7 @@ export const initPostHog = () => {
       console.log('PostHog initialized successfully')
 
     } catch (error) {
-      console.warn('PostHog initialization failed:', error)
+      console.error('PostHog initialization failed:', error)
     }
   }
 }
@@ -48,30 +53,42 @@ export const initPostHog = () => {
 export const pricingEvents = {
   viewPricing: () => {
     try {
-      if (!posthog.__loaded) return
+      if (!posthog.__loaded) {
+        console.warn('PostHog not loaded, skipping pricing view event')
+        return
+      }
       posthog.capture('pricing_page_viewed')
+      console.log('Captured pricing view event')
     } catch (error) {
       console.warn('Failed to capture pricing view event:', error)
     }
   },
   selectPlan: (planType: 'free' | 'premium' | 'enterprise') => {
     try {
-      if (!posthog.__loaded) return
+      if (!posthog.__loaded) {
+        console.warn('PostHog not loaded, skipping plan selection event')
+        return
+      }
       posthog.capture('pricing_plan_selected', {
         plan_type: planType,
         location: 'pricing_page'
       })
+      console.log('Captured plan selection event:', planType)
     } catch (error) {
       console.warn('Failed to capture plan selection event:', error)
     }
   },
   startTrial: (planType: 'premium' | 'enterprise') => {
     try {
-      if (!posthog.__loaded) return
+      if (!posthog.__loaded) {
+        console.warn('PostHog not loaded, skipping trial start event')
+        return
+      }
       posthog.capture('free_trial_started', {
         plan_type: planType,
         location: 'pricing_page'
       })
+      console.log('Captured trial start event:', planType)
     } catch (error) {
       console.warn('Failed to capture trial start event:', error)
     }
