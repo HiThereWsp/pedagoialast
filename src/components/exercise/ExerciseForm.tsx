@@ -10,6 +10,7 @@ interface ExerciseFormProps {
     subject: string;
     classLevel: string;
     numberOfExercises: string;
+    questionsPerExercise: string;
     objective: string;
     exerciseType: string;
     additionalInstructions: string;
@@ -19,6 +20,7 @@ interface ExerciseFormProps {
     originalExercise: string;
     studentProfile: string;
     learningStyle: string;
+    learningDifficulties: string;
   };
   handleInputChange: (field: string, value: string) => void;
   handleSubmit: () => Promise<void>;

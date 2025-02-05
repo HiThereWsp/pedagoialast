@@ -16,31 +16,59 @@ serve(async (req) => {
       subject, 
       classLevel, 
       numberOfExercises, 
+      questionsPerExercise,
       objective, 
       exerciseType, 
       additionalInstructions,
       specificNeeds,
       strengths,
-      challenges
+      challenges,
+      originalExercise,
+      studentProfile,
+      learningDifficulties,
+      learningStyle
     } = await req.json()
 
-    const prompt = `En tant qu'expert en pédagogie, crée ${numberOfExercises} exercices pour la matière "${subject}" destinés à des élèves de niveau "${classLevel}". 
-    Ces exercices doivent correspondre à l'objectif suivant : "${objective}". 
-    ${exerciseType ? `Le type d'exercice souhaité est : "${exerciseType}".` : ''}
+    let prompt = ""
     
-    ${specificNeeds ? `Besoins spécifiques à prendre en compte : ${specificNeeds}` : ''}
-    ${strengths ? `Forces et intérêts de l'élève : ${strengths}` : ''}
-    ${challenges ? `Défis et obstacles à considérer : ${challenges}` : ''}
-    ${additionalInstructions ? `Instructions supplémentaires : ${additionalInstructions}` : ''}
-    
-    Format des exercices :
-    - Chaque exercice doit être clair et adapté au niveau de la classe
-    - Fournir une consigne précise
-    - Inclure une réponse ou une solution si nécessaire
-    - Adapter le format et la présentation en fonction des besoins spécifiques mentionnés
-    - Exploiter les forces et intérêts indiqués pour favoriser l'engagement
-    - Proposer des stratégies pour surmonter les défis mentionnés
-    - IMPORTANT : Ne pas créer d'exercices nécessitant des images ou des supports visuels. Les exercices doivent pouvoir être réalisés uniquement avec du texte.`
+    if (originalExercise) {
+      // Prompt pour la différenciation
+      prompt = `En tant qu'expert en pédagogie et en différenciation, adapte cet exercice pour un élève avec le profil suivant :
+
+      Exercice original : "${originalExercise}"
+      Matière : "${subject}"
+      Niveau : "${classLevel}"
+      Objectif pédagogique : "${objective}"
+      Profil de l'élève : "${studentProfile}"
+      Style d'apprentissage : "${learningStyle}"
+      ${learningDifficulties ? `Difficultés d'apprentissage spécifiques : "${learningDifficulties}"` : ''}
+
+      Adapte l'exercice en :
+      1. Prenant en compte les difficultés spécifiques mentionnées
+      2. Ajustant le format selon le style d'apprentissage
+      3. Maintenant l'objectif pédagogique tout en adaptant la difficulté
+      4. Fournissant des supports ou aides spécifiques si nécessaire`
+    } else {
+      // Prompt pour la génération
+      prompt = `En tant qu'expert en pédagogie, crée ${numberOfExercises} exercices pour la matière "${subject}" destinés à des élèves de niveau "${classLevel}". 
+      Ces exercices doivent correspondre à l'objectif suivant : "${objective}". 
+      ${exerciseType ? `Le type d'exercice souhaité est : "${exerciseType}".` : ''}
+      ${questionsPerExercise ? `Chaque exercice doit contenir ${questionsPerExercise} questions.` : 'Adapte le nombre de questions selon ce qui est le plus pertinent pour atteindre l\'objectif.'}
+      
+      ${specificNeeds ? `Besoins spécifiques à prendre en compte : ${specificNeeds}` : ''}
+      ${strengths ? `Forces et intérêts de l'élève : ${strengths}` : ''}
+      ${challenges ? `Défis et obstacles à considérer : ${challenges}` : ''}
+      ${additionalInstructions ? `Instructions supplémentaires : ${additionalInstructions}` : ''}
+      
+      Format des exercices :
+      - Chaque exercice doit être clair et adapté au niveau de la classe
+      - Fournir une consigne précise
+      - Inclure une réponse ou une solution si nécessaire
+      - Adapter le format et la présentation en fonction des besoins spécifiques mentionnés
+      - Exploiter les forces et intérêts indiqués pour favoriser l'engagement
+      - Proposer des stratégies pour surmonter les défis mentionnés
+      - IMPORTANT : Ne pas créer d'exercices nécessitant des images ou des supports visuels. Les exercices doivent pouvoir être réalisés uniquement avec du texte.`
+    }
 
     console.log('Calling OpenAI with prompt:', prompt)
 

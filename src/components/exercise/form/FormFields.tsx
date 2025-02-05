@@ -65,6 +65,27 @@ const TextareaField = ({
   </div>
 );
 
+const QuestionsPerExercise = ({ value, onChange }: FieldProps) => (
+  <InputField
+    label="Nombre de questions par exercice"
+    placeholder="Laissez vide pour un nombre adapté automatiquement"
+    value={value}
+    onChange={onChange}
+    field="questionsPerExercise"
+    type="number"
+  />
+);
+
+const LearningDifficulties = ({ value, onChange }: FieldProps) => (
+  <TextareaField
+    label="Difficultés d'apprentissage"
+    placeholder="Ex: dyslexie, TDAH, troubles de l'attention, etc."
+    value={value}
+    onChange={onChange}
+    field="learningDifficulties"
+  />
+);
+
 // Specific field components
 const Subject = ({ value, onChange }: FieldProps) => (
   <InputField
@@ -167,10 +188,12 @@ export const FormFields = {
   Subject,
   ClassLevel,
   NumberOfExercises,
+  QuestionsPerExercise,
   Objective,
   ExerciseType,
   Strengths,
   AdditionalInstructions,
   OriginalExercise,
   StudentProfile,
+  LearningDifficulties,
 };

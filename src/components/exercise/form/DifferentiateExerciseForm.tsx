@@ -10,6 +10,7 @@ interface DifferentiateExerciseFormProps {
     objective: string;
     studentProfile: string;
     learningStyle: string;
+    learningDifficulties: string;
   };
   handleInputChange: (field: string, value: string) => void;
 }
@@ -22,6 +23,7 @@ export function DifferentiateExerciseForm({ formData, handleInputChange }: Diffe
       <FormFields.ClassLevel value={formData.classLevel} onChange={handleInputChange} />
       <FormFields.Objective value={formData.objective} onChange={handleInputChange} />
       <FormFields.StudentProfile value={formData.studentProfile} onChange={handleInputChange} />
+      <FormFields.LearningDifficulties value={formData.learningDifficulties} onChange={handleInputChange} />
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
