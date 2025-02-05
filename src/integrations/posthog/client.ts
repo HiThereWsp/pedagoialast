@@ -21,27 +21,31 @@ export const initPostHog = () => {
         return
       }
 
-      posthog.init(
-        posthogKey,
-        {
-          api_host: 'https://eu.posthog.com', // Updated host URL
-          loaded: (posthog) => {
-            console.log('PostHog loaded successfully')
-            if (process.env.NODE_ENV === 'development') {
-              console.log('PostHog instance:', posthog)
-            }
-          },
-          capture_pageview: false, // We'll handle this manually
-          capture_pageleave: true,
-          autocapture: true,
-          persistence: 'localStorage',
-          disable_session_recording: true,
-          cross_subdomain_cookie: false,
-          enable_recording_console_log: false,
-          debug: process.env.NODE_ENV === 'development',
-          api_method: 'POST'
+      posthog.init(posthogKey, {
+        api_host: 'https://app.posthog.com',  // Changed to use the main PostHog domain
+        loaded: (posthog) => {
+          console.log('PostHog loaded successfully')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('PostHog instance:', posthog)
+          }
+        },
+        capture_pageview: false, // We'll handle this manually
+        capture_pageleave: true,
+        autocapture: true,
+        persistence: 'localStorage',
+        disable_session_recording: true,
+        cross_subdomain_cookie: false,
+        enable_recording_console_log: false,
+        debug: process.env.NODE_ENV === 'development',
+        api_method: 'POST',
+        bootstrap: {
+          distinctID: 'user-id-' + Math.random(),
+          isIdentifiedID: false
+        },
+        on_xhr_error: (xhr, url) => {
+          console.error('PostHog XHR Error:', { url, status: xhr.status, response: xhr.responseText })
         }
-      )
+      })
 
       // Vérifier que PostHog est bien initialisé
       if (!posthog.__loaded) {
