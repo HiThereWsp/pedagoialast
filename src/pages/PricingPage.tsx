@@ -1,5 +1,4 @@
-import { MessageSquareText, Crown, Star } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { Check } from "lucide-react"
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { QualityFeatures } from "@/components/pricing/QualityFeatures"
 import { handleSubscription } from "@/utils/subscription"
@@ -8,7 +7,6 @@ import { pricingEvents } from "@/integrations/posthog/client"
 
 const PricingPage = () => {
   useEffect(() => {
-    // Capture la vue de la page de tarification
     pricingEvents.viewPricing()
   }, [])
 
@@ -22,70 +20,84 @@ const PricingPage = () => {
     handleSubscription('price_1QYUKAIqXQKnGj4meN7G9nPH')
   }
 
-  const handleFreeTrial = () => {
-    pricingEvents.startTrial('premium')
-    console.log('Free trial selected');
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center mb-12">
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Découvrez la puissance de l'intelligence artificielle dans votre métier grâce à PedagoIA
+          <h1 className="text-4xl font-bold mb-4">
+            La magie de l'IA
           </h1>
-          <Badge variant="secondary" className="mb-4 bg-secondary text-primary">
-            <MessageSquareText className="w-4 h-4 mr-1" />
-            Essai gratuit de 7 jours
-          </Badge>
+          <p className="text-3xl bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent font-semibold mb-6">
+            au service de l'enseignement
+          </p>
+          <p className="text-xl text-muted-foreground">
+            Choisissez le plan qui vous convient le mieux
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+          {/* Plan Mensuel */}
           <PricingCard
-            title="Plan Mensuel"
-            price="7,99€"
-            badge="Plan Flexible"
-            badgeIcon={<MessageSquareText className="w-4 h-4 mr-1" />}
+            title="Plan mensuel"
+            price="11,90€"
+            period="/mois"
             features={[
-              "Accès illimité à Élia (assistant IA)",
-              "Génération de contenus pédagogiques",
-              "Sauvegarde de vos documents",
-              "Support client prioritaire",
-              "+ 10h économisées/semaine",
+              "Accès illimité à l'assistant pédagogique via le chat",
+              "Accéder à plus de 10 outils IA pédagogiques",
+              "Sauvegarde de tous vos supports de cours générés",
+              "Utilisation illimitée de tous les outils",
+              "+14h économisées /semaine"
             ]}
-            ctaText="Commencer l'essai gratuit"
+            ctaText="Commencer maintenant"
             onSubscribe={handleMonthlySubscription}
           />
 
+          {/* Plan Annuel */}
           <PricingCard
-            title="Plan Annuel"
-            price="59,99€"
-            period="/an"
-            yearlyPrice="5€/mois"
-            badge="Meilleure offre"
-            badgeIcon={<Crown className="w-4 h-4 mr-1" />}
+            title="Plan annuel"
+            price="9€"
+            period="/mois"
+            badge="3 mois gratuits offerts"
             isPremium
             features={[
               "Tous les avantages du plan mensuel",
-              "Prix réduit garanti à vie (-35€/an)",
-              "Accès prioritaire aux nouvelles fonctionnalités",
-              "Stockage plus élevé de l'historique",
-              "Support client téléphonique",
-              { 
-                text: "Garantie satisfait ou remboursé",
-                tooltip: "Remboursement intégral pendant les 30 premiers jours"
-              },
-              "Badge 'Membre Premium' dans la communauté",
-              "Vote prioritaire sur les futures fonctionnalités"
+              "Vote prioritaire pour de nouvelles fonctionnalités",
+              "Recevez les mises à jour à l'avance",
+              "Accès à la communauté privée d'enseignants 3.0"
             ]}
-            ctaText="Souscrire à l'offre annuelle"
+            ctaText="Commencer maintenant"
             onSubscribe={handleYearlySubscription}
+          />
+
+          {/* Plan École */}
+          <PricingCard
+            title="École"
+            price="Sur mesure"
+            features={[
+              "Tout ce qui est inclus dans le plan annuel et bien plus",
+              "Créez des outils sur mesure",
+              "Tableau de suivi pour la direction",
+              "Des outils adaptés à votre projet pédagogique",
+              "Un canal support dédié"
+            ]}
+            ctaText="Commencer maintenant"
+            onSubscribe={() => window.location.href = 'mailto:contact@pedagogia.io'}
           />
         </div>
 
-        <div className="mt-16 max-w-2xl mx-auto text-center">
-          <h4 className="font-semibold mb-8 text-primary">Notre engagement qualité</h4>
-          <QualityFeatures />
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
+          <div>
+            <h3 className="font-semibold mb-2">Satisfaction garantie</h3>
+            <p className="text-muted-foreground">3 jours satisfait ou remboursé</p>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Support client</h3>
+            <p className="text-muted-foreground">Un support client 24/7</p>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Mises à jour régulières</h3>
+            <p className="text-muted-foreground">Chaque mois une nouvelle fonctionnalité</p>
+          </div>
         </div>
       </main>
     </div>
