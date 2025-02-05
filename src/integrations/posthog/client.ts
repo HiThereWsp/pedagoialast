@@ -40,8 +40,8 @@ export const initPostHog = () => {
           enable_recording_console_log: false,
           debug: process.env.NODE_ENV === 'development',
           bootstrap: {
-            distinctID: 'user-id-' + Math.random(), // Fixed typo from distinctId to distinctID
-            isIdentified: false
+            distinctID: 'user-id-' + Math.random(),
+            isIdentifiedID: false
           }
         }
       )
