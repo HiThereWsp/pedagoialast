@@ -5,7 +5,7 @@ import './index.css'
 import { initPostHog } from './integrations/posthog/client'
 import * as Sentry from "@sentry/react"
 
-// Initialize PostHog
+// Initialize PostHog before anything else
 initPostHog()
 
 // Initialize Sentry

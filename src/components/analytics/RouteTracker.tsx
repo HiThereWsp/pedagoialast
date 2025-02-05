@@ -7,10 +7,12 @@ export function RouteTracker() {
 
   useEffect(() => {
     // Capture pageview on route change
-    if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+    if (typeof window !== 'undefined' && posthog.__loaded) {
       posthog.capture('$pageview', {
         $current_url: window.location.href,
-        path: location.pathname
+        path: location.pathname,
+        referrer: document.referrer,
+        title: document.title
       })
       console.log('PostHog route change captured:', location.pathname)
     }
