@@ -24,7 +24,7 @@ export const initPostHog = () => {
       posthog.init(
         posthogKey,
         {
-          api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
+          api_host: 'https://eu.posthog.com', // Updated host URL
           loaded: (posthog) => {
             console.log('PostHog loaded successfully')
             if (process.env.NODE_ENV === 'development') {
@@ -39,10 +39,7 @@ export const initPostHog = () => {
           cross_subdomain_cookie: false,
           enable_recording_console_log: false,
           debug: process.env.NODE_ENV === 'development',
-          bootstrap: {
-            distinctID: 'user-id-' + Math.random(),
-            isIdentifiedID: false
-          }
+          api_method: 'POST'
         }
       )
 
