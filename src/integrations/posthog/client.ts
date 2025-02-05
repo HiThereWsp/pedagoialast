@@ -22,7 +22,7 @@ export const initPostHog = () => {
       }
 
       posthog.init(posthogKey, {
-        api_host: 'https://eu.posthog.com',  // Instance européenne de PostHog
+        api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
         loaded: (posthog) => {
           console.log('PostHog loaded successfully')
           if (process.env.NODE_ENV === 'development') {
