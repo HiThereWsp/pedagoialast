@@ -1,5 +1,4 @@
 import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormFields } from './FormFields';
 
 interface DifferentiateExerciseFormProps {
@@ -9,7 +8,6 @@ interface DifferentiateExerciseFormProps {
     classLevel: string;
     objective: string;
     studentProfile: string;
-    learningStyle: string;
     learningDifficulties: string;
   };
   handleInputChange: (field: string, value: string) => void;
@@ -24,25 +22,6 @@ export function DifferentiateExerciseForm({ formData, handleInputChange }: Diffe
       <FormFields.Objective value={formData.objective} onChange={handleInputChange} />
       <FormFields.StudentProfile value={formData.studentProfile} onChange={handleInputChange} />
       <FormFields.LearningDifficulties value={formData.learningDifficulties} onChange={handleInputChange} />
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Style d'apprentissage
-        </label>
-        <Select
-          value={formData.learningStyle}
-          onValueChange={(value) => handleInputChange("learningStyle", value)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Choisissez un style d'apprentissage" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="visual">Visuel</SelectItem>
-            <SelectItem value="auditory">Auditif</SelectItem>
-            <SelectItem value="kinesthetic">Kinesthésique</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
     </>
   );
 }

@@ -15,11 +15,9 @@ interface ExerciseFormProps {
     exerciseType: string;
     additionalInstructions: string;
     specificNeeds: string;
-    strengths: string;
     challenges: string;
     originalExercise: string;
     studentProfile: string;
-    learningStyle: string;
     learningDifficulties: string;
   };
   handleInputChange: (field: string, value: string) => void;

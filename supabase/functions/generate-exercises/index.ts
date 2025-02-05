@@ -21,12 +21,10 @@ serve(async (req) => {
       exerciseType, 
       additionalInstructions,
       specificNeeds,
-      strengths,
       challenges,
       originalExercise,
       studentProfile,
       learningDifficulties,
-      learningStyle
     } = await req.json()
 
     let prompt = ""
@@ -45,7 +43,6 @@ Objectif visé : "${objective}"
 ÉLÉMENTS DE CONTEXTUALISATION
 ---------------------------
 Situation de l'élève : "${studentProfile}"
-Mode d'apprentissage privilégié : "${learningStyle}"
 ${learningDifficulties ? `Points de vigilance : "${learningDifficulties}"` : ''}
 
 FORMAT ATTENDU :
@@ -77,7 +74,6 @@ ${questionsPerExercise ? `Nombre de questions par exercice : ${questionsPerExerc
 
 Éléments contextuels :
 ${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
-${strengths ? `Points forts/centres d'intérêt : ${strengths}` : ''}
 ${challenges ? `Points de vigilance : ${challenges}` : ''}
 ${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
 
