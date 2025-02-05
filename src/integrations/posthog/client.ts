@@ -15,11 +15,11 @@ export const initPostHog = () => {
   if (typeof window !== 'undefined') {
     try {
       posthog.init(
-        import.meta.env.VITE_POSTHOG_KEY || '',
+        import.meta.env.VITE_POSTHOG_KEY,
         {
-          api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
+          api_host: import.meta.env.VITE_POSTHOG_HOST,
           loaded: (posthog) => {
-            console.log('PostHog loaded successfully with key:', import.meta.env.VITE_POSTHOG_KEY)
+            console.log('PostHog loaded successfully')
             if (process.env.NODE_ENV === 'development') {
               console.log('PostHog instance:', posthog)
             }
@@ -31,7 +31,7 @@ export const initPostHog = () => {
           disable_session_recording: true,
           cross_subdomain_cookie: false,
           enable_recording_console_log: false,
-          debug: true // Enable debug mode to see more logs
+          debug: true
         }
       )
 
