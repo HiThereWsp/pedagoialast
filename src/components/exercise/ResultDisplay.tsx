@@ -5,6 +5,7 @@ import { HeaderSection } from './result/HeaderSection';
 import { FeedbackButtons } from './result/FeedbackButtons';
 import { MarkdownContent } from './result/MarkdownContent';
 import { ShareButton } from './result/ShareButton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ResultDisplayProps {
   exercises: string | null;
@@ -25,78 +26,44 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     });
   };
 
-  const formatText = (markdown: string) => {
-    let text = markdown;
-    
-    // Préserver les sauts de ligne
-    text = text.replace(/\n\n/g, '\n\n');
-    
-    // Gérer les titres
-    text = text.replace(/### (.*?)\n/g, '\n$1\n');
-    text = text.replace(/## (.*?)\n/g, '\n$1\n');
-    text = text.replace(/# (.*?)\n/g, '\n$1\n');
-    
-    // Gérer le texte en gras et italique
-    text = text.replace(/\*\*(.*?)\*\*/g, '$1');
-    text = text.replace(/\*(.*?)\*/g, '$1');
-    
-    // Gérer les expressions mathématiques
-    text = text.replace(/\\\((.*?)\\\)/g, '$1');
-    
-    // Gérer les listes numérotées (style Claude)
-    text = text.replace(/^\d+\.\s/gm, '• ');
-    
-    // Gérer les listes à puces (style Claude)
-    text = text.replace(/^-\s/gm, '• ');
-    
-    // Ajouter des espaces appropriés après les puces
-    text = text.replace(/•\s*/g, '•  ');
-    
-    // Nettoyer les espaces multiples
-    text = text.replace(/\s{3,}/g, '\n\n');
-    
-    // Assurer des sauts de ligne cohérents
-    text = text.replace(/\n{3,}/g, '\n\n');
-    
-    return text.trim();
+  const splitContent = (content: string) => {
+    const parts = content.split('FICHE PÉDAGOGIQUE');
+    return {
+      studentSheet: parts[0].trim(),
+      teacherSheet: parts[1] ? `FICHE PÉDAGOGIQUE${parts[1]}` : ''
+    };
   };
 
-  const getShareableText = (formattedText: string) => {
-    return `Bonjour collègue, voici ce que j'ai pu créer avec PedagoIA aujourd'hui :\n\n${formattedText}`;
-  };
+  const { studentSheet, teacherSheet } = splitContent(exercises);
 
-  const handleCopy = async () => {
+  const handleCopy = async (text: string) => {
     try {
-      const formattedText = formatText(exercises);
-      const shareableText = getShareableText(formattedText);
-      await navigator.clipboard.writeText(shareableText);
+      await navigator.clipboard.writeText(text);
       setIsCopied(true);
       toast({
-        description: "Exercices copiés dans le presse-papier",
+        description: "Contenu copié dans le presse-papier",
         duration: 2000,
       });
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       toast({
         variant: "destructive",
-        description: "Erreur lors de la copie des exercices",
+        description: "Erreur lors de la copie du contenu",
       });
     }
   };
 
   const handleShare = async () => {
     try {
-      const formattedText = formatText(exercises);
-      const shareableText = getShareableText(formattedText);
       await navigator.share({
         title: 'Exercices générés par Pedagoia',
-        text: shareableText,
+        text: exercises,
       });
       toast({
         description: "Merci d'avoir partagé ces exercices !",
       });
     } catch (err) {
-      await handleCopy();
+      await handleCopy(exercises);
       toast({
         description: "Les exercices ont été copiés, vous pouvez maintenant les partager",
       });
@@ -111,10 +78,35 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           feedbackScore={feedbackScore}
           isCopied={isCopied}
           onFeedback={handleFeedback}
-          onCopy={handleCopy}
+          onCopy={() => handleCopy(exercises)}
         />
       </div>
-      <MarkdownContent content={exercises} />
+
+      <Tabs defaultValue="student" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="student">Fiche Élève</TabsTrigger>
+          <TabsTrigger value="teacher">Fiche Pédagogique</TabsTrigger>
+        </TabsList>
+        <TabsContent value="student" className="relative">
+          <MarkdownContent content={studentSheet} />
+          <button
+            onClick={() => handleCopy(studentSheet)}
+            className="absolute top-2 right-2 p-2 text-sm text-gray-500 hover:text-gray-700 bg-white/80 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            Copier la fiche élève
+          </button>
+        </TabsContent>
+        <TabsContent value="teacher" className="relative">
+          <MarkdownContent content={teacherSheet} />
+          <button
+            onClick={() => handleCopy(teacherSheet)}
+            className="absolute top-2 right-2 p-2 text-sm text-gray-500 hover:text-gray-700 bg-white/80 rounded-md hover:bg-gray-100 transition-colors"
+          >
+            Copier la fiche pédagogique
+          </button>
+        </TabsContent>
+      </Tabs>
+
       <div className="mt-6 flex justify-end">
         <ShareButton onShare={handleShare} />
       </div>
