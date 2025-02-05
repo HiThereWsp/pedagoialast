@@ -123,7 +123,7 @@ const NumberOfExercises = ({ value, onChange }: FieldProps) => (
 const Objective = ({ value, onChange }: FieldProps) => (
   <TextareaField
     label="Objectif pédagogique"
-    placeholder="Quel est le but de cet exercice ?"
+    placeholder="Quel est l'objectif de votre séance ?"
     value={value}
     onChange={onChange}
     field="objective"
