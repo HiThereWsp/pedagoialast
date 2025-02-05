@@ -33,41 +33,80 @@ serve(async (req) => {
     
     if (originalExercise) {
       // Prompt pour la différenciation
-      prompt = `En tant qu'expert en pédagogie et en différenciation, adapte cet exercice pour un élève avec le profil suivant :
+      prompt = `Adaptez cette activité selon les paramètres suivants :
 
-      Exercice original : "${originalExercise}"
-      Matière : "${subject}"
-      Niveau : "${classLevel}"
-      Objectif pédagogique : "${objective}"
-      Profil de l'élève : "${studentProfile}"
-      Style d'apprentissage : "${learningStyle}"
-      ${learningDifficulties ? `Difficultés d'apprentissage spécifiques : "${learningDifficulties}"` : ''}
+CADRE PÉDAGOGIQUE
+----------------
+Activité initiale : "${originalExercise}"
+Discipline : "${subject}"
+Niveau : "${classLevel}"
+Objectif visé : "${objective}"
 
-      Adapte l'exercice en :
-      1. Prenant en compte les difficultés spécifiques mentionnées
-      2. Ajustant le format selon le style d'apprentissage
-      3. Maintenant l'objectif pédagogique tout en adaptant la difficulté
-      4. Fournissant des supports ou aides spécifiques si nécessaire`
+ÉLÉMENTS DE CONTEXTUALISATION
+---------------------------
+Situation de l'élève : "${studentProfile}"
+Mode d'apprentissage privilégié : "${learningStyle}"
+${learningDifficulties ? `Points de vigilance : "${learningDifficulties}"` : ''}
+
+FORMAT ATTENDU :
+
+ACTIVITÉ 
+--------
+Consigne : 
+Support de travail : 
+Questions :
+1.
+2.
+etc.
+
+ACCOMPAGNEMENT PÉDAGOGIQUE
+------------------------
+Stratégies mises en œuvre :
+- Aménagement 1 : [justification]
+- Aménagement 2 : [justification]
+etc.
+
+RESSOURCES COMPLÉMENTAIRES
+------------------------
+[Outils d'aide proposés]`
     } else {
       // Prompt pour la génération
-      prompt = `En tant qu'expert en pédagogie, crée ${numberOfExercises} exercices pour la matière "${subject}" destinés à des élèves de niveau "${classLevel}". 
-      Ces exercices doivent correspondre à l'objectif suivant : "${objective}". 
-      ${exerciseType ? `Le type d'exercice souhaité est : "${exerciseType}".` : ''}
-      ${questionsPerExercise ? `Chaque exercice doit contenir ${questionsPerExercise} questions.` : 'Adapte le nombre de questions selon ce qui est le plus pertinent pour atteindre l\'objectif.'}
-      
-      ${specificNeeds ? `Besoins spécifiques à prendre en compte : ${specificNeeds}` : ''}
-      ${strengths ? `Forces et intérêts de l'élève : ${strengths}` : ''}
-      ${challenges ? `Défis et obstacles à considérer : ${challenges}` : ''}
-      ${additionalInstructions ? `Instructions supplémentaires : ${additionalInstructions}` : ''}
-      
-      Format des exercices :
-      - Chaque exercice doit être clair et adapté au niveau de la classe
-      - Fournir une consigne précise
-      - Inclure une réponse ou une solution si nécessaire
-      - Adapter le format et la présentation en fonction des besoins spécifiques mentionnés
-      - Exploiter les forces et intérêts indiqués pour favoriser l'engagement
-      - Proposer des stratégies pour surmonter les défis mentionnés
-      - IMPORTANT : Ne pas créer d'exercices nécessitant des images ou des supports visuels. Les exercices doivent pouvoir être réalisés uniquement avec du texte.`
+      prompt = `Créez ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel} sur l'objectif : ${objective}
+${exerciseType ? `Type d'exercice souhaité : ${exerciseType}` : ''}
+${questionsPerExercise ? `Nombre de questions par exercice : ${questionsPerExercise}` : 'Nombre de questions adapté selon pertinence'}
+
+Éléments contextuels :
+${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
+${strengths ? `Points forts/centres d'intérêt : ${strengths}` : ''}
+${challenges ? `Points de vigilance : ${challenges}` : ''}
+${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
+
+FORMAT ATTENDU :
+
+SÉQUENCE PÉDAGOGIQUE
+-------------------
+Exercice 1
+Consigne : 
+Questions :
+1.
+2.
+etc.
+
+[Répéter selon nombre demandé]
+
+ÉLÉMENTS POUR L'ÉQUIPE PÉDAGOGIQUE
+--------------------------------
+Exercice 1
+1. [Réponse]
+   Explicitation : 
+   Points d'attention :
+2. [Réponse]
+   Explicitation :
+   Points d'attention :
+etc.
+
+Prolongements possibles :
+-`
     }
 
     console.log('Calling OpenAI with prompt:', prompt)
@@ -79,7 +118,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
