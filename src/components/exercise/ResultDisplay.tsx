@@ -26,15 +26,38 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   };
 
   const formatText = (markdown: string) => {
-    let text = markdown.replace(/<[^>]*>/g, '');
-    text = text.replace(/### (.*?)\n/g, '$1\n');
-    text = text.replace(/## (.*?)\n/g, '$1\n');
-    text = text.replace(/# (.*?)\n/g, '$1\n');
+    let text = markdown;
+    
+    // Préserver les sauts de ligne
+    text = text.replace(/\n\n/g, '\n\n');
+    
+    // Gérer les titres
+    text = text.replace(/### (.*?)\n/g, '\n$1\n');
+    text = text.replace(/## (.*?)\n/g, '\n$1\n');
+    text = text.replace(/# (.*?)\n/g, '\n$1\n');
+    
+    // Gérer le texte en gras et italique
     text = text.replace(/\*\*(.*?)\*\*/g, '$1');
     text = text.replace(/\*(.*?)\*/g, '$1');
+    
+    // Gérer les expressions mathématiques
     text = text.replace(/\\\((.*?)\\\)/g, '$1');
-    text = text.replace(/- /g, '\n- ');
+    
+    // Gérer les listes numérotées (style Claude)
+    text = text.replace(/^\d+\.\s/gm, '• ');
+    
+    // Gérer les listes à puces (style Claude)
+    text = text.replace(/^-\s/gm, '• ');
+    
+    // Ajouter des espaces appropriés après les puces
+    text = text.replace(/•\s*/g, '•  ');
+    
+    // Nettoyer les espaces multiples
+    text = text.replace(/\s{3,}/g, '\n\n');
+    
+    // Assurer des sauts de ligne cohérents
     text = text.replace(/\n{3,}/g, '\n\n');
+    
     return text.trim();
   };
 
