@@ -25,47 +25,63 @@ serve(async (req) => {
       originalExercise,
       studentProfile,
       learningDifficulties,
+      learningStyle
     } = await req.json()
 
     let prompt = ""
     
     if (originalExercise) {
       // Prompt pour la différenciation
-      prompt = `Adaptez cette activité selon les paramètres suivants :
+      prompt = `Adaptez cette activité selon le contexte suivant :
 
-CADRE PÉDAGOGIQUE
-----------------
-Activité initiale : "${originalExercise}"
+SITUATION PÉDAGOGIQUE
+--------------------
+Activité de départ : "${originalExercise}"
 Discipline : "${subject}"
 Niveau : "${classLevel}"
-Objectif visé : "${objective}"
+Objectif d'apprentissage : "${objective}"
 
-ÉLÉMENTS DE CONTEXTUALISATION
----------------------------
-Situation de l'élève : "${studentProfile}"
-${learningDifficulties ? `Points de vigilance : "${learningDifficulties}"` : ''}
+CONTEXTE D'APPRENTISSAGE
+-----------------------
+Observations de l'élève : "${studentProfile}"
+${learningStyle ? `Modalités d'apprentissage privilégiées : "${learningStyle}"` : ''}
+${learningDifficulties ? `Points de vigilance particuliers : "${learningDifficulties}"` : ''}
 
 FORMAT ATTENDU :
 
-ACTIVITÉ 
---------
+FICHE ÉLÈVE
+-----------
 Consigne : 
-Support de travail : 
 Questions :
 1.
 2.
 etc.
 
-ACCOMPAGNEMENT PÉDAGOGIQUE
-------------------------
-Stratégies mises en œuvre :
-- Aménagement 1 : [justification]
-- Aménagement 2 : [justification]
-etc.
+FICHE PÉDAGOGIQUE
+----------------
+PRÉPARATION :
+- Matériel nécessaire :
+- Organisation spatiale :
+- Temps estimé :
 
-RESSOURCES COMPLÉMENTAIRES
-------------------------
-[Outils d'aide proposés]`
+ACCOMPAGNEMENT :
+1. [Question 1]
+   • Réponse attendue :
+   • Étayage possible :
+   • Indices progressifs :
+   • Alternatives acceptables :
+
+2. [Question 2]
+   [Même structure]
+
+OBSERVATIONS POUR LE SUIVI :
+- Points d'attention :
+- Indicateurs de réussite :
+- Prolongements possibles :
+
+OUTILS COMPLÉMENTAIRES :
+- Supports spécifiques :
+- Aides méthodologiques :`
     } else {
       // Prompt pour la génération
       prompt = `Créez ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
