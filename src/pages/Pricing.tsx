@@ -1,4 +1,4 @@
-import { MessageSquareText, Crown } from "lucide-react"
+import { MessageSquareText, Crown, Star } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { QualityFeatures } from "@/components/pricing/QualityFeatures"
