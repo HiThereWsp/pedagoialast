@@ -14,6 +14,13 @@ export const PdfUploader = () => {
   const [uploadedDocId, setUploadedDocId] = useState<string | null>(null)
   const { toast } = useToast()
 
+  const sanitizeFileName = (fileName: string): string => {
+    // Remove accents/diacritics
+    const withoutAccents = fileName.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    // Replace spaces and special characters with underscores
+    return withoutAccents.replace(/[^a-zA-Z0-9.]/g, '_')
+  }
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0]
     if (selectedFile) {
@@ -34,7 +41,10 @@ export const PdfUploader = () => {
         throw new Error("User not authenticated")
       }
 
-      const fileName = `${crypto.randomUUID()}-${file.name}`
+      const fileExt = file.name.split('.').pop()
+      const sanitizedName = sanitizeFileName(file.name)
+      const fileName = `${crypto.randomUUID()}-${sanitizedName}`
+
       const { error: uploadError } = await supabase.storage
         .from('lesson-documents')
         .upload(fileName, file)
