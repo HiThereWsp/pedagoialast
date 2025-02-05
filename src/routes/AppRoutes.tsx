@@ -15,12 +15,12 @@ import UTMLinksPage from '@/pages/UTMLinksPage'
 import MarketingPage from '@/pages/MarketingPage'
 import SuggestionsPage from '@/pages/SuggestionsPage'
 import ContactPage from '@/pages/ContactPage'
-import Pricing from '@/pages/Pricing'
 import Privacy from '@/pages/Privacy'
 import Terms from '@/pages/Terms'
 import Legal from '@/pages/Legal'
 import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
+import PricingPage from '@/pages/PricingPage'
 
 export function AppRoutes() {
   return (
@@ -28,7 +28,7 @@ export function AppRoutes() {
       {/* Public routes */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/pricing" element={<Pricing />} />
+      <Route path="/pricing" element={<PricingPage />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/legal" element={<Legal />} />
