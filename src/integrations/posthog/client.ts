@@ -22,7 +22,7 @@ export const initPostHog = () => {
       }
 
       posthog.init(posthogKey, {
-        api_host: 'https://app.posthog.com',  // Changed to use the main PostHog domain
+        api_host: 'https://eu.posthog.com',  // Instance européenne de PostHog
         loaded: (posthog) => {
           console.log('PostHog loaded successfully')
           if (process.env.NODE_ENV === 'development') {
@@ -42,8 +42,12 @@ export const initPostHog = () => {
           distinctID: 'user-id-' + Math.random(),
           isIdentifiedID: false
         },
-        on_xhr_error: (xhr, url) => {
-          console.error('PostHog XHR Error:', { url, status: xhr.status, response: xhr.responseText })
+        on_xhr_error: (failedRequest: XMLHttpRequest) => {
+          console.error('PostHog XHR Error:', { 
+            url: failedRequest.responseURL, 
+            status: failedRequest.status, 
+            response: failedRequest.responseText 
+          })
         }
       })
 
