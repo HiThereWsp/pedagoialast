@@ -16,7 +16,7 @@ export const actions: Action[] = [
   },
   {
     title: "Générateur d'exercices",
-    route: "/exercise",
+    route: "/exercises", // <-- Voici le problème ! La route devrait être "/exercise"
     icon: PenTool,
   },
   {
