@@ -2,7 +2,6 @@ import { Routes, Route } from 'react-router-dom'
 import Home from '@/pages/Home'
 import NotFound from '@/pages/NotFound'
 import Settings from '@/pages/Settings'
-import PdfChatPage from '@/pages/PdfChatPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import Login from '@/pages/Login'
 import Landing from '@/pages/Landing'
@@ -40,7 +39,6 @@ export function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<Home />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/pdf-chat" element={<PdfChatPage />} />
         <Route path="/exercise" element={<ExercisePage />} />
         <Route path="/lesson-plan" element={<LessonPlanPage />} />
         <Route path="/image-generation" element={<ImageGenerationPage />} />
