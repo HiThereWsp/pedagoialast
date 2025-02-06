@@ -32,7 +32,7 @@ export const OfflineChatUI = () => {
 
   return (
     <div className="relative h-screen flex flex-col">
-      <div className="absolute inset-0 opacity-15 bg-slate-100">
+      <div className="absolute inset-0 opacity-15 bg-gradient-to-br from-purple-50 to-blue-50">
         <Tiles rows={50} cols={8} tileSize="md" />
       </div>
 
@@ -47,8 +47,8 @@ export const OfflineChatUI = () => {
                 <div
                   className={`max-w-[80%] rounded-2xl p-4 shadow-sm transition-all duration-200 ${
                     message.role === 'user'
-                      ? 'bg-primary text-primary-foreground ml-4'
-                      : 'bg-muted/80 backdrop-blur-sm text-muted-foreground mr-4'
+                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white'
+                      : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800'
                   }`}
                 >
                   <p className="text-sm leading-relaxed">{message.content}</p>
@@ -64,12 +64,12 @@ export const OfflineChatUI = () => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Tapez votre message ici..."
-          className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-md"
+          className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-md focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
         />
         <Button 
           type="submit" 
           size="icon"
-          className="bg-primary hover:bg-primary/90 shadow-md transition-all duration-200"
+          className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-md transition-all duration-200"
         >
           <Send className="w-4 h-4" />
         </Button>
