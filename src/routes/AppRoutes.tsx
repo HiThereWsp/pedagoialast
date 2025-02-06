@@ -1,3 +1,4 @@
+```jsx
 import { Routes, Route } from 'react-router-dom'
 import Home from '@/pages/Home'
 import NotFound from '@/pages/NotFound'
@@ -34,10 +35,10 @@ export function AppRoutes() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<Home />} />
+        <Route path="/exercises" element={<ExercisePage />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/exercise" element={<ExercisePage />} />
         <Route path="/lesson-plan" element={<LessonPlanPage />} />
@@ -48,9 +49,9 @@ export function AppRoutes() {
         <Route path="/marketing" element={<MarketingPage />} />
         <Route path="/suggestions" element={<SuggestionsPage />} />
       </Route>
-
       {/* Catch all route */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   )
 }
+```
