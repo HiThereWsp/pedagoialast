@@ -1,9 +1,10 @@
+
 import { Check } from "lucide-react"
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { QualityFeatures } from "@/components/pricing/QualityFeatures"
 import { handleSubscription } from "@/utils/subscription"
 import { useEffect } from "react"
-import { pricingEvents } from "@/integrations/posthog/client"
+import { pricingEvents } from "@/integrations/posthog/events"
 
 const PricingPage = () => {
   useEffect(() => {
