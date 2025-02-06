@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
@@ -19,18 +20,14 @@ export default function Login() {
         setIsLoading(true)
         console.log("Checking session...")
         
-        // Clear any stale session data
-        await supabase.auth.signOut()
-        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-        
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
           console.error("Session error:", error)
           toast({
             variant: "destructive",
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter.",
+            title: "Session expired",
+            description: "Please log in again.",
           })
         } else if (session) {
           console.log("Active session found:", session)
