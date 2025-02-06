@@ -22,6 +22,7 @@ import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import PricingPage from '@/pages/PricingPage'
 import OfflineChatPage from '@/pages/OfflineChatPage'
+import YoutubeContentPage from '@/pages/YoutubeContentPage'
 
 export default function AppRoutes() {
   return (
@@ -49,6 +50,7 @@ export default function AppRoutes() {
         <Route path="/marketing" element={<MarketingPage />} />
         <Route path="/suggestions" element={<SuggestionsPage />} />
         <Route path="/offline-chat" element={<OfflineChatPage />} />
+        <Route path="/youtube-content" element={<YoutubeContentPage />} />
       </Route>
       {/* Catch all route */}
       <Route path="*" element={<NotFound />} />
