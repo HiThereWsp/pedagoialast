@@ -6,8 +6,8 @@ const OfflineChatPage = () => {
   return (
     <>
       <SEO 
-        title="Chat hors-ligne - PedagoIA"
-        description="Discutez avec l'assistant pédagogique même hors connexion"
+        title="Assistant pédagogique local - PedagoIA"
+        description="Discutez avec l'assistant pédagogique même sans connexion internet"
       />
       <div className="container mx-auto max-w-4xl">
         <OfflineChatUI />
