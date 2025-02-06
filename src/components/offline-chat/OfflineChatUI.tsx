@@ -11,7 +11,7 @@ export const OfflineChatUI = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
-      content: "Bonjour ! Je suis votre assistant pédagogique local (sans connexion internet requise). Comment puis-je vous aider aujourd'hui ?"
+      content: "Bonjour ! Je suis Élia, votre assistant pédagogique local (sans connexion internet requise). Comment puis-je vous aider aujourd'hui ?"
     }
   ])
   const [inputValue, setInputValue] = useState("")
