@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { LoadingIndicator } from '@/components/chat/LoadingIndicator'
+import { LoadingIndicator } from '@/components/ui/loading-indicator'
 import { DownloadButton } from './DownloadButton'
 import { FeedbackButtons } from './FeedbackButtons'
 import { RefreshCw } from 'lucide-react'

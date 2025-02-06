@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/card'
-import { LoadingIndicator } from '@/components/chat/LoadingIndicator'
+import { LoadingIndicator } from '@/components/ui/loading-indicator'
 import { GenerationForm } from './GenerationForm'
 import { GeneratedImage } from './GeneratedImage'
 import { RemainingCredits } from './RemainingCredits'

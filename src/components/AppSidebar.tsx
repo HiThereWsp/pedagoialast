@@ -15,7 +15,7 @@ interface AppSidebarProps {
   currentConversationId?: string | null
   onNewConversation?: () => void
   onDeleteConversation: (id: string) => void
-  firstName: string | null
+  firstName?: string | null
   onLogout: () => void
 }
 
