@@ -5,7 +5,6 @@ import { HelmetProvider } from 'react-helmet-async'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { RouteTracker } from '@/components/analytics/RouteTracker'
 import { MotionConfig } from 'framer-motion'
 
 // Create a client
@@ -27,7 +26,6 @@ function App() {
             <div className="flex min-h-screen w-full flex-col lg:flex-row">
               <TooltipProvider>
                 <BrowserRouter>
-                  <RouteTracker />
                   <main className="flex-1 w-full px-4 lg:px-8 py-4 lg:py-8">
                     <AppRoutes />
                   </main>

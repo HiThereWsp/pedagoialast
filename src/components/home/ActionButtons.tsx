@@ -47,7 +47,7 @@ export const ActionButtons = () => {
                 </span>
               )}
               {action.maintenanceLabel && (
-                <span className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full">
+                <span className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs px-2 py-1 rounded-full animate-bounce">
                   {action.maintenanceLabel}
                 </span>
               )}

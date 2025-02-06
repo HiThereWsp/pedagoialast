@@ -1,37 +1,13 @@
 import { useState } from "react"
 import { AppSidebar } from "@/components/AppSidebar"
-import { useChat } from "@/hooks/useChat"
-import { ChatInput } from "@/components/ChatInput"
-import { ChatHistory } from "@/components/ChatHistory"
 import { SEO } from "@/components/SEO"
-import { EmptyState } from "@/components/chat/EmptyState"
-import { useChatAuth } from "@/components/chat/ChatAuth"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 
 export default function Index() {
   const [conversations, setConversations] = useState<Array<{id: string, title: string}>>([])
   const [currentConversationId, setCurrentConversationId] = useState<string>("")
-  const { userId, firstName, isLoading } = useChatAuth()
   const { toast } = useToast()
-
-  const {
-    messages,
-    isLoading: chatLoading,
-    sendMessage: originalSendMessage,
-    conversations: chatConversations,
-    loadConversationMessages,
-    currentConversationId: activeChatId,
-    deleteConversation
-  } = useChat(userId)
-
-  const handleSendMessage = async (
-    message: string, 
-    attachments?: Array<{ url: string; fileName?: string; fileType?: string }>,
-    useWebSearch?: boolean
-  ) => {
-    await originalSendMessage(message, useWebSearch)
-  }
 
   const handleLogout = async () => {
     try {
@@ -51,7 +27,6 @@ export default function Index() {
 
   const handleConversationSelect = async (conversationId: string) => {
     setCurrentConversationId(conversationId)
-    await loadConversationMessages(conversationId)
   }
 
   const handleNewConversation = () => {
@@ -60,7 +35,6 @@ export default function Index() {
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      await deleteConversation(conversationId)
       setConversations(prev => prev.filter(conv => conv.id !== conversationId))
       if (currentConversationId === conversationId) {
         setCurrentConversationId("")
@@ -75,21 +49,10 @@ export default function Index() {
     }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
-
-  const showEmptyState = !messages || messages.length === 0
-  const isNewChat = !currentConversationId
-
   return (
     <>
       <SEO 
-        title="Chat | PedagoIA - Assistant pédagogique intelligent"
+        title="PedagoIA - Assistant pédagogique intelligent"
         description="Discutez avec PedagoIA pour créer des contenus pédagogiques personnalisés et innovants."
       />
       <div className="flex h-screen">
@@ -99,22 +62,13 @@ export default function Index() {
           currentConversationId={currentConversationId}
           onNewConversation={handleNewConversation}
           onDeleteConversation={handleDeleteConversation}
-          firstName={firstName}
           onLogout={handleLogout}
         />
         <main className="flex-1 overflow-hidden">
           <div className="flex h-full flex-col">
-            {showEmptyState && isNewChat ? (
-              <EmptyState firstName={firstName} />
-            ) : (
-              <div className="flex-1 overflow-y-auto p-4">
-                <ChatHistory messages={messages} isLoading={chatLoading} />
-              </div>
-            )}
-            <ChatInput 
-              onSendMessage={handleSendMessage}
-              isLoading={chatLoading}
-            />
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* Vous pouvez ajouter ici un nouveau contenu pour remplacer le chat */}
+            </div>
           </div>
         </main>
       </div>

@@ -2,7 +2,6 @@ import { Routes, Route } from 'react-router-dom'
 import Home from '@/pages/Home'
 import NotFound from '@/pages/NotFound'
 import Settings from '@/pages/Settings'
-import PdfChatPage from '@/pages/PdfChatPage'
 import { ProtectedRoute } from './ProtectedRoute'
 import Login from '@/pages/Login'
 import Landing from '@/pages/Landing'
@@ -22,7 +21,7 @@ import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import PricingPage from '@/pages/PricingPage'
 
-export function AppRoutes() {
+export default function AppRoutes() {
   return (
     <Routes>
       {/* Public routes */}
@@ -35,13 +34,11 @@ export function AppRoutes() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<Home />} />
-        <Route path="/exercises" element={<ExercisePage />} />
+        <Route path="/exercise" element={<ExercisePage />} />
         <Route path="/settings" element={<Settings />} />
-        <Route path="/pdf-chat" element={<PdfChatPage />} />
         <Route path="/lesson-plan" element={<LessonPlanPage />} />
         <Route path="/image-generation" element={<ImageGenerationPage />} />
         <Route path="/correspondence" element={<CorrespondencePage />} />
@@ -50,7 +47,6 @@ export function AppRoutes() {
         <Route path="/marketing" element={<MarketingPage />} />
         <Route path="/suggestions" element={<SuggestionsPage />} />
       </Route>
-
       {/* Catch all route */}
       <Route path="*" element={<NotFound />} />
     </Routes>
