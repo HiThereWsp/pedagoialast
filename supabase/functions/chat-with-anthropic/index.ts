@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY')
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,9 +20,9 @@ serve(async (req) => {
 
   try {
     // Validate API key
-    if (!ANTHROPIC_API_KEY) {
-      console.error('ANTHROPIC_API_KEY not configured')
-      throw new Error('Configuration error: ANTHROPIC_API_KEY not found')
+    if (!OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY not configured')
+      throw new Error('Configuration error: OPENAI_API_KEY not found')
     }
 
     // Validate request
@@ -43,38 +43,40 @@ serve(async (req) => {
       throw new Error('Message is required')
     }
 
-    console.log('Calling Anthropic API with message:', body.message)
+    console.log('Calling OpenAI API with message:', body.message)
 
-    // Call Anthropic API with better error handling
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Call OpenAI API with better error handling
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 1024,
+        model: 'gpt-3.5-turbo',
         messages: [{
+          role: 'system',
+          content: "Tu es un assistant pédagogique expert qui aide les enseignants à créer du contenu pédagogique de haute qualité. Adopte un ton professionnel adapté à l'éducation nationale et fournis des réponses détaillées et précises."
+        }, {
           role: 'user',
           content: body.message
         }],
-        system: "Tu es un assistant pédagogique expert qui aide les enseignants à créer du contenu pédagogique de haute qualité. Adopte un ton professionnel adapté à l'éducation nationale et fournis des réponses détaillées et précises."
+        temperature: 0.7,
+        max_tokens: 1024
       })
     })
 
     if (!response.ok) {
       const errorData = await response.json()
-      console.error('Anthropic API error:', errorData)
-      throw new Error(`Anthropic API error: ${response.status} ${response.statusText}`)
+      console.error('OpenAI API error:', errorData)
+      throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`)
     }
 
     const data = await response.json()
-    console.log('Received response from Anthropic:', data)
+    console.log('Received response from OpenAI:', data)
 
     return new Response(JSON.stringify({ 
-      response: data.content[0].text
+      response: data.choices[0].message.content
     }), {
       headers: { 
         ...corsHeaders, 
@@ -83,7 +85,7 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error('Error in chat-with-anthropic function:', error)
+    console.error('Error in chat function:', error)
     return new Response(JSON.stringify({ 
       error: error.message,
       details: 'Une erreur est survenue lors du traitement de votre demande'
