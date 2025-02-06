@@ -16,15 +16,9 @@ export const actions: Action[] = [
     icon: Sparkles,
   },
   {
-    title: "Générateur d'exercices",
-    route: "/exercise",
-    icon: PenTool,
-  },
-  {
     title: "Générer / Différencier des exercices",
     route: "/exercise",
-    icon: PenTool,
-    isNew: true
+    icon: PenTool
   },
   {
     title: "Assistant administratif",
