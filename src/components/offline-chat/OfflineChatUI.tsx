@@ -99,10 +99,19 @@ export const OfflineChatUI = () => {
         return
       }
 
-      // Simulate AI response
+      // Get AI response
+      const { data: aiResponseData, error: aiError } = await supabase.functions.invoke('chat-with-anthropic', {
+        body: { message: userMessage.content }
+      })
+
+      if (aiError) {
+        console.error("Error from edge function:", aiError)
+        throw aiError
+      }
+
       const aiResponse: ChatMessage = {
         role: 'assistant',
-        content: "Je suis désolé, je suis actuellement en mode hors ligne. Je ne peux pas traiter votre demande pour le moment."
+        content: aiResponseData.response || "Désolé, je n'ai pas pu traiter votre demande."
       }
 
       // Save AI response
