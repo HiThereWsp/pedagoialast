@@ -24,11 +24,21 @@ export default function Login() {
         
         if (error) {
           console.error("Session error:", error)
-          toast({
-            variant: "destructive",
-            title: "Session expired",
-            description: "Please log in again.",
-          })
+          if (error.message.includes('refresh_token_not_found')) {
+            // Clear any invalid session data
+            await supabase.auth.signOut()
+            toast({
+              variant: "destructive",
+              title: "Session invalide",
+              description: "Veuillez vous reconnecter.",
+            })
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Erreur de session",
+              description: error.message,
+            })
+          }
         } else if (session) {
           console.log("Active session found:", session)
           const returnUrl = location.state?.returnUrl || '/home'
@@ -46,7 +56,7 @@ export default function Login() {
 
     checkUser()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session)
       
       if (event === 'SIGNED_IN' && session) {
@@ -54,6 +64,10 @@ export default function Login() {
         const returnUrl = location.state?.returnUrl || '/home'
         console.log("Redirecting to:", returnUrl)
         navigate(returnUrl, { replace: true })
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log("Token refreshed successfully")
+      } else if (event === 'SIGNED_OUT') {
+        console.log("User signed out")
       }
     })
 
