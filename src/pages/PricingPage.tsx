@@ -3,19 +3,27 @@ import { PricingCard } from "@/components/pricing/PricingCard"
 import { QualityFeatures } from "@/components/pricing/QualityFeatures"
 import { handleSubscription } from "@/utils/subscription"
 import { useEffect } from "react"
+import { pricingEvents } from "@/integrations/posthog/events"
 
 const PricingPage = () => {
+  // Ce useEffect permet de tracker quand un utilisateur visite la page de pricing
   useEffect(() => {
     pricingEvents.viewPricing()
   }, [])
 
+  // Cette fonction gère l'abonnement mensuel et tracke le choix du plan
   const handleMonthlySubscription = () => {
+    // Envoie un événement à PostHog pour indiquer la sélection du plan premium
     pricingEvents.selectPlan('premium')
+    // Gère la logique d'abonnement avec le prix spécifique au plan mensuel
     handleSubscription('price_1QYUKDIqXQKnGj4mKGx80HJP')
   }
 
+  // Cette fonction gère l'abonnement annuel et tracke le choix du plan
   const handleYearlySubscription = () => {
+    // Envoie un événement à PostHog pour indiquer la sélection du plan premium
     pricingEvents.selectPlan('premium')
+    // Gère la logique d'abonnement avec le prix spécifique au plan annuel
     handleSubscription('price_1QYUKAIqXQKnGj4meN7G9nPH')
   }
 
@@ -33,7 +41,6 @@ const PricingPage = () => {
             Choisissez le plan qui vous convient le mieux
           </p>
         </div>
-
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
           {/* Plan Mensuel */}
           <PricingCard
@@ -50,7 +57,6 @@ const PricingPage = () => {
             ctaText="Commencer maintenant"
             onSubscribe={handleMonthlySubscription}
           />
-
           {/* Plan Annuel */}
           <PricingCard
             title="Plan annuel"
@@ -67,7 +73,6 @@ const PricingPage = () => {
             ctaText="Commencer maintenant"
             onSubscribe={handleYearlySubscription}
           />
-
           {/* Plan École */}
           <PricingCard
             title="École"
@@ -83,7 +88,6 @@ const PricingPage = () => {
             onSubscribe={() => window.location.href = 'mailto:contact@pedagogia.io'}
           />
         </div>
-
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
           <div>
             <h3 className="font-semibold mb-2">Satisfaction garantie</h3>

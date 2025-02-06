@@ -1,5 +1,6 @@
+
 import { BrowserRouter } from 'react-router-dom'
-import { AppRoutes } from './routes/AppRoutes'
+import AppRoutes from './routes/AppRoutes'
 import { Toaster } from '@/components/ui/toaster'
 import { HelmetProvider } from 'react-helmet-async'
 import { SidebarProvider } from '@/components/ui/sidebar'
