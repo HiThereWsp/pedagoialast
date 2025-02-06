@@ -34,6 +34,6 @@ export const actions: Action[] = [
     title: "Chat pédagogique",
     route: "/chat",
     icon: MessageSquare,
-    // maintenanceLabel: "En maintenance"
+    maintenanceLabel: "En maintenance"
   }
 ]
