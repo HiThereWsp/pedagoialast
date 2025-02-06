@@ -22,7 +22,7 @@ export const initPostHog = () => {
       }
 
       posthog.init(posthogKey, {
-        api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
+        api_host: 'https://eu.posthog.com', // URL fixe au lieu d'utiliser la variable d'environnement
         loaded: (posthog) => {
           console.log('PostHog loaded successfully')
           if (process.env.NODE_ENV === 'development') {
@@ -61,52 +61,6 @@ export const initPostHog = () => {
 
     } catch (error) {
       console.error('PostHog initialization failed:', error)
-    }
-  }
-}
-
-// Événements personnalisés pour la page de tarification
-export const pricingEvents = {
-  viewPricing: () => {
-    try {
-      if (!posthog.__loaded) {
-        console.warn('PostHog not loaded, skipping pricing view event')
-        return
-      }
-      posthog.capture('pricing_page_viewed')
-      console.log('Captured pricing view event')
-    } catch (error) {
-      console.warn('Failed to capture pricing view event:', error)
-    }
-  },
-  selectPlan: (planType: 'free' | 'premium' | 'enterprise') => {
-    try {
-      if (!posthog.__loaded) {
-        console.warn('PostHog not loaded, skipping plan selection event')
-        return
-      }
-      posthog.capture('pricing_plan_selected', {
-        plan_type: planType,
-        location: 'pricing_page'
-      })
-      console.log('Captured plan selection event:', planType)
-    } catch (error) {
-      console.warn('Failed to capture plan selection event:', error)
-    }
-  },
-  startTrial: (planType: 'premium' | 'enterprise') => {
-    try {
-      if (!posthog.__loaded) {
-        console.warn('PostHog not loaded, skipping trial start event')
-        return
-      }
-      posthog.capture('free_trial_started', {
-        plan_type: planType,
-        location: 'pricing_page'
-      })
-      console.log('Captured trial start event:', planType)
-    } catch (error) {
-      console.warn('Failed to capture trial start event:', error)
     }
   }
 }
