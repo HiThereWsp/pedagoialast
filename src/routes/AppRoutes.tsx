@@ -1,4 +1,3 @@
-```jsx
 import { Routes, Route } from 'react-router-dom'
 import Home from '@/pages/Home'
 import NotFound from '@/pages/NotFound'
@@ -22,7 +21,7 @@ import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import PricingPage from '@/pages/PricingPage'
 
-export function AppRoutes() {
+export default function AppRoutes() {
   return (
     <Routes>
       {/* Public routes */}
@@ -38,9 +37,8 @@ export function AppRoutes() {
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<Home />} />
-        <Route path="/exercises" element={<ExercisePage />} />
-        <Route path="/settings" element={<Settings />} />
         <Route path="/exercise" element={<ExercisePage />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="/lesson-plan" element={<LessonPlanPage />} />
         <Route path="/image-generation" element={<ImageGenerationPage />} />
         <Route path="/correspondence" element={<CorrespondencePage />} />
@@ -54,4 +52,3 @@ export function AppRoutes() {
     </Routes>
   )
 }
-```
