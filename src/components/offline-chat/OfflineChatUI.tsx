@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tiles } from "@/components/ui/tiles"
 import { Send } from "lucide-react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChatMessage } from "@/types/chat"
+import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast"
+import { v4 as uuidv4 } from 'uuid'
 
 export const OfflineChatUI = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -16,10 +19,45 @@ export const OfflineChatUI = () => {
     }
   ])
   const [inputValue, setInputValue] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
+  const conversationId = uuidv4()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const loadMessages = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) return
+
+      const { data, error } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true })
+
+      if (error) {
+        console.error("Error loading messages:", error)
+        return
+      }
+
+      if (data) {
+        const formattedMessages: ChatMessage[] = data.map(msg => ({
+          role: msg.message_type as 'user' | 'assistant',
+          content: msg.message
+        }))
+        setMessages(formattedMessages)
+      }
+    } catch (error) {
+      console.error("Error in loadMessages:", error)
+    }
+  }
+
+  useEffect(() => {
+    loadMessages()
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inputValue.trim()) return
+    if (!inputValue.trim() || isLoading) return
 
     const userMessage: ChatMessage = {
       role: 'user',
@@ -28,6 +66,66 @@ export const OfflineChatUI = () => {
     
     setMessages(prev => [...prev, userMessage])
     setInputValue("")
+    setIsLoading(true)
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Vous devez être connecté pour envoyer des messages."
+        })
+        return
+      }
+
+      // Save user message
+      const { error: insertError } = await supabase
+        .from('chats')
+        .insert({
+          message: userMessage.content,
+          user_id: session.user.id,
+          conversation_id: conversationId,
+          message_type: 'user'
+        })
+
+      if (insertError) {
+        console.error("Error saving message:", insertError)
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible d'envoyer le message."
+        })
+        return
+      }
+
+      // Simulate AI response
+      const aiResponse: ChatMessage = {
+        role: 'assistant',
+        content: "Je suis désolé, je suis actuellement en mode hors ligne. Je ne peux pas traiter votre demande pour le moment."
+      }
+
+      // Save AI response
+      await supabase
+        .from('chats')
+        .insert({
+          message: aiResponse.content,
+          user_id: session.user.id,
+          conversation_id: conversationId,
+          message_type: 'assistant'
+        })
+
+      setMessages(prev => [...prev, aiResponse])
+    } catch (error) {
+      console.error("Error in handleSubmit:", error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du message."
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -65,11 +163,13 @@ export const OfflineChatUI = () => {
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Tapez votre message ici..."
           className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-md focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
+          disabled={isLoading}
         />
         <Button 
           type="submit" 
           size="icon"
           className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-md transition-all duration-200"
+          disabled={isLoading}
         >
           <Send className="w-4 h-4" />
         </Button>
