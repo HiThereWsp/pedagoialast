@@ -14,17 +14,17 @@ const LandingPageA = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEO 
-        title="PedagoIA - Assistant pédagogique intelligent pour les enseignants" 
-        description="Gagnez du temps dans la préparation de vos cours avec PedagoIA, votre assistant pédagogique intelligent qui adapte vos contenus en quelques clics."
+        title="PedagoIA - Créez vos cours 10x plus vite avec l'IA" 
+        description="Gagnez du temps dans la préparation de vos cours avec PedagoIA, votre assistant pédagogique intelligent qui crée vos contenus pédagogiques en quelques clics."
       />
       <Header />
-      <main className="flex-grow px-4 md:px-6 lg:px-8">
+      <main className="flex-grow">
         <HeroSection />
-        <ChallengesSection />
         <MetricsSection />
+        <ChallengesSection />
         <HowItWorksSection />
-        <PricingSection />
         <TestimonialsSection />
+        <PricingSection />
         <FAQSection />
       </main>
       <Footer />
