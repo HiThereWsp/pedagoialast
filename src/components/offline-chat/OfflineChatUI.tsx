@@ -32,7 +32,7 @@ export const OfflineChatUI = () => {
 
   return (
     <div className="relative h-screen flex flex-col">
-      <div className="absolute inset-0 opacity-5">
+      <div className="absolute inset-0 opacity-15 bg-slate-100">
         <Tiles rows={50} cols={8} tileSize="md" />
       </div>
 
