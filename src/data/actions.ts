@@ -18,8 +18,7 @@ export const actions: Action[] = [
   {
     title: "Générer / Différencier des exercices",
     route: "/exercise",
-    icon: PenTool,
-    isNew: true
+    icon: PenTool
   },
   {
     title: "Assistant administratif",
