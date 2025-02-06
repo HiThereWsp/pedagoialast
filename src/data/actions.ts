@@ -16,7 +16,7 @@ export const actions: Action[] = [
   },
   {
     title: "Générateur d'exercices",
-    route: "/exercise", // Fixed: Changed from "/exercises" to "/exercise"
+    route: "/exercise",
     icon: PenTool,
   },
   {
@@ -34,6 +34,6 @@ export const actions: Action[] = [
     title: "Chat",
     route: "/chat",
     icon: MessageSquare,
-    maintenanceLabel: "Maintenance"
+    maintenanceLabel: "Bientôt disponible"
   }
 ]
