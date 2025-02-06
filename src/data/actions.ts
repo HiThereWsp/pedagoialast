@@ -5,6 +5,7 @@ import {
   FileEdit,
   Image,
   MessageSquare,
+  MessageCircle,
   AlertTriangle
 } from "lucide-react"
 import type { Action } from "@/types/actions"
@@ -29,12 +30,16 @@ export const actions: Action[] = [
     title: "Générateur d'images",
     route: "/image-generation",
     icon: Image,
-    isNew: true
   },
   {
     title: "Chat",
     route: "/chat",
     icon: MessageSquare,
     maintenanceLabel: "Bientôt disponible"
+  },
+  {
+    title: "Chat hors-ligne",
+    route: "/offline-chat",
+    icon: MessageCircle,
   }
 ]
