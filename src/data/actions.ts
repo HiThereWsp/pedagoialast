@@ -5,8 +5,6 @@ import {
   FileEdit,
   Image,
   MessageSquare,
-  MessageCircle,
-  AlertTriangle
 } from "lucide-react"
 import type { Action } from "@/types/actions"
 
@@ -36,10 +34,5 @@ export const actions: Action[] = [
     route: "/chat",
     icon: MessageSquare,
     maintenanceLabel: "Bientôt disponible"
-  },
-  {
-    title: "Chat hors-ligne",
-    route: "/offline-chat",
-    icon: MessageCircle,
   }
 ]
