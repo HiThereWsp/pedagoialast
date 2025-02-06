@@ -5,14 +5,17 @@ import { HeroSection } from "@/components/landing/HeroSection"
 import { MetricsSection } from "@/components/landing/MetricsSection"
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection"
 import { ChallengesSection } from "@/components/landing/ChallengesSection"
+import { PricingSection } from "@/components/landing/PricingSection"
+import { FAQSection } from "@/components/landing/FAQSection"
+import { TestimonialsSection } from "@/components/landing/TestimonialsSection"
 import Footer from "@/components/landing/Footer"
 
-const WaitlistLanding = () => {
+const LandingPageA = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEO 
-        title="PedagoIA - Rejoignez la liste d'attente" 
-        description="Inscrivez-vous à la liste d'attente pour accéder à votre assistant pédagogique intelligent qui vous aide à adapter vos cours et gagner du temps."
+        title="PedagoIA - Assistant pédagogique intelligent pour les enseignants" 
+        description="Gagnez du temps dans la préparation de vos cours avec PedagoIA, votre assistant pédagogique intelligent qui adapte vos contenus en quelques clics."
       />
       <Header />
       <main className="flex-grow px-4 md:px-6 lg:px-8">
@@ -20,10 +23,13 @@ const WaitlistLanding = () => {
         <ChallengesSection />
         <MetricsSection />
         <HowItWorksSection />
+        <PricingSection />
+        <TestimonialsSection />
+        <FAQSection />
       </main>
       <Footer />
     </div>
   )
 }
 
-export default WaitlistLanding
+export default LandingPageA
