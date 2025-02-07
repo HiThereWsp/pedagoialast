@@ -30,16 +30,16 @@ export function ConversationList({
   }
 
   return (
-    <SidebarGroup className="flex-1 min-h-0">
-      <SidebarGroupContent>
-        <ScrollArea className="h-[calc(100vh-12rem)]">
+    <SidebarGroup className="flex-1">
+      <SidebarGroupContent className="px-2">
+        <ScrollArea className="h-[calc(100vh-16rem)]">
           <SidebarMenu>
             {conversations.map((conversation) => (
-              <SidebarMenuItem key={conversation.id}>
+              <SidebarMenuItem key={conversation.id} className="mb-1">
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <SidebarMenuButton 
-                      className="w-full justify-between group hover:bg-gray-100 dark:hover:bg-gray-800"
+                      className="w-full justify-between group hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-lg"
                       onClick={() => onConversationSelect?.(conversation.id)}
                       data-active={currentConversationId === conversation.id}
                     >
