@@ -32,7 +32,7 @@ export function ConversationList({
   return (
     <SidebarGroup className="flex-1">
       <SidebarGroupContent className="px-2">
-        <ScrollArea className="h-[calc(100vh-16rem)]">
+        <ScrollArea className="h-[calc(100vh-14rem)]">
           <SidebarMenu>
             {conversations.map((conversation) => (
               <SidebarMenuItem key={conversation.id} className="mb-1">
