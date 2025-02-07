@@ -1,3 +1,4 @@
+
 import { HeroSection } from "@/components/landing/HeroSection"
 import { ChallengesSection } from "@/components/landing/ChallengesSection"
 import { MetricsSection } from "@/components/landing/MetricsSection"
