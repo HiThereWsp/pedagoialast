@@ -7,11 +7,30 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useConversationManagement } from "@/hooks/chat/useConversationManagement"
 
 const OfflineChatPage = () => {
   const isMobile = useIsMobile()
   const [firstName, setFirstName] = useState<string | null>(null)
   const { toast } = useToast()
+
+  const { data: { session } } = await supabase.auth.getSession()
+  const userId = session?.user?.id
+
+  const {
+    conversations,
+    currentConversationId,
+    setCurrentConversationId,
+    loadConversations,
+    createNewConversation,
+    deleteConversation
+  } = useConversationManagement(userId)
+
+  useEffect(() => {
+    if (userId) {
+      loadConversations()
+    }
+  }, [userId, loadConversations])
 
   useEffect(() => {
     const getProfile = async () => {
@@ -42,6 +61,20 @@ const OfflineChatPage = () => {
     getProfile()
   }, [toast])
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+    } catch (error) {
+      console.error('Error signing out:', error)
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la déconnexion."
+      })
+    }
+  }
+
   return (
     <>
       <SEO 
@@ -51,15 +84,20 @@ const OfflineChatPage = () => {
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-gradient-to-br from-gray-50 to-white">
           <AppSidebar 
-            conversations={[]}
-            onConversationSelect={() => {}}
-            onDeleteConversation={() => {}}
-            onLogout={() => {}}
+            conversations={conversations}
+            onConversationSelect={setCurrentConversationId}
+            currentConversationId={currentConversationId}
+            onDeleteConversation={deleteConversation}
+            onLogout={handleLogout}
             firstName={firstName}
+            onNewConversation={() => setCurrentConversationId(null)}
           />
           <main className="flex-1">
             <div className="container mx-auto h-screen p-4">
-              <OfflineChatUI />
+              <OfflineChatUI 
+                currentConversationId={currentConversationId}
+                onNewConversation={createNewConversation}
+              />
             </div>
           </main>
         </div>
@@ -69,3 +107,4 @@ const OfflineChatPage = () => {
 }
 
 export default OfflineChatPage
+

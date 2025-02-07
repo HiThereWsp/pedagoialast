@@ -9,10 +9,14 @@ import { useState, useEffect } from "react"
 import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { v4 as uuidv4 } from 'uuid'
 import { ChatMessage as ChatMessageComponent } from "@/components/chat/ChatMessage"
 
-export const OfflineChatUI = () => {
+interface OfflineChatUIProps {
+  currentConversationId?: string | null
+  onNewConversation: (message: string) => Promise<{ conversationId: string; title: string }>
+}
+
+export const OfflineChatUI = ({ currentConversationId, onNewConversation }: OfflineChatUIProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: 'assistant',
@@ -22,17 +26,16 @@ export const OfflineChatUI = () => {
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
-  const conversationId = uuidv4()
 
   const loadMessages = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      if (!session || !currentConversationId) return
 
       const { data, error } = await supabase
         .from('chats')
         .select('*')
-        .eq('conversation_id', conversationId)
+        .eq('conversation_id', currentConversationId)
         .order('created_at', { ascending: true })
 
       if (error) {
@@ -55,7 +58,7 @@ export const OfflineChatUI = () => {
 
   useEffect(() => {
     loadMessages()
-  }, [])
+  }, [currentConversationId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,6 +82,12 @@ export const OfflineChatUI = () => {
           description: "Vous devez être connecté pour envoyer des messages."
         })
         return
+      }
+
+      let conversationId = currentConversationId
+      if (!conversationId) {
+        const newConversation = await onNewConversation(userMessage.content)
+        conversationId = newConversation.conversationId
       }
 
       // Save user message
