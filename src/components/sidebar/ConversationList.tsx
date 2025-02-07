@@ -39,18 +39,20 @@ export function ConversationList({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <SidebarMenuButton 
-                      className="w-full justify-between group"
+                      className="w-full justify-between group hover:bg-gray-100 dark:hover:bg-gray-800"
                       onClick={() => onConversationSelect?.(conversation.id)}
                       data-active={currentConversationId === conversation.id}
                     >
                       <div className="flex items-center min-w-0 flex-1">
-                        <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
-                        <span className="truncate">{conversation.title}</span>
+                        <MessageSquare className="mr-2 h-4 w-4 text-[#9b87f5]" />
+                        <span className="truncate text-gray-700 dark:text-gray-200 group-hover:text-[#9b87f5] transition-colors">
+                          {conversation.title}
+                        </span>
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity group-data-[collapsible=icon]:hidden"
+                        className="h-6 w-6 ml-2 opacity-70 hover:opacity-100 transition-opacity"
                         onClick={(e) => handleDelete(e, conversation.id)}
                       >
                         <Trash2 className="h-4 w-4 text-red-500 hover:text-red-600" />

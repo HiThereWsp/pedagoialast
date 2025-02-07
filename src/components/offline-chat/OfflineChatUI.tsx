@@ -156,11 +156,11 @@ export const OfflineChatUI = ({ currentConversationId, onNewConversation }: Offl
 
   return (
     <div className="relative h-screen flex flex-col">
-      <div className="absolute inset-0 opacity-15 bg-gradient-to-br from-purple-50 to-blue-50">
+      <div className="absolute inset-0 opacity-15 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900">
         <Tiles rows={50} cols={8} tileSize="md" />
       </div>
 
-      <Card className="relative flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden">
+      <Card className="relative flex-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden">
         <ScrollArea className="h-[calc(100vh-120px)]">
           <div className="p-4 space-y-4">
             {messages.map((message, index) => (
@@ -175,13 +175,13 @@ export const OfflineChatUI = ({ currentConversationId, onNewConversation }: Offl
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Tapez votre message ici..."
-          className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg focus:ring-2 focus:ring-indigo-500/50 transition-all duration-300"
+          className="flex-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-muted shadow-lg focus:ring-2 focus:ring-[#9b87f5]/50 transition-all duration-300 text-gray-800 dark:text-gray-100"
           disabled={isLoading}
         />
         <Button 
           type="submit" 
           size="icon"
-          className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:scale-105"
+          className="bg-gradient-to-r from-[#9b87f5] to-[#8b5cf6] hover:from-[#8b5cf6] hover:to-[#7c3aed] text-white shadow-lg shadow-purple-500/20 transition-all duration-300 hover:scale-105"
           disabled={isLoading}
         >
           <Send className="w-4 h-4" />
