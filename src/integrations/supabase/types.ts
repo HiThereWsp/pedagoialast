@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           feedback_score: number | null
+          feedback_type: Database["public"]["Enums"]["feedback_type"] | null
           id: number
           lesson_plan_data: Json | null
           message: string
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           feedback_score?: number | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"] | null
           id?: never
           lesson_plan_data?: Json | null
           message: string
@@ -49,6 +51,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           feedback_score?: number | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"] | null
           id?: never
           lesson_plan_data?: Json | null
           message?: string
@@ -841,6 +844,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      feedback_type: "like" | "dislike"
       tool_type:
         | "differentiation"
         | "sequence"

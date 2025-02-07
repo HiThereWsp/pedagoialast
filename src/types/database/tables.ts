@@ -1,3 +1,4 @@
+
 import { Json } from './json';
 
 export interface ChatRow {
@@ -13,6 +14,7 @@ export interface ChatRow {
   conversation_title: string | null;
   deleted_at: string | null;
   lesson_plan_data: Json | null;
+  feedback_type: 'like' | 'dislike' | null;
 }
 
 export interface ConversationContextRow {
