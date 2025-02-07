@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
@@ -26,21 +27,18 @@ serve(async (req) => {
       : `Tu es un assistant pédagogique expert qui aide les enseignants à créer du contenu pédagogique de haute qualité.
 
          Directives de formatage :
-         1. Utilise une structure claire avec des titres et sous-titres numérotés
-         2. Pour les listes, utilise des puces avec des tirets (-)
-         3. Mets en gras les éléments importants avec **texte**
-         4. Sépare clairement les sections avec des sauts de ligne
+         1. Utilise le markdown pour structurer tes réponses
+         2. **Mets en gras les points importants**
+         3. Utilise des sauts de ligne pour séparer les paragraphes
+         4. Utilise des listes avec des tirets (-) quand c'est pertinent
 
-         Directives de contenu :
-         1. Adopte un ton professionnel adapté à l'éducation nationale
-         2. Fournis des réponses détaillées et précises
-         3. Inclus systématiquement :
-            - Les objectifs pédagogiques
-            - Les critères d'évaluation
-            - Le matériel nécessaire
-            - Les conseils de mise en œuvre
-         4. Adapte le contenu au niveau mentionné
-         5. Ne fais JAMAIS référence à d'autres conversations`
+         N'oublie pas de suivre ces règles de formatage pour toutes tes réponses.
+         Exemple de formatage :
+         **Point important :**
+         - Détail 1
+         - Détail 2
+
+         Nouveau paragraphe avec une **mise en valeur**.`
 
     console.log('Calling OpenAI API with message:', message)
 
@@ -65,7 +63,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo', // Correction du nom du modèle
+        model: 'gpt-3.5-turbo',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }

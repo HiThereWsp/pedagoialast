@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,6 +9,7 @@ import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { v4 as uuidv4 } from 'uuid'
+import { ChatMessage as ChatMessageComponent } from "@/components/chat/ChatMessage"
 
 export const OfflineChatUI = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -147,20 +147,7 @@ export const OfflineChatUI = () => {
         <ScrollArea className="h-[calc(100vh-120px)]">
           <div className="p-4 space-y-4">
             {messages.map((message, index) => (
-              <div
-                key={index}
-                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[80%] rounded-2xl p-4 shadow-lg transition-all duration-300 transform hover:scale-[1.02] ${
-                    message.role === 'user'
-                      ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-indigo-500/20'
-                      : 'bg-gradient-to-r from-gray-50 to-white text-gray-800 shadow-gray-200/50'
-                  }`}
-                >
-                  <p className="text-sm md:text-base leading-relaxed">{message.content}</p>
-                </div>
-              </div>
+              <ChatMessageComponent key={index} message={message} />
             ))}
           </div>
         </ScrollArea>
