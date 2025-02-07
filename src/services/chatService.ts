@@ -66,18 +66,24 @@ export const chatService = {
         return [];
       }
 
-      const formattedMessages: ChatMessage[] = data.map(msg => ({
-        role: msg.message_type as 'user' | 'assistant',
-        content: msg.message || '',
-        attachments: msg.attachments ? msg.attachments.map((attachment: any) => ({
-          url: attachment.url || '',
-          fileName: attachment.fileName || '',
-          fileType: attachment.fileType || '',
-          filePath: attachment.filePath || ''
-        })) : [],
-        isWebSearch: false,
-        id: msg.id // Ajout de l'ID pour le feedback
-      }));
+      const formattedMessages: ChatMessage[] = data.map(msg => {
+        const attachments = Array.isArray(msg.attachments) 
+          ? msg.attachments.map((attachment: any) => ({
+              url: attachment.url || '',
+              fileName: attachment.fileName || '',
+              fileType: attachment.fileType || '',
+              filePath: attachment.filePath || ''
+            }))
+          : [];
+
+        return {
+          role: msg.message_type as 'user' | 'assistant',
+          content: msg.message || '',
+          attachments,
+          isWebSearch: false,
+          id: msg.id
+        };
+      });
 
       console.log('[chatService] Formatted messages:', formattedMessages);
       return formattedMessages;

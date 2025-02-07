@@ -76,19 +76,22 @@ export const useChat = (userId: string | null) => {
         setCurrentConversationId(currentId)
       }
 
+      if (!currentId) {
+        console.error("[useChat] Failed to create or get conversation ID")
+        return
+      }
+
       console.log("[useChat] Sending message to AI")
       const aiResponse = await sendMessage(message, currentId, title, conversationContext, undefined, useWebSearch)
       
       if (aiResponse) {
         console.log("[useChat] Received AI response:", aiResponse)
         await updateContext(currentId, message, aiResponse)
+        await loadConversationMessages(currentId)
+        await loadConversations()
       } else {
         console.error("[useChat] No AI response received")
       }
-
-      console.log("[useChat] Reloading conversation messages")
-      await loadConversationMessages(currentId)
-      await loadConversations()
     } catch (error) {
       console.error("[useChat] Error in handleSendMessage:", error)
       throw error
