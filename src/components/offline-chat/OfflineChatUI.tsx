@@ -155,14 +155,14 @@ export const OfflineChatUI = ({ currentConversationId, onNewConversation }: Offl
   }
 
   return (
-    <div className="relative h-screen flex flex-col">
+    <div className="relative h-[calc(100vh-2rem)] flex flex-col mx-auto max-w-5xl">
       <div className="absolute inset-0 opacity-15 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900">
         <Tiles rows={50} cols={8} tileSize="md" />
       </div>
 
-      <Card className="relative flex-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden">
-        <ScrollArea className="h-[calc(100vh-120px)]">
-          <div className="p-4 space-y-4">
+      <Card className="relative flex-1 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden mx-4">
+        <ScrollArea className="h-[calc(100vh-8rem)]">
+          <div className="p-6 space-y-6">
             {messages.map((message, index) => (
               <ChatMessageComponent key={index} message={message} />
             ))}
@@ -170,7 +170,7 @@ export const OfflineChatUI = ({ currentConversationId, onNewConversation }: Offl
         </ScrollArea>
       </Card>
 
-      <form onSubmit={handleSubmit} className="relative p-4 flex gap-2">
+      <form onSubmit={handleSubmit} className="relative p-4 flex gap-3 mx-4 mt-4">
         <Input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
