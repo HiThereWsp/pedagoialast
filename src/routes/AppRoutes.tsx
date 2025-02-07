@@ -6,7 +6,6 @@ import Settings from '@/pages/Settings'
 import { ProtectedRoute } from './ProtectedRoute'
 import Login from '@/pages/Login'
 import Landing from '@/pages/Landing'
-import LandingPageA from '@/pages/LandingPageA'
 import ExercisePage from '@/pages/ExercisePage'
 import LessonPlanPage from '@/pages/LessonPlanPage'
 import ImageGenerationPage from '@/pages/ImageGenerationPage'
@@ -30,7 +29,6 @@ export default function AppRoutes() {
     <Routes>
       {/* Public routes */}
       <Route path="/" element={<Landing />} />
-      <Route path="/landingpageA" element={<LandingPageA />} />
       <Route path="/login" element={<Login />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/privacy" element={<Privacy />} />
