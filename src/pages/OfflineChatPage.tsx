@@ -12,10 +12,8 @@ import { useConversationManagement } from "@/hooks/chat/useConversationManagemen
 const OfflineChatPage = () => {
   const isMobile = useIsMobile()
   const [firstName, setFirstName] = useState<string | null>(null)
+  const [userId, setUserId] = useState<string | null>(null)
   const { toast } = useToast()
-
-  const { data: { session } } = await supabase.auth.getSession()
-  const userId = session?.user?.id
 
   const {
     conversations,
@@ -25,6 +23,15 @@ const OfflineChatPage = () => {
     createNewConversation,
     deleteConversation
   } = useConversationManagement(userId)
+
+  // Get initial session
+  useEffect(() => {
+    const getInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUserId(session?.user?.id || null)
+    }
+    getInitialSession()
+  }, [])
 
   useEffect(() => {
     if (userId) {
@@ -107,4 +114,3 @@ const OfflineChatPage = () => {
 }
 
 export default OfflineChatPage
-
