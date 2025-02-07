@@ -1,6 +1,8 @@
+
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 interface SidebarHeaderProps {
   firstName: string | null;
@@ -8,8 +10,10 @@ interface SidebarHeaderProps {
 }
 
 export function SidebarHeader({ firstName, onNewConversation }: SidebarHeaderProps) {
+  const isMobile = useIsMobile()
+
   return (
-    <div className="p-2 space-y-2">
+    <div className="p-2 space-y-2 md:mt-0 mt-14">
       <Tooltip>
         <TooltipTrigger asChild>
           <Button 
