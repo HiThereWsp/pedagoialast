@@ -22,20 +22,20 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
-        <SidebarProvider>
-          <MotionConfig reducedMotion="user">
-            <div className="flex min-h-screen w-full flex-col lg:flex-row">
+        <BrowserRouter>
+          <SidebarProvider>
+            <MotionConfig reducedMotion="user">
               <TooltipProvider>
-                <BrowserRouter>
+                <div className="flex min-h-screen w-full flex-col lg:flex-row">
                   <main className="flex-1 w-full px-4 lg:px-8 py-4 lg:py-8">
                     <AppRoutes />
                   </main>
                   <Toaster />
-                </BrowserRouter>
+                </div>
               </TooltipProvider>
-            </div>
-          </MotionConfig>
-        </SidebarProvider>
+            </MotionConfig>
+          </SidebarProvider>
+        </BrowserRouter>
       </HelmetProvider>
     </QueryClientProvider>
   )
