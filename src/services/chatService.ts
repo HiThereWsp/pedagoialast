@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { ChatMessage } from '@/types/chat';
 import { Json } from '@/types/database/json';
