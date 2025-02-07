@@ -42,8 +42,10 @@ export function ConversationList({
                     data-active={currentConversationId === conversation.id}
                   >
                     <div className="flex items-center min-w-0 flex-1">
-                      <MessageSquare className="mr-2 h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{conversation.title}</span>
+                      <MessageSquare className="mr-2 h-4 w-4 text-[#9b87f5]" />
+                      <span className="truncate text-muted-foreground group-hover:text-[#9b87f5] transition-colors">
+                        {conversation.title}
+                      </span>
                     </div>
                     <Button
                       variant="ghost"

@@ -8,16 +8,18 @@ import { useToast } from "@/hooks/use-toast"
 
 interface FeedbackButtonsProps {
   messageId: number
+  content: string
   onFeedback?: (type: 'like' | 'dislike') => void
 }
 
-export function FeedbackButtons({ messageId, onFeedback }: FeedbackButtonsProps) {
+export function FeedbackButtons({ messageId, content, onFeedback }: FeedbackButtonsProps) {
   const [feedbackType, setFeedbackType] = useState<'like' | 'dislike' | null>(null)
   const [isCopied, setIsCopied] = useState(false)
   const { toast } = useToast()
 
   const handleFeedback = async (type: 'like' | 'dislike') => {
     try {
+      console.log('[FeedbackButtons] Updating feedback:', { messageId, type })
       const { error } = await supabase
         .from('chats')
         .update({ feedback_type: type })
@@ -32,7 +34,7 @@ export function FeedbackButtons({ messageId, onFeedback }: FeedbackButtonsProps)
         description: type === 'like' ? "Merci pour votre retour positif !" : "Merci pour votre retour.",
       })
     } catch (error) {
-      console.error('Error updating feedback:', error)
+      console.error('[FeedbackButtons] Error updating feedback:', error)
       toast({
         variant: "destructive",
         description: "Une erreur est survenue lors de l'enregistrement de votre retour.",
@@ -40,9 +42,9 @@ export function FeedbackButtons({ messageId, onFeedback }: FeedbackButtonsProps)
     }
   }
 
-  const handleCopy = async (text: string) => {
+  const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(content)
       setIsCopied(true)
       toast({
         description: "Le message a été copié dans le presse-papier.",
@@ -50,7 +52,7 @@ export function FeedbackButtons({ messageId, onFeedback }: FeedbackButtonsProps)
 
       setTimeout(() => setIsCopied(false), 2000)
     } catch (error) {
-      console.error('Error copying text:', error)
+      console.error('[FeedbackButtons] Error copying text:', error)
       toast({
         variant: "destructive",
         description: "Une erreur est survenue lors de la copie du message.",
@@ -64,8 +66,8 @@ export function FeedbackButtons({ messageId, onFeedback }: FeedbackButtonsProps)
         variant="ghost"
         size="sm"
         className={cn(
-          "text-gray-500 hover:text-green-500",
-          feedbackType === 'like' && "text-green-500"
+          "text-muted-foreground hover:text-[#9b87f5]",
+          feedbackType === 'like' && "text-[#9b87f5]"
         )}
         onClick={() => handleFeedback('like')}
       >
@@ -76,7 +78,7 @@ export function FeedbackButtons({ messageId, onFeedback }: FeedbackButtonsProps)
         variant="ghost"
         size="sm"
         className={cn(
-          "text-gray-500 hover:text-red-500",
+          "text-muted-foreground hover:text-red-500",
           feedbackType === 'dislike' && "text-red-500"
         )}
         onClick={() => handleFeedback('dislike')}
@@ -88,10 +90,10 @@ export function FeedbackButtons({ messageId, onFeedback }: FeedbackButtonsProps)
         variant="ghost"
         size="sm"
         className={cn(
-          "text-gray-500 hover:text-blue-500",
-          isCopied && "text-blue-500"
+          "text-muted-foreground hover:text-[#9b87f5]",
+          isCopied && "text-[#9b87f5]"
         )}
-        onClick={() => handleCopy('text')}
+        onClick={handleCopy}
       >
         <Copy className="h-4 w-4" />
         <span className="sr-only">Copier</span>

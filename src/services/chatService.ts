@@ -66,29 +66,18 @@ export const chatService = {
         return [];
       }
 
-      // Transform the data to match ChatMessage format
-      const formattedMessages: ChatMessage[] = data.map(msg => {
-        console.log('[chatService] Processing message:', msg);
-        
-        // Safely handle attachments
-        let attachments: ChatMessage['attachments'] = [];
-        
-        if (msg.attachments && Array.isArray(msg.attachments)) {
-          attachments = msg.attachments.map((attachment: any) => ({
-            url: attachment.url || '',
-            fileName: attachment.fileName || '',
-            fileType: attachment.fileType || '',
-            filePath: attachment.filePath || ''
-          }));
-        }
-
-        return {
-          role: msg.message_type as 'user' | 'assistant',
-          content: msg.message || '',
-          attachments,
-          isWebSearch: false
-        };
-      });
+      const formattedMessages: ChatMessage[] = data.map(msg => ({
+        role: msg.message_type as 'user' | 'assistant',
+        content: msg.message || '',
+        attachments: msg.attachments ? msg.attachments.map((attachment: any) => ({
+          url: attachment.url || '',
+          fileName: attachment.fileName || '',
+          fileType: attachment.fileType || '',
+          filePath: attachment.filePath || ''
+        })) : [],
+        isWebSearch: false,
+        id: msg.id // Ajout de l'ID pour le feedback
+      }));
 
       console.log('[chatService] Formatted messages:', formattedMessages);
       return formattedMessages;
