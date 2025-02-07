@@ -20,9 +20,9 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
-        <BrowserRouter>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <HelmetProvider>
           <SidebarProvider>
             <MotionConfig reducedMotion="user">
               <TooltipProvider>
@@ -35,10 +35,11 @@ function App() {
               </TooltipProvider>
             </MotionConfig>
           </SidebarProvider>
-        </BrowserRouter>
-      </HelmetProvider>
-    </QueryClientProvider>
+        </HelmetProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   )
 }
 
 export default App
+
