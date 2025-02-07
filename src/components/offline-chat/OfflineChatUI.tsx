@@ -144,7 +144,7 @@ export const OfflineChatUI = () => {
       </div>
 
       <Card className="relative flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden">
-        <ScrollArea className="h-full">
+        <ScrollArea className="h-[calc(100vh-120px)]">
           <div className="p-4 space-y-4">
             {messages.map((message, index) => (
               <div
@@ -152,13 +152,13 @@ export const OfflineChatUI = () => {
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl p-4 shadow-sm transition-all duration-200 ${
+                  className={`max-w-[80%] rounded-2xl p-4 shadow-lg transition-all duration-300 transform hover:scale-[1.02] ${
                     message.role === 'user'
-                      ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white'
-                      : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800'
+                      ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-indigo-500/20'
+                      : 'bg-gradient-to-r from-gray-50 to-white text-gray-800 shadow-gray-200/50'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <p className="text-sm md:text-base leading-relaxed">{message.content}</p>
                 </div>
               </div>
             ))}
@@ -171,13 +171,13 @@ export const OfflineChatUI = () => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Tapez votre message ici..."
-          className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-md focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
+          className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg focus:ring-2 focus:ring-indigo-500/50 transition-all duration-300"
           disabled={isLoading}
         />
         <Button 
           type="submit" 
           size="icon"
-          className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-md transition-all duration-200"
+          className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white shadow-lg shadow-indigo-500/20 transition-all duration-300 hover:scale-105"
           disabled={isLoading}
         >
           <Send className="w-4 h-4" />
