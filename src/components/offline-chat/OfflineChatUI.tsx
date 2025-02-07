@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -42,7 +43,8 @@ export const OfflineChatUI = () => {
       if (data) {
         const formattedMessages: ChatMessage[] = data.map(msg => ({
           role: msg.message_type as 'user' | 'assistant',
-          content: msg.message
+          content: msg.message,
+          id: msg.id
         }))
         setMessages(formattedMessages)
       }
@@ -80,7 +82,7 @@ export const OfflineChatUI = () => {
       }
 
       // Save user message
-      const { error: insertError } = await supabase
+      const { data: userMessageData, error: insertError } = await supabase
         .from('chats')
         .insert({
           message: userMessage.content,
@@ -88,6 +90,7 @@ export const OfflineChatUI = () => {
           conversation_id: conversationId,
           message_type: 'user'
         })
+        .select()
 
       if (insertError) {
         console.error("Error saving message:", insertError)
@@ -109,20 +112,25 @@ export const OfflineChatUI = () => {
         throw aiError
       }
 
-      const aiResponse: ChatMessage = {
-        role: 'assistant',
-        content: aiResponseData.response || "Désolé, je n'ai pas pu traiter votre demande."
-      }
-
-      // Save AI response
-      await supabase
+      const { data: assistantMessageData, error: assistantError } = await supabase
         .from('chats')
         .insert({
-          message: aiResponse.content,
+          message: aiResponseData.response || "Désolé, je n'ai pas pu traiter votre demande.",
           user_id: session.user.id,
           conversation_id: conversationId,
           message_type: 'assistant'
         })
+        .select()
+
+      if (assistantError) {
+        throw assistantError
+      }
+
+      const aiResponse: ChatMessage = {
+        role: 'assistant',
+        content: aiResponseData.response || "Désolé, je n'ai pas pu traiter votre demande.",
+        id: assistantMessageData?.[0]?.id
+      }
 
       setMessages(prev => [...prev, aiResponse])
     } catch (error) {

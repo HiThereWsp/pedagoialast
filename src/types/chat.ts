@@ -1,3 +1,4 @@
+
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -8,4 +9,5 @@ export interface ChatMessage {
     filePath: string;
   }>;
   isWebSearch?: boolean;
+  id?: number;
 }
