@@ -33,7 +33,7 @@ export default function Login() {
           } else {
             console.log("Magic link verified successfully!");
             // Redirect the user to the dashboard or another page
-            // window.location.href = "/home"; // Adjust redirect as needed
+            window.location.href = "/home"; // Adjust redirect as needed
           }
         } catch (err) {
           console.error("Unexpected error during verification:", err);
