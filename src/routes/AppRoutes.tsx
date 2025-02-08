@@ -22,6 +22,7 @@ import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import PricingPage from '@/pages/PricingPage'
 import OfflineChatPage from '@/pages/OfflineChatPage'
+import ConfirmEmail from "@/pages/ConfirmEmail.tsx";
 
 export default function AppRoutes() {
   return (
@@ -29,6 +30,7 @@ export default function AppRoutes() {
       {/* Public routes */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+        <Route path="/confirm-email" element={<ConfirmEmail />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
