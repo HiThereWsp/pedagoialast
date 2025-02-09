@@ -12,17 +12,45 @@ export default function Login() {
   const location = useLocation()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
+  useEffect(() => {
+    const verifyMagicLink = async () => {
+      // Get the current URL's query parameters
+      const queryParams = new URLSearchParams(window.location.search);
+      const token = queryParams.get("token_hash"); // Extract the token value
+      console.log("Token ^:", token);
+      if (token) {
+        console.log("Token:", token);
+
+        try {
+          // Verify the OTP using Supabase
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: "magiclink", // Adjust this based on your use case
+          });
+
+          if (error) {
+            console.error("Error verifying magic link:", error.message);
+          } else {
+            console.log("Magic link verified successfully!");
+            // Redirect the user to the dashboard or another page
+            window.location.href = "/home"; // Adjust redirect as needed
+          }
+        } catch (err) {
+          console.error("Unexpected error during verification:", err);
+        }
+      } else {
+        console.log("No token found in the URL.");
+      }
+    };
+
+    verifyMagicLink();
+  }, []);
 
   useEffect(() => {
     const checkUser = async () => {
       try {
         setIsLoading(true)
         console.log("Checking session...")
-        
-        // Clear any stale session data
-        await supabase.auth.signOut()
-        localStorage.removeItem('sb-jpelncawdaounkidvymu-auth-token')
-        
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
