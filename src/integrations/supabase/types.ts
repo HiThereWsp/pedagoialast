@@ -195,6 +195,45 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_plan_cache: {
+        Row: {
+          additional_instructions: string | null
+          cache_key: string | null
+          class_level: string
+          created_at: string
+          id: string
+          lesson_plan: string
+          subject: string | null
+          text: string | null
+          total_sessions: number
+          usage_count: number | null
+        }
+        Insert: {
+          additional_instructions?: string | null
+          cache_key?: string | null
+          class_level: string
+          created_at?: string
+          id?: string
+          lesson_plan: string
+          subject?: string | null
+          text?: string | null
+          total_sessions: number
+          usage_count?: number | null
+        }
+        Update: {
+          additional_instructions?: string | null
+          cache_key?: string | null
+          class_level?: string
+          created_at?: string
+          id?: string
+          lesson_plan?: string
+          subject?: string | null
+          text?: string | null
+          total_sessions?: number
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       pdf_documents: {
         Row: {
           created_at: string

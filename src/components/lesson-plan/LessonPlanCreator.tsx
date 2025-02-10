@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
@@ -9,6 +10,8 @@ import { Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
 import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function LessonPlanCreator() {
   const { toast } = useToast();
@@ -22,12 +25,38 @@ export function LessonPlanCreator() {
     text: '',
     lessonPlan: ''
   });
+  const [streamedContent, setStreamedContent] = useState('');
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+  };
+
+  const processStream = async (response: Response) => {
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    let content = '';
+
+    if (!reader) {
+      throw new Error('No reader available');
+    }
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        content += chunk;
+        setStreamedContent(content);
+      }
+    } finally {
+      reader.releaseLock();
+    }
+
+    return content;
   };
 
   const handleGenerate = async () => {
@@ -40,6 +69,7 @@ export function LessonPlanCreator() {
     }
 
     setIsLoading(true);
+    setStreamedContent('');
     const startTime = performance.now();
 
     try {
@@ -57,14 +87,27 @@ export function LessonPlanCreator() {
         throw functionError;
       }
 
+      let finalContent;
+      if (functionData.cached) {
+        // Si c'est en cache, on l'affiche directement
+        finalContent = functionData.lessonPlan;
+        setStreamedContent(finalContent);
+        toast({
+          description: "Séquence récupérée du cache !",
+        });
+      } else {
+        // Sinon on traite le stream
+        finalContent = await processStream(functionData);
+      }
+
       const generationTime = Math.round(performance.now() - startTime);
       
       setFormData(prev => ({
         ...prev,
-        lessonPlan: functionData.lessonPlan
+        lessonPlan: finalContent
       }));
 
-      await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
+      await logToolUsage('lesson_plan', 'generate', finalContent.length, generationTime);
 
       toast({
         description: "Votre séquence a été générée avec succès !",
@@ -79,6 +122,18 @@ export function LessonPlanCreator() {
       setIsLoading(false);
     }
   };
+
+  const LoadingSkeleton = () => (
+    <Card className="p-6 space-y-4">
+      <Skeleton className="h-8 w-3/4" />
+      <Skeleton className="h-4 w-1/2" />
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="h-4 w-4/6" />
+      </div>
+    </Card>
+  );
 
   return (
     <div className="space-y-6">
@@ -111,7 +166,11 @@ export function LessonPlanCreator() {
           </div>
         </div>
         <div className="xl:sticky xl:top-8 space-y-6">
-          <ResultDisplay lessonPlan={formData.lessonPlan} />
+          {isLoading && !streamedContent ? (
+            <LoadingSkeleton />
+          ) : (
+            <ResultDisplay lessonPlan={streamedContent || formData.lessonPlan} />
+          )}
         </div>
       </div>
     </div>

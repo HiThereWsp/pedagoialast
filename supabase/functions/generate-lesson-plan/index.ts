@@ -1,5 +1,7 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,25 +32,75 @@ serve(async (req) => {
       )
     }
 
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') as string
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') as string
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    // Generate cache key
+    const cacheKeyInputs = [
+      classLevel,
+      totalSessions.toString(),
+      subject || '',
+      text || '',
+      additionalInstructions || ''
+    ].join('')
+    const cacheKey = await crypto.subtle.digest(
+      "MD5",
+      new TextEncoder().encode(cacheKeyInputs)
+    ).then(buffer => 
+      Array.from(new Uint8Array(buffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('')
+    )
+
+    // Check cache
+    console.log('Checking cache for key:', cacheKey)
+    const { data: cachedPlan } = await supabase
+      .from('lesson_plan_cache')
+      .select('lesson_plan')
+      .eq('cache_key', cacheKey)
+      .single()
+
+    if (cachedPlan) {
+      console.log('Cache hit!')
+      // Increment usage count
+      await supabase
+        .from('lesson_plan_cache')
+        .update({ usage_count: cachedPlan.usage_count + 1 })
+        .eq('cache_key', cacheKey)
+
+      return new Response(
+        JSON.stringify({ 
+          lessonPlan: cachedPlan.lesson_plan,
+          cached: true,
+          metrics: {
+            contentLength: cachedPlan.lesson_plan.length
+          }
+        }), 
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
+    }
+
+    console.log('Cache miss, generating new lesson plan')
+
     // Construire le prompt de base
     let prompt = `En tant qu'expert en pédagogie à l'éducation nationale, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.`
 
-    // Ajouter le sujet s'il est fourni
     if (subject) {
       prompt += `\nLe sujet est: ${subject}.`
     }
 
-    // Ajouter le texte s'il est fourni
     if (text) {
       prompt += `\nBasé sur ce texte: ${text}.`
     }
 
-    // Ajouter les instructions supplémentaires si fournies
     if (additionalInstructions) {
       prompt += `\nInstructions supplémentaires: ${additionalInstructions}.`
     }
 
-    // Ajouter le format de réponse souhaité
     prompt += `
 Format de la réponse souhaitée:
 1. Objectifs d'apprentissage
@@ -73,7 +125,7 @@ Format de la réponse souhaitée:
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
@@ -84,6 +136,7 @@ Format de la réponse souhaitée:
             content: prompt
           }
         ],
+        stream: true,
         temperature: 0.7,
       }),
     })
@@ -94,20 +147,72 @@ Format de la réponse souhaitée:
       throw new Error(`OpenAI API error: ${response.statusText}`)
     }
 
-    const data = await response.json()
-    const lessonPlan = data.choices[0].message.content
+    // Set up streaming response
+    const encoder = new TextEncoder()
+    const decoder = new TextDecoder()
+    const reader = response.body?.getReader()
+    const stream = new ReadableStream({
+      async start(controller) {
+        let fullResponse = ''
+        try {
+          if (!reader) throw new Error('No reader available')
+          
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
 
-    return new Response(
-      JSON.stringify({ 
-        lessonPlan,
-        metrics: {
-          contentLength: lessonPlan.length
+            const chunk = decoder.decode(value)
+            const lines = chunk.split('\n')
+            
+            for (const line of lines) {
+              if (line.trim() === '') continue
+              if (line.trim() === 'data: [DONE]') continue
+
+              try {
+                const json = JSON.parse(line.replace(/^data: /, ''))
+                if (json.choices[0].delta?.content) {
+                  const text = json.choices[0].delta.content
+                  fullResponse += text
+                  controller.enqueue(encoder.encode(text))
+                }
+              } catch (error) {
+                console.error('Error parsing chunk:', error)
+              }
+            }
+          }
+
+          // Store in cache once complete
+          if (fullResponse) {
+            await supabase
+              .from('lesson_plan_cache')
+              .insert({
+                class_level: classLevel,
+                total_sessions: totalSessions,
+                subject,
+                text,
+                additional_instructions: additionalInstructions,
+                lesson_plan: fullResponse,
+              })
+            console.log('Stored new lesson plan in cache')
+          }
+        } catch (error) {
+          console.error('Stream processing error:', error)
+          controller.error(error)
+        } finally {
+          controller.close()
         }
-      }), 
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
-    )
+    })
+
+    return new Response(stream, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      }
+    })
+
   } catch (error) {
     console.error('Error in generate-lesson-plan function:', error)
     return new Response(
