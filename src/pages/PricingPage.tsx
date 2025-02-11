@@ -1,30 +1,21 @@
 
-import { Check } from "lucide-react"
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { QualityFeatures } from "@/components/pricing/QualityFeatures"
-import { handleSubscription } from "@/utils/subscription"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 
 const PricingPage = () => {
-  // Ce useEffect permet de tracker quand un utilisateur visite la page de pricing
   useEffect(() => {
     pricingEvents.viewPricing()
   }, [])
 
-  // Cette fonction gère l'abonnement mensuel et tracke le choix du plan
   const handleMonthlySubscription = () => {
-    // Envoie un événement à PostHog pour indiquer la sélection du plan premium
     pricingEvents.selectPlan('premium')
-    // Redirige vers la page de paiement Stripe
     window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
   }
 
-  // Cette fonction gère l'abonnement annuel et tracke le choix du plan
   const handleYearlySubscription = () => {
-    // Envoie un événement à PostHog pour indiquer la sélection du plan premium
     pricingEvents.selectPlan('premium')
-    // Redirige vers la page de paiement Stripe
     window.location.href = 'https://buy.stripe.com/fZe03i3u20fHdxe4gj'
   }
 
