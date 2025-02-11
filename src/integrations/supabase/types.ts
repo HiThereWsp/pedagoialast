@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           feedback_score: number | null
+          feedback_type: Database["public"]["Enums"]["feedback_type"] | null
           id: number
           lesson_plan_data: Json | null
           message: string
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           feedback_score?: number | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"] | null
           id?: never
           lesson_plan_data?: Json | null
           message: string
@@ -49,6 +51,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           feedback_score?: number | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"] | null
           id?: never
           lesson_plan_data?: Json | null
           message?: string
@@ -189,6 +192,45 @@ export type Database = {
           monthly_generation_count?: number | null
           prompt?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      lesson_plan_cache: {
+        Row: {
+          additional_instructions: string | null
+          cache_key: string | null
+          class_level: string
+          created_at: string
+          id: string
+          lesson_plan: string
+          subject: string | null
+          text: string | null
+          total_sessions: number
+          usage_count: number | null
+        }
+        Insert: {
+          additional_instructions?: string | null
+          cache_key?: string | null
+          class_level: string
+          created_at?: string
+          id?: string
+          lesson_plan: string
+          subject?: string | null
+          text?: string | null
+          total_sessions: number
+          usage_count?: number | null
+        }
+        Update: {
+          additional_instructions?: string | null
+          cache_key?: string | null
+          class_level?: string
+          created_at?: string
+          id?: string
+          lesson_plan?: string
+          subject?: string | null
+          text?: string | null
+          total_sessions?: number
+          usage_count?: number | null
         }
         Relationships: []
       }
@@ -841,6 +883,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      feedback_type: "like" | "dislike"
       tool_type:
         | "differentiation"
         | "sequence"

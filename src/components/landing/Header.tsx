@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -36,8 +37,11 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
-            <img src="/favicon.svg" alt="PedagoIA Logo" className="w-6 h-6 sm:w-8 sm:h-8" />
-            <span className="text-lg sm:text-xl font-semibold">PedagoIA</span>
+            <img 
+              src="/lovable-uploads/efb9f5d8-aaf9-42ea-853a-4ca24bf0469d.png" 
+              alt="PedagoIA Logo" 
+              className="h-10 sm:h-12" 
+            />
           </div>
           <div>
             <Button 
