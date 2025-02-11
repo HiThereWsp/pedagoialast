@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -139,20 +140,9 @@ export const OfflineChatUI = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-3rem)] flex flex-col overflow-hidden gap-4">
+    <div className="h-[calc(100vh-6rem)] flex flex-col overflow-hidden gap-2">
       <div className="absolute inset-0 opacity-15 bg-gradient-to-br from-purple-50 to-blue-50">
         <Tiles rows={50} cols={8} tileSize="md" />
-      </div>
-
-      <div className="relative flex justify-between items-center">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/home')}
-          className="flex items-center gap-2"
-        >
-          <Home className="h-4 w-4" />
-          Accueil
-        </Button>
       </div>
 
       <Card className="relative flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden min-h-0">
@@ -178,23 +168,33 @@ export const OfflineChatUI = () => {
         </ScrollArea>
       </Card>
 
-      <form onSubmit={handleSubmit} className="relative flex gap-2">
-        <Input
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          placeholder="Tapez votre message ici..."
-          className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-md focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
-          disabled={isLoading}
-        />
+      <div className="relative flex items-center gap-2">
         <Button 
-          type="submit" 
-          size="icon"
-          className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-md transition-all duration-200"
-          disabled={isLoading}
+          variant="ghost" 
+          onClick={() => navigate('/home')}
+          className="flex items-center gap-2 h-10"
         >
-          <Send className="w-4 h-4" />
+          <Home className="h-4 w-4" />
+          Accueil
         </Button>
-      </form>
+        <form onSubmit={handleSubmit} className="flex-1 flex gap-2">
+          <Input
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Tapez votre message ici..."
+            className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-md focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
+            disabled={isLoading}
+          />
+          <Button 
+            type="submit" 
+            size="icon"
+            className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-md transition-all duration-200"
+            disabled={isLoading}
+          >
+            <Send className="w-4 h-4" />
+          </Button>
+        </form>
+      </div>
     </div>
   )
 }
