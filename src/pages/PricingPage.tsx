@@ -1,5 +1,6 @@
 
 import { PricingCard } from "@/components/pricing/PricingCard"
+import { PricingFormDialog } from "@/components/pricing/PricingFormDialog"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 
@@ -73,7 +74,7 @@ const PricingPage = () => {
               "Un canal support dédié"
             ]}
             ctaText="Obtenir un tarif sur mesure"
-            onSubscribe={() => window.location.href = 'mailto:contact@pedagogia.io'}
+            CustomCTA={<PricingFormDialog triggerText="Obtenir un tarif sur mesure" />}
           />
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
