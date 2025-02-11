@@ -25,7 +25,7 @@ const PricingPage = () => {
     // Envoie un événement à PostHog pour indiquer la sélection du plan premium
     pricingEvents.selectPlan('premium')
     // Redirige vers la page de paiement Stripe
-    window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
+    window.location.href = 'https://buy.stripe.com/fZe03i3u20fHdxe4gj'
   }
 
   return (
