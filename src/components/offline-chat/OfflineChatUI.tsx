@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -137,7 +138,7 @@ export const OfflineChatUI = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col overflow-hidden gap-2">
+    <div className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden gap-2">
       <div className="absolute inset-0 opacity-15 bg-gradient-to-br from-purple-50 to-blue-50">
         <Tiles rows={50} cols={8} tileSize="md" />
       </div>
