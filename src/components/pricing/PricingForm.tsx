@@ -38,11 +38,11 @@ export const PricingForm = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      const response = await fetch('${process.env.VITE_SUPABASE_URL}/functions/v1/send-emails', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-emails`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.VITE_SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify(formData)
       })
