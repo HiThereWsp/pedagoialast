@@ -6,7 +6,7 @@ export const WelcomeBanner = () => {
         <img 
           src="/lovable-uploads/e646be0d-3564-4f7d-bcc8-bff1b74dc554.png" 
           alt="PedagoIA Logo" 
-          className="h-8"
+          className="h-10 sm:h-12"
         />
       </div>
       <p className="text-xl text-gray-800">

@@ -40,7 +40,7 @@ export function Header() {
             <img 
               src="/lovable-uploads/e646be0d-3564-4f7d-bcc8-bff1b74dc554.png" 
               alt="PedagoIA Logo" 
-              className="h-6 sm:h-8" 
+              className="h-10 sm:h-12" 
             />
           </div>
           <div>
