@@ -1,3 +1,4 @@
+
 import { Check } from "lucide-react"
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { QualityFeatures } from "@/components/pricing/QualityFeatures"
@@ -15,16 +16,16 @@ const PricingPage = () => {
   const handleMonthlySubscription = () => {
     // Envoie un événement à PostHog pour indiquer la sélection du plan premium
     pricingEvents.selectPlan('premium')
-    // Gère la logique d'abonnement avec le prix spécifique au plan mensuel
-    handleSubscription('price_1QYUKDIqXQKnGj4mKGx80HJP')
+    // Redirige vers la page de paiement Stripe
+    window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
   }
 
   // Cette fonction gère l'abonnement annuel et tracke le choix du plan
   const handleYearlySubscription = () => {
     // Envoie un événement à PostHog pour indiquer la sélection du plan premium
     pricingEvents.selectPlan('premium')
-    // Gère la logique d'abonnement avec le prix spécifique au plan annuel
-    handleSubscription('price_1QYUKAIqXQKnGj4meN7G9nPH')
+    // Redirige vers la page de paiement Stripe
+    window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
   }
 
   return (
