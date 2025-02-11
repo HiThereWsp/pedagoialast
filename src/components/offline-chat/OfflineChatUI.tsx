@@ -138,12 +138,12 @@ export const OfflineChatUI = () => {
   }
 
   return (
-    <div className="relative h-screen flex flex-col">
+    <div className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden gap-2">
       <div className="absolute inset-0 opacity-15 bg-gradient-to-br from-purple-50 to-blue-50">
         <Tiles rows={50} cols={8} tileSize="md" />
       </div>
 
-      <Card className="relative flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden">
+      <Card className="relative flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden min-h-0">
         <ScrollArea className="h-full">
           <div className="p-4 space-y-4">
             {messages.map((message, index) => (
@@ -152,7 +152,7 @@ export const OfflineChatUI = () => {
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl p-4 shadow-sm transition-all duration-200 ${
+                  className={`max-w-[80%] rounded-2xl p-3 shadow-sm transition-all duration-200 ${
                     message.role === 'user'
                       ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white'
                       : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800'
@@ -166,7 +166,7 @@ export const OfflineChatUI = () => {
         </ScrollArea>
       </Card>
 
-      <form onSubmit={handleSubmit} className="relative p-4 flex gap-2">
+      <form onSubmit={handleSubmit} className="relative flex gap-2">
         <Input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}

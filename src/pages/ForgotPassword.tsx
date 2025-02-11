@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SEO } from "@/components/SEO"
 import { useToast } from "@/hooks/use-toast"
 import { Link } from "react-router-dom"
-import {ForgotPasswordForm} from "@/components/landing/auth/ForgotPassowrdForm";
+import { ForgotPasswordForm } from "@/components/landing/auth/ForgotPassowrdForm";
 
 export default function ForgotPassword() {
   const navigate = useNavigate()
@@ -14,11 +14,11 @@ export default function ForgotPassword() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [tokenError, setTokenError] = useState(false)
+  
   useEffect(() => {
     const verifyMagicLink = async () => {
-      // Get the current URL's hash and query parameters
       const queryParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.slice(1)); // To get the values after the #
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
 
       const accessToken = hashParams.get("access_token");
       const refreshToken = hashParams.get("refresh_token");
@@ -26,13 +26,11 @@ export default function ForgotPassword() {
       const error_code = hashParams.get("error_code");
       const errorDescription = hashParams.get("error_description");
 
-
       if (accessToken && refreshToken) {
         console.log("Access Token:", accessToken);
         console.log("Refresh Token:", refreshToken);
 
         try {
-          // Set the session with the access and refresh tokens
           const { data: setSessionData, error: setSessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -43,18 +41,15 @@ export default function ForgotPassword() {
           } else {
             setIsLoading(false)
             console.log("Session set successfully:", setSessionData);
-            // Redirect or perform actions after setting session
-            // window.location.href = "/dashboard"; // Adjust redirect as needed
           }
         } catch (err) {
           console.error("Unexpected error during session setting:", err);
         }
-      }else if(error_code){
+      } else if (error_code) {
         setIsLoading(false)
         setTokenError(true)
         console.log("No access token or refresh token found in the URL.");
-      }
-      else {
+      } else {
         console.log("No access token or refresh token found in the URL.");
       }
     };
@@ -63,27 +58,44 @@ export default function ForgotPassword() {
   }, []);
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <img 
+            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+            alt="PedagoIA Logo" 
+            className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
+          />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
       <SEO 
-        title="Connexion | PedagoIA - Assistant pédagogique intelligent"
-        description="Connectez-vous à votre compte PedagoIA pour accéder à votre assistant pédagogique personnel et optimiser votre enseignement."
+        title="Mot de passe oublié | PedagoIA - Assistant pédagogique intelligent"
+        description="Réinitialisez votre mot de passe PedagoIA pour récupérer l'accès à votre compte."
       />
       <div className="flex min-h-screen flex-col items-center justify-between bg-background">
         <div className="w-full flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-          <Card className="w-full max-w-md">
-            <CardContent className="pt-6">
-             <ForgotPasswordForm />
-            </CardContent>
-          </Card>
+          <div className="w-full max-w-md space-y-8">
+            <div className="text-center">
+              <img 
+                src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+                alt="PedagoIA Logo" 
+                className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
+              />
+            </div>
+            <Card className="w-full max-w-md">
+              <CardContent className="pt-6">
+                <ForgotPasswordForm />
+              </CardContent>
+            </Card>
+          </div>
         </div>
         
-        {/* Footer */}
         <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-14 items-center justify-between">
             <p className="text-sm text-muted-foreground">

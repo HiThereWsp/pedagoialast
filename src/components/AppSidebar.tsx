@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
@@ -51,7 +52,7 @@ export function AppSidebar({
       />
       <aside
         className={cn(
-          "fixed left-0 top-0 z-30 flex h-full flex-col border-r bg-background transition-all duration-300 md:relative md:translate-x-0",
+          "fixed left-0 top-0 z-30 flex h-full flex-col bg-[#f0effb] transition-all duration-300 md:relative md:translate-x-0",
           isCollapsed ? "w-0 md:w-0 opacity-0" : "w-64",
           !isMobileOpen && "-translate-x-full"
         )}

@@ -9,11 +9,16 @@ if (typeof window !== 'undefined') { // Check for browser environment
       api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
       autocapture: false,
       persistence: 'localStorage',
-      capture_pageview: true,
-      capture_pageleave: true,
+      capture_pageview: false,
+      capture_pageleave: false,
       disable_session_recording: true,
       cross_subdomain_cookie: false,
-      enable_recording_console_log: true,
+      enable_recording_console_log: false,
+      request_batching: true,
+      bootstrap: {
+        distinctID: 'anonymous',
+        isIdentifiedID: false,
+      }
     }
   )
 

@@ -1,107 +1,87 @@
-import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client.ts";
-import { FunctionsHttpError, FunctionsRelayError, FunctionsFetchError } from "@supabase/supabase-js"
 
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 
 export default function ConfirmEmail() {
-  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const [auth, setAuth] = useState({
-    token: "",
-    type: "",
-    redirect_to: "",
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const token = searchParams.get("token_hash");
-    const type = searchParams.get("type");
-    const redirect_to = searchParams.get("redirect_to") || "/home";
+    const verifyOTP = async () => {
+      try {
+        const searchParams = new URLSearchParams(window.location.search);
+        const token = searchParams.get("token_hash");
+        const typeParam = searchParams.get("type");
+        const type = typeParam as "signup" | "email" | "magiclink" | "invite" | "recovery";
 
-    if (token && type) {
-      setAuth({ token, type, redirect_to });
-    }
-  }, [searchParams]);
-
-  const handleRedirect = async () => {
-    if (!auth.token || !auth.type) return;
-
-    setIsLoading(true);
-    setErrorMessage("");
-
-    try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        token_hash: auth.token,
-        type: auth.type,
-      });
-
-      if (error) {
-        console.error("Verification failed:", error.message);
-        setErrorMessage("Something went wrong. Please try again.");
-      } else {
-        console.log("Verification successful:", data);
-      }
-
-      const { data: session } = await supabase.auth.getSession();
-
-      if (session) {
-        if(auth.type === "signup") {
-          const {data, error} =  await supabase.functions.invoke("send-emails", {
-            body: {
-              type: 'welcome',
-              email: session?.user?.email
-
-            }
-          })
-          if (error instanceof FunctionsHttpError) {
-            const errorMessage = await error.context.json()
-            console.log('Function returned an error', errorMessage)
-          } else if (error instanceof FunctionsRelayError) {
-            console.log('Relay error:', error.message)
-          } else if (error instanceof FunctionsFetchError) {
-            console.log('Fetch error:', error.message)
-          }
-
-
+        if (!token || !type) {
+          toast({
+            variant: "destructive",
+            title: "Lien invalide",
+            description: "Le lien de confirmation est invalide ou a expiré.",
+          });
+          navigate("/login");
+          return;
         }
-        if(session && auth.type == 'magiclink' || auth.type == 'signup') {
+
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: token,
+          type,
+        });
+
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Erreur de confirmation",
+            description: "Une erreur est survenue lors de la confirmation de votre email.",
+          });
+          navigate("/login");
+          return;
+        }
+
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (session?.session) {
+          toast({
+            title: "Email confirmé",
+            description: "Votre email a été confirmé avec succès.",
+          });
           navigate("/home");
         }
-        if (session && auth.type == 'recovery') {
-          navigate("/reset-password");
-        }
+      } catch (error) {
+        console.error("Error verifying email:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur inattendue est survenue.",
+        });
+        navigate("/login");
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-    } catch (err) {
-      console.error("Unexpected error:", err);
-      setErrorMessage("An unexpected error occurred.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    verifyOTP();
+  }, [navigate, toast]);
 
   if (isLoading) {
     return (
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <img 
+            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+            alt="PedagoIA Logo" 
+            className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
+          />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
         </div>
+      </div>
     );
   }
 
-  return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-
-        {auth.token ? (
-            <Button onClick={handleRedirect} className="px-4 py-2 text-white bg-blue-600 rounded-md">
-              Continue to Verify
-            </Button>
-        ) : (
-            <p className="text-red-500">Token is missing or expired.</p>
-        )}
-      </div>
-  );
+  return null;
 }

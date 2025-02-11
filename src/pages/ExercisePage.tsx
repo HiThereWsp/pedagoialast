@@ -43,7 +43,12 @@ const ExercisePage = () => {
       />
       <div className="container mx-auto px-4 py-8">
         <BackButton />
-        <div className="mb-8 text-center">
+        <div className="text-center mb-8">
+          <img 
+            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+            alt="PedagoIA Logo" 
+            className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
+          />
           <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
             Générateur d'exercices
           </h1>

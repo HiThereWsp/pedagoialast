@@ -4,9 +4,9 @@ export const WelcomeBanner = () => {
     <div className="text-center">
       <div className="flex items-center justify-center gap-2 mb-2">
         <img 
-          src="/lovable-uploads/a514063e-400f-4c84-b2f2-78114e277365.png" 
+          src="/lovable-uploads/efb9f5d8-aaf9-42ea-853a-4ca24bf0469d.png" 
           alt="PedagoIA Logo" 
-          className="h-8"
+          className="h-10 sm:h-12"
         />
       </div>
       <p className="text-xl text-gray-800">

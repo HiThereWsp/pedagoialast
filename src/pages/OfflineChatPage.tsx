@@ -22,8 +22,8 @@ const OfflineChatPage = () => {
             onDeleteConversation={() => {}}
             onLogout={() => {}}
           />
-          <main className="flex-1">
-            <div className="container mx-auto max-w-4xl h-screen">
+          <main className="flex-1 px-6 py-4">
+            <div className="h-full">
               <OfflineChatUI />
             </div>
           </main>
