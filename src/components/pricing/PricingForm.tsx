@@ -38,7 +38,7 @@ export const PricingForm = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-emails`, {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-to-brevo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,11 +48,11 @@ export const PricingForm = () => {
       })
 
       if (!response.ok) {
-        throw new Error("Erreur lors de l'envoi du formulaire")
+        throw new Error("Erreur lors de l'ajout du contact")
       }
 
       nextStep()
-      toast.success("Votre demande a été envoyée avec succès !")
+      toast.success("Votre demande a été enregistrée avec succès !")
     } catch (error) {
       toast.error("Une erreur est survenue, veuillez réessayer.")
       console.error('Error:', error)

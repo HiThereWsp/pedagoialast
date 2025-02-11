@@ -1,7 +1,7 @@
 
 import { corsHeaders } from '../_shared/cors.ts'
 
-console.log("Starting send-emails function")
+console.log("Starting add-to-brevo function")
 
 Deno.serve(async (req) => {
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')
@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
 
         console.log("Contact successfully created/updated in Brevo")
         return new Response(
-            JSON.stringify({ message: "Contact créé et ajouté à la liste avec succès" }),
+            JSON.stringify({ message: "Contact ajouté à la liste avec succès" }),
             { 
                 headers: { 
                     "Content-Type": "application/json",
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
         );
 
     } catch (error) {
-        console.error("Error in send-emails function:", error)
+        console.error("Error in add-to-brevo function:", error)
         return new Response(
             JSON.stringify({ error: error.message }),
             { 
