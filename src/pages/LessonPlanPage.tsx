@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { LessonPlanCreator } from '@/components/lesson-plan/LessonPlanCreator';
 import { Header } from '@/components/lesson-plan/Header';
@@ -13,7 +14,12 @@ const LessonPlanPage = () => {
       />
       <div className="container mx-auto py-8">
         <BackButton />
-        <div className="mb-8 text-center">
+        <div className="text-center pt-8 pb-4">
+          <img 
+            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+            alt="PedagoIA Logo" 
+            className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
+          />
           <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] bg-clip-text text-transparent">
             Générateur de séquences
           </h1>
