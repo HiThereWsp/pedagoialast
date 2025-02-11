@@ -9,20 +9,18 @@ if (typeof window !== 'undefined') { // Check for browser environment
       api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
       autocapture: false,
       persistence: 'localStorage',
-      capture_pageview: false, // Désactivé pour éviter les erreurs de CORS initiaux
-      capture_pageleave: false, // Désactivé pour éviter les erreurs de CORS initiaux
+      capture_pageview: false,
+      capture_pageleave: false,
       disable_session_recording: true,
       cross_subdomain_cookie: false,
-      enable_recording_console_log: false, // Désactivé pour réduire les requêtes
-      request_batching: true, // Active le batching des requêtes
+      enable_recording_console_log: false,
+      request_batching: true,
       bootstrap: {
         distinctID: 'anonymous',
         isIdentifiedID: false,
       },
       loaded: (posthog) => {
-        // Une fois chargé, on peut activer la capture
-        posthog.capture_pageview = true;
-        posthog.capture_pageleave = true;
+        posthog.capture = true;
       }
     }
   )
