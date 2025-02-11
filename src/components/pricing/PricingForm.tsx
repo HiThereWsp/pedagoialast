@@ -1,11 +1,12 @@
 
 import { useState } from "react"
-import { ChevronRight, School, Users, Mail } from "lucide-react"
+import { ChevronRight, School, Users, Mail, Phone } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
+import { toast } from "sonner"
 
 interface FormData {
   etablissement: string
@@ -17,6 +18,7 @@ interface FormData {
 
 export const PricingForm = () => {
   const [step, setStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     etablissement: '',
     taille: '',
@@ -31,6 +33,32 @@ export const PricingForm = () => {
 
   const nextStep = () => {
     setStep(step + 1)
+  }
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('${process.env.VITE_SUPABASE_URL}/functions/v1/send-emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de l'envoi du formulaire')
+      }
+
+      nextStep()
+      toast.success("Votre demande a été envoyée avec succès !")
+    } catch (error) {
+      toast.error("Une erreur est survenue, veuillez réessayer.")
+      console.error('Error:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const renderStep = () => {
@@ -48,13 +76,13 @@ export const PricingForm = () => {
                     setFormData({ ...formData, etablissement: type })
                     nextStep()
                   }}
-                  className="flex items-center justify-between p-6 h-auto"
+                  className="flex items-center justify-between p-6 h-auto hover:bg-primary/5 hover:border-primary/30 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <School className="text-primary h-5 w-5" />
                     <span>{type}</span>
                   </div>
-                  <ChevronRight className="text-muted-foreground h-5 w-5" />
+                  <ChevronRight className="text-primary h-5 w-5" />
                 </Button>
               ))}
             </div>
@@ -79,13 +107,13 @@ export const PricingForm = () => {
                     setFormData({ ...formData, taille: size })
                     nextStep()
                   }}
-                  className="flex items-center justify-between p-6 h-auto"
+                  className="flex items-center justify-between p-6 h-auto hover:bg-primary/5 hover:border-primary/30 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <Users className="text-primary h-5 w-5" />
                     <span>{size}</span>
                   </div>
-                  <ChevronRight className="text-muted-foreground h-5 w-5" />
+                  <ChevronRight className="text-primary h-5 w-5" />
                 </Button>
               ))}
             </div>
@@ -110,12 +138,13 @@ export const PricingForm = () => {
                     value={formData.contactName}
                     onChange={handleChange}
                     placeholder="Prénom et Nom"
+                    className="border-primary/20 focus:border-primary/40"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email professionnel</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 text-muted-foreground h-4 w-4" />
+                    <Mail className="absolute left-3 top-3 text-primary h-4 w-4" />
                     <Input
                       type="email"
                       name="email"
@@ -123,26 +152,31 @@ export const PricingForm = () => {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="nom@etablissement.fr"
-                      className="pl-10"
+                      className="pl-10 border-primary/20 focus:border-primary/40"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Téléphone portable</Label>
-                  <Input
-                    type="tel"
-                    name="phone"
-                    id="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="06 XX XX XX XX"
-                  />
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 text-primary h-4 w-4" />
+                    <Input
+                      type="tel"
+                      name="phone"
+                      id="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="06 XX XX XX XX"
+                      className="pl-10 border-primary/20 focus:border-primary/40"
+                    />
+                  </div>
                 </div>
                 <Button
-                  onClick={() => nextStep()}
-                  className="w-full"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 hover:opacity-90 transition-opacity"
                 >
-                  Recevoir mon devis personnalisé
+                  {isSubmitting ? "Envoi en cours..." : "Recevoir mon devis personnalisé"}
                 </Button>
               </div>
             </div>
@@ -154,7 +188,7 @@ export const PricingForm = () => {
           <div className="text-center space-y-4 py-8">
             <h2 className="text-2xl font-bold">Merci !</h2>
             <p className="text-muted-foreground">
-              Merci de votre intérêt ! Notre équipe vous contactera très prochainement pour vous proposer une solution adaptée à vos besoins.
+              Nous avons bien reçu votre demande. Notre équipe vous contactera très prochainement pour vous proposer une solution adaptée à vos besoins.
             </p>
           </div>
         )
@@ -165,10 +199,10 @@ export const PricingForm = () => {
   }
 
   return (
-    <Card className="max-w-md mx-auto p-6">
+    <Card className="max-w-md mx-auto p-6 border-primary/10">
       {step < 4 && (
         <div className="mb-8 space-y-2">
-          <Progress value={(step / 3) * 100} className="h-2" />
+          <Progress value={(step / 3) * 100} className="h-2 bg-primary/10" />
           <p className="text-center text-sm text-muted-foreground">
             Étape {step}/3
           </p>
