@@ -1,6 +1,5 @@
 
 import { PricingCard } from "@/components/pricing/PricingCard"
-import { QualityFeatures } from "@/components/pricing/QualityFeatures"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 
@@ -34,7 +33,6 @@ const PricingPage = () => {
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-          {/* Plan Mensuel */}
           <PricingCard
             title="Plan mensuel"
             price="11,90€"
@@ -49,7 +47,6 @@ const PricingPage = () => {
             ctaText="Commencer maintenant"
             onSubscribe={handleMonthlySubscription}
           />
-          {/* Plan Annuel */}
           <PricingCard
             title="Plan annuel"
             price="9€"
@@ -65,7 +62,6 @@ const PricingPage = () => {
             ctaText="Commencer maintenant"
             onSubscribe={handleYearlySubscription}
           />
-          {/* Plan École */}
           <PricingCard
             title="École"
             price="Sur mesure"
