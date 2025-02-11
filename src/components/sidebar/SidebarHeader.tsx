@@ -1,3 +1,4 @@
+
 import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -9,7 +10,14 @@ interface SidebarHeaderProps {
 
 export function SidebarHeader({ firstName, onNewConversation }: SidebarHeaderProps) {
   return (
-    <div className="p-2 space-y-2">
+    <div className="p-2 space-y-4">
+      <div className="flex justify-center mb-2">
+        <img 
+          src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+          alt="PedagoIA Logo" 
+          className="w-[80px] h-[100px] object-contain" 
+        />
+      </div>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button 
