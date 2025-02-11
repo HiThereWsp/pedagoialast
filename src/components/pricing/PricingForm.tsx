@@ -48,7 +48,7 @@ export const PricingForm = () => {
       })
 
       if (!response.ok) {
-        throw new Error('Erreur lors de l'envoi du formulaire')
+        throw new Error("Erreur lors de l'envoi du formulaire")
       }
 
       nextStep()
