@@ -38,9 +38,9 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/efb9f5d8-aaf9-42ea-853a-4ca24bf0469d.png" 
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
               alt="PedagoIA Logo" 
-              className="h-10 sm:h-12" 
+              className="w-[80px] h-[30px] object-contain" 
             />
           </div>
           <div>
