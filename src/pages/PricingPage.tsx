@@ -64,7 +64,7 @@ const PricingPage = () => {
             onSubscribe={handleYearlySubscription}
           />
           <PricingCard
-            title="École"
+            title="Établissement scolaire"
             price="Sur mesure"
             features={[
               "Tout ce qui est inclus dans le plan annuel et bien plus",
@@ -73,7 +73,6 @@ const PricingPage = () => {
               "Des outils adaptés à votre projet pédagogique",
               "Un canal support dédié"
             ]}
-            ctaText="Obtenir un tarif sur mesure"
             CustomCTA={<PricingFormDialog triggerText="Obtenir un tarif sur mesure" />}
           />
         </div>
