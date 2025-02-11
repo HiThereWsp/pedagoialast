@@ -1,6 +1,7 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
+import { supabase } from "@/integrations/supabase/client"
 
 interface FormData {
   etablissement: string
@@ -32,25 +33,19 @@ export const usePricingForm = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      console.log("URL:", import.meta.env.VITE_PUBLIC_SUPABASE_URL)
-      const response = await fetch(`${import.meta.env.VITE_PUBLIC_SUPABASE_URL}/functions/v1/add-to-brevo`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify(formData)
+      const { error } = await supabase.functions.invoke('add-to-brevo', {
+        body: formData
       })
 
-      if (!response.ok) {
-        throw new Error("Erreur lors de l'ajout du contact")
+      if (error) {
+        throw error
       }
 
       nextStep()
       toast.success("Votre demande a été enregistrée avec succès !")
     } catch (error) {
-      toast.error("Une erreur est survenue, veuillez réessayer.")
       console.error('Error:', error)
+      toast.error("Une erreur est survenue, veuillez réessayer.")
     } finally {
       setIsSubmitting(false)
     }
