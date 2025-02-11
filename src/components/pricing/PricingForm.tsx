@@ -38,11 +38,12 @@ export const PricingForm = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/add-to-brevo`, {
+      console.log("URL:", import.meta.env.VITE_PUBLIC_SUPABASE_URL)
+      const response = await fetch(`${import.meta.env.VITE_PUBLIC_SUPABASE_URL}/functions/v1/add-to-brevo`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify(formData)
       })
