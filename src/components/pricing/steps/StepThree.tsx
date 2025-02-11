@@ -80,13 +80,13 @@ export const StepThree = ({
                 value={formData.phoneCountryCode}
                 onValueChange={onCountryCodeChange}
               >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Indicatif" />
+                <SelectTrigger className="w-[80px]">
+                  <SelectValue placeholder="+33" />
                 </SelectTrigger>
                 <SelectContent>
                   {countryCodes.map((country) => (
                     <SelectItem key={country.code} value={country.code}>
-                      {country.country}
+                      {country.code}
                     </SelectItem>
                   ))}
                 </SelectContent>
