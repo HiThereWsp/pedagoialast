@@ -1,16 +1,14 @@
-
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tiles } from "@/components/ui/tiles"
-import { Send, Home } from "lucide-react"
+import { Send } from "lucide-react"
 import { useState, useEffect } from "react"
 import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { v4 as uuidv4 } from 'uuid'
-import { useNavigate } from "react-router-dom"
 
 export const OfflineChatUI = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -23,7 +21,6 @@ export const OfflineChatUI = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const conversationId = uuidv4()
-  const navigate = useNavigate()
 
   const loadMessages = async () => {
     try {
@@ -168,33 +165,23 @@ export const OfflineChatUI = () => {
         </ScrollArea>
       </Card>
 
-      <div className="relative flex items-center gap-2">
+      <form onSubmit={handleSubmit} className="relative flex gap-2">
+        <Input
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Tapez votre message ici..."
+          className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-md focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
+          disabled={isLoading}
+        />
         <Button 
-          variant="ghost" 
-          onClick={() => navigate('/home')}
-          className="flex items-center gap-2 h-10"
+          type="submit" 
+          size="icon"
+          className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-md transition-all duration-200"
+          disabled={isLoading}
         >
-          <Home className="h-4 w-4" />
-          Accueil
+          <Send className="w-4 h-4" />
         </Button>
-        <form onSubmit={handleSubmit} className="flex-1 flex gap-2">
-          <Input
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Tapez votre message ici..."
-            className="flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-md focus:ring-2 focus:ring-indigo-200 transition-all duration-200"
-            disabled={isLoading}
-          />
-          <Button 
-            type="submit" 
-            size="icon"
-            className="bg-indigo-500 hover:bg-indigo-600 text-white shadow-md transition-all duration-200"
-            disabled={isLoading}
-          >
-            <Send className="w-4 h-4" />
-          </Button>
-        </form>
-      </div>
+      </form>
     </div>
   )
 }
