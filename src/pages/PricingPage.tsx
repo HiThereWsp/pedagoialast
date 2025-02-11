@@ -44,7 +44,7 @@ const PricingPage = () => {
               "Utilisation illimitée de tous les outils",
               "+14h économisées /semaine"
             ]}
-            ctaText="Commencer maintenant"
+            ctaText="Découvrir l'assistant maintenant"
             onSubscribe={handleMonthlySubscription}
           />
           <PricingCard
@@ -59,7 +59,7 @@ const PricingPage = () => {
               "Recevez les mises à jour à l'avance",
               "Accès à la communauté privée d'enseignants 3.0"
             ]}
-            ctaText="Commencer maintenant"
+            ctaText="Profiter de l'offre spéciale"
             onSubscribe={handleYearlySubscription}
           />
           <PricingCard
@@ -72,7 +72,7 @@ const PricingPage = () => {
               "Des outils adaptés à votre projet pédagogique",
               "Un canal support dédié"
             ]}
-            ctaText="Commencer maintenant"
+            ctaText="Obtenir un tarif sur mesure"
             onSubscribe={() => window.location.href = 'mailto:contact@pedagogia.io'}
           />
         </div>
