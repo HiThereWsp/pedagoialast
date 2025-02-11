@@ -1,15 +1,15 @@
-
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tiles } from "@/components/ui/tiles"
-import { Send } from "lucide-react"
+import { Send, Home } from "lucide-react"
 import { useState, useEffect } from "react"
 import { ChatMessage } from "@/types/chat"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 import { v4 as uuidv4 } from 'uuid'
+import { useNavigate } from "react-router-dom"
 
 export const OfflineChatUI = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -22,6 +22,7 @@ export const OfflineChatUI = () => {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const conversationId = uuidv4()
+  const navigate = useNavigate()
 
   const loadMessages = async () => {
     try {
@@ -138,12 +139,23 @@ export const OfflineChatUI = () => {
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="h-[calc(100vh-3rem)] flex flex-col overflow-hidden gap-4">
       <div className="absolute inset-0 opacity-15 bg-gradient-to-br from-purple-50 to-blue-50">
         <Tiles rows={50} cols={8} tileSize="md" />
       </div>
 
-      <Card className="relative flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden mb-4">
+      <div className="relative flex justify-between items-center">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/home')}
+          className="flex items-center gap-2"
+        >
+          <Home className="h-4 w-4" />
+          Accueil
+        </Button>
+      </div>
+
+      <Card className="relative flex-1 bg-background/95 backdrop-blur-sm border-muted shadow-lg rounded-lg overflow-hidden min-h-0">
         <ScrollArea className="h-full">
           <div className="p-4 space-y-4">
             {messages.map((message, index) => (
@@ -152,7 +164,7 @@ export const OfflineChatUI = () => {
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-2xl p-4 shadow-sm transition-all duration-200 ${
+                  className={`max-w-[80%] rounded-2xl p-3 shadow-sm transition-all duration-200 ${
                     message.role === 'user'
                       ? 'bg-gradient-to-r from-indigo-500 to-indigo-600 text-white'
                       : 'bg-gradient-to-r from-gray-50 to-gray-100 text-gray-800'
