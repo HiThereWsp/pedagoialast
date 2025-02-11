@@ -18,9 +18,6 @@ if (typeof window !== 'undefined') { // Check for browser environment
       bootstrap: {
         distinctID: 'anonymous',
         isIdentifiedID: false,
-      },
-      loaded: (posthog) => {
-        posthog.capture = true;
       }
     }
   )
