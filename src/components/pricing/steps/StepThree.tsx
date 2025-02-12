@@ -78,7 +78,7 @@ export const StepThree = ({
                 id="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={onChange}
-                placeholder="06 12 34 56 78"
+                placeholder="+33 6 12 34 56 78"
                 className={`pl-10 border-primary/20 focus:border-primary/40 ${
                   errors.phone ? 'border-red-500' : ''
                 }`}

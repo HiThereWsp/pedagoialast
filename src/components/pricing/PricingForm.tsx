@@ -16,8 +16,7 @@ export const PricingForm = () => {
     handleChange,
     handleSubmit,
     setEtablissement,
-    setTaille,
-    handleCountryCodeChange
+    setTaille
   } = usePricingForm()
 
   const renderStep = () => {
@@ -32,7 +31,6 @@ export const PricingForm = () => {
             formData={formData}
             errors={errors}
             onChange={handleChange}
-            onCountryCodeChange={handleCountryCodeChange}
             onSubmit={handleSubmit}
             isSubmitting={isSubmitting}
           />
