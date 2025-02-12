@@ -34,21 +34,47 @@ serve(async (req) => {
         
         console.log("Sending to Brevo:", payload)
 
-        // Créer ou mettre à jour le contact dans Brevo et l'ajouter à la liste 7
-        const createContactResponse = await fetch("https://api.brevo.com/v3/contacts", {
-            method: "POST",
+        // D'abord, vérifions si le contact existe déjà
+        const getContactResponse = await fetch(`https://api.brevo.com/v3/contacts/${email}`, {
+            method: "GET",
             headers: {
                 "accept": "application/json",
-                "content-type": "application/json",
                 "api-key": BREVO_API_KEY,
-            },
-            body: JSON.stringify(payload)
+            }
         });
+
+        let createContactResponse;
+        
+        if (getContactResponse.status === 200) {
+            // Le contact existe, on met à jour
+            console.log("Contact exists, updating...")
+            createContactResponse = await fetch("https://api.brevo.com/v3/contacts", {
+                method: "PUT",
+                headers: {
+                    "accept": "application/json",
+                    "content-type": "application/json",
+                    "api-key": BREVO_API_KEY,
+                },
+                body: JSON.stringify(payload)
+            });
+        } else {
+            // Nouveau contact, on crée
+            console.log("Creating new contact...")
+            createContactResponse = await fetch("https://api.brevo.com/v3/contacts", {
+                method: "POST",
+                headers: {
+                    "accept": "application/json",
+                    "content-type": "application/json",
+                    "api-key": BREVO_API_KEY,
+                },
+                body: JSON.stringify(payload)
+            });
+        }
 
         if (!createContactResponse.ok) {
             const errorText = await createContactResponse.text()
-            console.error("Failed to create contact in Brevo:", errorText)
-            throw new Error(`Failed to create contact: ${errorText}`)
+            console.error("Failed to create/update contact in Brevo:", errorText)
+            throw new Error(`Failed to create/update contact: ${errorText}`)
         }
 
         const responseData = await createContactResponse.json()
