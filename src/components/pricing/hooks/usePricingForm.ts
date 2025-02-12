@@ -9,7 +9,6 @@ interface FormData {
   taille: string
   contactName: string
   email: string
-  phoneCountryCode: string
   phoneNumber: string
 }
 
@@ -21,7 +20,6 @@ export const usePricingForm = () => {
     taille: '',
     contactName: '',
     email: '',
-    phoneCountryCode: '+33', // France par défaut
     phoneNumber: '',
   })
   const [errors, setErrors] = useState({
@@ -43,21 +41,9 @@ export const usePricingForm = () => {
     if (name === 'phoneNumber') {
       setErrors(prev => ({
         ...prev,
-        phone: !validatePhoneNumber(value, formData.phoneCountryCode)
+        phone: !validatePhoneNumber(value)
       }))
     }
-  }
-
-  const handleCountryCodeChange = (code: string) => {
-    setFormData(prev => ({
-      ...prev,
-      phoneCountryCode: code,
-      phoneNumber: '' // Reset le numéro car le format change
-    }))
-    setErrors(prev => ({
-      ...prev,
-      phone: false
-    }))
   }
 
   const nextStep = () => {
@@ -66,7 +52,7 @@ export const usePricingForm = () => {
 
   const validateForm = (): boolean => {
     const isEmailValid = validateEmail(formData.email)
-    const isPhoneValid = validatePhoneNumber(formData.phoneNumber, formData.phoneCountryCode)
+    const isPhoneValid = validatePhoneNumber(formData.phoneNumber)
     
     setErrors({
       email: !isEmailValid,
@@ -87,7 +73,7 @@ export const usePricingForm = () => {
       const { error } = await supabase.functions.invoke('add-to-brevo', {
         body: {
           ...formData,
-          phone: `${formData.phoneCountryCode}${formData.phoneNumber}` // Format complet du numéro
+          phone: formData.phoneNumber // Format complet du numéro
         }
       })
 
@@ -123,7 +109,6 @@ export const usePricingForm = () => {
     handleChange,
     handleSubmit,
     setEtablissement,
-    setTaille,
-    handleCountryCodeChange
+    setTaille
   }
 }
