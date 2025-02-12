@@ -5,6 +5,7 @@ import {
   FileEdit,
   Image,
   MessageSquare,
+  BookOpen
 } from "lucide-react"
 import type { Action } from "@/types/actions"
 
@@ -28,6 +29,11 @@ export const actions: Action[] = [
     title: "Générateur d'images",
     route: "/image-generation",
     icon: Image,
+  },
+  {
+    title: "Mes contenus sauvegardés",
+    route: "/saved-content",
+    icon: BookOpen,
   },
   {
     title: "Chat",
