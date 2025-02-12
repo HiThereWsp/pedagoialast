@@ -1,12 +1,15 @@
+
 import React, { useState } from 'react';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
 import { ResultDisplay } from '@/components/exercise/ResultDisplay';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
+import { useSavedContent } from '@/hooks/useSavedContent';
 import { SEO } from "@/components/SEO";
 
 const ExercisePage = () => {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
+  const { saveExercise } = useSavedContent();
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
@@ -32,7 +35,19 @@ const ExercisePage = () => {
   };
 
   const handleSubmit = async () => {
-    await generateExercises(formData);
+    const result = await generateExercises(formData);
+    
+    if (result && exercises) {
+      // Sauvegarder automatiquement l'exercice généré
+      await saveExercise({
+        title: `Exercice ${formData.subject || ''} - ${formData.classLevel}`,
+        content: exercises,
+        subject: formData.subject,
+        class_level: formData.classLevel,
+        exercise_type: formData.exerciseType,
+        difficulty_level: 'standard'
+      });
+    }
   };
 
   return (

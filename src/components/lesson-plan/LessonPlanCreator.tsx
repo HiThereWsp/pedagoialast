@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
@@ -8,11 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
+import { useSavedContent } from "@/hooks/useSavedContent";
 import { supabase } from "@/integrations/supabase/client";
 
 export function LessonPlanCreator() {
   const { toast } = useToast();
   const { logToolUsage } = useToolMetrics();
+  const { saveLessonPlan } = useSavedContent();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     classLevel: '',
@@ -64,10 +67,20 @@ export function LessonPlanCreator() {
         lessonPlan: functionData.lessonPlan
       }));
 
+      // Sauvegarder automatiquement la séquence générée
+      await saveLessonPlan({
+        title: `Séquence ${formData.subject || ''} - ${formData.classLevel}`,
+        content: functionData.lessonPlan,
+        subject: formData.subject,
+        class_level: formData.classLevel,
+        total_sessions: parseInt(formData.totalSessions),
+        additional_instructions: formData.additionalInstructions
+      });
+
       await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
 
       toast({
-        description: "Votre séquence a été générée avec succès !",
+        description: "Votre séquence a été générée et sauvegardée avec succès !",
       });
     } catch (error) {
       console.error('Error generating lesson plan:', error);
