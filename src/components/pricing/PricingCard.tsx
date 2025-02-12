@@ -1,7 +1,9 @@
+
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Check, Info } from "lucide-react"
+import { ReactNode } from "react"
 import {
   Tooltip,
   TooltipProvider,
@@ -23,8 +25,9 @@ interface PricingCardProps {
   badge?: string
   badgeIcon?: React.ReactNode
   isPremium?: boolean
-  onSubscribe: () => void
-  ctaText: string
+  onSubscribe?: () => void
+  ctaText?: string
+  CustomCTA?: ReactNode
 }
 
 export const PricingCard = ({
@@ -37,7 +40,8 @@ export const PricingCard = ({
   badgeIcon,
   isPremium,
   onSubscribe,
-  ctaText
+  ctaText,
+  CustomCTA
 }: PricingCardProps) => {
   return (
     <Card className={`p-8 relative ${
@@ -97,16 +101,22 @@ export const PricingCard = ({
         </ul>
       </div>
 
-      <Button 
-        onClick={onSubscribe} 
-        className={`w-full mt-8 ${
-          isPremium 
-            ? 'bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:opacity-90 transition-opacity'
-            : 'bg-primary hover:bg-primary/90 text-primary-foreground transition-colors'
-        }`}
-      >
-        {ctaText}
-      </Button>
+      <div className="mt-8">
+        {CustomCTA ? (
+          CustomCTA
+        ) : (
+          <Button 
+            onClick={onSubscribe} 
+            className={`w-full ${
+              isPremium 
+                ? 'bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:opacity-90 transition-opacity'
+                : 'bg-primary hover:bg-primary/90 text-primary-foreground transition-colors'
+            }`}
+          >
+            {ctaText}
+          </Button>
+        )}
+      </div>
     </Card>
   );
 };
