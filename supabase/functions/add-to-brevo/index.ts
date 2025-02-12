@@ -19,6 +19,21 @@ serve(async (req) => {
         const { contactName, email, etablissement, taille, phone } = await req.json()
         console.log("Received contact data:", { contactName, email, etablissement, taille, phone })
 
+        // Créer le payload pour Brevo
+        const payload = {
+            email,
+            attributes: {
+                NOM: contactName,
+                PHONE: phone,
+                ETABLISSEMENT: etablissement,
+                TAILLE: taille
+            },
+            listIds: [7],
+            updateEnabled: true
+        }
+        
+        console.log("Sending to Brevo:", payload)
+
         // Créer ou mettre à jour le contact dans Brevo et l'ajouter à la liste 7
         const createContactResponse = await fetch("https://api.brevo.com/v3/contacts", {
             method: "POST",
@@ -27,17 +42,7 @@ serve(async (req) => {
                 "content-type": "application/json",
                 "api-key": BREVO_API_KEY,
             },
-            body: JSON.stringify({
-                email,
-                attributes: {
-                    NOM: contactName,
-                    PHONE: phone,
-                    ETABLISSEMENT: etablissement,
-                    TAILLE: taille
-                },
-                listIds: [7],
-                updateEnabled: true
-            })
+            body: JSON.stringify(payload)
         });
 
         if (!createContactResponse.ok) {
@@ -46,7 +51,9 @@ serve(async (req) => {
             throw new Error(`Failed to create contact: ${errorText}`)
         }
 
-        console.log("Contact successfully created/updated in Brevo")
+        const responseData = await createContactResponse.json()
+        console.log("Brevo API response:", responseData)
+
         return new Response(
             JSON.stringify({ message: "Contact ajouté à la liste avec succès" }),
             { 
