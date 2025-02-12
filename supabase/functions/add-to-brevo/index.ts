@@ -19,14 +19,15 @@ serve(async (req) => {
         const { contactName, email, etablissement, taille, phone } = await req.json()
         console.log("Received contact data:", { contactName, email, etablissement, taille, phone })
 
-        // Créer le payload pour Brevo avec les attributs exacts
+        // Créer le payload pour Brevo avec les attributs exacts comme spécifiés
         const payload = {
             email,
             attributes: {
-                PRENOM_NOM: contactName,
-                TELEPHONE: phone,
+                CONTACT: contactName,
+                EMAIL: email,
+                PHONE: phone,
                 TYPE_ETABLISSEMENT: etablissement,
-                NOMBRE_ENSEIGNANTS: taille
+                TAILLE: taille
             },
             listIds: [7],
             updateEnabled: true
