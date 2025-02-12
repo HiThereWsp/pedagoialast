@@ -152,18 +152,9 @@ export function useSavedContent() {
 
       if (error) throw error
 
-      toast({
-        title: "Exercice supprimé",
-        description: "L'exercice a été supprimé avec succès"
-      })
-
     } catch (error) {
       console.error('Error deleting exercise:', error)
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression"
-      })
+      throw error
     } finally {
       setIsLoading(false)
     }
@@ -179,18 +170,9 @@ export function useSavedContent() {
 
       if (error) throw error
 
-      toast({
-        title: "Séquence supprimée",
-        description: "La séquence a été supprimée avec succès"
-      })
-
     } catch (error) {
       console.error('Error deleting lesson plan:', error)
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression"
-      })
+      throw error
     } finally {
       setIsLoading(false)
     }
