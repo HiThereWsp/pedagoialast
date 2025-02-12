@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TextTab } from './tabs/TextTab';
 import { SubjectTab } from './tabs/SubjectTab';
 import { Button } from "@/components/ui/button";
-import { Wand2, History } from "lucide-react";
+import { Wand2, History, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
 import { useSavedContent } from "@/hooks/useSavedContent";
@@ -27,6 +26,7 @@ export function LessonPlanCreator() {
   const { saveLessonPlan, getSavedLessonPlans } = useSavedContent();
   const [isLoading, setIsLoading] = useState(false);
   const [savedPlans, setSavedPlans] = useState<any[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [formData, setFormData] = useState({
     classLevel: '',
     additionalInstructions: '',
@@ -50,6 +50,18 @@ export function LessonPlanCreator() {
     } catch (error) {
       console.error('Error loading saved plans:', error);
     }
+  };
+
+  const handleSelectPlan = (plan: any) => {
+    setSelectedPlan(plan);
+    setFormData(prev => ({
+      ...prev,
+      lessonPlan: plan.content,
+      classLevel: plan.class_level || '',
+      subject: plan.subject || '',
+      totalSessions: plan.total_sessions?.toString() || '',
+      additionalInstructions: plan.additional_instructions || ''
+    }));
   };
 
   const handleGenerate = async () => {
@@ -154,7 +166,7 @@ export function LessonPlanCreator() {
                   Historique
                 </Button>
               </SheetTrigger>
-              <SheetContent>
+              <SheetContent side="right" className="w-[500px] sm:w-[540px]">
                 <SheetHeader>
                   <SheetTitle>Historique des séquences</SheetTitle>
                   <SheetDescription>
@@ -163,12 +175,28 @@ export function LessonPlanCreator() {
                 </SheetHeader>
                 <div className="mt-4 space-y-4">
                   {savedPlans.map((plan) => (
-                    <Card key={plan.id} className="p-4 hover:shadow-md transition-shadow">
-                      <h3 className="font-semibold mb-2">{plan.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {new Date(plan.created_at).toLocaleDateString('fr-FR')}
-                      </p>
-                      <p className="text-sm line-clamp-3">{plan.content}</p>
+                    <Card 
+                      key={plan.id} 
+                      className={`p-4 hover:shadow-md transition-shadow cursor-pointer ${
+                        selectedPlan?.id === plan.id ? 'border-primary' : ''
+                      }`}
+                      onClick={() => handleSelectPlan(plan)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h3 className="font-semibold mb-2">{plan.title}</h3>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                            <span>{new Date(plan.created_at).toLocaleDateString('fr-FR')}</span>
+                            {plan.subject && (
+                              <span className="px-2 py-1 bg-primary/10 rounded-full text-xs">
+                                {plan.subject}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm line-clamp-2">{plan.content}</p>
+                        </div>
+                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      </div>
                     </Card>
                   ))}
                   {savedPlans.length === 0 && (
