@@ -56,7 +56,7 @@ export const PasswordResetForm = () => {
 
         </>: <>
             <Button className="w-full" disabled={false} onClick={() => navigate('/home')}>
-                Home
+              Accueil
             </Button>
         </>}
 
