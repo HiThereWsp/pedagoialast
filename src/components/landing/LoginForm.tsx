@@ -1,6 +1,9 @@
 import { useState } from "react"
 import { SignUpForm } from "./auth/SignUpForm"
 import { SignInForm } from "./auth/SignInForm"
+import {supabase} from "@/integrations/supabase/client.ts";
+import {ThemeSupa} from "@supabase/auth-ui-shared";
+import {Auth} from "@supabase/auth-ui-react";
 
 export const LoginForm = () => {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -12,9 +15,35 @@ export const LoginForm = () => {
       </h2>
       
       {isSignUp ? (
-        <SignUpForm onToggleMode={() => setIsSignUp(false)} />
+              <>
+                  <Auth
+                      supabaseClient={supabase}
+                      appearance={{
+                          theme: ThemeSupa,
+                      }}
+
+                      providers={["google"]}
+                      redirectTo="http://localhost:8080/login"
+                      onlyThirdPartyProviders={true}
+
+                  />
+                  <SignUpForm onToggleMode={() => setIsSignUp(false)} />
+              </>
       ) : (
-        <SignInForm onToggleMode={() => setIsSignUp(true)} />
+          <>
+              <Auth
+                  supabaseClient={supabase}
+                  appearance={{
+                      theme: ThemeSupa,
+                  }}
+
+                  providers={["google"]}
+                  redirectTo="http://localhost:8080/login"
+                  onlyThirdPartyProviders={true}
+
+              />
+              <SignInForm onToggleMode={() => setIsSignUp(true)} />
+          </>
       )}
     </div>
   )
