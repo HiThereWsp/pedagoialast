@@ -94,8 +94,13 @@ export default function SavedContentPage() {
             {error}
           </Card>
         ) : content.length === 0 ? (
-          <Card className="p-6 text-center text-muted-foreground">
-            Vous n'avez pas encore de contenus sauvegardés.
+          <Card className="p-6 space-y-4">
+            <p className="text-center text-muted-foreground">
+              Vous n'avez pas encore de contenus sauvegardés. 
+            </p>
+            <p className="text-center text-muted-foreground">
+              Commencez par créer un exercice ou une séquence pédagogique, puis sauvegardez-le pour le retrouver ici !
+            </p>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
