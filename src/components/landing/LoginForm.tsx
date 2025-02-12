@@ -13,37 +13,21 @@ export const LoginForm = () => {
       <h2 className="text-2xl font-bold text-center">
         {isSignUp ? "Inscription" : "Connexion"}
       </h2>
-      
+        <Auth
+            supabaseClient={supabase}
+            appearance={{
+                theme: ThemeSupa,
+            }}
+
+            providers={["google"]}
+            redirectTo="https://pedagoia.fr/login"
+            onlyThirdPartyProviders={true}
+
+        />
       {isSignUp ? (
-              <>
-                  <Auth
-                      supabaseClient={supabase}
-                      appearance={{
-                          theme: ThemeSupa,
-                      }}
-
-                      providers={["google"]}
-                      redirectTo="http://localhost:8080/login"
-                      onlyThirdPartyProviders={true}
-
-                  />
-                  <SignUpForm onToggleMode={() => setIsSignUp(false)} />
-              </>
+          <SignUpForm onToggleMode={() => setIsSignUp(false)} />
       ) : (
-          <>
-              <Auth
-                  supabaseClient={supabase}
-                  appearance={{
-                      theme: ThemeSupa,
-                  }}
-
-                  providers={["google"]}
-                  redirectTo="http://localhost:8080/login"
-                  onlyThirdPartyProviders={true}
-
-              />
-              <SignInForm onToggleMode={() => setIsSignUp(true)} />
-          </>
+          <SignInForm onToggleMode={() => setIsSignUp(true)} />
       )}
     </div>
   )
