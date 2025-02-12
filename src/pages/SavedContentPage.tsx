@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import { SEO } from "@/components/SEO"
 import { Card } from "@/components/ui/card"
@@ -136,12 +135,6 @@ export default function SavedContentPage() {
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <h1 className="text-3xl font-bold">Historique de mon contenu</h1>
-          {content.length > 0 && (
-            <p className="text-sm text-muted-foreground mt-2 md:mt-0">
-              {content.length} contenu{content.length > 1 ? 's' : ''} sauvegardé{content.length > 1 ? 's' : ''} 
-              (maximum 15)
-            </p>
-          )}
         </div>
 
         {isLoadingExercises || isLoadingLessonPlans ? (
