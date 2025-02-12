@@ -1,34 +1,9 @@
 
 import { useState } from 'react'
 import { useToast } from "@/hooks/use-toast"
-import { supabase } from "@/integrations/supabase/client"
-
-interface SavedContent {
-  id: string
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  created_at: string
-}
-
-interface SaveExerciseParams {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  exercise_type?: string
-  difficulty_level?: string
-}
-
-interface SaveLessonPlanParams {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  total_sessions?: number
-  additional_instructions?: string
-}
+import { exercisesService } from "@/services/exercises"
+import { lessonPlansService } from "@/services/lesson-plans"
+import type { SaveExerciseParams, SaveLessonPlanParams } from "@/types/saved-content"
 
 export function useSavedContent() {
   const [isLoading, setIsLoading] = useState(false)
@@ -37,20 +12,11 @@ export function useSavedContent() {
   const saveExercise = async (params: SaveExerciseParams) => {
     try {
       setIsLoading(true)
-      const { error } = await supabase
-        .from('saved_exercises')
-        .insert([{
-          ...params,
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        }])
-
-      if (error) throw error
-
+      await exercisesService.save(params)
       toast({
         title: "Exercice sauvegardé",
         description: "Votre exercice a été sauvegardé avec succès"
       })
-
     } catch (error) {
       console.error('Error saving exercise:', error)
       toast({
@@ -66,20 +32,11 @@ export function useSavedContent() {
   const saveLessonPlan = async (params: SaveLessonPlanParams) => {
     try {
       setIsLoading(true)
-      const { error } = await supabase
-        .from('saved_lesson_plans')
-        .insert([{
-          ...params,
-          user_id: (await supabase.auth.getUser()).data.user?.id
-        }])
-
-      if (error) throw error
-
+      await lessonPlansService.save(params)
       toast({
         title: "Séquence sauvegardée",
         description: "Votre séquence a été sauvegardée avec succès"
       })
-
     } catch (error) {
       console.error('Error saving lesson plan:', error)
       toast({
@@ -95,15 +52,7 @@ export function useSavedContent() {
   const getSavedExercises = async () => {
     try {
       setIsLoading(true)
-      const { data, error } = await supabase
-        .from('saved_exercises')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      return data
-
+      return await exercisesService.getAll()
     } catch (error) {
       console.error('Error fetching exercises:', error)
       toast({
@@ -120,15 +69,7 @@ export function useSavedContent() {
   const getSavedLessonPlans = async () => {
     try {
       setIsLoading(true)
-      const { data, error } = await supabase
-        .from('saved_lesson_plans')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      return data
-
+      return await lessonPlansService.getAll()
     } catch (error) {
       console.error('Error fetching lesson plans:', error)
       toast({
@@ -145,13 +86,7 @@ export function useSavedContent() {
   const deleteSavedExercise = async (id: string) => {
     try {
       setIsLoading(true)
-      const { error } = await supabase
-        .from('saved_exercises')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
+      await exercisesService.delete(id)
     } catch (error) {
       console.error('Error deleting exercise:', error)
       throw error
@@ -163,13 +98,7 @@ export function useSavedContent() {
   const deleteSavedLessonPlan = async (id: string) => {
     try {
       setIsLoading(true)
-      const { error } = await supabase
-        .from('saved_lesson_plans')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-
+      await lessonPlansService.delete(id)
     } catch (error) {
       console.error('Error deleting lesson plan:', error)
       throw error
