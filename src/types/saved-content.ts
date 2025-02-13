@@ -6,6 +6,7 @@ export interface SavedContent {
   subject?: string
   class_level?: string
   created_at: string
+  type: string
 }
 
 export interface SaveExerciseParams {
