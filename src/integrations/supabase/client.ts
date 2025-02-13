@@ -20,6 +20,19 @@ export const supabase = createClient<Database>(
       headers: {
         'x-client-info': 'pedagoia-web'
       }
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
     }
   }
 );
+
+// Log toute erreur de connexion pour le débogage
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('Supabase auth event:', event);
+  if (session) {
+    console.log('Session active:', session.user?.email);
+  }
+});
