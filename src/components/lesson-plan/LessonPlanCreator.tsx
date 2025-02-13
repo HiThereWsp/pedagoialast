@@ -15,6 +15,8 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { HistoryCarousel } from '@/components/history/HistoryCarousel';
+
 export function LessonPlanCreator() {
   const isMobile = useIsMobile();
   const {
@@ -134,7 +136,25 @@ export function LessonPlanCreator() {
     const cleanContent = content.replace(/^Séquence pédagogique[\s-]*/i, '').replace(/^###\s*/gm, '').replace(/^\s*\*\*/gm, '').replace(/\*\*\s*$/gm, '').trim();
     return cleanContent;
   };
-  return <div className="space-y-6">
+
+  const transformSavedPlansToHistoryItems = (plans: any[]) => {
+    return plans.map(plan => ({
+      id: plan.id,
+      title: formatTitle(plan.title),
+      content: plan.content,
+      subject: plan.subject,
+      created_at: plan.created_at,
+      tags: [{
+        label: 'Séquence',
+        color: '#FF9EBC',
+        backgroundColor: '#FF9EBC20',
+        borderColor: '#FF9EBC4D'
+      }]
+    }));
+  };
+
+  return (
+    <div className="space-y-6">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <div className="space-y-4">
           <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
@@ -159,51 +179,16 @@ export function LessonPlanCreator() {
             </div>
           </div>
           
-          <div className="relative bg-white rounded-xl shadow-sm border border-pink-100 p-6">
-            <div className="mb-4 flex items-center gap-2">
-              <History className="h-4 w-4 text-muted-foreground" />
-              <h3 className="font-semibold text-lg">Mon historique</h3>
-            </div>
-            
-            {savedPlans.length > 0 ? <Carousel opts={{
-            align: "start",
-            loop: savedPlans.length > 3
-          }} className="w-full">
-                <CarouselContent className="-ml-2 md:-ml-4">
-                  {savedPlans.map(plan => <CarouselItem key={plan.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                      <Card className={`h-[280px] p-4 hover:shadow-md transition-shadow cursor-pointer ${selectedPlan?.id === plan.id ? 'border-primary' : ''}`} onClick={() => handleSelectPlan(plan)}>
-                        <div className="h-full flex flex-col">
-                          <h3 className="font-semibold mb-2 line-clamp-2">{formatTitle(plan.title)}</h3>
-                          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-2">
-                            <span className="shrink-0">{getRelativeDate(plan.created_at)}</span>
-                            <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                              <span className="shrink-0 px-2 py-1 bg-[#FF9EBC]/20 text-[#FF9EBC] rounded-full text-xs border border-[#FF9EBC]/30">
-                                Séquence
-                              </span>
-                              {plan.subject && <span className="shrink-0 px-2 py-1 bg-primary/10 rounded-full text-xs">
-                                  {plan.subject}
-                                </span>}
-                            </div>
-                          </div>
-                          <div className="text-sm line-clamp-6 prose prose-sm max-w-none flex-grow overflow-y-auto" dangerouslySetInnerHTML={{
-                      __html: formatPreviewContent(plan.content).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    }} />
-                        </div>
-                      </Card>
-                    </CarouselItem>)}
-                </CarouselContent>
-                {savedPlans.length > 1 && <>
-                    <CarouselPrevious className="left-2" />
-                    <CarouselNext className="right-2" />
-                  </>}
-              </Carousel> : <p className="text-center text-muted-foreground">
-                Aucune séquence sauvegardée
-              </p>}
-          </div>
+          <HistoryCarousel
+            items={transformSavedPlansToHistoryItems(savedPlans)}
+            onItemSelect={handleSelectPlan}
+            selectedItemId={selectedPlan?.id}
+          />
         </div>
         <div className="xl:sticky xl:top-8 space-y-6">
           <ResultDisplay lessonPlan={formData.lessonPlan} />
         </div>
       </div>
-    </div>;
+    </div>
+  );
 }
