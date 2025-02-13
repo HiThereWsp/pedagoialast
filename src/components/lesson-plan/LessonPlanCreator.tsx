@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
@@ -11,17 +12,16 @@ import { useToolMetrics } from "@/hooks/useToolMetrics";
 import { useSavedContent } from "@/hooks/useSavedContent";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { formatDistanceToNowStrict } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export function LessonPlanCreator() {
   const isMobile = useIsMobile();
@@ -183,69 +183,69 @@ export function LessonPlanCreator() {
             </div>
           </div>
           
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button 
-                variant="outline" 
-                className="w-full flex items-center justify-center gap-2"
+          <div className="relative bg-white rounded-xl shadow-sm border border-pink-100 p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <History className="h-4 w-4 text-muted-foreground" />
+              <h3 className="font-semibold text-lg">Historique</h3>
+            </div>
+            
+            {savedPlans.length > 0 ? (
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: savedPlans.length > 3,
+                }}
+                className="w-full"
               >
-                <History className="h-4 w-4" />
-                Historique
-              </Button>
-            </SheetTrigger>
-            <SheetContent 
-              side={isMobile ? "bottom" : "right"} 
-              className={isMobile ? "h-[80vh]" : "w-[500px] sm:w-[540px]"}
-            >
-              <SheetHeader>
-                <SheetTitle>Historique des séquences</SheetTitle>
-                <SheetDescription>
-                  Vos dernières séquences générées
-                </SheetDescription>
-              </SheetHeader>
-              <div className="mt-4 space-y-4">
-                {savedPlans.map((plan) => (
-                  <Card 
-                    key={plan.id} 
-                    className={`p-4 hover:shadow-md transition-shadow cursor-pointer ${
-                      selectedPlan?.id === plan.id ? 'border-primary' : ''
-                    }`}
-                    onClick={() => handleSelectPlan(plan)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-2">{formatTitle(plan.title)}</h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 overflow-x-auto no-scrollbar">
-                          <span className="shrink-0">{getRelativeDate(plan.created_at)}</span>
-                          <span className="shrink-0 px-2 py-1 bg-[#FF9EBC]/20 text-[#FF9EBC] rounded-full text-xs border border-[#FF9EBC]/30">
-                            Séquence
-                          </span>
-                          {plan.subject && (
-                            <span className="shrink-0 px-2 py-1 bg-primary/10 rounded-full text-xs">
-                              {plan.subject}
-                            </span>
-                          )}
+                <CarouselContent className="-ml-2 md:-ml-4">
+                  {savedPlans.map((plan) => (
+                    <CarouselItem key={plan.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                      <Card 
+                        className={`h-[280px] p-4 hover:shadow-md transition-shadow cursor-pointer ${
+                          selectedPlan?.id === plan.id ? 'border-primary' : ''
+                        }`}
+                        onClick={() => handleSelectPlan(plan)}
+                      >
+                        <div className="h-full flex flex-col">
+                          <h3 className="font-semibold mb-2 line-clamp-2">{formatTitle(plan.title)}</h3>
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-2">
+                            <span className="shrink-0">{getRelativeDate(plan.created_at)}</span>
+                            <div className="flex gap-2 overflow-x-auto no-scrollbar">
+                              <span className="shrink-0 px-2 py-1 bg-[#FF9EBC]/20 text-[#FF9EBC] rounded-full text-xs border border-[#FF9EBC]/30">
+                                Séquence
+                              </span>
+                              {plan.subject && (
+                                <span className="shrink-0 px-2 py-1 bg-primary/10 rounded-full text-xs">
+                                  {plan.subject}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div 
+                            className="text-sm line-clamp-6 prose prose-sm max-w-none flex-grow overflow-y-auto"
+                            dangerouslySetInnerHTML={{ 
+                              __html: formatPreviewContent(plan.content)
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            }}
+                          />
                         </div>
-                        <div 
-                          className="text-sm line-clamp-2 prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ 
-                            __html: formatPreviewContent(plan.content)
-                              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                          }}
-                        />
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                    </div>
-                  </Card>
-                ))}
-                {savedPlans.length === 0 && (
-                  <p className="text-center text-muted-foreground">
-                    Aucune séquence sauvegardée
-                  </p>
+                      </Card>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                {savedPlans.length > 1 && (
+                  <>
+                    <CarouselPrevious className="left-2" />
+                    <CarouselNext className="right-2" />
+                  </>
                 )}
-              </div>
-            </SheetContent>
-          </Sheet>
+              </Carousel>
+            ) : (
+              <p className="text-center text-muted-foreground">
+                Aucune séquence sauvegardée
+              </p>
+            )}
+          </div>
         </div>
         <div className="xl:sticky xl:top-8 space-y-6">
           <ResultDisplay lessonPlan={formData.lessonPlan} />
