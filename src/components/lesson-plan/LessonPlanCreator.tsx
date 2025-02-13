@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
@@ -157,98 +156,96 @@ export function LessonPlanCreator() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <div className="space-y-6">
-          <div className={`${isMobile ? 'space-y-4' : 'flex justify-between items-center'}`}>
-            <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200 flex-grow">
-              <Tabs defaultValue="subject" className="mb-6">
-                <TabsList className="grid grid-cols-2 gap-4">
-                  <TabsTrigger value="subject">Programme scolaire</TabsTrigger>
-                  <TabsTrigger value="text">Texte</TabsTrigger>
-                </TabsList>
-                <TabsContent value="subject">
-                  <SubjectTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
-                </TabsContent>
-                <TabsContent value="text">
-                  <TextTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
-                </TabsContent>
-              </Tabs>
-              <CommonFields formData={formData} handleInputChange={handleInputChange} />
-              <div className="mt-8">
-                <Button 
-                  onClick={handleGenerate}
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  <Wand2 className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-                  {isLoading ? 'Génération en cours...' : 'Générer la séquence'}
-                </Button>
-              </div>
-            </div>
-            
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className={`flex items-center gap-2 ${isMobile ? 'w-full' : ''}`}
-                >
-                  <History className="h-4 w-4" />
-                  Historique
-                </Button>
-              </SheetTrigger>
-              <SheetContent 
-                side={isMobile ? "bottom" : "right"} 
-                className={isMobile ? "h-[80vh]" : "w-[500px] sm:w-[540px]"}
+        <div className="space-y-4">
+          <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
+            <Tabs defaultValue="subject" className="mb-6">
+              <TabsList className="grid grid-cols-2 gap-4">
+                <TabsTrigger value="subject">Programme scolaire</TabsTrigger>
+                <TabsTrigger value="text">Texte</TabsTrigger>
+              </TabsList>
+              <TabsContent value="subject">
+                <SubjectTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
+              </TabsContent>
+              <TabsContent value="text">
+                <TextTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
+              </TabsContent>
+            </Tabs>
+            <CommonFields formData={formData} handleInputChange={handleInputChange} />
+            <div className="mt-8">
+              <Button 
+                onClick={handleGenerate}
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <SheetHeader>
-                  <SheetTitle>Historique des séquences</SheetTitle>
-                  <SheetDescription>
-                    Vos dernières séquences générées
-                  </SheetDescription>
-                </SheetHeader>
-                <div className="mt-4 space-y-4">
-                  {savedPlans.map((plan) => (
-                    <Card 
-                      key={plan.id} 
-                      className={`p-4 hover:shadow-md transition-shadow cursor-pointer ${
-                        selectedPlan?.id === plan.id ? 'border-primary' : ''
-                      }`}
-                      onClick={() => handleSelectPlan(plan)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h3 className="font-semibold mb-2">{formatTitle(plan.title)}</h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 overflow-x-auto no-scrollbar">
-                            <span className="shrink-0">{getRelativeDate(plan.created_at)}</span>
-                            <span className="shrink-0 px-2 py-1 bg-[#FF9EBC]/20 text-[#FF9EBC] rounded-full text-xs border border-[#FF9EBC]/30">
-                              Séquence
-                            </span>
-                            {plan.subject && (
-                              <span className="shrink-0 px-2 py-1 bg-primary/10 rounded-full text-xs">
-                                {plan.subject}
-                              </span>
-                            )}
-                          </div>
-                          <div 
-                            className="text-sm line-clamp-2 prose prose-sm max-w-none"
-                            dangerouslySetInnerHTML={{ 
-                              __html: formatPreviewContent(plan.content)
-                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            }}
-                          />
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                      </div>
-                    </Card>
-                  ))}
-                  {savedPlans.length === 0 && (
-                    <p className="text-center text-muted-foreground">
-                      Aucune séquence sauvegardée
-                    </p>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
+                <Wand2 className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+                {isLoading ? 'Génération en cours...' : 'Générer la séquence'}
+              </Button>
+            </div>
           </div>
+          
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <History className="h-4 w-4" />
+                Historique
+              </Button>
+            </SheetTrigger>
+            <SheetContent 
+              side={isMobile ? "bottom" : "right"} 
+              className={isMobile ? "h-[80vh]" : "w-[500px] sm:w-[540px]"}
+            >
+              <SheetHeader>
+                <SheetTitle>Historique des séquences</SheetTitle>
+                <SheetDescription>
+                  Vos dernières séquences générées
+                </SheetDescription>
+              </SheetHeader>
+              <div className="mt-4 space-y-4">
+                {savedPlans.map((plan) => (
+                  <Card 
+                    key={plan.id} 
+                    className={`p-4 hover:shadow-md transition-shadow cursor-pointer ${
+                      selectedPlan?.id === plan.id ? 'border-primary' : ''
+                    }`}
+                    onClick={() => handleSelectPlan(plan)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold mb-2">{formatTitle(plan.title)}</h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 overflow-x-auto no-scrollbar">
+                          <span className="shrink-0">{getRelativeDate(plan.created_at)}</span>
+                          <span className="shrink-0 px-2 py-1 bg-[#FF9EBC]/20 text-[#FF9EBC] rounded-full text-xs border border-[#FF9EBC]/30">
+                            Séquence
+                          </span>
+                          {plan.subject && (
+                            <span className="shrink-0 px-2 py-1 bg-primary/10 rounded-full text-xs">
+                              {plan.subject}
+                            </span>
+                          )}
+                        </div>
+                        <div 
+                          className="text-sm line-clamp-2 prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ 
+                            __html: formatPreviewContent(plan.content)
+                              .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          }}
+                        />
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                    </div>
+                  </Card>
+                ))}
+                {savedPlans.length === 0 && (
+                  <p className="text-center text-muted-foreground">
+                    Aucune séquence sauvegardée
+                  </p>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
         <div className="xl:sticky xl:top-8 space-y-6">
           <ResultDisplay lessonPlan={formData.lessonPlan} />
