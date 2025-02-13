@@ -26,3 +26,4 @@ export interface SaveLessonPlanParams {
   total_sessions?: number
   additional_instructions?: string
 }
+

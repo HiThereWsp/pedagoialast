@@ -1,9 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
 import { useSavedContent } from "@/hooks/useSavedContent";
-import { Loader2 } from "lucide-react";
-import { AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -11,13 +11,13 @@ import { HistoryCarousel } from "@/components/history/HistoryCarousel";
 import { type SavedContent } from "@/types/saved-content";
 
 export default function SavedContentPage() {
-  const [content, setContent] = useState<SavedContent[]>([]);
-  const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null);
+  const [content, setContent] = useState<SavedContent[]>([])
+  const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null)
   const [errors, setErrors] = useState<{
     exercises?: string;
     lessonPlans?: string;
     delete?: string;
-  }>({});
+  }>({})
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     itemId: string;
@@ -27,6 +27,7 @@ export default function SavedContentPage() {
     itemId: "",
     itemType: ""
   });
+
   const {
     isLoadingExercises,
     isLoadingLessonPlans,
@@ -38,6 +39,7 @@ export default function SavedContentPage() {
   const {
     toast
   } = useToast();
+
   const fetchContent = async () => {
     try {
       const exercises = await getSavedExercises();
@@ -71,9 +73,11 @@ export default function SavedContentPage() {
       }
     }
   };
+
   useEffect(() => {
     fetchContent();
   }, []);
+
   const handleDelete = async (id: string, type: string) => {
     setErrors(prev => ({
       ...prev,
@@ -102,6 +106,7 @@ export default function SavedContentPage() {
       console.error("Erreur lors de la suppression:", err);
     }
   };
+
   const transformToHistoryItems = (items: SavedContent[], type: string) => {
     const colorMap = {
       'Séquence': {
@@ -230,12 +235,17 @@ export default function SavedContentPage() {
             <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
             <AlertDialogDescription>
               Cette action ne peut pas être annulée. Cela supprimera définitivement votre {deleteDialog.itemType.toLowerCase()}.
-              {errors.delete && <p className="text-red-500 mt-2">{errors.delete}</p>}
+              {errors.delete && (
+                <p className="text-red-500 mt-2">{errors.delete}</p>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleDelete(deleteDialog.itemId, deleteDialog.itemType)} className="bg-red-500 hover:bg-red-600">
+            <AlertDialogAction
+              onClick={() => handleDelete(deleteDialog.itemId, deleteDialog.itemType)}
+              className="bg-red-500 hover:bg-red-600"
+            >
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
