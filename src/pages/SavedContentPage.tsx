@@ -7,7 +7,7 @@ import ContentCategory from "@/components/saved-content/ContentCategory";
 import DeleteDialog from "@/components/saved-content/DeleteDialog";
 import { useContentManagement } from "@/hooks/saved-content/useContentManagement";
 
-const SavedContentPage: React.FC = () => {
+function SavedContentPage() {
   const {
     content,
     selectedContent,
@@ -131,6 +131,6 @@ const SavedContentPage: React.FC = () => {
       />
     </>
   );
-};
+}
 
 export default SavedContentPage;
