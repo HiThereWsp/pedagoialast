@@ -19,6 +19,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { formatDistanceToNowStrict } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 export function LessonPlanCreator() {
   const { toast } = useToast();
@@ -99,7 +101,7 @@ export function LessonPlanCreator() {
       }));
 
       await saveLessonPlan({
-        title: `Séquence ${formData.subject || ''} - ${formData.classLevel}`,
+        title: `${formData.subject || ''} - ${formData.classLevel}`.trim(),
         content: functionData.lessonPlan,
         subject: formData.subject,
         class_level: formData.classLevel,
@@ -127,6 +129,18 @@ export function LessonPlanCreator() {
   useEffect(() => {
     loadSavedPlans();
   }, []);
+
+  const getRelativeDate = (date: string) => {
+    return formatDistanceToNowStrict(new Date(date), { 
+      addSuffix: true,
+      locale: fr 
+    }).replace('dans ', 'il y a ');
+  };
+
+  const formatPreviewContent = (content: string) => {
+    const cleanContent = content.replace(/^Séquence pédagogique[\s-]*/i, '').trim();
+    return cleanContent;
+  };
 
   return (
     <div className="space-y-6">
@@ -186,14 +200,25 @@ export function LessonPlanCreator() {
                         <div className="flex-1">
                           <h3 className="font-semibold mb-2">{plan.title}</h3>
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                            <span>{new Date(plan.created_at).toLocaleDateString('fr-FR')}</span>
-                            {plan.subject && (
+                            <span>{getRelativeDate(plan.created_at)}</span>
+                            <div className="flex gap-2">
                               <span className="px-2 py-1 bg-primary/10 rounded-full text-xs">
-                                {plan.subject}
+                                Séquence
                               </span>
-                            )}
+                              {plan.subject && (
+                                <span className="px-2 py-1 bg-primary/10 rounded-full text-xs">
+                                  {plan.subject}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-sm line-clamp-2">{plan.content}</p>
+                          <div 
+                            className="text-sm line-clamp-2 prose prose-sm max-w-none"
+                            dangerouslySetInnerHTML={{ 
+                              __html: formatPreviewContent(plan.content)
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            }}
+                          />
                         </div>
                         <ChevronRight className="h-5 w-5 text-muted-foreground" />
                       </div>
