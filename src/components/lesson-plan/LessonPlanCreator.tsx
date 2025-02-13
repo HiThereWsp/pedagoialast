@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
@@ -157,8 +158,8 @@ export function LessonPlanCreator() {
     <div className="space-y-6">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200 flex-grow mr-2">
+          <div className={`${isMobile ? 'space-y-4' : 'flex justify-between items-center'}`}>
+            <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200 flex-grow">
               <Tabs defaultValue="subject" className="mb-6">
                 <TabsList className="grid grid-cols-2 gap-4">
                   <TabsTrigger value="subject">Programme scolaire</TabsTrigger>
@@ -186,7 +187,10 @@ export function LessonPlanCreator() {
             
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  className={`flex items-center gap-2 ${isMobile ? 'w-full' : ''}`}
+                >
                   <History className="h-4 w-4" />
                   Historique
                 </Button>
