@@ -1,5 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
 import { ResultDisplay } from '@/components/exercise/ResultDisplay';
@@ -7,12 +7,18 @@ import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import { useSavedContent } from '@/hooks/useSavedContent';
 import { SEO } from "@/components/SEO";
 import { HistoryCarousel } from '@/components/history/HistoryCarousel';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from "@/hooks/use-toast";
 
 const ExercisePage = () => {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
   const { saveExercise, getSavedExercises } = useSavedContent();
   const [savedExercises, setSavedExercises] = useState([]);
   const [selectedExercise, setSelectedExercise] = useState(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
@@ -31,16 +37,65 @@ const ExercisePage = () => {
   });
 
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Erreur de session:", error);
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Veuillez vous reconnecter."
+          });
+          navigate('/login');
+          return;
+        }
+
+        if (!session) {
+          navigate('/login');
+          return;
+        }
+
+        setIsAuthChecking(false);
+      } catch (error) {
+        console.error("Erreur lors de la vérification de l'authentification:", error);
+        navigate('/login');
+      }
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        navigate('/login');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
+
+  useEffect(() => {
     const loadSavedExercises = async () => {
+      if (isAuthChecking) return;
+      
       try {
         const exercises = await getSavedExercises();
         setSavedExercises(exercises);
       } catch (error) {
         console.error('Error loading saved exercises:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de charger les exercices sauvegardés."
+        });
       }
     };
+
     loadSavedExercises();
-  }, [getSavedExercises]);
+  }, [getSavedExercises, isAuthChecking, toast]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -70,7 +125,6 @@ const ExercisePage = () => {
 
   const handleSelectExercise = (exercise) => {
     setSelectedExercise(exercise);
-    // Mettre à jour le formulaire avec les données de l'exercice sélectionné
     setFormData(prev => ({
       ...prev,
       subject: exercise.subject || '',
@@ -94,6 +148,14 @@ const ExercisePage = () => {
       }]
     }));
   };
+
+  if (isAuthChecking) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <>
