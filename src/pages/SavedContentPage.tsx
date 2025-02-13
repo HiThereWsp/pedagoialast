@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
 import { Loader2, AlertCircle } from "lucide-react";
