@@ -1,9 +1,7 @@
-
 import { Navigate, Outlet, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Loader2 } from "lucide-react"
 
 export const ProtectedRoute = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
@@ -45,8 +43,13 @@ export const ProtectedRoute = () => {
 
     checkSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state changed:", event)
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || !session) {
+        setIsAuthenticated(false)
+      } else {
+        setIsAuthenticated(true)
+      }
       setIsLoading(false)
     })
 
@@ -56,11 +59,9 @@ export const ProtectedRoute = () => {
   }, [toast])
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
+    return <div className="flex h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
   }
 
   if (!isAuthenticated) {

@@ -22,7 +22,7 @@ import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import PricingPage from '@/pages/PricingPage'
 import OfflineChatPage from '@/pages/OfflineChatPage'
-import ConfirmEmail from "@/pages/ConfirmEmail"
+import ConfirmEmail from "@/pages/ConfirmEmail.tsx"
 import SavedContentPage from '@/pages/SavedContentPage'
 
 export default function AppRoutes() {
