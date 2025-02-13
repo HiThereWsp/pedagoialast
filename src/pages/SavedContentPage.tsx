@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
 import { Loader2, AlertCircle } from "lucide-react";
@@ -7,7 +7,7 @@ import ContentCategory from "@/components/saved-content/ContentCategory";
 import DeleteDialog from "@/components/saved-content/DeleteDialog";
 import { useContentManagement } from "@/hooks/saved-content/useContentManagement";
 
-export default function SavedContentPage() {
+const SavedContentPage: React.FC = () => {
   const {
     content,
     selectedContent,
@@ -131,4 +131,6 @@ export default function SavedContentPage() {
       />
     </>
   );
-}
+};
+
+export default SavedContentPage;
