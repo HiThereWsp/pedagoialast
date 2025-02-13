@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/sheet";
 import { formatDistanceToNowStrict } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function LessonPlanCreator() {
+  const isMobile = useIsMobile();
   const { toast } = useToast();
   const { logToolUsage } = useToolMetrics();
   const { saveLessonPlan, getSavedLessonPlans } = useSavedContent();
@@ -66,6 +68,10 @@ export function LessonPlanCreator() {
     }));
   };
 
+  const formatTitle = (title: string) => {
+    return title.replace(/^Séquence[\s:-]+/i, '').trim();
+  };
+
   const handleGenerate = async () => {
     if (!formData.classLevel || !formData.totalSessions) {
       toast({
@@ -101,7 +107,7 @@ export function LessonPlanCreator() {
       }));
 
       await saveLessonPlan({
-        title: `${formData.subject || ''} - ${formData.classLevel}`.trim(),
+        title: formatTitle(`${formData.subject || ''} - ${formData.classLevel}`.trim()),
         content: functionData.lessonPlan,
         subject: formData.subject,
         class_level: formData.classLevel,
@@ -185,7 +191,10 @@ export function LessonPlanCreator() {
                   Historique
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[500px] sm:w-[540px]">
+              <SheetContent 
+                side={isMobile ? "bottom" : "right"} 
+                className={isMobile ? "h-[80vh]" : "w-[500px] sm:w-[540px]"}
+              >
                 <SheetHeader>
                   <SheetTitle>Historique des séquences</SheetTitle>
                   <SheetDescription>
@@ -203,14 +212,14 @@ export function LessonPlanCreator() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <h3 className="font-semibold mb-2">{plan.title}</h3>
-                          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-2">
-                            <span>{getRelativeDate(plan.created_at)}</span>
-                            <span className="px-2 py-1 bg-[#FF9EBC]/20 text-[#FF9EBC] rounded-full text-xs border border-[#FF9EBC]/30">
+                          <h3 className="font-semibold mb-2">{formatTitle(plan.title)}</h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2 overflow-x-auto no-scrollbar">
+                            <span className="shrink-0">{getRelativeDate(plan.created_at)}</span>
+                            <span className="shrink-0 px-2 py-1 bg-[#FF9EBC]/20 text-[#FF9EBC] rounded-full text-xs border border-[#FF9EBC]/30">
                               Séquence
                             </span>
                             {plan.subject && (
-                              <span className="px-2 py-1 bg-primary/10 rounded-full text-xs">
+                              <span className="shrink-0 px-2 py-1 bg-primary/10 rounded-full text-xs">
                                 {plan.subject}
                               </span>
                             )}
@@ -223,7 +232,7 @@ export function LessonPlanCreator() {
                             }}
                           />
                         </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
                       </div>
                     </Card>
                   ))}
