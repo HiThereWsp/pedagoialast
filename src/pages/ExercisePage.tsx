@@ -1,15 +1,18 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
 import { ResultDisplay } from '@/components/exercise/ResultDisplay';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import { useSavedContent } from '@/hooks/useSavedContent';
 import { SEO } from "@/components/SEO";
+import { HistoryCarousel } from '@/components/history/HistoryCarousel';
 
 const ExercisePage = () => {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
-  const { saveExercise } = useSavedContent();
+  const { saveExercise, getSavedExercises } = useSavedContent();
+  const [savedExercises, setSavedExercises] = useState([]);
+  const [selectedExercise, setSelectedExercise] = useState(null);
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
@@ -27,6 +30,18 @@ const ExercisePage = () => {
     learningDifficulties: '',
   });
 
+  useEffect(() => {
+    const loadSavedExercises = async () => {
+      try {
+        const exercises = await getSavedExercises();
+        setSavedExercises(exercises);
+      } catch (error) {
+        console.error('Error loading saved exercises:', error);
+      }
+    };
+    loadSavedExercises();
+  }, [getSavedExercises]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -38,7 +53,6 @@ const ExercisePage = () => {
     const result = await generateExercises(formData);
     
     if (result && exercises) {
-      // Sauvegarder automatiquement l'exercice généré
       await saveExercise({
         title: `Exercice ${formData.subject || ''} - ${formData.classLevel}`,
         content: exercises,
@@ -47,7 +61,38 @@ const ExercisePage = () => {
         exercise_type: formData.exerciseType,
         difficulty_level: 'standard'
       });
+
+      // Recharger les exercices sauvegardés après la génération
+      const updatedExercises = await getSavedExercises();
+      setSavedExercises(updatedExercises);
     }
+  };
+
+  const handleSelectExercise = (exercise) => {
+    setSelectedExercise(exercise);
+    // Mettre à jour le formulaire avec les données de l'exercice sélectionné
+    setFormData(prev => ({
+      ...prev,
+      subject: exercise.subject || '',
+      classLevel: exercise.class_level || '',
+      exerciseType: exercise.exercise_type || '',
+    }));
+  };
+
+  const transformExercisesToHistoryItems = (exercises) => {
+    return exercises.map(exercise => ({
+      id: exercise.id,
+      title: exercise.title,
+      content: exercise.content,
+      subject: exercise.subject,
+      created_at: exercise.created_at,
+      tags: [{
+        label: exercise.exercise_type || 'Exercice',
+        color: '#FF9EBC',
+        backgroundColor: '#FF9EBC20',
+        borderColor: '#FF9EBC4D'
+      }]
+    }));
   };
 
   return (
@@ -71,6 +116,17 @@ const ExercisePage = () => {
             Créez facilement des exercices adaptés à vos besoins et objectifs d'apprentissage.
           </p>
         </div>
+
+        {savedExercises.length > 0 && (
+          <div className="mb-8">
+            <HistoryCarousel
+              items={transformExercisesToHistoryItems(savedExercises)}
+              onItemSelect={handleSelectExercise}
+              selectedItemId={selectedExercise?.id}
+            />
+          </div>
+        )}
+
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8">
             <div className="w-full overflow-x-hidden">
