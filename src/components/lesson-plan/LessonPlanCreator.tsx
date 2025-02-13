@@ -138,7 +138,12 @@ export function LessonPlanCreator() {
   };
 
   const formatPreviewContent = (content: string) => {
-    const cleanContent = content.replace(/^Séquence pédagogique[\s-]*/i, '').trim();
+    const cleanContent = content
+      .replace(/^Séquence pédagogique[\s-]*/i, '')
+      .replace(/^###\s*/gm, '')
+      .replace(/^\s*\*\*/gm, '')
+      .replace(/\*\*\s*$/gm, '')
+      .trim();
     return cleanContent;
   };
 
@@ -199,18 +204,16 @@ export function LessonPlanCreator() {
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <h3 className="font-semibold mb-2">{plan.title}</h3>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-2">
                             <span>{getRelativeDate(plan.created_at)}</span>
-                            <div className="flex gap-2">
+                            <span className="px-2 py-1 bg-[#FF9EBC]/20 text-[#FF9EBC] rounded-full text-xs border border-[#FF9EBC]/30">
+                              Séquence
+                            </span>
+                            {plan.subject && (
                               <span className="px-2 py-1 bg-primary/10 rounded-full text-xs">
-                                Séquence
+                                {plan.subject}
                               </span>
-                              {plan.subject && (
-                                <span className="px-2 py-1 bg-primary/10 rounded-full text-xs">
-                                  {plan.subject}
-                                </span>
-                              )}
-                            </div>
+                            )}
                           </div>
                           <div 
                             className="text-sm line-clamp-2 prose prose-sm max-w-none"
