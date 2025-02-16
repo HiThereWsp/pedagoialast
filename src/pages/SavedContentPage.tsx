@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
@@ -186,16 +185,18 @@ export default function SavedContentPage() {
         description="Consultez l'historique de vos contenus générés sur PedagoIA - exercices, séquences et documents administratifs."
       />
       
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <Link to="/home" className="flex items-center gap-4 mb-4 md:mb-0">
-            <img 
-              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
-              alt="PedagoIA Logo" 
-              className="w-[60px] h-[72px] object-contain"
-            />
-            <h1 className="text-3xl font-bold">Mes ressources pédagogiques générées</h1>
-          </Link>
+      <div className="container mx-auto py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center">
+            <Link to="/home" className="flex-shrink-0">
+              <img 
+                src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+                alt="PedagoIA Logo" 
+                className="w-[100px] h-[120px] object-contain"
+              />
+            </Link>
+            <h1 className="text-3xl font-bold ml-4">Mes ressources pédagogiques générées</h1>
+          </div>
         </div>
 
         <div className="space-y-8">
