@@ -49,11 +49,11 @@ export const HistoryCarousel = ({
   const renderContent = (item: HistoryItem) => {
     if (item.type === 'Image') {
       return (
-        <div className="flex-grow relative overflow-hidden rounded-md">
+        <div className="flex-grow h-40 relative">
           <img 
             src={item.content} 
             alt={item.title}
-            className="w-full h-full object-cover absolute inset-0"
+            className="w-full h-full object-cover rounded-md"
           />
         </div>
       );

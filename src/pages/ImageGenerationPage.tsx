@@ -22,13 +22,12 @@ export default function ImageGenerationPage() {
 
         if (error) throw error;
 
-        // Transformer les données pour correspondre au type SavedContent
         const formattedImages = data.map(img => ({
           id: img.id,
           title: img.prompt,
           content: img.image_url,
-          type: 'Image',
-          created_at: img.generated_at
+          created_at: img.generated_at,
+          type: 'Image'
         }));
 
         setImages(formattedImages);
