@@ -3,8 +3,45 @@ import { SEO } from "@/components/SEO"
 import { ImageGenerator } from "@/components/image-generation/ImageGenerator"
 import { Image } from "lucide-react"
 import { BackButton } from "@/components/settings/BackButton"
+import { ContentHistory } from "@/components/history/ContentHistory"
+import { useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
+import type { SavedContent } from "@/types/saved-content"
 
 export default function ImageGenerationPage() {
+  const [images, setImages] = useState<SavedContent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('image_generation_usage')
+          .select('*')
+          .order('generated_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Transformer les données pour correspondre au type SavedContent
+        const formattedImages = data.map(img => ({
+          id: img.id,
+          title: img.prompt,
+          content: img.image_url,
+          type: 'Image',
+          created_at: img.generated_at
+        }));
+
+        setImages(formattedImages);
+      } catch (error) {
+        console.error('Erreur lors du chargement des images:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchImages();
+  }, []);
+
   return (
     <>
       <SEO 
@@ -30,8 +67,20 @@ export default function ImageGenerationPage() {
           <p className="text-lg text-gray-600">Qu'est ce que l'on crée aujourd'hui ?</p>
         </div>
 
+        <ContentHistory
+          title="Mes images générées"
+          type="Image"
+          items={images}
+          emptyMessage="Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !"
+          colorScheme={{
+            color: '#F2FCE2',
+            backgroundColor: '#F2FCE220',
+            borderColor: '#F2FCE24D'
+          }}
+        />
+
         <ImageGenerator />
       </div>
     </>
-  )
+  );
 }

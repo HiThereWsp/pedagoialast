@@ -6,15 +6,14 @@ import { ResultDisplay } from '@/components/exercise/ResultDisplay';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import { useSavedContent } from '@/hooks/useSavedContent';
 import { SEO } from "@/components/SEO";
-import { HistoryCarousel } from '@/components/history/HistoryCarousel';
+import { ContentHistory } from '@/components/history/ContentHistory';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
 const ExercisePage = () => {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
-  const { saveExercise, getSavedExercises } = useSavedContent();
+  const { saveExercise, getSavedExercises, deleteSavedExercise } = useSavedContent();
   const [savedExercises, setSavedExercises] = useState([]);
-  const [selectedExercise, setSelectedExercise] = useState(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -35,6 +34,13 @@ const ExercisePage = () => {
     learningStyle: '',
     learningDifficulties: '',
   });
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -83,7 +89,10 @@ const ExercisePage = () => {
       
       try {
         const exercises = await getSavedExercises();
-        setSavedExercises(exercises);
+        setSavedExercises(exercises.map(ex => ({
+          ...ex,
+          type: 'Exercice'
+        })));
       } catch (error) {
         console.error('Error loading saved exercises:', error);
         toast({
@@ -96,13 +105,6 @@ const ExercisePage = () => {
 
     loadSavedExercises();
   }, [getSavedExercises, isAuthChecking, toast]);
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
 
   const handleSubmit = async () => {
     const result = await generateExercises(formData);
@@ -123,32 +125,6 @@ const ExercisePage = () => {
     }
   };
 
-  const handleSelectExercise = (exercise) => {
-    setSelectedExercise(exercise);
-    setFormData(prev => ({
-      ...prev,
-      subject: exercise.subject || '',
-      classLevel: exercise.class_level || '',
-      exerciseType: exercise.exercise_type || '',
-    }));
-  };
-
-  const transformExercisesToHistoryItems = (exercises) => {
-    return exercises.map(exercise => ({
-      id: exercise.id,
-      title: exercise.title,
-      content: exercise.content,
-      subject: exercise.subject,
-      created_at: exercise.created_at,
-      tags: [{
-        label: exercise.exercise_type || 'Exercice',
-        color: '#FF9EBC',
-        backgroundColor: '#FF9EBC20',
-        borderColor: '#FF9EBC4D'
-      }]
-    }));
-  };
-
   if (isAuthChecking) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -160,8 +136,8 @@ const ExercisePage = () => {
   return (
     <>
       <SEO 
-        title="Générateur d'exercices | PedagoIA - Créez des exercices adaptés"
-        description="Créez facilement des exercices personnalisés et adaptés à vos besoins pédagogiques avec notre générateur intelligent."
+        title="Générateur d'exercices | PedagoIA"
+        description="Créez facilement des exercices personnalisés et adaptés avec notre générateur intelligent."
       />
       <div className="container mx-auto px-4 py-8">
         <BackButton />
@@ -179,15 +155,18 @@ const ExercisePage = () => {
           </p>
         </div>
 
-        {savedExercises.length > 0 && (
-          <div className="mb-8">
-            <HistoryCarousel
-              items={transformExercisesToHistoryItems(savedExercises)}
-              onItemSelect={handleSelectExercise}
-              selectedItemId={selectedExercise?.id}
-            />
-          </div>
-        )}
+        <ContentHistory
+          title="Mes exercices générés"
+          type="Exercice"
+          items={savedExercises}
+          onDelete={deleteSavedExercise}
+          emptyMessage="Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
+          colorScheme={{
+            color: '#22C55E',
+            backgroundColor: '#22C55E20',
+            borderColor: '#22C55E4D'
+          }}
+        />
 
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8">
