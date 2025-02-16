@@ -52,11 +52,8 @@ export const ContentHistory = ({
   };
 
   const transformedItems = items.map(item => ({
-    id: item.id,
-    title: item.title,
-    content: item.content,
-    subject: item.subject,
-    created_at: item.created_at,
+    ...item,
+    type: type,
     tags: [{
       label: type,
       ...colorScheme
