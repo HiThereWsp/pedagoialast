@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
@@ -155,19 +156,6 @@ const ExercisePage = () => {
           </p>
         </div>
 
-        <ContentHistory
-          title="Mes exercices générés"
-          type="Exercice"
-          items={savedExercises}
-          onDelete={deleteSavedExercise}
-          emptyMessage="Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
-          colorScheme={{
-            color: '#22C55E',
-            backgroundColor: '#22C55E20',
-            borderColor: '#22C55E4D'
-          }}
-        />
-
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8">
             <div className="w-full overflow-x-hidden">
@@ -184,6 +172,21 @@ const ExercisePage = () => {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-12">
+          <ContentHistory
+            title="Mes exercices générés"
+            type="Exercice"
+            items={savedExercises}
+            onDelete={deleteSavedExercise}
+            emptyMessage="Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
+            colorScheme={{
+              color: '#22C55E',
+              backgroundColor: '#22C55E20',
+              borderColor: '#22C55E4D'
+            }}
+          />
         </div>
       </div>
     </>

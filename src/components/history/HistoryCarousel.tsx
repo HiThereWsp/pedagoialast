@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -12,6 +11,7 @@ interface HistoryItem {
   content: string;
   subject?: string;
   created_at: string;
+  type: string;
   tags?: Array<{
     label: string;
     color?: string;
