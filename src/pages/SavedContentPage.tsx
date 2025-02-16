@@ -11,6 +11,24 @@ import { HistoryCarousel } from "@/components/history/HistoryCarousel";
 import { type SavedContent } from "@/types/saved-content";
 import { Link } from "react-router-dom";
 
+const carouselCategories = [
+  {
+    title: "Mes séquences pédagogiques",
+    type: "Séquence",
+    emptyMessage: "Vous n'avez pas encore généré de séquence pédagogique. C'est le moment de laisser libre cours à votre créativité !"
+  },
+  {
+    title: "Mes exercices",
+    type: "Exercice",
+    emptyMessage: "Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
+  },
+  {
+    title: "Mes images",
+    type: "Image",
+    emptyMessage: "Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !"
+  }
+];
+
 export default function SavedContentPage() {
   const [content, setContent] = useState<SavedContent[]>([])
   const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null)
