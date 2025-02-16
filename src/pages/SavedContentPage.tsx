@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { HistoryCarousel } from "@/components/history/HistoryCarousel";
 import { type SavedContent } from "@/types/saved-content";
+import { Link } from "react-router-dom";
 
 export default function SavedContentPage() {
   const [content, setContent] = useState<SavedContent[]>([])
@@ -160,24 +161,6 @@ export default function SavedContentPage() {
     );
   }
 
-  const carouselCategories = [
-    {
-      title: "Mes séquences pédagogiques",
-      type: "Séquence",
-      emptyMessage: "Vous n'avez pas encore généré de séquence pédagogique. C'est le moment de laisser libre cours à votre créativité !"
-    },
-    {
-      title: "Mes exercices",
-      type: "Exercice",
-      emptyMessage: "Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
-    },
-    {
-      title: "Mes images",
-      type: "Image",
-      emptyMessage: "Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !"
-    }
-  ];
-
   return (
     <>
       <SEO 
@@ -187,7 +170,14 @@ export default function SavedContentPage() {
       
       <div className="container mx-auto py-8 px-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-          <h1 className="text-3xl font-bold">Mes ressources pédagogiques générées</h1>
+          <Link to="/home" className="flex items-center gap-4 mb-4 md:mb-0">
+            <img 
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+              alt="PedagoIA Logo" 
+              className="w-[60px] h-[72px] object-contain"
+            />
+            <h1 className="text-3xl font-bold">Mes ressources pédagogiques générées</h1>
+          </Link>
         </div>
 
         <div className="space-y-8">
