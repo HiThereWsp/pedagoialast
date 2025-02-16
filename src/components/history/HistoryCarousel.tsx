@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
@@ -29,13 +30,7 @@ interface HistoryCarouselProps {
 
 const defaultFormatContent = (content: string | null) => {
   if (!content) return '';
-  
-  return content
-    .replace(/^Séquence pédagogique[\s-]*/i, '')
-    .replace(/^###\s*/gm, '')
-    .replace(/^\s*\*\*/gm, '')
-    .replace(/\*\*\s*$/gm, '')
-    .trim();
+  return content;
 };
 
 export const HistoryCarousel = ({
@@ -49,6 +44,29 @@ export const HistoryCarousel = ({
       addSuffix: true,
       locale: fr
     }).replace('dans ', 'il y a ');
+  };
+
+  const renderContent = (item: HistoryItem) => {
+    if (item.type === 'Image') {
+      return (
+        <div className="flex-grow relative overflow-hidden rounded-md">
+          <img 
+            src={item.content} 
+            alt={item.title}
+            className="w-full h-full object-cover absolute inset-0"
+          />
+        </div>
+      );
+    }
+
+    return (
+      <div 
+        className="text-sm line-clamp-6 prose prose-sm max-w-none flex-grow overflow-y-auto"
+        dangerouslySetInnerHTML={{
+          __html: formatContent(item.content).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        }}
+      />
+    );
   };
 
   return (
@@ -107,12 +125,7 @@ export const HistoryCarousel = ({
                         )}
                       </div>
                     </div>
-                    <div 
-                      className="text-sm line-clamp-6 prose prose-sm max-w-none flex-grow overflow-y-auto"
-                      dangerouslySetInnerHTML={{
-                        __html: formatContent(item.content).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      }}
-                    />
+                    {renderContent(item)}
                   </div>
                 </Card>
               </CarouselItem>

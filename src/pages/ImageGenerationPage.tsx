@@ -67,19 +67,21 @@ export default function ImageGenerationPage() {
           <p className="text-lg text-gray-600">Qu'est ce que l'on crée aujourd'hui ?</p>
         </div>
 
-        <ContentHistory
-          title="Mes images générées"
-          type="Image"
-          items={images}
-          emptyMessage="Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !"
-          colorScheme={{
-            color: '#F2FCE2',
-            backgroundColor: '#F2FCE220',
-            borderColor: '#F2FCE24D'
-          }}
-        />
-
         <ImageGenerator />
+
+        <div className="mt-12">
+          <ContentHistory
+            title="Mes images générées"
+            type="Image"
+            items={images}
+            emptyMessage="Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !"
+            colorScheme={{
+              color: '#F2FCE2',
+              backgroundColor: '#F2FCE220',
+              borderColor: '#F2FCE24D'
+            }}
+          />
+        </div>
       </div>
     </>
   );
