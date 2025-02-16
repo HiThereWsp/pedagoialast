@@ -16,6 +16,10 @@ export const getAuthErrorMessage = (error: AuthError): string => {
         }
         return "Les identifiants fournis sont invalides."
       case 422:
+        if (error.code === 'same_password'){
+          return "Pour des raisons de sécurité, veuillez choisir un mot de passe différent de vos mots de passe précédents. Assurez-vous que votre nouveau mot de passe est unique et sécurisé."
+        }
+
         return "Format d'email invalide."
       case 429:
         return "Trop de tentatives. Veuillez réessayer plus tard."
