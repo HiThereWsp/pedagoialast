@@ -92,7 +92,13 @@ const ExercisePage = () => {
         const exercises = await getSavedExercises();
         setSavedExercises(exercises.map(ex => ({
           ...ex,
-          type: 'Exercice'
+          type: 'Exercice', // Ajout explicite du type
+          tags: [{
+            label: 'Exercice',
+            color: '#22C55E',
+            backgroundColor: '#22C55E20',
+            borderColor: '#22C55E4D'
+          }]
         })));
       } catch (error) {
         console.error('Error loading saved exercises:', error);
@@ -122,7 +128,16 @@ const ExercisePage = () => {
 
       // Recharger les exercices sauvegardés après la génération
       const updatedExercises = await getSavedExercises();
-      setSavedExercises(updatedExercises);
+      setSavedExercises(updatedExercises.map(ex => ({
+        ...ex,
+        type: 'Exercice',
+        tags: [{
+          label: 'Exercice',
+          color: '#22C55E',
+          backgroundColor: '#22C55E20',
+          borderColor: '#22C55E4D'
+        }]
+      })));
     }
   };
 
