@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -52,7 +53,7 @@ export function useExerciseGeneration() {
 
   const generateExercises = async (formData: ExerciseFormData) => {
     if (!validateFormData(formData)) {
-      return;
+      return false;
     }
 
     setIsLoading(true);
@@ -71,8 +72,10 @@ export function useExerciseGeneration() {
       setExercises(data.exercises);
       toast({
         title: "Exercices générés avec succès",
-        description: "Vos exercices ont été créés",
+        description: "Vos exercices ont été créés et sauvegardés",
       });
+      
+      return true;
     } catch (error) {
       console.error('Error generating exercises:', error);
       toast({
@@ -80,6 +83,7 @@ export function useExerciseGeneration() {
         description: "Une erreur est survenue lors de la génération des exercices",
         variant: "destructive",
       });
+      return false;
     } finally {
       setIsLoading(false);
     }

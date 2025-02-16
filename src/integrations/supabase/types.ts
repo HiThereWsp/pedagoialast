@@ -311,6 +311,84 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_exercises: {
+        Row: {
+          class_level: string | null
+          content: string
+          created_at: string
+          difficulty_level: string | null
+          exercise_type: string | null
+          id: string
+          subject: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          class_level?: string | null
+          content: string
+          created_at?: string
+          difficulty_level?: string | null
+          exercise_type?: string | null
+          id?: string
+          subject?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          class_level?: string | null
+          content?: string
+          created_at?: string
+          difficulty_level?: string | null
+          exercise_type?: string | null
+          id?: string
+          subject?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_lesson_plans: {
+        Row: {
+          additional_instructions: string | null
+          class_level: string | null
+          content: string
+          created_at: string
+          id: string
+          subject: string | null
+          title: string
+          total_sessions: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_instructions?: string | null
+          class_level?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          subject?: string | null
+          title: string
+          total_sessions?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_instructions?: string | null
+          class_level?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          subject?: string | null
+          title?: string
+          total_sessions?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       session_metrics: {
         Row: {
           conversation_id: string | null
@@ -701,6 +779,12 @@ export type Database = {
             }
             Returns: unknown
           }
+      check_saved_content_limit: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: boolean
+      }
       generate_report: {
         Args: Record<PropertyKey, never>
         Returns: string
