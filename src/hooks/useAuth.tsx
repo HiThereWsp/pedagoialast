@@ -28,20 +28,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { toast } = useToast()
 
   useEffect(() => {
+    let mounted = true
+
     // Vérifie la session initiale
     const checkUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        setUser(user)
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error) throw error
+        
+        if (mounted) {
+          setUser(user)
+        }
       } catch (error) {
         console.error("Erreur lors de la vérification de l'utilisateur:", error)
-        toast({
-          title: "Erreur d'authentification",
-          description: "Une erreur est survenue lors de la vérification de votre session.",
-          variant: "destructive",
-        })
+        if (mounted) {
+          toast({
+            title: "Erreur d'authentification",
+            description: "Une erreur est survenue lors de la vérification de votre session.",
+            variant: "destructive",
+          })
+        }
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
 
@@ -50,15 +61,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     // Écoute les changements d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setUser(session?.user ?? null)
-        setLoading(false)
+        if (mounted) {
+          console.log("Auth state changed:", event)
+          console.log("Session active:", session?.user?.email)
+          setUser(session?.user ?? null)
+          setLoading(false)
+        }
       }
     )
 
     return () => {
+      mounted = false
       subscription.unsubscribe()
     }
   }, [toast])
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
