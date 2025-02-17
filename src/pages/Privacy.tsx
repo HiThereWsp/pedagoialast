@@ -1,3 +1,4 @@
+
 import { SEO } from "@/components/SEO"
 import { BackButton } from "@/components/settings/BackButton"
 
@@ -87,7 +88,7 @@ export default function Privacy() {
           <li>Selon nos obligations légales pour certaines données</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8" id="data-deletion">4. Vos droits</h2>
+        <h2 className="text-2xl font-semibold mt-8">4. Vos droits</h2>
         <p>En tant qu'utilisateur, vous disposez des droits suivants :</p>
         <h3 className="text-xl font-medium mt-4">4.1 Droits d'accès et de contrôle</h3>
         <ul className="list-disc pl-5 mb-4">
@@ -105,6 +106,7 @@ export default function Privacy() {
           <li>Email : bonjour@pedagoia.fr</li>
           <li>Délai de réponse : 30 jours maximum</li>
           <li>Justificatif d'identité requis pour certaines demandes</li>
+          <li>Pour supprimer votre compte et vos données, <a href="/delete-account" className="text-primary hover:underline">cliquez ici</a></li>
         </ul>
 
         <h2 className="text-2xl font-semibold mt-8">5. Partage des données</h2>
