@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useNavigate } from 'react-router-dom';
+import { AnimatedResultDisplay } from '@/components/shared/AnimatedResultDisplay';
 
 interface ResultDisplayProps {
   lessonPlan: string;
@@ -13,9 +13,6 @@ interface ResultDisplayProps {
 
 export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }: ResultDisplayProps) {
   const navigate = useNavigate();
-  const [displayedContent, setDisplayedContent] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleGenerateExercise = () => {
     navigate('/exercise', { 
@@ -27,34 +24,6 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
       } 
     });
   };
-
-  const typeContent = (content: string, index = 0) => {
-    if (index <= content.length) {
-      setDisplayedContent(content.slice(0, index));
-      timeoutRef.current = setTimeout(() => {
-        typeContent(content, index + 3); // Augmente de 3 caractères à la fois pour une vitesse optimale
-      }, 1); // Délai minimal entre chaque ajout de caractères
-    } else {
-      setIsTyping(false);
-    }
-  };
-
-  useEffect(() => {
-    if (lessonPlan) {
-      setIsTyping(true);
-      setDisplayedContent("");
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      typeContent(lessonPlan);
-    }
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [lessonPlan]);
 
   const formatContent = (content: string) => {
     const formattedContent = content
@@ -84,39 +53,20 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
     return formattedContent;
   };
 
+  const actions = lessonPlan ? (
+    <Button
+      onClick={handleGenerateExercise}
+      className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
+    >
+      Générer un exercice à partir de cette séquence
+    </Button>
+  ) : null;
+
   return (
-    <div className="space-y-4">
-      <Card className={`p-6 relative ${isTyping ? 'animate-pulse-subtle' : ''}`}>
-        <div className="prose prose-headings:text-black prose-p:text-black max-w-none">
-          <div 
-            dangerouslySetInnerHTML={{ __html: formatContent(displayedContent) }}
-            className="space-y-2 text-black selection:bg-blue-100"
-          />
-        </div>
-        {isTyping && (
-          <div className="absolute bottom-4 right-4">
-            <div className="flex items-center gap-2">
-              <div className="text-sm text-gray-500">Génération en cours</div>
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Card>
-      
-      {lessonPlan && !isTyping && (
-        <div className="flex justify-end space-x-4">
-          <Button
-            onClick={handleGenerateExercise}
-            className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
-          >
-            Générer un exercice à partir de cette séquence
-          </Button>
-        </div>
-      )}
-    </div>
+    <AnimatedResultDisplay
+      content={lessonPlan}
+      formatContent={formatContent}
+      actions={actions}
+    />
   );
 }
