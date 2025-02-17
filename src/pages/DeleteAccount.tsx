@@ -14,17 +14,32 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { useNavigate } from "react-router-dom"
 
 export default function DeleteAccount() {
   const [isLoading, setIsLoading] = useState(false)
+  const [confirmText, setConfirmText] = useState("")
   const { toast } = useToast()
   const navigate = useNavigate()
+  
+  const CONFIRMATION_TEXT = "supprimer mon compte définitivement"
+  const isConfirmationValid = confirmText.toLowerCase().trim() === CONFIRMATION_TEXT
 
   const handleDeleteAccount = async () => {
     try {
+      if (!isConfirmationValid) {
+        toast({
+          title: "Erreur de confirmation",
+          description: "Veuillez recopier exactement la phrase de confirmation.",
+          variant: "destructive"
+        })
+        return
+      }
+
       setIsLoading(true)
       const { error } = await supabase.auth.signOut()
       
@@ -70,10 +85,29 @@ export default function DeleteAccount() {
             <li>La suppression de vos données personnelles</li>
             <li>La perte d'accès immédiate à tous nos services</li>
           </ul>
+
+          <div className="mb-6">
+            <Label htmlFor="confirmation">
+              Pour confirmer, veuillez recopier la phrase suivante (sans copier-coller) :
+            </Label>
+            <p className="font-medium text-destructive my-2">
+              {CONFIRMATION_TEXT}
+            </p>
+            <Input
+              id="confirmation"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              placeholder="Recopiez la phrase ici..."
+              className="w-full max-w-md"
+            />
+          </div>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" disabled={isLoading}>
+              <Button 
+                variant="destructive" 
+                disabled={isLoading || !isConfirmationValid}
+              >
                 {isLoading ? "Suppression..." : "Supprimer mon compte"}
               </Button>
             </AlertDialogTrigger>
