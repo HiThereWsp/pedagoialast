@@ -57,7 +57,7 @@ Format de sortie souhaité :
     console.log('Generating lesson plan with prompt:', detailedPrompt)
 
     const completion = await openAI.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
