@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
@@ -9,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { lessonPlansService } from '@/services/lesson-plans';
 import { SavedContent } from '@/types/saved-content';
 import { useToast } from "@/hooks/use-toast";
+import { MarkdownContent } from './result/MarkdownContent';
 
 interface ExerciseFormProps {
   formData: {
@@ -41,11 +43,10 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
     const fetchLessonPlans = async () => {
       try {
         const plans = await lessonPlansService.getAll();
-        const transformedPlans = plans.map(plan => ({
+        setLessonPlans(plans.map(plan => ({
           ...plan,
           type: 'lesson_plan' as const
-        }));
-        setLessonPlans(transformedPlans);
+        })));
       } catch (error) {
         console.error('Erreur lors du chargement des séquences:', error);
         toast({
@@ -117,13 +118,20 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
               <label htmlFor="lessonPlanContent" className="block text-sm font-medium text-gray-700">
                 Ou collez le contenu d'une séquence
               </label>
-              <Textarea
-                id="lessonPlanContent"
-                value={formData.lessonPlanContent}
-                onChange={(e) => handleInputChange('lessonPlanContent', e.target.value)}
-                placeholder="Collez ici le contenu de votre séquence..."
-                className="min-h-[100px]"
-              />
+              <div className="space-y-4">
+                <Textarea
+                  id="lessonPlanContent"
+                  value={formData.lessonPlanContent}
+                  onChange={(e) => handleInputChange('lessonPlanContent', e.target.value)}
+                  placeholder="Collez ici le contenu de votre séquence..."
+                  className="min-h-[100px]"
+                />
+                {formData.lessonPlanContent && (
+                  <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                    <MarkdownContent content={formData.lessonPlanContent} />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
