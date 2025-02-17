@@ -9,6 +9,8 @@ export interface SavedContent {
   type: string
   source_type?: 'direct' | 'from_lesson_plan'
   source_lesson_plan_title?: string
+  exercise_type?: string
+  difficulty_level?: string
 }
 
 export interface SaveExerciseParams {
@@ -22,7 +24,11 @@ export interface SaveExerciseParams {
   source_type?: 'direct' | 'from_lesson_plan'
 }
 
-export interface SaveLessonPlanParams extends SavedContent {
+export interface SaveLessonPlanParams {
+  title: string
+  content: string
+  subject?: string
+  class_level?: string
   total_sessions?: number
   additional_instructions?: string
 }
@@ -43,3 +49,4 @@ export interface HistoryItem extends SavedContent {
     borderColor: string
   }[]
 }
+

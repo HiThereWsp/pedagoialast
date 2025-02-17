@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveExerciseParams, ExtractedExercise } from "@/types/saved-content"
 
@@ -14,6 +13,7 @@ export const exercisesService = {
       .insert([{
         ...params,
         user_id: user.id,
+        type: 'exercise',
         source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
       }])
 
@@ -39,8 +39,15 @@ export const exercisesService = {
       console.error('Error fetching exercises:', error)
       throw error
     }
-    console.log('Fetched exercises:', data)
-    return data
+
+    // Transformer les données pour inclure le type
+    const transformedData = data.map(exercise => ({
+      ...exercise,
+      type: 'exercise'
+    }))
+    
+    console.log('Fetched exercises:', transformedData)
+    return transformedData
   },
 
   async delete(id: string) {
