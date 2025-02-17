@@ -26,15 +26,22 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     });
   };
 
-  const splitContent = (content: string) => {
-    const parts = content.split('FICHE PÉDAGOGIQUE');
-    return {
-      studentSheet: parts[0].trim(),
-      teacherSheet: parts[1] ? `FICHE PÉDAGOGIQUE${parts[1]}` : ''
-    };
-  };
+  const formatContent = (content: string) => {
+    // Supprime les mentions "Fiche élève" redondantes
+    let formattedContent = content;
+    const sections = content.split('FICHE PÉDAGOGIQUE');
+    
+    if (sections.length > 1) {
+      // Pour la fiche élève, on ne garde qu'une seule mention "Fiche élève"
+      const studentSection = sections[0].replace(/Fiche élève[\s:-]*/g, '');
+      formattedContent = `Fiche élève\n\n${studentSection}FICHE PÉDAGOGIQUE${sections[1]}`;
+    }
 
-  const { studentSheet, teacherSheet } = splitContent(exercises);
+    // Remplace "Objectif pédagogique" par "Objectif pédagogique / Thème"
+    formattedContent = formattedContent.replace(/Objectif pédagogique/g, 'Objectif pédagogique / Thème');
+
+    return formattedContent;
+  };
 
   const handleCopy = async (text: string) => {
     try {
@@ -53,25 +60,18 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      await navigator.share({
-        title: 'Exercices générés par Pedagoia',
-        text: exercises,
-      });
-      toast({
-        description: "Merci d'avoir partagé ces exercices !",
-      });
-    } catch (err) {
-      await handleCopy(exercises);
-      toast({
-        description: "Les exercices ont été copiés, vous pouvez maintenant les partager",
-      });
-    }
+  const splitContent = (content: string) => {
+    const parts = content.split('FICHE PÉDAGOGIQUE');
+    return {
+      studentSheet: formatContent(parts[0]).trim(),
+      teacherSheet: parts[1] ? `FICHE PÉDAGOGIQUE${parts[1]}` : ''
+    };
   };
 
+  const { studentSheet, teacherSheet } = splitContent(exercises);
+
   return (
-    <Card className="relative bg-white p-4 sm:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+    <Card className="p-4 sm:p-6 relative bg-white rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
         <HeaderSection exerciseCount={exercises} />
         <FeedbackButtons
@@ -89,7 +89,7 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
       />
 
       <div className="mt-6 flex justify-end">
-        <ShareButton onShare={handleShare} />
+        <ShareButton onShare={() => handleCopy(exercises)} />
       </div>
     </Card>
   );

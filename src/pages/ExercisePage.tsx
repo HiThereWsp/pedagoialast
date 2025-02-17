@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
@@ -10,20 +10,23 @@ import { SEO } from "@/components/SEO";
 import { ContentHistory } from '@/components/history/ContentHistory';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
+import { RefreshCw, Plus } from "lucide-react";
 
 const ExercisePage = () => {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
-  const { saveExercise, getSavedExercises, deleteSavedExercise } = useSavedContent();
+  const { saveExercise, getSavedExercises } = useSavedContent();
   const [savedExercises, setSavedExercises] = useState([]);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const resultRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
-    numberOfExercises: '',
-    questionsPerExercise: '',
+    numberOfExercises: '1',
+    questionsPerExercise: '3',
     objective: '',
     exerciseType: '',
     additionalInstructions: '',
@@ -43,6 +46,33 @@ const ExercisePage = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const scrollToResult = () => {
+    setTimeout(() => {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  const handleNewExercise = () => {
+    setFormData({
+      subject: '',
+      classLevel: '',
+      numberOfExercises: '1',
+      questionsPerExercise: '3',
+      objective: '',
+      exerciseType: '',
+      additionalInstructions: '',
+      specificNeeds: '',
+      strengths: '',
+      challenges: '',
+      originalExercise: '',
+      studentProfile: '',
+      learningStyle: '',
+      learningDifficulties: '',
+      lessonPlanId: '',
+      lessonPlanContent: ''
+    });
   };
 
   useEffect(() => {
@@ -74,16 +104,6 @@ const ExercisePage = () => {
     };
 
     checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate('/login');
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
   }, [navigate, toast]);
 
   useEffect(() => {
@@ -94,7 +114,7 @@ const ExercisePage = () => {
         const exercises = await getSavedExercises();
         setSavedExercises(exercises.map(ex => ({
           ...ex,
-          type: 'Exercice', // Ajout explicite du type
+          type: 'exercise',
           tags: [{
             label: 'Exercice',
             color: '#22C55E',
@@ -116,14 +136,11 @@ const ExercisePage = () => {
   }, [getSavedExercises, isAuthChecking, toast]);
 
   const handleSubmit = async () => {
-    const result = await generateExercises({
-      ...formData,
-      context: formData.lessonPlanContent || undefined
-    });
+    const result = await generateExercises(formData);
     
     if (result && exercises) {
       await saveExercise({
-        title: `Exercice ${formData.subject || ''} - ${formData.classLevel}`,
+        title: `Exercice ${formData.subject} - ${formData.classLevel} - ${formData.objective}`,
         content: exercises,
         subject: formData.subject,
         class_level: formData.classLevel,
@@ -137,21 +154,20 @@ const ExercisePage = () => {
       const updatedExercises = await getSavedExercises();
       setSavedExercises(updatedExercises.map(ex => ({
         ...ex,
-        type: 'Exercice',
+        type: 'exercise',
         tags: [{
           label: 'Exercice',
           color: '#22C55E',
           backgroundColor: '#22C55E20',
           borderColor: '#22C55E4D'
-        },
-        ...(ex.source_type === 'from_lesson_plan' ? [{
-          label: 'Depuis une séquence',
-          color: '#6366F1',
-          backgroundColor: '#6366F120',
-          borderColor: '#6366F14D'
-        }] : [])
-        ]
+        }]
       })));
+
+      scrollToResult();
+      toast({
+        title: "Succès",
+        description: "L'exercice a été généré et sauvegardé avec succès."
+      });
     }
   };
 
@@ -196,8 +212,26 @@ const ExercisePage = () => {
               />
             </div>
             {exercises && (
-              <div className="xl:sticky xl:top-8 w-full">
+              <div ref={resultRef} className="xl:sticky xl:top-8 w-full space-y-4">
                 <ResultDisplay exercises={exercises} />
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    onClick={() => handleSubmit()}
+                    className="flex items-center gap-2 bg-gradient-to-r from-[#F97316] to-[#D946EF]"
+                    disabled={isLoading}
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    Régénérer
+                  </Button>
+                  <Button
+                    onClick={handleNewExercise}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Nouvel exercice
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -208,7 +242,6 @@ const ExercisePage = () => {
             title="Mes exercices générés"
             type="Exercice"
             items={savedExercises}
-            onDelete={deleteSavedExercise}
             emptyMessage="Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
             colorScheme={{
               color: '#22C55E',
