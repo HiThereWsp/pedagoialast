@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
 import "https://deno.land/x/xhr@0.3.0/mod.ts"
 
@@ -25,7 +26,8 @@ serve(async (req) => {
       originalExercise,
       studentProfile,
       learningDifficulties,
-      learningStyle
+      learningStyle,
+      lessonPlanContent
     } = await req.json()
 
     let prompt = ""
@@ -84,7 +86,8 @@ OUTILS COMPLÉMENTAIRES :
 - Aides méthodologiques :`
     } else {
       // Prompt pour la génération
-      prompt = `Créez ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
+      prompt = `Créez ${numberOfExercises || 1} exercices en ${subject} pour le niveau ${classLevel}.
+${lessonPlanContent ? `Contexte pédagogique de la séquence : ${lessonPlanContent}` : ''}
 Objectif pédagogique : ${objective}
 ${exerciseType ? `Type d'exercice attendu : ${exerciseType}` : ''}
 ${questionsPerExercise ? `Nombre de questions par exercice : ${questionsPerExercise}` : 'Nombre de questions adapté selon pertinence'}
@@ -94,18 +97,18 @@ ${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
 ${challenges ? `Points de vigilance : ${challenges}` : ''}
 ${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
 
-FORMAT ATTENDU :
+FORMAT ATTENDU POUR CHAQUE EXERCICE:
 
 FICHE ÉLÈVE
 -----------
-Exercice 1
+Exercice [Numéro]
 Consigne : 
 Questions :
 1.
 2.
 etc.
 
-[Répéter selon nombre demandé]
+[Répéter ce format ${numberOfExercises || 1} fois]
 
 FICHE PÉDAGOGIQUE
 ----------------
@@ -115,7 +118,7 @@ PRÉPARATION :
 - Prérequis :
 
 CORRIGÉ ET AIDE À L'ACCOMPAGNEMENT :
-Exercice 1
+Pour chaque exercice :
 1. [Réponse]
    Explicitation : 
    Points de vigilance :
@@ -145,7 +148,7 @@ CONSEILS DE MISE EN ŒUVRE :
         messages: [
           {
             role: 'system',
-            content: 'Tu es un expert en pédagogie spécialisé dans la différenciation pédagogique. Tu aides à créer des exercices adaptés aux besoins spécifiques des élèves tout en respectant les programmes officiels de l\'Education Nationale.'
+            content: 'Tu es un expert en pédagogie spécialisé dans la création d\'exercices adaptés. Tu génères exactement le nombre d\'exercices demandé en respectant scrupuleusement le format attendu.'
           },
           {
             role: 'user',
@@ -154,7 +157,7 @@ CONSEILS DE MISE EN ŒUVRE :
         ],
         temperature: 0.7,
       }),
-    })
+    });
 
     if (!response.ok) {
       const error = await response.text()
@@ -186,4 +189,4 @@ CONSEILS DE MISE EN ŒUVRE :
       }
     )
   }
-})
+});

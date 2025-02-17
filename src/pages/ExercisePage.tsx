@@ -34,6 +34,8 @@ const ExercisePage = () => {
     studentProfile: '',
     learningStyle: '',
     learningDifficulties: '',
+    lessonPlanId: '',
+    lessonPlanContent: ''
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -114,7 +116,10 @@ const ExercisePage = () => {
   }, [getSavedExercises, isAuthChecking, toast]);
 
   const handleSubmit = async () => {
-    const result = await generateExercises(formData);
+    const result = await generateExercises({
+      ...formData,
+      context: formData.lessonPlanContent || undefined
+    });
     
     if (result && exercises) {
       await saveExercise({
@@ -123,7 +128,9 @@ const ExercisePage = () => {
         subject: formData.subject,
         class_level: formData.classLevel,
         exercise_type: formData.exerciseType,
-        difficulty_level: 'standard'
+        difficulty_level: 'standard',
+        source_lesson_plan_id: formData.lessonPlanId || undefined,
+        source_type: formData.lessonPlanId ? 'from_lesson_plan' : 'direct'
       });
 
       // Recharger les exercices sauvegardés après la génération
@@ -136,7 +143,14 @@ const ExercisePage = () => {
           color: '#22C55E',
           backgroundColor: '#22C55E20',
           borderColor: '#22C55E4D'
-        }]
+        },
+        ...(ex.source_type === 'from_lesson_plan' ? [{
+          label: 'Depuis une séquence',
+          color: '#6366F1',
+          backgroundColor: '#6366F120',
+          borderColor: '#6366F14D'
+        }] : [])
+        ]
       })));
     }
   };

@@ -42,5 +42,13 @@ export const lessonPlansService = {
       .eq('user_id', user.id)
 
     if (error) throw error
+  },
+
+  extractExercises(content: string): string[] {
+    // Recherche des sections qui commencent par "Exercice" ou "Activité"
+    const exerciseRegex = /(?:Exercice|Activité)\s*\d*\s*[:]\s*((?:[^]*?)(?=(?:Exercice|Activité|$)))/g;
+    const matches = [...content.matchAll(exerciseRegex)];
+    
+    return matches.map(match => match[1].trim());
   }
 }

@@ -13,6 +13,8 @@ export interface ExerciseFormData {
   specificNeeds: string;
   strengths: string;
   challenges: string;
+  lessonPlanContent?: string;
+  questionsPerExercise?: string;
 }
 
 export function useExerciseGeneration() {
@@ -58,17 +60,26 @@ export function useExerciseGeneration() {
 
     setIsLoading(true);
     try {
+      console.log('Generating exercises with data:', formData);
+      
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
-          specificNeeds: formData.specificNeeds.trim(),
-          strengths: formData.strengths.trim(),
-          challenges: formData.challenges.trim()
+          numberOfExercises: parseInt(formData.numberOfExercises) || 1,
+          questionsPerExercise: parseInt(formData.questionsPerExercise) || 3,
+          specificNeeds: formData.specificNeeds?.trim(),
+          strengths: formData.strengths?.trim(),
+          challenges: formData.challenges?.trim(),
+          lessonPlanContent: formData.lessonPlanContent
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
+      console.log('Generated exercises:', data);
       setExercises(data.exercises);
       toast({
         title: "Exercices générés avec succès",
