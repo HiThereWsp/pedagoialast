@@ -6,7 +6,7 @@ export interface SavedContent {
   subject?: string
   class_level?: string
   created_at: string
-  type: 'exercise' | 'lesson_plan'
+  type: 'exercise' | 'lesson_plan' | 'image'
   source_type?: 'direct' | 'from_lesson_plan'
   source_lesson_plan_title?: string
   exercise_type?: string
