@@ -87,7 +87,7 @@ export default function Privacy() {
           <li>Selon nos obligations légales pour certaines données</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8">4. Vos droits</h2>
+        <h2 className="text-2xl font-semibold mt-8" id="data-deletion">4. Vos droits</h2>
         <p>En tant qu'utilisateur, vous disposez des droits suivants :</p>
         <h3 className="text-xl font-medium mt-4">4.1 Droits d'accès et de contrôle</h3>
         <ul className="list-disc pl-5 mb-4">

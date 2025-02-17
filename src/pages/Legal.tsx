@@ -1,3 +1,4 @@
+
 import { SEO } from "@/components/SEO"
 import { BackButton } from "@/components/settings/BackButton"
 import { LegalCard } from "@/components/legal/LegalCard"
@@ -11,6 +12,10 @@ export default function Legal() {
     {
       to: "/privacy",
       title: "Politique de Confidentialité"
+    },
+    {
+      to: "/delete-account",
+      title: "Supprimer mon compte"
     }
   ]
 
