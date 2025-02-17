@@ -60,6 +60,8 @@ export function useExerciseGeneration() {
 
     setIsLoading(true);
     try {
+      console.log('Generating exercises with data:', formData);
+      
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
@@ -72,8 +74,12 @@ export function useExerciseGeneration() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
 
+      console.log('Generated exercises:', data);
       setExercises(data.exercises);
       toast({
         title: "Exercices générés avec succès",

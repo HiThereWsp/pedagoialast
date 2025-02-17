@@ -22,11 +22,7 @@ export interface SaveExerciseParams {
   source_type?: 'direct' | 'from_lesson_plan'
 }
 
-export interface SaveLessonPlanParams {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
+export interface SaveLessonPlanParams extends SavedContent {
   total_sessions?: number
   additional_instructions?: string
 }

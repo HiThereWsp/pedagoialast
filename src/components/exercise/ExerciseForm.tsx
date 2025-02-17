@@ -8,7 +8,7 @@ import { DifferentiateExerciseForm } from './form/DifferentiateExerciseForm';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { lessonPlansService } from '@/services/lesson-plans';
-import { SaveLessonPlanParams } from '@/types/saved-content';
+import { SavedContent } from '@/types/saved-content';
 import { useToast } from "@/hooks/use-toast";
 
 interface ExerciseFormProps {
@@ -35,7 +35,7 @@ interface ExerciseFormProps {
 
 export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoading }: ExerciseFormProps) {
   const [isDifferentiation, setIsDifferentiation] = useState(false);
-  const [lessonPlans, setLessonPlans] = useState<SaveLessonPlanParams[]>([]);
+  const [lessonPlans, setLessonPlans] = useState<SavedContent[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
