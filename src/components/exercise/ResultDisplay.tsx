@@ -72,7 +72,10 @@ export function ResultDisplay({ exercises, onRegenerate, onNewExercise }: Result
         if (line.trim().startsWith('-')) {
           return `<p class="ml-6 my-1 text-gray-700">${line}</p>`;
         }
-        return line ? `<p class="my-2 text-gray-700">${line}</p>` : '<br/>';
+        if (line.trim().length === 0) {
+          return '<br/>';
+        }
+        return `<p class="my-2 text-gray-700">${line}</p>`;
       })
       .join('\n');
   };
