@@ -7,6 +7,8 @@ import { SidebarProvider } from '@/components/ui/sidebar'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MotionConfig } from 'framer-motion'
+import { useEffect } from 'react'
+import { checkSupabaseConnection } from '@/integrations/supabase/client'
 
 // Create a client
 const queryClient = new QueryClient({
@@ -19,6 +21,11 @@ const queryClient = new QueryClient({
 })
 
 function App() {
+  useEffect(() => {
+    // Vérifie la connexion Supabase au démarrage
+    checkSupabaseConnection();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
