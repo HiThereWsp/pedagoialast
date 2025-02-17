@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Plus } from "lucide-react";
+import type { SavedContent } from '@/types/saved-content';
 
 const ExercisePage = () => {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
@@ -116,7 +117,7 @@ const ExercisePage = () => {
         const exercises = await getSavedExercises();
         setSavedExercises(exercises.map(ex => ({
           ...ex,
-          type: 'exercise',
+          type: 'exercise' as const,
           tags: [{
             label: 'Exercice',
             color: '#22C55E',
@@ -141,35 +142,45 @@ const ExercisePage = () => {
     const result = await generateExercises(formData);
     
     if (result && exercises) {
-      await saveExercise({
-        title: `Exercice ${formData.subject} - ${formData.classLevel} - ${formData.objective}`,
-        content: exercises,
-        subject: formData.subject,
-        class_level: formData.classLevel,
-        exercise_type: formData.exerciseType,
-        difficulty_level: 'standard',
-        source_lesson_plan_id: formData.lessonPlanId || undefined,
-        source_type: formData.lessonPlanId ? 'from_lesson_plan' : 'direct'
-      });
+      try {
+        await saveExercise({
+          title: `Exercice ${formData.subject} - ${formData.classLevel} - ${formData.objective}`,
+          content: exercises,
+          subject: formData.subject,
+          class_level: formData.classLevel,
+          exercise_type: formData.exerciseType,
+          difficulty_level: 'standard',
+          source_lesson_plan_id: formData.lessonPlanId || undefined,
+          source_type: formData.lessonPlanId ? 'from_lesson_plan' : 'direct'
+        });
 
-      setShowForm(false);
-      const updatedExercises = await getSavedExercises();
-      setSavedExercises(updatedExercises.map(ex => ({
-        ...ex,
-        type: 'exercise' as const,
-        tags: [{
-          label: 'Exercice',
-          color: '#22C55E',
-          backgroundColor: '#22C55E20',
-          borderColor: '#22C55E4D'
-        }]
-      })));
+        setShowForm(false); // Rétracte le formulaire après la génération
 
-      scrollToResult();
-      toast({
-        title: "Succès",
-        description: "L'exercice a été généré et sauvegardé avec succès."
-      });
+        const updatedExercises = await getSavedExercises();
+        setSavedExercises(updatedExercises.map(ex => ({
+          ...ex,
+          type: 'exercise' as const,
+          tags: [{
+            label: 'Exercice',
+            color: '#22C55E',
+            backgroundColor: '#22C55E20',
+            borderColor: '#22C55E4D'
+          }]
+        })));
+
+        scrollToResult();
+        toast({
+          title: "Succès",
+          description: "L'exercice a été généré et sauvegardé avec succès."
+        });
+      } catch (error) {
+        console.error('Error saving exercise:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de sauvegarder l'exercice."
+        });
+      }
     }
   };
 
