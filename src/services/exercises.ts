@@ -7,9 +7,10 @@ export const exercisesService = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Non authentifié')
     
-    console.log('Saving exercise with params:', params)
+    console.log('Tentative de sauvegarde d\'exercice avec les paramètres:', params)
+    console.log('Utilisateur authentifié:', user.id)
     
-    const { error } = await supabase
+    const { error, data } = await supabase
       .from('saved_exercises')
       .insert([{
         ...params,
@@ -17,18 +18,22 @@ export const exercisesService = {
         type: 'exercise' as const,
         source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
       }])
+      .select()
 
     if (error) {
-      console.error('Error saving exercise:', error)
+      console.error('Erreur lors de la sauvegarde de l\'exercice:', error)
       throw error
     }
+
+    console.log('Exercice sauvegardé avec succès:', data)
+    return data
   },
 
   async getAll(): Promise<SavedContent[]> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Non authentifié')
 
-    console.log('Fetching exercises for user:', user.id)
+    console.log('Récupération des exercices pour l\'utilisateur:', user.id)
     
     const { data, error } = await supabase
       .from('saved_exercises')
@@ -37,7 +42,7 @@ export const exercisesService = {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching exercises:', error)
+      console.error('Erreur lors de la récupération des exercices:', error)
       throw error
     }
 
@@ -47,7 +52,7 @@ export const exercisesService = {
       source_type: exercise.source_type as 'direct' | 'from_lesson_plan'
     }))
     
-    console.log('Fetched exercises:', transformedData)
+    console.log('Exercices récupérés:', transformedData)
     return transformedData
   },
 
