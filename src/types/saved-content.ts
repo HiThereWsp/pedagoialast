@@ -7,6 +7,8 @@ export interface SavedContent {
   class_level?: string
   created_at: string
   type: string
+  source_type?: 'direct' | 'from_lesson_plan'
+  source_lesson_plan_title?: string
 }
 
 export interface SaveExerciseParams {
@@ -35,4 +37,13 @@ export interface ExtractedExercise {
   subject?: string
   class_level?: string
   lesson_plan_id: string
+}
+
+export interface HistoryItem extends SavedContent {
+  tags: {
+    label: string
+    color: string
+    backgroundColor: string
+    borderColor: string
+  }[]
 }
