@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           feedback_score: number | null
+          feedback_type: Database["public"]["Enums"]["feedback_type"] | null
           id: number
           lesson_plan_data: Json | null
           message: string
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           feedback_score?: number | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"] | null
           id?: never
           lesson_plan_data?: Json | null
           message: string
@@ -49,6 +51,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           feedback_score?: number | null
+          feedback_type?: Database["public"]["Enums"]["feedback_type"] | null
           id?: never
           lesson_plan_data?: Json | null
           message?: string
@@ -192,6 +195,45 @@ export type Database = {
         }
         Relationships: []
       }
+      lesson_plan_cache: {
+        Row: {
+          additional_instructions: string | null
+          cache_key: string | null
+          class_level: string
+          created_at: string
+          id: string
+          lesson_plan: string
+          subject: string | null
+          text: string | null
+          total_sessions: number
+          usage_count: number | null
+        }
+        Insert: {
+          additional_instructions?: string | null
+          cache_key?: string | null
+          class_level: string
+          created_at?: string
+          id?: string
+          lesson_plan: string
+          subject?: string | null
+          text?: string | null
+          total_sessions: number
+          usage_count?: number | null
+        }
+        Update: {
+          additional_instructions?: string | null
+          cache_key?: string | null
+          class_level?: string
+          created_at?: string
+          id?: string
+          lesson_plan?: string
+          subject?: string | null
+          text?: string | null
+          total_sessions?: number
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
       pdf_documents: {
         Row: {
           created_at: string
@@ -266,6 +308,84 @@ export type Database = {
           created_at?: string
           first_name?: string
           id?: string
+        }
+        Relationships: []
+      }
+      saved_exercises: {
+        Row: {
+          class_level: string | null
+          content: string
+          created_at: string
+          difficulty_level: string | null
+          exercise_type: string | null
+          id: string
+          subject: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          class_level?: string | null
+          content: string
+          created_at?: string
+          difficulty_level?: string | null
+          exercise_type?: string | null
+          id?: string
+          subject?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          class_level?: string | null
+          content?: string
+          created_at?: string
+          difficulty_level?: string | null
+          exercise_type?: string | null
+          id?: string
+          subject?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_lesson_plans: {
+        Row: {
+          additional_instructions: string | null
+          class_level: string | null
+          content: string
+          created_at: string
+          id: string
+          subject: string | null
+          title: string
+          total_sessions: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_instructions?: string | null
+          class_level?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          subject?: string | null
+          title: string
+          total_sessions?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_instructions?: string | null
+          class_level?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          subject?: string | null
+          title?: string
+          total_sessions?: number | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -659,6 +779,12 @@ export type Database = {
             }
             Returns: unknown
           }
+      check_saved_content_limit: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: boolean
+      }
       generate_report: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -841,6 +967,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      feedback_type: "like" | "dislike"
       tool_type:
         | "differentiation"
         | "sequence"

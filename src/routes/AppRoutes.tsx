@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router-dom'
 import Home from '@/pages/Home'
 import NotFound from '@/pages/NotFound'
@@ -20,6 +21,9 @@ import Legal from '@/pages/Legal'
 import ForgotPassword from '@/pages/ForgotPassword'
 import ResetPassword from '@/pages/ResetPassword'
 import PricingPage from '@/pages/PricingPage'
+import OfflineChatPage from '@/pages/OfflineChatPage'
+import ConfirmEmail from "@/pages/ConfirmEmail.tsx"
+import SavedContentPage from '@/pages/SavedContentPage'
 
 export default function AppRoutes() {
   return (
@@ -27,6 +31,7 @@ export default function AppRoutes() {
       {/* Public routes */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/confirm-email" element={<ConfirmEmail />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
@@ -34,6 +39,7 @@ export default function AppRoutes() {
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      
       {/* Protected routes */}
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<Home />} />
@@ -46,7 +52,10 @@ export default function AppRoutes() {
         <Route path="/utm-links" element={<UTMLinksPage />} />
         <Route path="/marketing" element={<MarketingPage />} />
         <Route path="/suggestions" element={<SuggestionsPage />} />
+        <Route path="/offline-chat" element={<OfflineChatPage />} />
+        <Route path="/saved-content" element={<SavedContentPage />} />
       </Route>
+      
       {/* Catch all route */}
       <Route path="*" element={<NotFound />} />
     </Routes>

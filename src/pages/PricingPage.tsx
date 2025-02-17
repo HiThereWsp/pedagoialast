@@ -1,8 +1,8 @@
-import { Check } from "lucide-react"
+
 import { PricingCard } from "@/components/pricing/PricingCard"
-import { QualityFeatures } from "@/components/pricing/QualityFeatures"
-import { handleSubscription } from "@/utils/subscription"
+import { PricingFormDialog } from "@/components/pricing/PricingFormDialog"
 import { useEffect } from "react"
+import { pricingEvents } from "@/integrations/posthog/events"
 
 const PricingPage = () => {
   useEffect(() => {
@@ -11,12 +11,12 @@ const PricingPage = () => {
 
   const handleMonthlySubscription = () => {
     pricingEvents.selectPlan('premium')
-    handleSubscription('price_1QYUKDIqXQKnGj4mKGx80HJP')
+    window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
   }
 
   const handleYearlySubscription = () => {
     pricingEvents.selectPlan('premium')
-    handleSubscription('price_1QYUKAIqXQKnGj4meN7G9nPH')
+    window.location.href = 'https://buy.stripe.com/fZe03i3u20fHdxe4gj'
   }
 
   return (
@@ -33,9 +33,7 @@ const PricingPage = () => {
             Choisissez le plan qui vous convient le mieux
           </p>
         </div>
-
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
-          {/* Plan Mensuel */}
           <PricingCard
             title="Plan mensuel"
             price="11,90€"
@@ -47,11 +45,9 @@ const PricingPage = () => {
               "Utilisation illimitée de tous les outils",
               "+14h économisées /semaine"
             ]}
-            ctaText="Commencer maintenant"
+            ctaText="Découvrir l'assistant maintenant"
             onSubscribe={handleMonthlySubscription}
           />
-
-          {/* Plan Annuel */}
           <PricingCard
             title="Plan annuel"
             price="9€"
@@ -64,13 +60,11 @@ const PricingPage = () => {
               "Recevez les mises à jour à l'avance",
               "Accès à la communauté privée d'enseignants 3.0"
             ]}
-            ctaText="Commencer maintenant"
+            ctaText="Profiter de l'offre spéciale"
             onSubscribe={handleYearlySubscription}
           />
-
-          {/* Plan École */}
           <PricingCard
-            title="École"
+            title="Établissement scolaire"
             price="Sur mesure"
             features={[
               "Tout ce qui est inclus dans le plan annuel et bien plus",
@@ -79,11 +73,9 @@ const PricingPage = () => {
               "Des outils adaptés à votre projet pédagogique",
               "Un canal support dédié"
             ]}
-            ctaText="Commencer maintenant"
-            onSubscribe={() => window.location.href = 'mailto:contact@pedagogia.io'}
+            CustomCTA={<PricingFormDialog triggerText="Obtenir un tarif sur mesure" />}
           />
         </div>
-
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
           <div>
             <h3 className="font-semibold mb-2">Satisfaction garantie</h3>

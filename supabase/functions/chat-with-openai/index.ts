@@ -65,7 +65,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini', // Correction du nom du modèle
+        model: 'gpt-3.5-turbo', // Correction du nom du modèle
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: message }
