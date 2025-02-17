@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { lessonPlansService } from '@/services/lesson-plans';
 import { SavedContent } from '@/types/saved-content';
 import { useToast } from "@/hooks/use-toast";
-import { MarkdownContent } from './result/MarkdownContent';
 
 interface ExerciseFormProps {
   formData: {
@@ -63,11 +62,29 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
   const handleLessonPlanSelect = async (planId: string) => {
     const selectedPlan = lessonPlans.find(plan => plan.id === planId);
     if (selectedPlan) {
+      // Nettoyer le contenu Markdown avant de l'afficher
+      const cleanContent = selectedPlan.content
+        .replace(/[*#]/g, '') // Supprime les astérisques et les dièses
+        .replace(/\n{3,}/g, '\n\n') // Réduit les espaces multiples à deux sauts de ligne
+        .trim();
+
       handleInputChange('lessonPlanId', planId);
       handleInputChange('subject', selectedPlan.subject || '');
       handleInputChange('classLevel', selectedPlan.class_level || '');
-      handleInputChange('lessonPlanContent', selectedPlan.content);
+      handleInputChange('lessonPlanContent', cleanContent);
     }
+  };
+
+  const cleanAndFormatContent = (content: string) => {
+    return content
+      .replace(/[*#]/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  };
+
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const cleanContent = cleanAndFormatContent(e.target.value);
+    handleInputChange('lessonPlanContent', cleanContent);
   };
 
   return (
@@ -118,20 +135,13 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
               <label htmlFor="lessonPlanContent" className="block text-sm font-medium text-gray-700">
                 Ou collez le contenu d'une séquence
               </label>
-              <div className="space-y-4">
-                <Textarea
-                  id="lessonPlanContent"
-                  value={formData.lessonPlanContent}
-                  onChange={(e) => handleInputChange('lessonPlanContent', e.target.value)}
-                  placeholder="Collez ici le contenu de votre séquence..."
-                  className="min-h-[100px]"
-                />
-                {formData.lessonPlanContent && (
-                  <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                    <MarkdownContent content={formData.lessonPlanContent} />
-                  </div>
-                )}
-              </div>
+              <Textarea
+                id="lessonPlanContent"
+                value={formData.lessonPlanContent}
+                onChange={handleContentChange}
+                placeholder="Collez ici le contenu de votre séquence..."
+                className="min-h-[100px] whitespace-pre-line font-medium"
+              />
             </div>
           </div>
         )}
