@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
@@ -42,7 +41,11 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
     const fetchLessonPlans = async () => {
       try {
         const plans = await lessonPlansService.getAll();
-        setLessonPlans(plans);
+        const transformedPlans = plans.map(plan => ({
+          ...plan,
+          type: 'lesson_plan' as const
+        }));
+        setLessonPlans(transformedPlans);
       } catch (error) {
         console.error('Erreur lors du chargement des séquences:', error);
         toast({

@@ -1,5 +1,6 @@
+
 import { supabase } from "@/integrations/supabase/client"
-import type { SaveExerciseParams, ExtractedExercise } from "@/types/saved-content"
+import type { SaveExerciseParams, ExtractedExercise, SavedContent } from "@/types/saved-content"
 
 export const exercisesService = {
   async save(params: SaveExerciseParams) {
@@ -13,7 +14,7 @@ export const exercisesService = {
       .insert([{
         ...params,
         user_id: user.id,
-        type: 'exercise',
+        type: 'exercise' as const,
         source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
       }])
 
@@ -23,7 +24,7 @@ export const exercisesService = {
     }
   },
 
-  async getAll() {
+  async getAll(): Promise<SavedContent[]> {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Non authentifié')
 
@@ -40,10 +41,10 @@ export const exercisesService = {
       throw error
     }
 
-    // Transformer les données pour inclure le type
-    const transformedData = data.map(exercise => ({
+    const transformedData: SavedContent[] = data.map(exercise => ({
       ...exercise,
-      type: 'exercise'
+      type: 'exercise' as const,
+      source_type: exercise.source_type as 'direct' | 'from_lesson_plan'
     }))
     
     console.log('Fetched exercises:', transformedData)
