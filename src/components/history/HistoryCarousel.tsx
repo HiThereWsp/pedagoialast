@@ -69,6 +69,8 @@ export const HistoryCarousel = ({
     );
   };
 
+  const shouldShowArrows = items.length > 3;
+
   return (
     <div className="relative bg-white rounded-xl shadow-sm border border-pink-100 p-6">
       <div className="mb-4 flex items-center gap-2">
@@ -131,7 +133,7 @@ export const HistoryCarousel = ({
               </CarouselItem>
             ))}
           </CarouselContent>
-          {items.length > 1 && (
+          {shouldShowArrows && (
             <>
               <CarouselPrevious className="left-2" />
               <CarouselNext className="right-2" />

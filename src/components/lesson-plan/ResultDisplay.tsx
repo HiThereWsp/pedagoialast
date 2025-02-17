@@ -26,13 +26,11 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
   };
 
   const formatContent = (content: string) => {
-    // Remplacer les titres avec des styles plus visibles
     const formattedContent = content
-      .replace(/#{3,4}\s/g, '') // Enlever les symboles markdown
-      .replace(/\*\*/g, '') // Enlever les doubles astérisques
+      .replace(/#{3,4}\s/g, '')
+      .replace(/\*\*/g, '')
       .split('\n')
       .map(line => {
-        // Appliquer des styles selon le type de ligne
         if (line.includes('Séquence pédagogique')) {
           return `<h1 class="text-2xl font-bold mb-6">${line}</h1>`;
         }
@@ -66,14 +64,16 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
         </div>
       </Card>
       
-      <div className="flex justify-end space-x-4">
-        <Button
-          onClick={handleGenerateExercise}
-          className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
-        >
-          Générer un exercice à partir de cette séquence
-        </Button>
-      </div>
+      {lessonPlan && (
+        <div className="flex justify-end space-x-4">
+          <Button
+            onClick={handleGenerateExercise}
+            className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
+          >
+            Générer un exercice à partir de cette séquence
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
