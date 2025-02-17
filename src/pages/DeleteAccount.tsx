@@ -29,6 +29,15 @@ export default function DeleteAccount() {
   const CONFIRMATION_TEXT = "supprimer mon compte définitivement"
   const isConfirmationValid = confirmText.toLowerCase().trim() === CONFIRMATION_TEXT
 
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    toast({
+      title: "Action non autorisée",
+      description: "Veuillez recopier le texte manuellement.",
+      variant: "destructive"
+    })
+  }
+
   const handleDeleteAccount = async () => {
     try {
       if (!isConfirmationValid) {
@@ -97,6 +106,9 @@ export default function DeleteAccount() {
               id="confirmation"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
+              onPaste={handlePaste}
+              onDragStart={(e) => e.preventDefault()}
+              onDrop={(e) => e.preventDefault()}
               placeholder="Recopiez la phrase ici..."
               className="w-full max-w-md"
             />
