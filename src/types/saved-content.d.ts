@@ -1,31 +1,29 @@
 
-export type ContentType = 'exercise' | 'lesson_plan' | 'image';
-
 export interface SavedContent {
   id: string;
   title: string;
   content: string;
-  type: ContentType;
   subject?: string;
   class_level?: string;
-  description?: string;
   created_at: string;
-  updated_at?: string;
+  type: 'exercise' | 'lesson_plan' | 'image';
   source_type?: 'direct' | 'from_lesson_plan';
-  source_lesson_plan_id?: string;
   source_lesson_plan_title?: string;
   exercise_type?: string;
-  total_sessions?: number;
   difficulty_level?: string;
-  additional_instructions?: string;
+  description?: string;
   user_id?: string;
+  source_lesson_plan_id?: string;
+  updated_at?: string;
+  total_sessions?: number;
+  additional_instructions?: string;
 }
 
 export interface HistoryItem extends SavedContent {
-  tags: Array<{
+  tags: {
     label: string;
     color: string;
     backgroundColor: string;
     borderColor: string;
-  }>;
+  }[];
 }

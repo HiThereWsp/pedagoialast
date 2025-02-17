@@ -26,7 +26,10 @@ export const exercisesService = {
     }
 
     console.log('Exercice sauvegardé avec succès:', data)
-    return data
+    return data.map(exercise => ({
+      ...exercise,
+      type: 'exercise' as const
+    }))
   },
 
   async getAll(): Promise<SavedContent[]> {

@@ -1,17 +1,17 @@
 
 import React, { useState } from 'react';
-import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { HeaderSection } from './result/HeaderSection';
-import { FeedbackButtons } from './result/FeedbackButtons';
-import { ExerciseTabs } from './result/ExerciseTabs';
-import { ShareButton } from './result/ShareButton';
+import { Button } from "@/components/ui/button";
+import { RefreshCw, Share2 } from "lucide-react";
+import { AnimatedResultDisplay } from '@/components/shared/AnimatedResultDisplay';
 
 interface ResultDisplayProps {
   exercises: string | null;
+  onRegenerate?: () => void;
+  onNewExercise?: () => void;
 }
 
-export function ResultDisplay({ exercises }: ResultDisplayProps) {
+export function ResultDisplay({ exercises, onRegenerate, onNewExercise }: ResultDisplayProps) {
   const { toast } = useToast();
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
   const [isCopied, setIsCopied] = useState(false);
@@ -24,23 +24,6 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     toast({
       description: type === 'like' ? "Merci pour votre retour positif !" : "Merci pour votre retour",
     });
-  };
-
-  const formatContent = (content: string) => {
-    // Supprime les mentions "Fiche élève" redondantes
-    let formattedContent = content;
-    const sections = content.split('FICHE PÉDAGOGIQUE');
-    
-    if (sections.length > 1) {
-      // Pour la fiche élève, on ne garde qu'une seule mention "Fiche élève"
-      const studentSection = sections[0].replace(/Fiche élève[\s:-]*/g, '');
-      formattedContent = `Fiche élève\n\n${studentSection}FICHE PÉDAGOGIQUE${sections[1]}`;
-    }
-
-    // Remplace "Objectif pédagogique" par "Objectif pédagogique / Thème"
-    formattedContent = formattedContent.replace(/Objectif pédagogique/g, 'Objectif pédagogique / Thème');
-
-    return formattedContent;
   };
 
   const handleCopy = async (text: string) => {
@@ -60,37 +43,77 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     }
   };
 
-  const splitContent = (content: string) => {
-    const parts = content.split('FICHE PÉDAGOGIQUE');
-    return {
-      studentSheet: formatContent(parts[0]).trim(),
-      teacherSheet: parts[1] ? `FICHE PÉDAGOGIQUE${parts[1]}` : ''
-    };
+  const formatContent = (content: string) => {
+    // Supprime les étoiles à la fin
+    let formattedContent = content.replace(/\*\*\s*$/, '');
+    
+    // Améliore le formatage des sections
+    const sections = formattedContent.split('FICHE PÉDAGOGIQUE');
+    
+    if (sections.length > 1) {
+      const studentSection = sections[0].replace(/Fiche élève[\s:-]*/g, '');
+      formattedContent = `<h2 class="text-xl font-bold mb-4 text-gray-900">Fiche élève</h2>\n\n${studentSection}<h2 class="text-xl font-bold mt-8 mb-4 text-gray-900">FICHE PÉDAGOGIQUE</h2>${sections[1]}`;
+    }
+
+    return formattedContent
+      .split('\n')
+      .map(line => {
+        if (line.match(/^Consigne:/i)) {
+          return `<div class="bg-orange-50 p-4 rounded-lg my-4 border border-orange-200">
+            <h3 class="text-lg font-semibold text-orange-700 mb-2">${line}</h3>
+          </div>`;
+        }
+        if (line.match(/^[A-Z][\w\s]+:/)) {
+          return `<h3 class="text-lg font-bold mt-6 mb-3 text-gray-900">${line}</h3>`;
+        }
+        if (line.match(/^\d+\./)) {
+          return `<p class="ml-4 my-2 text-gray-800 font-medium">${line}</p>`;
+        }
+        if (line.trim().startsWith('-')) {
+          return `<p class="ml-6 my-1 text-gray-700">${line}</p>`;
+        }
+        return line ? `<p class="my-2 text-gray-700">${line}</p>` : '<br/>';
+      })
+      .join('\n');
   };
 
-  const { studentSheet, teacherSheet } = splitContent(exercises);
+  const actions = (
+    <>
+      <Button
+        onClick={() => handleCopy(exercises)}
+        variant="outline"
+        className="gap-2"
+      >
+        <Share2 className="w-4 h-4" />
+        {isCopied ? "Copié !" : "Partager"}
+      </Button>
+      {onRegenerate && (
+        <Button
+          onClick={onRegenerate}
+          className="gap-2 bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Régénérer
+        </Button>
+      )}
+      {onNewExercise && (
+        <Button
+          onClick={onNewExercise}
+          variant="outline"
+          className="gap-2"
+        >
+          Nouvel exercice
+        </Button>
+      )}
+    </>
+  );
 
   return (
-    <Card className="p-4 sm:p-6 relative bg-white rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
-        <HeaderSection exerciseCount={exercises} />
-        <FeedbackButtons
-          feedbackScore={feedbackScore}
-          isCopied={isCopied}
-          onFeedback={handleFeedback}
-          onCopy={() => handleCopy(exercises)}
-        />
-      </div>
-
-      <ExerciseTabs 
-        studentSheet={studentSheet}
-        teacherSheet={teacherSheet}
-        onCopy={handleCopy}
-      />
-
-      <div className="mt-6 flex justify-end">
-        <ShareButton onShare={() => handleCopy(exercises)} />
-      </div>
-    </Card>
+    <AnimatedResultDisplay
+      content={exercises}
+      formatContent={formatContent}
+      actions={actions}
+      className="mt-4"
+    />
   );
 }
