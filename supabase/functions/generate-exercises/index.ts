@@ -36,12 +36,18 @@ serve(async (req) => {
     });
 
     const systemPrompt = `Tu es un professeur expérimenté qui crée des exercices pédagogiques. 
+    Règles importantes:
+    - Propose toujours au minimum 3 exercices différents si le nombre n'est pas spécifié
+    - Chaque exercice doit contenir au minimum 3 questions si le nombre n'est pas spécifié
+    - Ne jamais proposer un seul exercice ou une seule question par exercice
+
     Format de sortie requis:
     - Commence par "Fiche élève" une seule fois
     - Liste les exercices numérotés
     - Termine par une section "FICHE PÉDAGOGIQUE" avec les corrections et explications.`;
 
-    const userPrompt = `Crée ${numberOfExercises} exercice(s) de ${subject} pour une classe de ${classLevel}.
+    const userPrompt = `Crée ${numberOfExercises || '3'} exercice(s) de ${subject} pour une classe de ${classLevel}.
+    Chaque exercice doit contenir ${questionsPerExercise || '3'} question(s) minimum.
     Objectif pédagogique / Thème: ${objective}
     Type d'exercice souhaité: ${exerciseType || 'Au choix'}
     ${additionalInstructions ? `Instructions supplémentaires: ${additionalInstructions}` : ''}

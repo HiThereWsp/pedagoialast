@@ -16,8 +16,9 @@ import { RefreshCw, Plus } from "lucide-react";
 const ExercisePage = () => {
   const { exercises, isLoading, generateExercises } = useExerciseGeneration();
   const { saveExercise, getSavedExercises } = useSavedContent();
-  const [savedExercises, setSavedExercises] = useState([]);
+  const [savedExercises, setSavedExercises] = useState<SavedContent[]>([]);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [showForm, setShowForm] = useState(true);
   const resultRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -55,6 +56,7 @@ const ExercisePage = () => {
   };
 
   const handleNewExercise = () => {
+    setShowForm(true);
     setFormData({
       subject: '',
       classLevel: '',
@@ -150,11 +152,11 @@ const ExercisePage = () => {
         source_type: formData.lessonPlanId ? 'from_lesson_plan' : 'direct'
       });
 
-      // Recharger les exercices sauvegardés après la génération
+      setShowForm(false);
       const updatedExercises = await getSavedExercises();
       setSavedExercises(updatedExercises.map(ex => ({
         ...ex,
-        type: 'exercise',
+        type: 'exercise' as const,
         tags: [{
           label: 'Exercice',
           color: '#22C55E',
@@ -203,35 +205,38 @@ const ExercisePage = () => {
 
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8">
-            <div className="w-full overflow-x-hidden">
-              <ExerciseForm 
-                formData={formData}
-                handleInputChange={handleInputChange}
-                handleSubmit={handleSubmit}
-                isLoading={isLoading}
-              />
-            </div>
+            {showForm ? (
+              <div className="w-full overflow-x-hidden">
+                <ExerciseForm 
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                />
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => handleSubmit()}
+                  className="flex items-center gap-2 bg-gradient-to-r from-[#F97316] to-[#D946EF]"
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                  Régénérer
+                </Button>
+                <Button
+                  onClick={handleNewExercise}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nouvel exercice
+                </Button>
+              </div>
+            )}
             {exercises && (
               <div ref={resultRef} className="xl:sticky xl:top-8 w-full space-y-4">
                 <ResultDisplay exercises={exercises} />
-                <div className="flex gap-2 justify-end">
-                  <Button
-                    onClick={() => handleSubmit()}
-                    className="flex items-center gap-2 bg-gradient-to-r from-[#F97316] to-[#D946EF]"
-                    disabled={isLoading}
-                  >
-                    <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                    Régénérer
-                  </Button>
-                  <Button
-                    onClick={handleNewExercise}
-                    variant="outline"
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Nouvel exercice
-                  </Button>
-                </div>
               </div>
             )}
           </div>
