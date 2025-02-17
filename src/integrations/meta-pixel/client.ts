@@ -2,18 +2,23 @@
 declare global {
   interface Window {
     fbq: any;
+    _fbq: any; // Ajout de la déclaration manquante
   }
 }
 
 export const FB_PIXEL_ID = '1148646506861774';
 
 export const pageview = () => {
-  window.fbq('track', 'PageView');
+  if (typeof window !== 'undefined' && window.fbq) {
+    window.fbq('track', 'PageView');
+  }
 };
 
 // Événements personnalisés
 export const event = (name: string, options = {}) => {
-  window.fbq('track', name, options);
+  if (typeof window !== 'undefined' && window.fbq) {
+    window.fbq('track', name, options);
+  }
 };
 
 // Initialisation de Meta Pixel
@@ -25,11 +30,12 @@ export const initializePixel = () => {
 
   // Initialise fbq
   window.fbq = function() {
-    // @ts-ignore
-    window.fbq.callMethod ? window.fbq.callMethod.apply(window.fbq, arguments) : window.fbq.queue.push(arguments);
+    window.fbq.callMethod ? 
+      window.fbq.callMethod.apply(window.fbq, arguments) : 
+      window.fbq.queue.push(arguments);
   };
 
-  if (!window._fbq) window._fbq = window.fbq;
+  window._fbq = window.fbq;
   window.fbq.push = window.fbq;
   window.fbq.loaded = true;
   window.fbq.version = '2.0';

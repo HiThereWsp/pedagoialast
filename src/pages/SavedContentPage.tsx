@@ -145,13 +145,10 @@ export default function SavedContentPage() {
     };
 
     return items
-      .filter(item => item.type === type)
+      .filter(item => item.type === type.toLowerCase())
       .map(item => ({
-        id: item.id,
-        title: item.title,
-        content: item.content,
-        subject: item.subject,
-        created_at: item.created_at,
+        ...item,
+        type: type.toLowerCase() as any,
         tags: [{
           label: type,
           ...colorMap[type as keyof typeof colorMap]
