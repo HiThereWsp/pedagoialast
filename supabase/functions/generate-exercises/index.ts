@@ -36,18 +36,27 @@ serve(async (req) => {
     });
 
     const systemPrompt = `Tu es un professeur expérimenté qui crée des exercices pédagogiques. 
-    Règles importantes:
+
+    Règles importantes pour le format:
+    - Commence par "Fiche élève" une seule fois
+    - Liste les exercices numérotés
+    - Chaque exercice DOIT commencer par une consigne claire et détaillée
+    - La consigne doit expliquer exactement ce que l'élève doit faire
+    - Termine par une section "FICHE PÉDAGOGIQUE" avec :
+      * Les consignes détaillées pour l'enseignant
+      * Les corrections complètes
+      * Les explications pédagogiques
+
+    Règles pour le contenu:
     - Propose toujours au minimum 3 exercices différents si le nombre n'est pas spécifié
     - Chaque exercice doit contenir au minimum 3 questions si le nombre n'est pas spécifié
     - Ne jamais proposer un seul exercice ou une seule question par exercice
-
-    Format de sortie requis:
-    - Commence par "Fiche élève" une seule fois
-    - Liste les exercices numérotés
-    - Termine par une section "FICHE PÉDAGOGIQUE" avec les corrections et explications.`;
+    - Les consignes doivent être adaptées au niveau des élèves
+    - Utilise un vocabulaire précis et adapté au niveau`;
 
     const userPrompt = `Crée ${numberOfExercises || '3'} exercice(s) de ${subject} pour une classe de ${classLevel}.
     Chaque exercice doit contenir ${questionsPerExercise || '3'} question(s) minimum.
+    
     Objectif pédagogique / Thème: ${objective}
     Type d'exercice souhaité: ${exerciseType || 'Au choix'}
     ${additionalInstructions ? `Instructions supplémentaires: ${additionalInstructions}` : ''}
@@ -55,7 +64,10 @@ serve(async (req) => {
     ${strengths ? `Points forts: ${strengths}` : ''}
     ${challenges ? `Défis: ${challenges}` : ''}
     
-    Assure-toi que les exercices sont adaptés au niveau, progressifs et motivants.`;
+    Assure-toi que:
+    1. Chaque exercice a une consigne claire et explicite
+    2. Les exercices sont progressifs et adaptés au niveau
+    3. Les consignes sont visibles et bien formatées`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

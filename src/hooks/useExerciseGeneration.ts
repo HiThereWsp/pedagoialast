@@ -53,7 +53,7 @@ export function useExerciseGeneration() {
     return true;
   };
 
-  const generateExercises = async (formData: ExerciseFormData) => {
+  const generateExercises = async (formData: ExerciseFormData): Promise<boolean> => {
     if (!validateFormData(formData)) {
       return false;
     }
@@ -65,7 +65,7 @@ export function useExerciseGeneration() {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
-          numberOfExercises: parseInt(formData.numberOfExercises) || 1,
+          numberOfExercises: parseInt(formData.numberOfExercises) || 3,
           questionsPerExercise: parseInt(formData.questionsPerExercise) || 3,
           specificNeeds: formData.specificNeeds?.trim(),
           strengths: formData.strengths?.trim(),
@@ -79,12 +79,12 @@ export function useExerciseGeneration() {
         throw error;
       }
 
+      if (!data?.exercises) {
+        throw new Error('No exercises generated');
+      }
+
       console.log('Generated exercises:', data);
       setExercises(data.exercises);
-      toast({
-        title: "Exercices générés avec succès",
-        description: "Vos exercices ont été créés et sauvegardés",
-      });
       
       return true;
     } catch (error) {
