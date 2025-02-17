@@ -105,6 +105,9 @@ export const exercisesService = {
     }
     
     console.log('Fetched exercises from lesson plan:', data)
-    return data
+    return data.map(exercise => ({
+      ...exercise,
+      type: 'exercise' as const
+    }))
   }
 }
