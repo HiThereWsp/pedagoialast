@@ -13,6 +13,8 @@ export interface ExerciseFormData {
   specificNeeds: string;
   strengths: string;
   challenges: string;
+  lessonPlanContent?: string;
+  questionsPerExercise?: string;
 }
 
 export function useExerciseGeneration() {
@@ -61,9 +63,12 @@ export function useExerciseGeneration() {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
-          specificNeeds: formData.specificNeeds.trim(),
-          strengths: formData.strengths.trim(),
-          challenges: formData.challenges.trim()
+          numberOfExercises: parseInt(formData.numberOfExercises) || 1,
+          questionsPerExercise: parseInt(formData.questionsPerExercise) || 3,
+          specificNeeds: formData.specificNeeds?.trim(),
+          strengths: formData.strengths?.trim(),
+          challenges: formData.challenges?.trim(),
+          lessonPlanContent: formData.lessonPlanContent
         }
       });
 
