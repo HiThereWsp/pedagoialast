@@ -70,23 +70,7 @@ export function useExerciseGeneration() {
           specificNeeds: formData.specificNeeds?.trim(),
           strengths: formData.strengths?.trim(),
           challenges: formData.challenges?.trim(),
-          lessonPlanContent: formData.lessonPlanContent,
-          systemPrompt: `Tu es un professeur expérimenté qui crée des exercices pédagogiques structurés.
-          
-Format requis:
-1. Commencer par "Fiche élève"
-2. Inclure une consigne claire et détaillée au début de CHAQUE exercice
-3. Structurer avec des sections numérotées
-4. Terminer par une section "FICHE PÉDAGOGIQUE" contenant:
-   - Consignes détaillées pour l'enseignant
-   - Corrections complètes
-   - Explications pédagogiques
-
-Règles importantes:
-- Les consignes doivent être précises et adaptées au niveau
-- Utiliser un vocabulaire adapté au niveau des élèves
-- Éviter les répétitions inutiles
-- NE PAS ajouter d'étoiles ** à la fin du document`
+          lessonPlanContent: formData.lessonPlanContent
         }
       });
 
