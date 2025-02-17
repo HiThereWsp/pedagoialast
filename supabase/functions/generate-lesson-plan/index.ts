@@ -1,123 +1,102 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { OpenAI } from "https://github.com/hexagon/deno-openai/raw/master/mod.ts"
+import { corsHeaders } from "../_shared/cors.ts"
+
+const openAI = new OpenAI(Deno.env.get('OPENAI_API_KEY') || '')
+
+interface RequestBody {
+  classLevel: string
+  totalSessions: string
+  subject?: string
+  text?: string
+  additionalInstructions?: string
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { classLevel, totalSessions, subject, text, additionalInstructions } = await req.json()
-    console.log('Received request with:', { classLevel, totalSessions, subject, text, additionalInstructions })
+    const { classLevel, totalSessions, subject, text, additionalInstructions } = await req.json() as RequestBody
 
-    if (!classLevel || !totalSessions) {
-      console.error('Missing required fields')
-      return new Response(
-        JSON.stringify({ 
-          error: 'Missing required fields', 
-          details: 'classLevel and totalSessions are required' 
-        }), 
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    const detailedPrompt = `En tant qu'expert pédagogue, créez une séquence pédagogique détaillée pour une classe de ${classLevel} ${subject ? `en ${subject}` : ''} sur ${totalSessions} séances.
+
+Instructions spécifiques :
+1. Commencez par une introduction détaillant les objectifs d'apprentissage et les compétences visées.
+2. Pour chaque séance, incluez :
+   - Les objectifs spécifiques
+   - Le matériel nécessaire
+   - Le déroulement détaillé (mise en situation, activités, synthèse)
+   - Les modalités d'évaluation
+   - Les adaptations possibles pour la différenciation pédagogique
+3. Décrivez précisément :
+   - Le timing de chaque activité
+   - Les consignes exactes à donner aux élèves
+   - Les points d'attention pour l'enseignant
+   - Les traces écrites attendues
+4. Précisez les prolongements possibles et les liens interdisciplinaires
+${text ? `\nContexte ou texte spécifique à intégrer : ${text}` : ''}
+${additionalInstructions ? `\nInstructions supplémentaires : ${additionalInstructions}` : ''}
+
+Format de sortie souhaité :
+• Introduction et objectifs généraux
+• Prérequis et matériel global
+• Pour chaque séance :
+  1. Objectifs et compétences
+  2. Matériel spécifique
+  3. Déroulement détaillé :
+     - Phase 1 : Mise en situation (durée, modalités, consignes)
+     - Phase 2 : Recherche/Activités (durée, modalités, consignes)
+     - Phase 3 : Mise en commun (durée, modalités, consignes)
+     - Phase 4 : Synthèse et trace écrite
+  4. Évaluation et différenciation
+  5. Prolongements possibles`
+
+    console.log('Generating lesson plan with prompt:', detailedPrompt)
+
+    const completion = await openAI.createChatCompletion({
+      model: "gpt-4",
+      messages: [
+        {
+          role: "system",
+          content: "Vous êtes un expert en pédagogie française, spécialisé dans la création de séquences pédagogiques détaillées et structurées selon les programmes de l'Éducation Nationale."
+        },
+        {
+          role: "user",
+          content: detailedPrompt
         }
-      )
-    }
-
-    // Construire le prompt de base
-    let prompt = `En tant qu'expert en pédagogie à l'éducation nationale, crée une séquence pédagogique détaillée pour le niveau ${classLevel} en ${totalSessions} séances.`
-
-    // Ajouter le sujet s'il est fourni
-    if (subject) {
-      prompt += `\nLe sujet est: ${subject}.`
-    }
-
-    // Ajouter le texte s'il est fourni
-    if (text) {
-      prompt += `\nBasé sur ce texte: ${text}.`
-    }
-
-    // Ajouter les instructions supplémentaires si fournies
-    if (additionalInstructions) {
-      prompt += `\nInstructions supplémentaires: ${additionalInstructions}.`
-    }
-
-    // Ajouter le format de réponse souhaité
-    prompt += `
-Format de la réponse souhaitée:
-1. Objectifs d'apprentissage
-2. Prérequis
-3. Durée estimée (${totalSessions} séances)
-4. Matériel nécessaire
-5. Déroulement détaillé:
-   - Phase 1: Introduction
-   - Phase 2: Développement
-   - Phase 3: Application
-   - Phase 4: Conclusion
-6. Évaluation
-7. Prolongements possibles`
-
-    console.log('Calling OpenAI with prompt:', prompt)
-
-    // Appel à l'API OpenAI
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: 'Tu es un expert en pédagogie qui aide à créer des séquences pédagogiques détaillées et structurées, en respectant scrupuleusement les programmes officiels de l\'Education Nationale.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-      }),
+      ],
+      temperature: 0.7,
+      max_tokens: 3500,
     })
 
-    if (!response.ok) {
-      const error = await response.text()
-      console.error('OpenAI API error:', error)
-      throw new Error(`OpenAI API error: ${response.statusText}`)
-    }
+    console.log('Received response from OpenAI')
 
-    const data = await response.json()
-    const lessonPlan = data.choices[0].message.content
+    const lessonPlan = completion.choices[0]?.message?.content || "Erreur de génération"
 
     return new Response(
-      JSON.stringify({ 
-        lessonPlan,
-        metrics: {
-          contentLength: lessonPlan.length
+      JSON.stringify({
+        lessonPlan
+      }),
+      {
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
         }
-      }), 
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     )
   } catch (error) {
-    console.error('Error in generate-lesson-plan function:', error)
+    console.error('Error:', error)
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: 'An error occurred while generating the lesson plan'
-      }), 
+      JSON.stringify({ error: error.message }),
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     )
   }
