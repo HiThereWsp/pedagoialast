@@ -24,6 +24,7 @@ import PricingPage from '@/pages/PricingPage'
 import OfflineChatPage from '@/pages/OfflineChatPage'
 import ConfirmEmail from "@/pages/ConfirmEmail.tsx"
 import SavedContentPage from '@/pages/SavedContentPage'
+import DeleteAccount from '@/pages/DeleteAccount'
 
 export default function AppRoutes() {
   return (
@@ -36,6 +37,7 @@ export default function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/legal" element={<Legal />} />
+      <Route path="/delete-account" element={<DeleteAccount />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />

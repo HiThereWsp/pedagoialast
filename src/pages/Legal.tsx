@@ -14,8 +14,8 @@ export default function Legal() {
       title: "Politique de Confidentialité"
     },
     {
-      to: "/privacy#data-deletion",
-      title: "Suppression des données personnelles"
+      to: "/delete-account",
+      title: "Supprimer mon compte"
     }
   ]
 
