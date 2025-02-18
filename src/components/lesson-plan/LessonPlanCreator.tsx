@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { generateLessonPlan, getLessonPlans } from '@/lib/lesson-plan'
+import { generateLessonPlan, getLessonPlans, LessonPlanData } from '@/lib/lesson-plan'
 import { useAuth } from '@/hooks/useAuth'
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
@@ -84,7 +84,8 @@ const LessonPlanCreator = () => {
     refetch()
   }, [user?.id, refetch])
 
-  const { mutate } = useMutation(generateLessonPlan, {
+  const { mutate, isLoading: isGenerating } = useMutation({
+    mutationFn: generateLessonPlan,
     onSuccess: () => {
       toast({
         title: 'Plan de leçon créé !',
@@ -92,61 +93,49 @@ const LessonPlanCreator = () => {
       })
       refetch()
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: 'Erreur lors de la création du plan de leçon.',
-        description: `Une erreur est survenue: ${error}`,
+        description: error.message,
         variant: 'destructive',
       })
-    },
+    }
   })
 
   const handleGenerateLessonPlan = async () => {
-    setIsGenerating(true)
-    try {
-      if (!user) {
-        toast({
-          title: 'Vous devez être connecté pour générer un plan de leçon.',
-          variant: 'destructive',
-        })
-        return
-      }
-
-      const lessonPlanData = {
-        userId: user.id,
-        title,
-        subject,
-        level,
-        topic,
-        duration,
-        learningObjectives,
-        materials,
-        activities,
-        assessment,
-        differentiation,
-        notes,
-        type: 'lesson-plan',
-        tags: [
-          {
-            label: 'Pédagogie',
-            color: 'text-sky-500',
-            backgroundColor: 'bg-sky-500/10',
-            borderColor: 'border-sky-500/30',
-          },
-        ],
-      }
-
-      mutate(lessonPlanData)
-    } catch (error) {
-      console.error('Error generating lesson plan:', error)
+    if (!user) {
       toast({
-        title: 'Erreur lors de la génération du plan de leçon.',
-        description: 'Veuillez réessayer.',
+        title: 'Vous devez être connecté pour générer un plan de leçon.',
         variant: 'destructive',
       })
-    } finally {
-      setIsGenerating(false)
+      return
     }
+
+    const lessonPlanData: LessonPlanData = {
+      userId: user.id,
+      title,
+      subject,
+      level,
+      topic,
+      duration,
+      learningObjectives,
+      materials,
+      activities,
+      assessment,
+      differentiation,
+      notes,
+      type: 'lesson-plan',
+      tags: [
+        {
+          label: 'Pédagogie',
+          color: 'text-sky-500',
+          backgroundColor: 'bg-sky-500/10',
+          borderColor: 'border-sky-500/30',
+        },
+      ],
+    }
+
+    mutate(lessonPlanData)
   }
 
   const handleAddObjective = () => {
