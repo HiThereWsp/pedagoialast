@@ -16,7 +16,8 @@ interface TeachingStep {
     top: string
     left?: string
     right?: string
-    xOffset?: string // Ajout d'un offset horizontal pour un meilleur positionnement
+    translateX?: string
+    translateY?: string
   }
 }
 
@@ -26,8 +27,9 @@ const teachingSteps: TeachingStep[] = [
     title: "Générateur de séquences",
     description: "Créez des séquences pédagogiques complètes en quelques clics, adaptées à votre programme en cours et à vos élèves, sans y passer des heures.",
     position: {
-      top: "27%",
-      left: "45%"
+      top: "calc(27% - 20px)",
+      right: "calc(100% + 20px)",
+      translateY: "-50%"
     }
   },
   {
@@ -35,8 +37,9 @@ const teachingSteps: TeachingStep[] = [
     title: "Générer / Différencier des exercices",
     description: "Générez puis adaptez instantanément vos exercices au niveau de chaque élève !",
     position: {
-      top: "42%",
-      right: "45%"
+      top: "calc(42% - 20px)",
+      left: "calc(100% + 20px)",
+      translateY: "-50%"
     }
   },
   {
@@ -44,8 +47,9 @@ const teachingSteps: TeachingStep[] = [
     title: "Assistant administratif",
     description: "Gagnez un temps précieux en générant automatiquement vos courriers, rapports et documents administratifs tout en conservant un ton professionnel.",
     position: {
-      top: "57%",
-      left: "45%"
+      top: "calc(57% - 20px)",
+      right: "calc(100% + 20px)",
+      translateY: "-50%"
     }
   },
   {
@@ -53,8 +57,9 @@ const teachingSteps: TeachingStep[] = [
     title: "Générateur d'images",
     description: "Rendez vos supports de cours plus attractifs grâce à des illustrations sur-mesure.",
     position: {
-      top: "72%",
-      right: "45%"
+      top: "calc(72% - 20px)",
+      left: "calc(100% + 20px)",
+      translateY: "-50%"
     }
   },
   {
@@ -62,8 +67,9 @@ const teachingSteps: TeachingStep[] = [
     title: "Historique de mon contenu",
     description: "Retrouvez facilement tout le contenu que vous avez créé dans les les outils, pour réutiliser et adapter vos supports pédagogiques.",
     position: {
-      top: "87%",
-      left: "45%"
+      top: "calc(87% - 20px)",
+      right: "calc(100% + 20px)",
+      translateY: "-50%"
     }
   },
   {
@@ -72,7 +78,8 @@ const teachingSteps: TeachingStep[] = [
     description: "Personnalisez votre profil, gérez vos préférences et accédez à tous les paramètres de votre compte.",
     position: {
       top: "12%",
-      right: "12%"
+      left: "calc(100% + 20px)",
+      translateY: "-50%"
     }
   }
 ]
@@ -102,15 +109,15 @@ export const TeachingBubble = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className="fixed z-50 transition-all duration-500"
+            className="fixed z-50 transition-all duration-500 pointer-events-none"
             style={{
               top: step.position.top,
               left: step.position.left,
               right: step.position.right,
-              transform: `translateX(${step.position.xOffset || '0px'})`
+              transform: `translate(${step.position.translateX || '0'}, ${step.position.translateY || '0'})`
             }}
           >
-            <div className="relative">
+            <div className="relative pointer-events-auto">
               <div className={`absolute w-4 h-4 bg-[#D3E4FD]/80 transform rotate-45 ${
                 step.position.left 
                   ? '-right-2' 
