@@ -15,6 +15,28 @@ export interface SavedContent {
   }>
 }
 
+export interface LessonPlanData {
+  userId: string
+  title: string
+  subject: string
+  level: string
+  topic: string
+  duration: number
+  learningObjectives: string[]
+  materials: string[]
+  activities: string[]
+  assessment: string
+  differentiation: string
+  notes: string
+  type: 'lesson-plan'
+  tags: Array<{
+    label: string
+    color: string
+    backgroundColor: string
+    borderColor: string
+  }>
+}
+
 export interface SaveLessonPlanParams {
   title: string
   content: string
