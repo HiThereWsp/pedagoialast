@@ -1,6 +1,6 @@
 
 import React from 'react';
-import LessonPlanCreator from '@/components/lesson-plan/LessonPlanCreator';
+import { LessonPlanCreator } from '@/components/lesson-plan/LessonPlanCreator';
 import { Header } from '@/components/lesson-plan/Header';
 import { BackButton } from "@/components/settings/BackButton";
 import { SEO } from "@/components/SEO";
