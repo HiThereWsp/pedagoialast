@@ -16,6 +16,7 @@ interface TeachingStep {
     top: string
     left?: string
     right?: string
+    xOffset?: string // Ajout d'un offset horizontal pour un meilleur positionnement
   }
 }
 
@@ -25,8 +26,8 @@ const teachingSteps: TeachingStep[] = [
     title: "Générateur de séquences",
     description: "Créez des séquences pédagogiques complètes en quelques clics, adaptées à votre programme en cours et à vos élèves, sans y passer des heures.",
     position: {
-      top: "20%",
-      left: "32%"
+      top: "27%",
+      left: "45%"
     }
   },
   {
@@ -34,8 +35,8 @@ const teachingSteps: TeachingStep[] = [
     title: "Générer / Différencier des exercices",
     description: "Générez puis adaptez instantanément vos exercices au niveau de chaque élève !",
     position: {
-      top: "35%",
-      right: "32%"
+      top: "42%",
+      right: "45%"
     }
   },
   {
@@ -43,8 +44,8 @@ const teachingSteps: TeachingStep[] = [
     title: "Assistant administratif",
     description: "Gagnez un temps précieux en générant automatiquement vos courriers, rapports et documents administratifs tout en conservant un ton professionnel.",
     position: {
-      top: "50%",
-      left: "32%"
+      top: "57%",
+      left: "45%"
     }
   },
   {
@@ -52,8 +53,8 @@ const teachingSteps: TeachingStep[] = [
     title: "Générateur d'images",
     description: "Rendez vos supports de cours plus attractifs grâce à des illustrations sur-mesure.",
     position: {
-      top: "65%",
-      right: "32%"
+      top: "72%",
+      right: "45%"
     }
   },
   {
@@ -61,8 +62,8 @@ const teachingSteps: TeachingStep[] = [
     title: "Historique de mon contenu",
     description: "Retrouvez facilement tout le contenu que vous avez créé dans les les outils, pour réutiliser et adapter vos supports pédagogiques.",
     position: {
-      top: "80%",
-      left: "32%"
+      top: "87%",
+      left: "45%"
     }
   },
   {
@@ -70,8 +71,8 @@ const teachingSteps: TeachingStep[] = [
     title: "Paramètres du profil",
     description: "Personnalisez votre profil, gérez vos préférences et accédez à tous les paramètres de votre compte.",
     position: {
-      top: "8%",
-      right: "8%"
+      top: "12%",
+      right: "12%"
     }
   }
 ]
@@ -101,15 +102,21 @@ export const TeachingBubble = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            className="fixed z-50 transition-all duration-300"
+            className="fixed z-50 transition-all duration-500"
             style={{
               top: step.position.top,
               left: step.position.left,
-              right: step.position.right
+              right: step.position.right,
+              transform: `translateX(${step.position.xOffset || '0px'})`
             }}
           >
             <div className="relative">
-              <div className="bg-[#D3E4FD]/90 text-gray-800 p-4 rounded-lg shadow-lg max-w-xs backdrop-blur-sm">
+              <div className={`absolute w-4 h-4 bg-[#D3E4FD]/80 transform rotate-45 ${
+                step.position.left 
+                  ? '-right-2' 
+                  : '-left-2'
+              } top-1/2 -translate-y-1/2 backdrop-blur-sm z-10`} />
+              <div className="bg-[#D3E4FD]/80 text-gray-800 p-4 rounded-lg shadow-lg max-w-xs backdrop-blur-sm relative z-20">
                 <div className="flex items-center gap-2 mb-2">
                   <MessageCircle className="w-5 h-5" />
                   <span className="font-semibold">{step.title}</span>
@@ -117,7 +124,7 @@ export const TeachingBubble = () => {
                     {currentStep + 1}/{teachingSteps.length}
                   </span>
                 </div>
-                <p className="text-sm mb-4">{step.description}</p>
+                <p className="text-sm mb-4 leading-relaxed">{step.description}</p>
                 <div className="flex justify-between items-center">
                   <button
                     onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
@@ -158,13 +165,6 @@ export const TeachingBubble = () => {
                   </button>
                 </div>
               </div>
-              <div 
-                className={`absolute w-4 h-4 bg-[#D3E4FD]/90 transform rotate-45 ${
-                  step.position.left 
-                    ? '-right-2' 
-                    : '-left-2'
-                } top-1/2 -translate-y-1/2 backdrop-blur-sm`}
-              />
             </div>
           </div>
         </TooltipTrigger>
