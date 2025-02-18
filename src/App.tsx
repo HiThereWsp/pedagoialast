@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/hooks/useAuth'
 import { Toaster } from '@/components/ui/toaster'
 import { CookieBanner } from '@/components/CookieBanner'
+import { TeachingBubble } from '@/components/home/TeachingBubble'
 import '@/App.css'
 
 const queryClient = new QueryClient()
@@ -20,6 +21,7 @@ function App() {
             <AppRoutes />
             <Toaster />
             <CookieBanner />
+            <TeachingBubble />
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
