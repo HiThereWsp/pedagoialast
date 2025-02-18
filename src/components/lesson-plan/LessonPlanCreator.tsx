@@ -64,7 +64,6 @@ const LessonPlanCreator = () => {
   const [assessment, setAssessment] = useState('')
   const [differentiation, setDifferentiation] = useState('')
   const [notes, setNotes] = useState('')
-  const [isGenerating, setIsGenerating] = useState(false)
   const [searchParams] = useSearchParams()
   const [date, setDate] = React.useState<DateRange | undefined>({
     from: searchParams.get("from") ? new Date(searchParams.get("from") as string) : undefined,
@@ -74,7 +73,7 @@ const LessonPlanCreator = () => {
   const [search, setSearch] = useState<string>('')
   const { user } = useAuth()
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading: isLoadingHistory, refetch } = useQuery({
     queryKey: ['lessonPlans', user?.id],
     queryFn: () => getLessonPlans(user?.id),
     enabled: !!user?.id,
@@ -210,7 +209,7 @@ const LessonPlanCreator = () => {
     content: item.content,
     subject: item.subject,
     created_at: item.created_at,
-    type: 'lesson-plan', // Ajout du type manquant
+    type: 'lesson-plan',
     tags: item.tags
   })) || []
 
@@ -551,7 +550,7 @@ const LessonPlanCreator = () => {
               </div>
             </div>
 
-            {isLoading ? (
+            {isLoadingHistory ? (
               <div className="flex flex-col space-y-4">
                 <Skeleton className="w-[100px] h-[20px]" />
                 <Skeleton className="h-[150px]" />
