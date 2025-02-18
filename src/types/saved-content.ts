@@ -7,15 +7,12 @@ export interface SavedContent {
   class_level?: string
   created_at: string
   type: string
-}
-
-export interface SaveExerciseParams {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  exercise_type?: string
-  difficulty_level?: string
+  tags: Array<{
+    label: string
+    color: string
+    backgroundColor: string
+    borderColor: string
+  }>
 }
 
 export interface SaveLessonPlanParams {
@@ -25,5 +22,32 @@ export interface SaveLessonPlanParams {
   class_level?: string
   total_sessions?: number
   additional_instructions?: string
+  tags?: Array<{
+    label: string
+    color: string
+    backgroundColor: string
+    borderColor: string
+  }>
 }
 
+export interface LessonPlanData {
+  userId: string
+  title: string
+  subject: string
+  level: string
+  topic: string
+  duration: number
+  learningObjectives: string[]
+  materials: string[]
+  activities: string[]
+  assessment: string
+  differentiation: string
+  notes: string
+  type: string
+  tags: Array<{
+    label: string
+    color: string
+    backgroundColor: string
+    borderColor: string
+  }>
+}

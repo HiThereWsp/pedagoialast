@@ -1,4 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from "@/lib/utils";
+import { generateLessonPlan, getLessonPlans, type LessonPlanData } from '@/lib/lesson-plan';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +15,6 @@ import { TextTab } from './tabs/TextTab';
 import { SubjectTab } from './tabs/SubjectTab';
 import { Button } from "@/components/ui/button";
 import { Wand2, History, ChevronRight } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
 import { useSavedContent } from "@/hooks/useSavedContent";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,10 +26,27 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { HistoryCarousel } from '@/components/history/HistoryCarousel';
 
 export function LessonPlanCreator() {
+  const { toast } = useToast();
+  const [title, setTitle] = useState('');
+  const [subject, setSubject] = useState('');
+  const [level, setLevel] = useState('');
+  const [topic, setTopic] = useState('');
+  const [duration, setDuration] = useState<number>(60);
+  const [learningObjectives, setLearningObjectives] = useState(['']);
+  const [materials, setMaterials] = useState(['']);
+  const [activities, setActivities] = useState(['']);
+  const [assessment, setAssessment] = useState('');
+  const [differentiation, setDifferentiation] = useState('');
+  const [notes, setNotes] = useState('');
+  const [searchParams] = useSearchParams();
+  const [date, setDate] = React.useState<DateRange | undefined>({
+    from: searchParams.get("from") ? new Date(searchParams.get("from") as string) : undefined,
+    to: searchParams.get("to") ? new Date(searchParams.get("to") as string) : undefined,
+  });
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [search, setSearch] = useState<string>('');
+  const { user } = useAuth();
   const isMobile = useIsMobile();
-  const {
-    toast
-  } = useToast();
   const {
     logToolUsage
   } = useToolMetrics();
@@ -40,6 +65,31 @@ export function LessonPlanCreator() {
     text: '',
     lessonPlan: ''
   });
+
+  const { data: lessonPlans, refetch } = useQuery({
+    queryKey: ['lessonPlans', user?.id],
+    queryFn: () => getLessonPlans(user?.id),
+    enabled: !!user?.id,
+  });
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: LessonPlanData) => generateLessonPlan(data),
+    onSuccess: () => {
+      toast({
+        title: 'Plan de leçon créé !',
+        description: 'Votre plan de leçon a été créé avec succès.',
+      });
+      refetch();
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erreur lors de la création du plan de leçon.',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -152,6 +202,61 @@ export function LessonPlanCreator() {
       }]
     }));
   };
+
+  const handleGenerateLessonPlan = () => {
+    if (!user) {
+      toast({
+        title: 'Erreur',
+        description: 'Vous devez être connecté pour générer un plan de leçon.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const lessonPlanData: LessonPlanData = {
+      userId: user.id,
+      title,
+      subject,
+      level,
+      topic,
+      duration,
+      learningObjectives,
+      materials,
+      activities,
+      assessment,
+      differentiation,
+      notes,
+      type: 'lesson-plan',
+      tags: [{
+        label: 'Pédagogie',
+        color: 'text-sky-500',
+        backgroundColor: 'bg-sky-500/10',
+        borderColor: 'border-sky-500/30',
+      }]
+    };
+
+    mutate(lessonPlanData);
+  };
+
+  const filteredItems = lessonPlans?.filter((item) => {
+    if (!item) return false;
+    
+    const searchTerm = search.toLowerCase();
+    const itemTitle = item.title?.toLowerCase() || '';
+    const itemSubject = item.subject?.toLowerCase() || '';
+
+    const dateMatches = !date?.from || !date?.to ||
+      (new Date(item.created_at) >= date.from && new Date(item.created_at) <= date.to);
+
+    const tagMatches = selectedTags.length === 0 ||
+      (item.tags && item.tags.some(tag => selectedTags.includes(tag.label)));
+
+    const searchMatches = searchTerm === '' ||
+      itemTitle.includes(searchTerm) ||
+      itemSubject.includes(searchTerm);
+
+    return dateMatches && tagMatches && searchMatches;
+  }) || [];
 
   return (
     <div className="space-y-6">
