@@ -5,25 +5,11 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { History } from "lucide-react";
 import { formatDistanceToNowStrict } from 'date-fns';
 import { fr } from 'date-fns/locale';
-
-interface HistoryItem {
-  id: string;
-  title: string;
-  content: string;
-  subject?: string;
-  created_at: string;
-  type: string;
-  tags?: Array<{
-    label: string;
-    color?: string;
-    backgroundColor?: string;
-    borderColor?: string;
-  }>;
-}
+import type { SavedContent } from '@/types/saved-content';
 
 interface HistoryCarouselProps {
-  items: HistoryItem[];
-  onItemSelect: (item: HistoryItem) => void;
+  items: SavedContent[];
+  onItemSelect: (item: SavedContent) => void;
   selectedItemId?: string;
   formatContent?: (content: string) => string;
 }
@@ -46,7 +32,7 @@ export const HistoryCarousel = ({
     }).replace('dans ', 'il y a ');
   };
 
-  const renderContent = (item: HistoryItem) => {
+  const renderContent = (item: SavedContent) => {
     if (item.type === 'Image') {
       return (
         <div className="flex-grow h-40 relative">
@@ -76,7 +62,7 @@ export const HistoryCarousel = ({
         <h3 className="font-semibold text-lg">Mes dernières séquences</h3>
       </div>
       
-      {items.length > 0 ? (
+      {items && items.length > 0 ? (
         <Carousel 
           opts={{
             align: "start",

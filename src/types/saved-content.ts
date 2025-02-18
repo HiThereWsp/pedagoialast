@@ -6,7 +6,7 @@ export interface SavedContent {
   subject?: string
   class_level?: string
   created_at: string
-  type: string
+  type: 'lesson-plan' | 'exercise' | 'Image'
   tags: Array<{
     label: string
     color: string
@@ -43,8 +43,23 @@ export interface LessonPlanData {
   assessment: string
   differentiation: string
   notes: string
-  type: string
+  type: 'lesson-plan'
   tags: Array<{
+    label: string
+    color: string
+    backgroundColor: string
+    borderColor: string
+  }>
+}
+
+export interface SaveExerciseParams {
+  title: string
+  content: string
+  subject?: string
+  class_level?: string
+  exercise_type?: string
+  difficulty_level?: string
+  tags?: Array<{
     label: string
     color: string
     backgroundColor: string
