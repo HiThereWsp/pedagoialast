@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { LessonPlanData } from '@/types/saved-content';
+import type { LessonPlanData, SavedContent } from '@/types/saved-content';
 
 export const generateLessonPlan = async (data: LessonPlanData) => {
   try {
@@ -16,7 +16,7 @@ export const generateLessonPlan = async (data: LessonPlanData) => {
   }
 };
 
-export const getLessonPlans = async (userId?: string) => {
+export const getLessonPlans = async (userId?: string): Promise<SavedContent[]> => {
   if (!userId) return [];
   
   try {
@@ -29,7 +29,12 @@ export const getLessonPlans = async (userId?: string) => {
     if (error) throw error;
 
     return data.map(plan => ({
-      ...plan,
+      id: plan.id,
+      title: plan.title,
+      content: plan.content,
+      subject: plan.subject,
+      class_level: plan.class_level,
+      created_at: plan.created_at,
       type: 'lesson-plan' as const,
       tags: [{
         label: 'Séquence',

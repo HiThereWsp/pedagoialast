@@ -22,12 +22,18 @@ export default function ImageGenerationPage() {
 
         if (error) throw error;
 
-        const formattedImages = data.map(img => ({
+        const formattedImages: SavedContent[] = data.map(img => ({
           id: img.id,
           title: img.prompt,
           content: img.image_url,
           created_at: img.generated_at,
-          type: 'Image'
+          type: 'Image' as const,
+          tags: [{
+            label: 'Image',
+            color: '#F2FCE2',
+            backgroundColor: '#F2FCE220',
+            borderColor: '#F2FCE24D'
+          }]
         }));
 
         setImages(formattedImages);
