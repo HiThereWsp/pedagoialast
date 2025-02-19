@@ -9,6 +9,84 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      backup_saved_exercises: {
+        Row: {
+          class_level: string | null
+          content: string | null
+          created_at: string | null
+          difficulty_level: string | null
+          exercise_type: string | null
+          id: string | null
+          subject: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          class_level?: string | null
+          content?: string | null
+          created_at?: string | null
+          difficulty_level?: string | null
+          exercise_type?: string | null
+          id?: string | null
+          subject?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          class_level?: string | null
+          content?: string | null
+          created_at?: string | null
+          difficulty_level?: string | null
+          exercise_type?: string | null
+          id?: string | null
+          subject?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      backup_saved_lesson_plans: {
+        Row: {
+          additional_instructions: string | null
+          class_level: string | null
+          content: string | null
+          created_at: string | null
+          id: string | null
+          subject: string | null
+          title: string | null
+          total_sessions: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          additional_instructions?: string | null
+          class_level?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string | null
+          subject?: string | null
+          title?: string | null
+          total_sessions?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          additional_instructions?: string | null
+          class_level?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string | null
+          subject?: string | null
+          title?: string | null
+          total_sessions?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       chats: {
         Row: {
           action_type: string | null
@@ -308,6 +386,98 @@ export type Database = {
           created_at?: string
           first_name?: string
           id?: string
+        }
+        Relationships: []
+      }
+      saved_exercises: {
+        Row: {
+          class_level: string | null
+          content: string
+          created_at: string
+          difficulty_level: string | null
+          exercise_type: string | null
+          id: string
+          source_lesson_plan_id: string | null
+          source_type: string | null
+          subject: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          class_level?: string | null
+          content: string
+          created_at?: string
+          difficulty_level?: string | null
+          exercise_type?: string | null
+          id?: string
+          source_lesson_plan_id?: string | null
+          source_type?: string | null
+          subject?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          class_level?: string | null
+          content?: string
+          created_at?: string
+          difficulty_level?: string | null
+          exercise_type?: string | null
+          id?: string
+          source_lesson_plan_id?: string | null
+          source_type?: string | null
+          subject?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_exercises_source_lesson_plan_id_fkey"
+            columns: ["source_lesson_plan_id"]
+            isOneToOne: false
+            referencedRelation: "saved_lesson_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_lesson_plans: {
+        Row: {
+          additional_instructions: string | null
+          class_level: string | null
+          content: string
+          created_at: string
+          id: string
+          subject: string | null
+          title: string
+          total_sessions: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          additional_instructions?: string | null
+          class_level?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          subject?: string | null
+          title: string
+          total_sessions?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          additional_instructions?: string | null
+          class_level?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          subject?: string | null
+          title?: string
+          total_sessions?: number | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -701,6 +871,12 @@ export type Database = {
             }
             Returns: unknown
           }
+      check_saved_content_limit: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: boolean
+      }
       generate_report: {
         Args: Record<PropertyKey, never>
         Returns: string

@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -72,6 +73,15 @@ export default {
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))'
         }
+      },
+      transformStyle: {
+        'preserve-3d': 'preserve-3d',
+      },
+      transform: {
+        'rotate-y-80': 'rotateY(-80deg)',
+      },
+      perspective: {
+        '2000': '2000px',
       },
       boxShadow: {
         'premium': '0 4px 20px -2px rgba(0, 0, 0, 0.1), 0 2px 10px -3px rgba(0, 0, 0, 0.05)',

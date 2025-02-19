@@ -70,9 +70,13 @@ export const usePricingForm = () => {
 
     setIsSubmitting(true)
     try {
+      // S'assurer que tous les champs sont correctement envoyés
       const { error } = await supabase.functions.invoke('add-to-brevo', {
         body: {
-          ...formData,
+          email: formData.email,
+          contactName: formData.contactName,
+          etablissement: formData.etablissement,
+          taille: formData.taille,
           phone: formData.phoneNumber // Format complet du numéro
         }
       })
