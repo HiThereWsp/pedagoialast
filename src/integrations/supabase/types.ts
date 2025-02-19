@@ -640,6 +640,7 @@ export type Database = {
       user_profiles: {
         Row: {
           created_at: string
+          email_verified: boolean | null
           id: number
           user_email: string | null
           user_id: string | null
@@ -647,6 +648,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email_verified?: boolean | null
           id?: number
           user_email?: string | null
           user_id?: string | null
@@ -654,6 +656,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email_verified?: boolean | null
           id?: number
           user_email?: string | null
           user_id?: string | null
