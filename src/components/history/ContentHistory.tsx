@@ -1,125 +1,89 @@
 
+import React from 'react';
 import { Card } from "@/components/ui/card";
-import { HistoryCarousel } from "@/components/history/HistoryCarousel";
-import { type SavedContent } from "@/types/saved-content";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
-interface ContentHistoryProps {
+export interface ContentHistoryProps {
   title: string;
   type: string;
-  items: SavedContent[];
+  items: any[];
   onDelete?: (id: string) => Promise<void>;
+  onItemClick?: (item: any) => void;
   emptyMessage: string;
-  colorScheme?: {
+  colorScheme: {
     color: string;
     backgroundColor: string;
     borderColor: string;
   };
 }
 
-const getDisplayType = (type: string): string => {
-  switch (type) {
-    case 'lesson-plan':
-      return 'Séquence';
-    case 'exercise':
-      return 'Exercice';
-    case 'Image':
-      return 'Image';
-    default:
-      return type;
-  }
-};
-
-export const ContentHistory = ({ 
+export function ContentHistory({ 
   title, 
-  type, 
   items, 
-  onDelete,
-  emptyMessage,
-  colorScheme = {
-    color: '#22C55E',
-    backgroundColor: '#22C55E20',
-    borderColor: '#22C55E4D'
+  onDelete, 
+  onItemClick,
+  emptyMessage, 
+  colorScheme 
+}: ContentHistoryProps) {
+  if (items.length === 0) {
+    return (
+      <div className="text-center text-muted-foreground">
+        <p>{emptyMessage}</p>
+      </div>
+    );
   }
-}: ContentHistoryProps) => {
-  const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null);
-  const [deleteDialog, setDeleteDialog] = useState({ isOpen: false, itemId: "" });
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  const handleDelete = async () => {
-    if (!onDelete) return;
-    
-    try {
-      await onDelete(deleteDialog.itemId);
-      toast({
-        description: `${getDisplayType(type)} supprimé avec succès`
-      });
-      setDeleteDialog({ isOpen: false, itemId: "" });
-    } catch (err) {
-      setError(`Erreur lors de la suppression du ${type.toLowerCase()}`);
-      console.error("Erreur lors de la suppression:", err);
-    }
-  };
-
-  const transformedItems = items.map(item => ({
-    ...item,
-    displayType: getDisplayType(item.type),
-    tags: [{
-      label: getDisplayType(item.type),
-      ...colorScheme
-    }]
-  }));
 
   return (
-    <div className="space-y-4 mb-8">
-      <h2 className="text-xl font-semibold">{title}</h2>
-      {transformedItems.length > 0 ? (
-        <HistoryCarousel
-          items={transformedItems}
-          onItemSelect={(item) => {
-            setSelectedContent(item);
-            if (onDelete) {
-              setDeleteDialog({ isOpen: true, itemId: item.id });
-            }
-          }}
-          selectedItemId={selectedContent?.id}
-        />
-      ) : (
-        <Card className="p-8 text-center text-muted-foreground bg-gray-50">
-          <p>{emptyMessage}</p>
-        </Card>
-      )}
-
-      {onDelete && (
-        <AlertDialog 
-          open={deleteDialog.isOpen} 
-          onOpenChange={(isOpen) => setDeleteDialog(prev => ({ ...prev, isOpen }))}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Cette action ne peut pas être annulée. Cela supprimera définitivement votre {type.toLowerCase()}.
-                {error && (
-                  <p className="text-red-500 mt-2">{error}</p>
-                )}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Annuler</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-red-500 hover:bg-red-600"
-              >
-                Supprimer
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold mb-4">{title}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {items.map((item) => (
+          <Card 
+            key={item.id}
+            className="p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4"
+            style={{ borderLeftColor: colorScheme.color }}
+            onClick={() => onItemClick ? onItemClick(item) : null}
+          >
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-medium line-clamp-2">{item.title}</h3>
+              {onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(item.id);
+                  }}
+                  className="text-gray-500 hover:text-red-500 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6h18"></path>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                  </svg>
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2 flex-wrap mt-2">
+              {item.tags?.map((tag: any, index: number) => (
+                <span
+                  key={index}
+                  className="text-xs px-2 py-1 rounded-full"
+                  style={{
+                    color: tag.color,
+                    backgroundColor: tag.backgroundColor,
+                    borderColor: tag.borderColor,
+                  }}
+                >
+                  {tag.label}
+                </span>
+              ))}
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              {item.formattedDate}
+            </p>
+          </Card>
+        ))}
+      </div>
     </div>
   );
-};
+}
