@@ -57,13 +57,14 @@ const Home = () => {
     }
     getUser()
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("USER", session.user)
       if (session?.user?.email_confirmed_at){
         const {data: user_profiles, error} = await supabase.from('user_profiles').select('*').eq('user_email', session.user.email);
         console.log({user_profiles})
         console.log("EMAIL", session.user.email)
         console.log({error})
         // if(user_profiles)
-        if(user_profiles && !user_profiles[0].welcome_email_sent){
+        if(user_profiles && !user_profiles[0]?.welcome_email_sent){
           try {
             const { data: emailData, error: emailError } = await supabase.functions.invoke(
                 "send-welcome-emails-after-signup",
@@ -74,6 +75,12 @@ const Home = () => {
                   },
                 }
             );
+            console.log({emailData})
+            const { data, error } = await supabase
+                .from('user_profiles')
+                .update({ welcome_email_sent: true })
+                .eq('user_email', session.user?.email)
+                .select()
             if (emailError) {
               if (emailError instanceof FunctionsHttpError) {
                 const errorMessage = await emailError.context.json();
@@ -84,16 +91,11 @@ const Home = () => {
                 console.error("Fetch error:", emailError.message);
               }
               console.log("Welcome email data:", emailData);
-            }else{
-              const { data, error } = await supabase
-                  .from('user_profiles')
-                  .update({ welcome_email_sent: true })
-                  .eq('user_email', session.user?.email)
-                  .select()
             }
           } catch (emailErr) {
             console.error("Email sending failed:", emailErr);
           }
+
         }
       }
       if (event === 'SIGNED_OUT' || !session) {
