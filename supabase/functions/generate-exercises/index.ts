@@ -117,7 +117,12 @@ serve(async (req) => {
   }
 
   try {
-    const { body } = req;
+    console.log("🔵 Réception d'une requête de génération d'exercices");
+
+    // Utiliser directement req.json() au lieu de déstructurer body
+    const requestData = await req.json();
+    console.log("📥 Données reçues:", requestData);
+
     const {
       subject,
       classLevel,
@@ -128,15 +133,18 @@ serve(async (req) => {
       specificNeeds,
       strengths,
       challenges,
-    } = await body!.json();
+    } = requestData;
 
     // Validation des paramètres
     if (!subject || !classLevel || !objective) {
+      console.error("❌ Paramètres manquants:", { subject, classLevel, objective });
       return new Response(
         JSON.stringify({ error: "Paramètres requis manquants" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("✅ Validation des paramètres réussie");
 
     const prompt = createPrompt({
       subject,
@@ -150,6 +158,8 @@ serve(async (req) => {
       challenges,
     });
 
+    console.log("📝 Prompt généré avec succès");
+
     // Création d'un TransformStream pour le streaming
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
@@ -158,11 +168,13 @@ serve(async (req) => {
     // Streaming asynchrone
     (async () => {
       try {
+        console.log("🔄 Début du streaming");
         for await (const chunk of streamCompletion(prompt)) {
           await writer.write(encoder.encode(chunk));
         }
+        console.log("✅ Streaming terminé avec succès");
       } catch (error) {
-        console.error("Erreur streaming:", error);
+        console.error("❌ Erreur streaming:", error);
       } finally {
         await writer.close();
       }
@@ -177,9 +189,9 @@ serve(async (req) => {
       },
     });
   } catch (error) {
-    console.error("Erreur générale:", error);
+    console.error("❌ Erreur générale:", error);
     return new Response(
-      JSON.stringify({ error: "Erreur lors de la génération" }),
+      JSON.stringify({ error: "Erreur lors de la génération", details: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
