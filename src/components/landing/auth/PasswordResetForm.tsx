@@ -19,7 +19,7 @@ export const PasswordResetForm = () => {
 
     try {
       await HandlePasswordReset(e)
-      if (formState.isSuccess) {
+      if(formState.isSuccess) {
         navigate('/home')
       }
     } catch (error: any) {
