@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
@@ -114,14 +113,14 @@ const ExercisePage = () => {
   }, [getSavedExercises, isAuthChecking, toast]);
 
   const handleSubmit = async () => {
-    const result = await generateExercises(formData);
+    const { success, exercises: generatedExercises } = await generateExercises(formData);
     
-    if (result && exercises) {
+    if (success && generatedExercises) {
       try {
-        // Sauvegarde l'exercice généré
+        // Sauvegarde l'exercice généré avec les données générées
         await saveExercise({
           title: `Exercice ${formData.subject} - ${formData.classLevel}`,
-          content: exercises,
+          content: generatedExercises,
           subject: formData.subject,
           class_level: formData.classLevel,
           exercise_type: formData.exerciseType,
@@ -131,7 +130,7 @@ const ExercisePage = () => {
           specific_needs: formData.specificNeeds
         });
 
-        // Recharge les exercices sauvegardés
+        // Recharge les exercices sauvegardés immédiatement après la sauvegarde
         const updatedExercises = await getSavedExercises();
         setSavedExercises(updatedExercises.map(ex => ({
           ...ex,
@@ -143,6 +142,11 @@ const ExercisePage = () => {
             borderColor: '#22C55E4D'
           }]
         })));
+
+        toast({
+          title: "Succès",
+          description: "L'exercice a été généré et sauvegardé avec succès"
+        });
 
         console.log("✅ Exercice sauvegardé et historique mis à jour");
       } catch (error) {

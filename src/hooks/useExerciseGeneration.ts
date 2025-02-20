@@ -53,7 +53,7 @@ export function useExerciseGeneration() {
 
   const generateExercises = async (formData: ExerciseFormData) => {
     if (!validateFormData(formData)) {
-      return false;
+      return { success: false, exercises: null };
     }
 
     setIsLoading(true);
@@ -72,10 +72,10 @@ export function useExerciseGeneration() {
       setExercises(data.exercises);
       toast({
         title: "Exercices générés avec succès",
-        description: "Vos exercices ont été créés et sauvegardés",
+        description: "Vos exercices ont été créés", // Message modifié
       });
       
-      return true;
+      return { success: true, exercises: data.exercises };
     } catch (error) {
       console.error('Error generating exercises:', error);
       toast({
@@ -83,7 +83,7 @@ export function useExerciseGeneration() {
         description: "Une erreur est survenue lors de la génération des exercices",
         variant: "destructive",
       });
-      return false;
+      return { success: false, exercises: null };
     } finally {
       setIsLoading(false);
     }
