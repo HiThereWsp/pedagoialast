@@ -92,7 +92,7 @@ const ExercisePage = () => {
         const exercises = await getSavedExercises();
         setSavedExercises(exercises.map(ex => ({
           ...ex,
-          type: 'Exercice', // Ajout explicite du type
+          type: 'exercise',
           tags: [{
             label: 'Exercice',
             color: '#22C55E',
@@ -117,27 +117,42 @@ const ExercisePage = () => {
     const result = await generateExercises(formData);
     
     if (result && exercises) {
-      await saveExercise({
-        title: `Exercice ${formData.subject || ''} - ${formData.classLevel}`,
-        content: exercises,
-        subject: formData.subject,
-        class_level: formData.classLevel,
-        exercise_type: formData.exerciseType,
-        difficulty_level: 'standard'
-      });
+      try {
+        // Sauvegarde l'exercice généré
+        await saveExercise({
+          title: `Exercice ${formData.subject} - ${formData.classLevel}`,
+          content: exercises,
+          subject: formData.subject,
+          class_level: formData.classLevel,
+          exercise_type: formData.exerciseType,
+          exercise_category: formData.specificNeeds ? 'differentiated' : 'standard',
+          student_profile: formData.studentProfile,
+          learning_style: formData.learningStyle,
+          specific_needs: formData.specificNeeds
+        });
 
-      // Recharger les exercices sauvegardés après la génération
-      const updatedExercises = await getSavedExercises();
-      setSavedExercises(updatedExercises.map(ex => ({
-        ...ex,
-        type: 'Exercice',
-        tags: [{
-          label: 'Exercice',
-          color: '#22C55E',
-          backgroundColor: '#22C55E20',
-          borderColor: '#22C55E4D'
-        }]
-      })));
+        // Recharge les exercices sauvegardés
+        const updatedExercises = await getSavedExercises();
+        setSavedExercises(updatedExercises.map(ex => ({
+          ...ex,
+          type: 'exercise',
+          tags: [{
+            label: 'Exercice',
+            color: '#22C55E',
+            backgroundColor: '#22C55E20',
+            borderColor: '#22C55E4D'
+          }]
+        })));
+
+        console.log("✅ Exercice sauvegardé et historique mis à jour");
+      } catch (error) {
+        console.error("❌ Erreur lors de la sauvegarde de l'exercice:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la sauvegarde de l'exercice"
+        });
+      }
     }
   };
 
