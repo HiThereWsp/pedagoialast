@@ -1,4 +1,3 @@
-
 export interface SavedContent {
   id: string
   title: string
@@ -7,6 +6,7 @@ export interface SavedContent {
   class_level?: string
   created_at: string
   type: 'lesson-plan' | 'exercise' | 'Image'
+  displayType?: string
   tags: Array<{
     label: string
     color: string

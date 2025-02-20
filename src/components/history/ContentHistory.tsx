@@ -19,6 +19,19 @@ interface ContentHistoryProps {
   };
 }
 
+const getDisplayType = (type: string): string => {
+  switch (type) {
+    case 'lesson-plan':
+      return 'Séquence';
+    case 'exercise':
+      return 'Exercice';
+    case 'Image':
+      return 'Image';
+    default:
+      return type;
+  }
+};
+
 export const ContentHistory = ({ 
   title, 
   type, 
@@ -42,7 +55,7 @@ export const ContentHistory = ({
     try {
       await onDelete(deleteDialog.itemId);
       toast({
-        description: `${type} supprimé avec succès`
+        description: `${getDisplayType(type)} supprimé avec succès`
       });
       setDeleteDialog({ isOpen: false, itemId: "" });
     } catch (err) {
@@ -53,9 +66,9 @@ export const ContentHistory = ({
 
   const transformedItems = items.map(item => ({
     ...item,
-    type: type,
+    displayType: getDisplayType(item.type),
     tags: [{
-      label: type,
+      label: getDisplayType(item.type),
       ...colorScheme
     }]
   }));

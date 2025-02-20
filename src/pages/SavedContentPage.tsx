@@ -13,18 +13,36 @@ import { Link } from "react-router-dom";
 const carouselCategories = [
   {
     title: "Mes séquences pédagogiques",
-    type: "Séquence",
-    emptyMessage: "Vous n'avez pas encore généré de séquence pédagogique. C'est le moment de laisser libre cours à votre créativité !"
+    type: "lesson-plan",
+    displayType: "Séquence",
+    emptyMessage: "Vous n'avez pas encore généré de séquence pédagogique. C'est le moment de laisser libre cours à votre créativité !",
+    colorScheme: {
+      color: '#FF9EBC',
+      backgroundColor: '#FF9EBC20',
+      borderColor: '#FF9EBC4D'
+    }
   },
   {
     title: "Mes exercices",
-    type: "Exercice",
-    emptyMessage: "Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
+    type: "exercise",
+    displayType: "Exercice",
+    emptyMessage: "Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !",
+    colorScheme: {
+      color: '#22C55E',
+      backgroundColor: '#22C55E20',
+      borderColor: '#22C55E4D'
+    }
   },
   {
     title: "Mes images",
     type: "Image",
-    emptyMessage: "Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !"
+    displayType: "Image",
+    emptyMessage: "Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !",
+    colorScheme: {
+      color: '#F2FCE2',
+      backgroundColor: '#F2FCE220',
+      borderColor: '#F2FCE24D'
+    }
   }
 ];
 
@@ -72,12 +90,14 @@ export default function SavedContentPage() {
       }));
       const formattedExercises = exercises.map(ex => ({
         ...ex,
-        type: 'Exercice',
+        type: 'exercise',
+        displayType: 'Exercice',
         description: ex.content.substring(0, 100) + '...'
       }));
       const formattedLessonPlans = lessonPlans.map(plan => ({
         ...plan,
-        type: 'Séquence',
+        type: 'lesson-plan',
+        displayType: 'Séquence',
         description: plan.content.substring(0, 100) + '...'
       }));
       setContent([...formattedExercises, ...formattedLessonPlans].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
@@ -102,7 +122,7 @@ export default function SavedContentPage() {
       delete: undefined
     }));
     try {
-      if (type === 'Exercice') {
+      if (type === 'exercise') {
         await deleteSavedExercise(id);
       } else {
         await deleteSavedLessonPlan(id);
@@ -126,32 +146,17 @@ export default function SavedContentPage() {
   };
 
   const transformToHistoryItems = (items: SavedContent[], type: string) => {
-    const colorMap = {
-      'Séquence': {
-        color: '#FF9EBC',
-        backgroundColor: '#FF9EBC20',
-        borderColor: '#FF9EBC4D'
-      },
-      'Exercice': {
-        color: '#22C55E',
-        backgroundColor: '#22C55E20',
-        borderColor: '#22C55E4D'
-      },
-      'Image': {
-        color: '#F2FCE2',
-        backgroundColor: '#F2FCE220',
-        borderColor: '#F2FCE24D'
-      }
-    };
+    const category = carouselCategories.find(cat => cat.type === type);
+    if (!category) return [];
 
     return items
-      .filter(item => item.type === type.toLowerCase())
+      .filter(item => item.type === type)
       .map(item => ({
         ...item,
-        type: type.toLowerCase() as any,
+        type: type,
         tags: [{
-          label: type,
-          ...colorMap[type as keyof typeof colorMap]
+          label: category.displayType,
+          ...category.colorScheme
         }]
       }));
   };
