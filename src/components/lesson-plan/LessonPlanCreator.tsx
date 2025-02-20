@@ -31,6 +31,10 @@ interface LessonPlan {
   title: string;
   content: string;
   created_at: string;
+  class_level?: string;
+  subject?: string;
+  total_sessions?: number;
+  additional_instructions?: string;
   tags?: Array<{
     label: string;
     color: string;

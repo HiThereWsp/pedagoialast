@@ -22,43 +22,6 @@ interface ExerciseParams {
   challenges?: string;
 }
 
-function createPrompt(params: ExerciseParams): string {
-  const {
-    subject,
-    classLevel,
-    objective,
-    numberOfExercises,
-    questionsPerExercise,
-    specificNeeds,
-    exerciseType,
-    strengths,
-    challenges
-  } = params;
-
-  return `
-MATIÈRE: ${subject}
-NIVEAU: ${classLevel}
-OBJECTIF: ${objective}
-FORMAT: ${numberOfExercises} exercices, ${questionsPerExercise} questions/exercice
-${specificNeeds ? `BESOINS SPÉCIFIQUES: ${specificNeeds}` : ''}
-${exerciseType ? `TYPE: ${exerciseType}` : ''}
-${strengths ? `POINTS FORTS: ${strengths}` : ''}
-${challenges ? `DIFFICULTÉS: ${challenges}` : ''}
-
-Structure requise:
-FICHE ÉLÈVE
-[Ex.1] à [Ex.${numberOfExercises}]
-- Consignes claires
-- Questions numérotées de 1 à ${questionsPerExercise}
-
-FICHE PÉDAGOGIQUE
-- Objectifs spécifiques
-- Compétences travaillées
-- Corrections détaillées
-- Adaptations proposées
-`;
-}
-
 async function sendSSEMessage(writer: WritableStreamDefaultWriter, event: string, data: any) {
   const encoder = new TextEncoder();
   const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -66,130 +29,102 @@ async function sendSSEMessage(writer: WritableStreamDefaultWriter, event: string
 }
 
 serve(async (req) => {
-  // Gérer les requêtes OPTIONS pour CORS
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const stream = new TransformStream();
+  const writer = stream.writable.getWriter();
 
   try {
     console.log("🔵 Réception d'une requête de génération d'exercices");
     const requestData = await req.json();
 
-    // Validation des paramètres
     if (!requestData.subject || !requestData.classLevel || !requestData.objective) {
-      console.error("❌ Paramètres manquants:", requestData);
-      return new Response(
-        JSON.stringify({ error: "Paramètres requis manquants" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      await sendSSEMessage(writer, "error", { message: "Paramètres requis manquants" });
+      writer.close();
+      return new Response(stream.readable, { headers: corsHeaders });
     }
 
-    const prompt = createPrompt({
-      subject: requestData.subject,
-      classLevel: requestData.classLevel,
-      numberOfExercises: Number(requestData.numberOfExercises) || 3,
-      questionsPerExercise: Number(requestData.questionsPerExercise) || 5,
-      objective: requestData.objective,
-      exerciseType: requestData.exerciseType,
-      specificNeeds: requestData.specificNeeds,
-      strengths: requestData.strengths,
-      challenges: requestData.challenges,
+    // Envoi du message de début
+    await sendSSEMessage(writer, "start", { status: "started" });
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [
+          { 
+            role: "system", 
+            content: "Tu es un expert en pédagogie spécialisé dans la création d'exercices adaptés au niveau scolaire français." 
+          },
+          { 
+            role: "user", 
+            content: `Crée ${requestData.numberOfExercises} exercices de ${requestData.subject} pour le niveau ${requestData.classLevel} avec l'objectif: ${requestData.objective}
+            ${requestData.specificNeeds ? `\nBesoins spécifiques: ${requestData.specificNeeds}` : ''}
+            ${requestData.exerciseType ? `\nType d'exercice: ${requestData.exerciseType}` : ''}
+            Format: ${requestData.questionsPerExercise} questions par exercice.` 
+          }
+        ],
+        stream: true,
+      }),
     });
 
-    // Création du stream pour SSE
-    const stream = new TransformStream();
-    const writer = stream.writable.getWriter();
+    if (!response.ok) {
+      throw new Error(`Erreur API OpenAI: ${response.status}`);
+    }
 
-    // Démarrer la génération en arrière-plan
-    (async () => {
-      try {
-        console.log("🔄 Début de la génération");
-        
-        // Envoi du message de début
-        await sendSSEMessage(writer, "start", { status: "started" });
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
 
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4",
-            messages: [
-              { 
-                role: "system", 
-                content: "Tu es un expert en pédagogie spécialisé dans la création d'exercices." 
-              },
-              { role: "user", content: prompt }
-            ],
-            temperature: 0.7,
-            max_tokens: 2000,
-            stream: true,
-          }),
-        });
+    while (true) {
+      const { done, value } = await reader!.read();
+      
+      if (done) {
+        break;
+      }
 
-        if (!response.ok) {
-          throw new Error(`Erreur API: ${response.status}`);
-        }
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+      
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          
+          if (data === '[DONE]') {
+            continue;
+          }
 
-        const reader = response.body?.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader!.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          buffer += chunk;
-
-          // Envoyer le contenu accumulé
-          if (buffer.includes("\n")) {
-            const lines = buffer.split("\n");
-            buffer = lines.pop() || "";
-
-            for (const line of lines) {
-              if (line.startsWith("data: ")) {
-                const data = line.slice(6);
-                if (data === "[DONE]") continue;
-                
-                try {
-                  const parsed = JSON.parse(data);
-                  const content = parsed.choices[0]?.delta?.content;
-                  if (content) {
-                    await sendSSEMessage(writer, "content", { content });
-                  }
-                } catch (e) {
-                  console.error("❌ Erreur parsing JSON:", e);
-                }
-              }
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices[0]?.delta?.content;
+            
+            if (content) {
+              await sendSSEMessage(writer, "content", { content });
             }
+          } catch (e) {
+            console.error("❌ Erreur parsing JSON:", e);
           }
         }
-
-        // Message de fin
-        await sendSSEMessage(writer, "end", { status: "completed" });
-        console.log("✅ Génération terminée avec succès");
-      } catch (error) {
-        console.error("❌ Erreur pendant la génération:", error);
-        await sendSSEMessage(writer, "error", { 
-          error: true,
-          message: error.message 
-        });
-      } finally {
-        await writer.close();
       }
-    })();
+    }
 
-    return new Response(stream.readable, {
-      headers: corsHeaders
-    });
+    await sendSSEMessage(writer, "end", { status: "completed" });
+    console.log("✅ Génération terminée avec succès");
+
   } catch (error) {
-    console.error("❌ Erreur générale:", error);
-    return new Response(
-      JSON.stringify({ error: "Erreur lors de la génération", details: error.message }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    console.error("❌ Erreur pendant la génération:", error);
+    await sendSSEMessage(writer, "error", { 
+      error: true,
+      message: error.message 
+    });
+  } finally {
+    writer.close();
   }
+
+  return new Response(stream.readable, { headers: corsHeaders });
 });

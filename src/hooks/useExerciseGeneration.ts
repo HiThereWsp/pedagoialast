@@ -40,52 +40,66 @@ export function useExerciseGeneration() {
     console.log("🔵 Début de la génération d'exercices");
 
     try {
-      // Configuration de l'EventSource pour SSE
       const response = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
           numberOfExercises: parseInt(formData.numberOfExercises) || 4,
           questionsPerExercise: parseInt(formData.questionsPerExercise) || 5,
-        },
-        responseType: 'stream',
+        }
       });
 
       if (!response.data) {
         throw new Error("Pas de données reçues");
       }
 
+      const reader = new ReadableStreamDefaultReader(response.data as ReadableStream);
+      const decoder = new TextDecoder();
       let accumulatedContent = "";
 
-      const reader = (response.data as ReadableStream).getReader();
-      const decoder = new TextDecoder();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+          const chunk = decoder.decode(value);
+          const events = chunk.split('\n\n').filter(Boolean);
 
-        const chunk = decoder.decode(value);
-        const events = chunk.split('\n\n').filter(Boolean);
+          for (const event of events) {
+            const [eventLine, dataLine] = event.split('\n');
+            if (!eventLine || !dataLine) continue;
 
-        for (const event of events) {
-          const [eventLine, dataLine] = event.split('\n');
-          const eventType = eventLine.replace('event: ', '');
-          const data = JSON.parse(dataLine.replace('data: ', ''));
+            const eventType = eventLine.replace('event: ', '');
+            try {
+              const data = JSON.parse(dataLine.replace('data: ', ''));
 
-          switch (eventType) {
-            case 'start':
-              console.log("🔵 Début du streaming");
-              break;
-            case 'content':
-              accumulatedContent += data.content;
-              setStreamingContent(accumulatedContent);
-              break;
-            case 'error':
-              throw new Error(data.message);
-            case 'end':
-              console.log("✅ Streaming terminé");
-              break;
+              switch (eventType) {
+                case 'start':
+                  console.log("🔵 Début du streaming");
+                  break;
+                case 'content':
+                  if (data.content) {
+                    accumulatedContent += data.content;
+                    setStreamingContent(accumulatedContent);
+                  }
+                  break;
+                case 'error':
+                  throw new Error(data.message || "Erreur lors de la génération");
+                case 'end':
+                  console.log("✅ Streaming terminé");
+                  break;
+              }
+            } catch (e) {
+              console.error("Erreur lors du parsing des données:", e);
+              continue;
+            }
           }
         }
+      } finally {
+        reader.releaseLock();
+      }
+
+      if (!accumulatedContent) {
+        throw new Error("Aucun contenu n'a été généré");
       }
 
       const result: GenerationResult = {
@@ -100,12 +114,13 @@ export function useExerciseGeneration() {
       };
 
       return result;
+
     } catch (error) {
       console.error('❌ Erreur lors de la génération:', error);
-      setError(error.message);
+      setError(error instanceof Error ? error.message : "Une erreur inattendue est survenue");
       toast({
         title: "Erreur",
-        description: error.message === "Délai d'attente dépassé" 
+        description: error instanceof Error && error.message === "Délai d'attente dépassé"
           ? "La génération a pris trop de temps, veuillez réessayer"
           : "Une erreur est survenue lors de la génération des exercices",
         variant: "destructive",
