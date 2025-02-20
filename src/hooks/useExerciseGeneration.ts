@@ -7,6 +7,7 @@ export interface ExerciseFormData {
   subject: string;
   classLevel: string;
   numberOfExercises: string;
+  questionsPerExercise: string;
   objective: string;
   exerciseType: string;
   additionalInstructions: string;
@@ -62,6 +63,8 @@ export function useExerciseGeneration() {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
+          numberOfExercises: parseInt(formData.numberOfExercises) || 3,
+          questionsPerExercise: parseInt(formData.questionsPerExercise) || 5,
           specificNeeds: formData.specificNeeds.trim(),
           strengths: formData.strengths.trim(),
           challenges: formData.challenges.trim()
@@ -73,8 +76,14 @@ export function useExerciseGeneration() {
         throw error;
       }
 
+      // Post-traitement pour retirer les formatages indésirables
+      const cleanedExercises = data.exercises
+        .replace(/###/g, '')
+        .replace(/---/g, '')
+        .trim();
+
       console.log("✅ Exercices générés avec succès");
-      return data.exercises;
+      return cleanedExercises;
     } catch (error) {
       console.error('❌ Erreur lors de la génération:', error);
       toast({

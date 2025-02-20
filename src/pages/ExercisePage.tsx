@@ -10,21 +10,24 @@ import { SEO } from "@/components/SEO";
 import { ContentHistory } from '@/components/history/ContentHistory';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
+import { format, formatDistance, isToday, isYesterday } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const ExercisePage = () => {
   const { isLoading, generateExercises } = useExerciseGeneration();
-  const { saveExercise, getSavedExercises, deleteSavedExercise } = useSavedContent();
+  const { saveExercise, getSavedExercises } = useSavedContent();
   const [savedExercises, setSavedExercises] = useState([]);
   const [currentExercise, setCurrentExercise] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [lastSaveTimestamp, setLastSaveTimestamp] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
-    numberOfExercises: '',
-    questionsPerExercise: '',
+    numberOfExercises: '3',
+    questionsPerExercise: '5',
     objective: '',
     exerciseType: '',
     additionalInstructions: '',
@@ -42,6 +45,21 @@ const ExercisePage = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (isToday(date)) {
+      return "Aujourd'hui";
+    }
+    if (isYesterday(date)) {
+      return "Hier";
+    }
+    const distance = formatDistance(date, new Date(), { 
+      addSuffix: true,
+      locale: fr 
+    });
+    return distance.charAt(0).toUpperCase() + distance.slice(1);
   };
 
   useEffect(() => {
@@ -94,6 +112,7 @@ const ExercisePage = () => {
         setSavedExercises(exercises.map(ex => ({
           ...ex,
           type: 'exercise',
+          formattedDate: formatDate(ex.created_at),
           tags: [{
             label: 'Exercice',
             color: '#22C55E',
@@ -123,9 +142,18 @@ const ExercisePage = () => {
       try {
         setCurrentExercise(generatedExercises);
         
+        // Empêcher les doubles sauvegardes
+        const currentTime = Date.now();
+        if (lastSaveTimestamp && currentTime - lastSaveTimestamp < 300000) { // 5 minutes
+          return;
+        }
+        setLastSaveTimestamp(currentTime);
+        
+        const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
+        
         console.log("🔵 Sauvegarde de l'exercice");
         await saveExercise({
-          title: `Exercice ${formData.subject} - ${formData.classLevel}`,
+          title,
           content: generatedExercises,
           subject: formData.subject,
           class_level: formData.classLevel,
@@ -140,6 +168,7 @@ const ExercisePage = () => {
         setSavedExercises(updatedExercises.map(ex => ({
           ...ex,
           type: 'exercise',
+          formattedDate: formatDate(ex.created_at),
           tags: [{
             label: 'Exercice',
             color: '#22C55E',
@@ -163,6 +192,10 @@ const ExercisePage = () => {
         });
       }
     }
+  };
+
+  const handleExerciseClick = (exercise: any) => {
+    setCurrentExercise(exercise.content);
   };
 
   if (isAuthChecking) {
@@ -218,7 +251,7 @@ const ExercisePage = () => {
             title="Mes exercices générés"
             type="Exercice"
             items={savedExercises}
-            onDelete={deleteSavedExercise}
+            onItemClick={handleExerciseClick}
             emptyMessage="Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
             colorScheme={{
               color: '#22C55E',
