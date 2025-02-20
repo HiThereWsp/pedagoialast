@@ -7,6 +7,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const TIMEOUT_MS = 25000; // 25 secondes de timeout
+
 serve(async (req) => {
   const startTime = performance.now();
   console.log("🔵 Début de la génération d'exercices");
@@ -14,6 +16,10 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  // Créer un contrôleur de timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
     const requestData = await req.json();
@@ -30,17 +36,22 @@ serve(async (req) => {
     } = requestData;
 
     console.log("📝 Paramètres reçus:", { 
-      subject, 
-      classLevel, 
-      objective,
-      numberOfExercises,
-      questionsPerExercise,
-      exerciseType,
-      specificNeeds 
+      subject, classLevel, objective,
+      numberOfExercises, questionsPerExercise,
+      exerciseType, specificNeeds 
     });
 
-    const prompt = `Crée ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
-    
+    const systemPrompt = `Tu es un expert en pédagogie spécialisé dans la création d'exercices. 
+Crée une fiche d'exercices claire et structurée avec ces règles strictes de formatage :
+- Texte aligné à gauche uniquement
+- Pas d'indentation excessive
+- Titres en MAJUSCULES
+- Questions numérotées clairement
+- Espacement optimisé pour la lisibilité
+- Structure hiérarchique claire`;
+
+    const userPrompt = `Crée ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
+
 Objectif pédagogique : ${objective}
 ${exerciseType ? `Type d'exercice : ${exerciseType}` : ''}
 Nombre de questions par exercice : ${questionsPerExercise}
@@ -49,29 +60,26 @@ ${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
 ${challenges ? `Points de vigilance : ${challenges}` : ''}
 ${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
 
-FORMAT ATTENDU :
+Structure attendue :
 
 FICHE ÉLÈVE
------------
-[Exercice 1]
-Consigne :
-Questions :
-1. 
-2.
-[répéter selon nombre de questions demandé]
 
-[Répéter pour chaque exercice demandé]
+[EXERCICE 1]
+CONSIGNE : 
+1. Question
+2. Question
+[répéter selon nombre de questions]
 
 FICHE PÉDAGOGIQUE
-----------------
-[Exercice 1]
-Objectifs spécifiques :
-Prérequis :
-Corrigé détaillé :
-1. [Réponse]
-   Explicitation :
-   Points de vigilance :
-   Remédiations possibles :
+
+[EXERCICE 1]
+OBJECTIFS :
+PRÉREQUIS :
+CORRIGÉ :
+1. Réponse
+   Explicitation
+   Points de vigilance
+   Remédiations
 
 [Répéter pour chaque exercice]`;
 
@@ -83,17 +91,12 @@ Corrigé détaillé :
         'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          {
-            role: 'system',
-            content: 'Tu es un expert en pédagogie spécialisé dans la création d\'exercices adaptés aux élèves. Sois concis et direct dans tes exercices.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
       }),
@@ -108,17 +111,43 @@ Corrigé détaillé :
     const data = await response.json();
     const exercises = data.choices[0].message.content;
 
+    // Post-traitement pour garantir le formatage
+    const cleanedExercises = exercises
+      .replace(/###/g, '')
+      .replace(/---/g, '')
+      .replace(/\n\s+\n/g, '\n\n')  // Supprime l'espacement excessif
+      .replace(/^\s+/gm, '')        // Supprime l'indentation en début de ligne
+      .replace(/\[EXERCICE/g, '\n[EXERCICE')  // Assure l'espacement des sections
+      .replace(/\n{3,}/g, '\n\n')   // Limite les sauts de ligne consécutifs
+      .trim();
+
     const endTime = performance.now();
     console.log(`✅ Exercices générés en ${Math.round(endTime - startTime)}ms`);
 
+    clearTimeout(timeoutId);
     return new Response(
-      JSON.stringify({ exercises }), 
+      JSON.stringify({ exercises: cleanedExercises }), 
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error('❌ Erreur dans la fonction generate-exercises:', error);
+    
+    if (error.name === 'AbortError') {
+      return new Response(
+        JSON.stringify({ 
+          error: "Délai d'attente dépassé",
+          details: "La génération a pris trop de temps, veuillez réessayer"
+        }), 
+        {
+          status: 408,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
     return new Response(
       JSON.stringify({ 
         error: error.message,
