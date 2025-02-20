@@ -8,16 +8,11 @@ const corsHeaders = {
   'Content-Type': 'application/json'
 }
 
-const TIMEOUT_MS = 25000; // 25 secondes de timeout
-
 serve(async (req) => {
   // Gestion du CORS préflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
     const requestData = await req.json();
@@ -102,59 +97,69 @@ FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
 
     console.log('🤖 Appel OpenAI en cours...');
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { role: 'system', content: baseSystemPrompt },
-          { role: 'user', content: isDifferentiation ? differentiatePrompt : generatePrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 800,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1
-      }),
-    });
+    // Définir un timeout pour la requête fetch
+    const timeout = 20000; // 20 secondes
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('❌ Erreur OpenAI:', error);
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            { role: 'system', content: baseSystemPrompt },
+            { role: 'user', content: isDifferentiation ? differentiatePrompt : generatePrompt }
+          ],
+          temperature: 0.7,
+          max_tokens: 800,
+          presence_penalty: 0.1,
+          frequency_penalty: 0.1
+        }),
+      });
+
+      clearTimeout(id);
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('❌ Erreur OpenAI:', error);
+        throw new Error(`OpenAI API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data?.choices?.[0]?.message?.content) {
+        throw new Error('Pas de contenu généré');
+      }
+
+      const exercises = data.choices[0].message.content;
+
+      // Post-traitement pour garantir le formatage
+      const cleanedExercises = exercises
+        .replace(/###/g, '')
+        .replace(/---/g, '')
+        .replace(/\n\s+\n/g, '\n\n')  // Supprime l'espacement excessif
+        .replace(/^\s+/gm, '')        // Supprime l'indentation en début de ligne
+        .replace(/\[EXERCICE/g, '\n[EXERCICE')  // Assure l'espacement des sections
+        .replace(/\n{3,}/g, '\n\n')   // Limite les sauts de ligne consécutifs
+        .trim();
+
+      return new Response(
+        JSON.stringify({ exercises: cleanedExercises }), 
+        { headers: corsHeaders }
+      );
+
+    } catch (fetchError) {
+      clearTimeout(id);
+      throw fetchError;
     }
-
-    const data = await response.json();
-    
-    if (!data?.choices?.[0]?.message?.content) {
-      throw new Error('Pas de contenu généré');
-    }
-
-    const exercises = data.choices[0].message.content;
-
-    // Post-traitement pour garantir le formatage
-    const cleanedExercises = exercises
-      .replace(/###/g, '')
-      .replace(/---/g, '')
-      .replace(/\n\s+\n/g, '\n\n')  // Supprime l'espacement excessif
-      .replace(/^\s+/gm, '')        // Supprime l'indentation en début de ligne
-      .replace(/\[EXERCICE/g, '\n[EXERCICE')  // Assure l'espacement des sections
-      .replace(/\n{3,}/g, '\n\n')   // Limite les sauts de ligne consécutifs
-      .trim();
-
-    clearTimeout(timeoutId);
-    
-    return new Response(
-      JSON.stringify({ exercises: cleanedExercises }), 
-      { headers: corsHeaders }
-    );
 
   } catch (error) {
-    clearTimeout(timeoutId);
     console.error('❌ Erreur dans la fonction generate-exercises:', error);
     
     if (error.name === 'AbortError') {

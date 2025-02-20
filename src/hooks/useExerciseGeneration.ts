@@ -72,7 +72,7 @@ export function useExerciseGeneration() {
     return true;
   };
 
-  const generateExercises = async (formData: ExerciseFormData, isDifferentiation: boolean = false): Promise<GenerationResult | null> => {
+  const generateExercises = async (formData: ExerciseFormData, isDifferentiation: boolean = false): Promise<string | null> => {
     if (!validateFormData(formData, isDifferentiation)) {
       return null;
     }
@@ -100,18 +100,7 @@ export function useExerciseGeneration() {
         throw new Error('Pas de contenu généré');
       }
 
-      const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
-
-      return {
-        content: data.exercises,
-        title,
-        metadata: {
-          subject: formData.subject,
-          classLevel: formData.classLevel,
-          exerciseType: formData.exerciseType,
-          specificNeeds: formData.specificNeeds,
-        }
-      };
+      return data.exercises;
     } catch (error) {
       console.error('❌ Erreur lors de la génération:', error);
       toast({
