@@ -78,7 +78,7 @@ export function useExerciseGeneration() {
     }
 
     setIsLoading(true);
-    console.log("🔵 Début de la génération d'exercices");
+    console.log("🔵 Début de la génération d'exercices avec Mistral AI");
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
@@ -100,7 +100,9 @@ export function useExerciseGeneration() {
         throw new Error('Pas de contenu généré');
       }
 
+      console.log("✅ Exercices générés avec succès");
       return data.exercises;
+
     } catch (error) {
       console.error('❌ Erreur lors de la génération:', error);
       toast({

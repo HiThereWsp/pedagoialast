@@ -1,161 +1,140 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
-import "https://deno.land/x/xhr@0.3.0/mod.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
+
+// Types pour Mistral AI
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+interface GenerationParams {
+  subject: string;
+  classLevel: string;
+  numberOfExercises: number;
+  questionsPerExercise: number;
+  objective: string;
+  exerciseType?: string;
+  additionalInstructions?: string;
+  specificNeeds?: string;
+  originalExercise?: string;
+  studentProfile?: string;
+  learningDifficulties?: string;
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Content-Type': 'application/json'
+}
+
+function buildSystemPrompt(): string {
+  return `Tu es un assistant pédagogique expert dans la création d'exercices scolaires adaptés au système éducatif français.
+Ton objectif est de générer des exercices pertinents, clairs et adaptés au niveau demandé.
+Format de réponse attendu :
+1. Une fiche élève contenant les exercices
+2. Une fiche pédagogique pour l'enseignant contenant les corrections et des conseils`
+}
+
+function buildPrompt(params: GenerationParams): Message[] {
+  const messages: Message[] = [
+    {
+      role: 'system',
+      content: buildSystemPrompt()
+    }
+  ]
+
+  let userPrompt = `Crée ${params.numberOfExercises} exercices de ${params.subject} pour une classe de ${params.classLevel}.
+Objectif pédagogique : ${params.objective}
+${params.exerciseType ? `Type d'exercice souhaité : ${params.exerciseType}` : ''}
+${params.additionalInstructions ? `Instructions supplémentaires : ${params.additionalInstructions}` : ''}
+${params.specificNeeds ? `Besoins spécifiques : ${params.specificNeeds}` : ''}
+${params.studentProfile ? `Profil de l'élève : ${params.studentProfile}` : ''}
+${params.learningDifficulties ? `Difficultés d'apprentissage : ${params.learningDifficulties}` : ''}`
+
+  messages.push({
+    role: 'user',
+    content: userPrompt
+  })
+
+  return messages
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
+  const startTime = Date.now()
   try {
-    const requestData = await req.json();
-    const { 
-      subject, 
-      classLevel, 
-      objective,
-      numberOfExercises = 4,
-      questionsPerExercise = 5,
-      exerciseType = '',
-      additionalInstructions = '',
-      specificNeeds = '',
-      originalExercise = '',
-      studentProfile = '',
-      learningDifficulties = '',
-      isDifferentiation = false
-    } = requestData;
+    const MISTRAL_API_KEY = Deno.env.get('MISTRAL_API_KEY')
+    if (!MISTRAL_API_KEY) {
+      throw new Error('Clé API Mistral non configurée')
+    }
 
-    console.log("📝 Début de la génération pour:", { 
-      subject, classLevel, objective
-    });
+    const params = await req.json()
+    console.log('🔵 Paramètres reçus:', {
+      ...params,
+      MISTRAL_API_KEY: '***' // Masquer la clé dans les logs
+    })
 
-    const baseSystemPrompt = `Tu es un expert en pédagogie spécialisé dans la création d'exercices. 
-Ta mission est de créer une fiche d'exercices claire et structurée en suivant ces règles strictes :
-- Titres EN MAJUSCULES sans formatage
-- Alignement gauche strict
-- Numérotation simple (1., 2., etc.)
-- Espace simple entre sections
-- Retour à la ligne si nécessaire
-- Langage adapté au niveau ${classLevel}`;
+    // Validation des paramètres requis
+    if (!params.subject || !params.classLevel || !params.objective) {
+      throw new Error('Paramètres requis manquants')
+    }
 
-    const generatePrompt = `
-Génère des exercices scolaires pour ${subject} niveau ${classLevel}.
+    const messages = buildPrompt(params)
 
-STRUCTURE STRICTE À SUIVRE :
-
-FICHE ÉLÈVE
-[EXERCICE X] (répéter ${numberOfExercises} fois)
-Consigne :
-[${questionsPerExercise} questions maximum]
-
-FICHE PÉDAGOGIQUE
-[EXERCICE X]
-OBJECTIFS : ${objective}
-MATÉRIEL NÉCESSAIRE : [à déduire selon le contexte]
-NOTIONS PRÉALABLES : [à déduire selon le niveau/objectif]
-CORRIGÉ :
-1. Réponse brève
-   Explicitation (2 phrases max)
-${additionalInstructions ? `Instructions supplémentaires : ${additionalInstructions}` : ''}
-
-FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
-1. Question
-Correction : Phrase unique
-Explication : 1-2 phrases claires`;
-
-    const differentiatePrompt = `
-Adapte cet exercice pour ${classLevel} avec les besoins spécifiques suivants : ${specificNeeds}
-
-EXERCICE ORIGINAL :
-${originalExercise}
-
-STRUCTURE DE SORTIE :
-FICHE ÉLÈVE (adaptée)
-[Même format que l'original mais adapté]
-
-FICHE PÉDAGOGIQUE
-OBJECTIFS : ${objective}
-MATÉRIEL NÉCESSAIRE : [à déduire + adaptations nécessaires]
-NOTIONS PRÉALABLES : [à déduire + points d'attention]
-ADAPTATIONS SPÉCIFIQUES : 
-- Pour le profil : ${studentProfile}
-- Difficultés : ${learningDifficulties}
-CORRIGÉ :
-[Format standard avec adaptations]
-
-FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
-[Version adaptée avec explications simplifiées si nécessaire]`;
-
-    console.log('🤖 Initialisation de la requête OpenAI...');
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MISTRAL_API_KEY}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-3.5-turbo',
-        messages: [
-          { role: 'system', content: baseSystemPrompt },
-          { role: 'user', content: isDifferentiation ? differentiatePrompt : generatePrompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-        presence_penalty: 0.1,
-        frequency_penalty: 0.1
-      }),
-    });
+        model: 'mistral-large-latest',
+        messages: messages,
+        temperature: 0.4, // Température réduite pour plus de cohérence
+        max_tokens: 2000
+      })
+    })
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ Erreur OpenAI:', errorText);
-      throw new Error(`Erreur API OpenAI: ${response.status}`);
+      const error = await response.text()
+      console.error('❌ Erreur Mistral AI:', error)
+      throw new Error(`Erreur API Mistral: ${response.status}`)
     }
 
-    const data = await response.json();
-    console.log('✅ Réponse OpenAI reçue');
-    
-    if (!data?.choices?.[0]?.message?.content) {
-      throw new Error('Contenu de la réponse invalide');
-    }
+    const data = await response.json()
+    const content = data.choices[0].message.content
 
-    const exercises = data.choices[0].message.content;
-    const cleanedExercises = exercises
-      .replace(/###/g, '')
-      .replace(/---/g, '')
-      .replace(/\n\s+\n/g, '\n\n')
-      .replace(/^\s+/gm, '')
-      .replace(/\[EXERCICE/g, '\n[EXERCICE')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-
-    console.log('✅ Exercices générés et formatés avec succès');
+    console.log('✅ Exercices générés en', Date.now() - startTime, 'ms')
 
     return new Response(
-      JSON.stringify({ exercises: cleanedExercises }), 
-      { headers: corsHeaders }
-    );
+      JSON.stringify({ exercises: content }),
+      { 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json' 
+        } 
+      }
+    )
 
   } catch (error) {
-    console.error('❌ Erreur dans la fonction generate-exercises:', error);
+    console.error('❌ Erreur lors de la génération:', error)
     
-    const errorResponse = {
-      error: error.message,
-      details: 'Une erreur est survenue lors de la génération des exercices'
-    };
-
     return new Response(
-      JSON.stringify(errorResponse), 
+      JSON.stringify({ 
+        error: 'Une erreur est survenue lors de la génération des exercices', 
+        details: error.message 
+      }),
       { 
         status: 500,
-        headers: corsHeaders
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json' 
+        } 
       }
-    );
+    )
   }
-});
+})
