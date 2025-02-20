@@ -56,7 +56,7 @@ serve(async (req) => {
         Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
       },
       body: JSON.stringify({
-        model: "gpt-4",
+        model: "gpt-4o",
         messages: [
           { 
             role: "system", 
@@ -71,6 +71,8 @@ serve(async (req) => {
           }
         ],
         stream: true,
+        temperature: 0.7,
+        max_tokens: 2000,
       }),
     });
 
@@ -81,16 +83,32 @@ serve(async (req) => {
     const reader = response.body?.getReader();
     const decoder = new TextDecoder();
 
+    if (!reader) {
+      throw new Error("Impossible de lire la réponse");
+    }
+
+    let buffer = "";
+    let lastProgressTime = Date.now();
+    const PROGRESS_TIMEOUT = 30000; // 30 secondes
+
     while (true) {
-      const { done, value } = await reader!.read();
+      const { done, value } = await reader.read();
       
       if (done) {
         break;
       }
 
+      const now = Date.now();
+      if (now - lastProgressTime > PROGRESS_TIMEOUT) {
+        throw new Error("Délai d'attente dépassé");
+      }
+
       const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-      
+      buffer += chunk;
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || "";
+
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const data = line.slice(6);
@@ -105,6 +123,7 @@ serve(async (req) => {
             
             if (content) {
               await sendSSEMessage(writer, "content", { content });
+              lastProgressTime = Date.now();
             }
           } catch (e) {
             console.error("❌ Erreur parsing JSON:", e);
