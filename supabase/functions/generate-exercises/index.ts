@@ -1,149 +1,162 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
+import "https://deno.land/x/xhr@0.3.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Content-Type': 'text/event-stream',
-  'Cache-Control': 'no-cache',
-  'Connection': 'keep-alive'
-};
-
-interface ExerciseParams {
-  subject: string;
-  classLevel: string;
-  numberOfExercises: number;
-  questionsPerExercise: number;
-  objective: string;
-  exerciseType?: string;
-  specificNeeds?: string;
-  strengths?: string;
-  challenges?: string;
 }
 
-async function sendSSEMessage(writer: WritableStreamDefaultWriter, event: string, data: any) {
-  const encoder = new TextEncoder();
-  const message = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-  await writer.write(encoder.encode(message));
-}
+const TIMEOUT_MS = 25000; // 25 secondes de timeout
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+  const startTime = performance.now();
+  console.log("🔵 Début de la génération d'exercices");
+
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
   }
 
-  const stream = new TransformStream();
-  const writer = stream.writable.getWriter();
+  // Créer un contrôleur de timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    console.log("🔵 Réception d'une requête de génération d'exercices");
     const requestData = await req.json();
+    const { 
+      subject, 
+      classLevel, 
+      objective,
+      numberOfExercises = 4,
+      questionsPerExercise = 5,
+      exerciseType = '',
+      additionalInstructions = '',
+      specificNeeds = '',
+      challenges = '',
+    } = requestData;
 
-    if (!requestData.subject || !requestData.classLevel || !requestData.objective) {
-      await sendSSEMessage(writer, "error", { message: "Paramètres requis manquants" });
-      writer.close();
-      return new Response(stream.readable, { headers: corsHeaders });
-    }
+    console.log("📝 Paramètres reçus:", { 
+      subject, classLevel, objective,
+      numberOfExercises, questionsPerExercise,
+      exerciseType, specificNeeds 
+    });
 
-    // Envoi du message de début
-    await sendSSEMessage(writer, "start", { status: "started" });
+    const systemPrompt = `Tu es un expert en pédagogie spécialisé dans la création d'exercices. 
+Crée une fiche d'exercices claire et structurée avec ces règles strictes de formatage :
+- Texte aligné à gauche uniquement
+- Pas d'indentation excessive
+- Titres en MAJUSCULES
+- Questions numérotées clairement
+- Espacement optimisé pour la lisibilité
+- Structure hiérarchique claire`;
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
+    const userPrompt = `Crée ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
+
+Objectif pédagogique : ${objective}
+${exerciseType ? `Type d'exercice : ${exerciseType}` : ''}
+Nombre de questions par exercice : ${questionsPerExercise}
+
+${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
+${challenges ? `Points de vigilance : ${challenges}` : ''}
+${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
+
+Structure attendue :
+
+FICHE ÉLÈVE
+
+[EXERCICE 1]
+CONSIGNE : 
+1. Question
+2. Question
+[répéter selon nombre de questions]
+
+FICHE PÉDAGOGIQUE
+
+[EXERCICE 1]
+OBJECTIFS :
+PRÉREQUIS :
+CORRIGÉ :
+1. Réponse
+   Explicitation
+   Points de vigilance
+   Remédiations
+
+[Répéter pour chaque exercice]`;
+
+    console.log('🤖 Appel OpenAI en cours...');
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
       },
+      signal: controller.signal,
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: 'gpt-4o-mini',
         messages: [
-          { 
-            role: "system", 
-            content: "Tu es un expert en pédagogie spécialisé dans la création d'exercices adaptés au niveau scolaire français." 
-          },
-          { 
-            role: "user", 
-            content: `Crée ${requestData.numberOfExercises} exercices de ${requestData.subject} pour le niveau ${requestData.classLevel} avec l'objectif: ${requestData.objective}
-            ${requestData.specificNeeds ? `\nBesoins spécifiques: ${requestData.specificNeeds}` : ''}
-            ${requestData.exerciseType ? `\nType d'exercice: ${requestData.exerciseType}` : ''}
-            Format: ${requestData.questionsPerExercise} questions par exercice.` 
-          }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
-        stream: true,
         temperature: 0.7,
-        max_tokens: 2000,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`Erreur API OpenAI: ${response.status}`);
+      const error = await response.text();
+      console.error('❌ Erreur OpenAI:', error);
+      throw new Error(`OpenAI API error: ${response.statusText}`);
     }
 
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
+    const data = await response.json();
+    const exercises = data.choices[0].message.content;
 
-    if (!reader) {
-      throw new Error("Impossible de lire la réponse");
-    }
+    // Post-traitement pour garantir le formatage
+    const cleanedExercises = exercises
+      .replace(/###/g, '')
+      .replace(/---/g, '')
+      .replace(/\n\s+\n/g, '\n\n')  // Supprime l'espacement excessif
+      .replace(/^\s+/gm, '')        // Supprime l'indentation en début de ligne
+      .replace(/\[EXERCICE/g, '\n[EXERCICE')  // Assure l'espacement des sections
+      .replace(/\n{3,}/g, '\n\n')   // Limite les sauts de ligne consécutifs
+      .trim();
 
-    let buffer = "";
-    let lastProgressTime = Date.now();
-    const PROGRESS_TIMEOUT = 30000; // 30 secondes
+    const endTime = performance.now();
+    console.log(`✅ Exercices générés en ${Math.round(endTime - startTime)}ms`);
 
-    while (true) {
-      const { done, value } = await reader.read();
-      
-      if (done) {
-        break;
+    clearTimeout(timeoutId);
+    return new Response(
+      JSON.stringify({ exercises: cleanedExercises }), 
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
-
-      const now = Date.now();
-      if (now - lastProgressTime > PROGRESS_TIMEOUT) {
-        throw new Error("Délai d'attente dépassé");
-      }
-
-      const chunk = decoder.decode(value);
-      buffer += chunk;
-
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || "";
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          
-          if (data === '[DONE]') {
-            continue;
-          }
-
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices[0]?.delta?.content;
-            
-            if (content) {
-              await sendSSEMessage(writer, "content", { content });
-              lastProgressTime = Date.now();
-            }
-          } catch (e) {
-            console.error("❌ Erreur parsing JSON:", e);
-          }
-        }
-      }
-    }
-
-    await sendSSEMessage(writer, "end", { status: "completed" });
-    console.log("✅ Génération terminée avec succès");
-
+    );
   } catch (error) {
-    console.error("❌ Erreur pendant la génération:", error);
-    await sendSSEMessage(writer, "error", { 
-      error: true,
-      message: error.message 
-    });
-  } finally {
-    writer.close();
-  }
+    clearTimeout(timeoutId);
+    console.error('❌ Erreur dans la fonction generate-exercises:', error);
+    
+    if (error.name === 'AbortError') {
+      return new Response(
+        JSON.stringify({ 
+          error: "Délai d'attente dépassé",
+          details: "La génération a pris trop de temps, veuillez réessayer"
+        }), 
+        {
+          status: 408,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
+    }
 
-  return new Response(stream.readable, { headers: corsHeaders });
+    return new Response(
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Une erreur est survenue lors de la génération des exercices'
+      }), 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
 });

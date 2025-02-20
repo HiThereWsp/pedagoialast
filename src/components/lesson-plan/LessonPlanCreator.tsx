@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -25,23 +24,6 @@ import { fr } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { HistoryCarousel } from '@/components/history/HistoryCarousel';
-
-interface LessonPlan {
-  id: string;
-  title: string;
-  content: string;
-  created_at: string;
-  class_level?: string;
-  subject?: string;
-  total_sessions?: number;
-  additional_instructions?: string;
-  tags?: Array<{
-    label: string;
-    color: string;
-    backgroundColor: string;
-    borderColor: string;
-  }>;
-}
 
 export function LessonPlanCreator() {
   const { toast } = useToast();
@@ -73,8 +55,8 @@ export function LessonPlanCreator() {
     getSavedLessonPlans
   } = useSavedContent();
   const [isLoading, setIsLoading] = useState(false);
-  const [savedPlans, setSavedPlans] = useState<LessonPlan[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<LessonPlan | null>(null);
+  const [savedPlans, setSavedPlans] = useState<any[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [formData, setFormData] = useState({
     classLevel: '',
     additionalInstructions: '',
@@ -114,7 +96,6 @@ export function LessonPlanCreator() {
       [field]: value
     }));
   };
-
   const loadSavedPlans = async () => {
     try {
       const plans = await getSavedLessonPlans();
@@ -123,8 +104,7 @@ export function LessonPlanCreator() {
       console.error('Error loading saved plans:', error);
     }
   };
-
-  const handleSelectPlan = (plan: LessonPlan) => {
+  const handleSelectPlan = (plan: any) => {
     setSelectedPlan(plan);
     setFormData(prev => ({
       ...prev,
@@ -135,11 +115,9 @@ export function LessonPlanCreator() {
       additionalInstructions: plan.additional_instructions || ''
     }));
   };
-
   const formatTitle = (title: string) => {
     return title.replace(/^Séquence[\s:-]+/i, '').trim();
   };
-
   const handleGenerate = async () => {
     if (!formData.classLevel || !formData.totalSessions) {
       toast({
@@ -180,7 +158,7 @@ export function LessonPlanCreator() {
         additional_instructions: formData.additionalInstructions
       });
       await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
-      await loadSavedPlans();
+      await loadSavedPlans(); // Recharger l'historique après la génération
 
       toast({
         description: "Votre séquence a été générée et sauvegardée avec succès !"
@@ -195,24 +173,21 @@ export function LessonPlanCreator() {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     loadSavedPlans();
   }, []);
-
   const getRelativeDate = (date: string) => {
     return formatDistanceToNowStrict(new Date(date), {
       addSuffix: true,
       locale: fr
     }).replace('dans ', 'il y a ');
   };
-
   const formatPreviewContent = (content: string) => {
     const cleanContent = content.replace(/^Séquence pédagogique[\s-]*/i, '').replace(/^###\s*/gm, '').replace(/^\s*\*\*/gm, '').replace(/\*\*\s*$/gm, '').trim();
     return cleanContent;
   };
 
-  const transformSavedPlansToHistoryItems = (plans: LessonPlan[]) => {
+  const transformSavedPlansToHistoryItems = (plans: any[]) => {
     return plans.map(plan => ({
       id: plan.id,
       title: formatTitle(plan.title),
@@ -265,7 +240,7 @@ export function LessonPlanCreator() {
     mutate(lessonPlanData);
   };
 
-  const filteredItems = (lessonPlans as LessonPlan[] | undefined)?.filter((item) => {
+  const filteredItems = lessonPlans?.filter((item) => {
     if (!item) return false;
     
     const searchTerm = search.toLowerCase();

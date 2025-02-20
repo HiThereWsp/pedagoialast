@@ -30,81 +30,72 @@ export interface GenerationResult {
 export function useExerciseGeneration() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [streamingContent, setStreamingContent] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+
+  const validateFormData = (formData: ExerciseFormData) => {
+    if (!formData.subject.trim()) {
+      toast({
+        title: "Matière requise",
+        description: "Veuillez spécifier la matière",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.classLevel.trim()) {
+      toast({
+        title: "Niveau requis",
+        description: "Veuillez spécifier le niveau de la classe",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!formData.objective.trim()) {
+      toast({
+        title: "Objectif requis",
+        description: "Veuillez spécifier l'objectif de l'exercice",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
+  };
 
   const generateExercises = async (formData: ExerciseFormData): Promise<GenerationResult | null> => {
+    if (!validateFormData(formData)) {
+      return null;
+    }
+
     setIsLoading(true);
-    setStreamingContent("");
-    setError(null);
     console.log("🔵 Début de la génération d'exercices");
 
     try {
-      const response = await supabase.functions.invoke('generate-exercises', {
+      const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
           numberOfExercises: parseInt(formData.numberOfExercises) || 4,
           questionsPerExercise: parseInt(formData.questionsPerExercise) || 5,
+          specificNeeds: formData.specificNeeds.trim(),
+          strengths: formData.strengths.trim(),
+          challenges: formData.challenges.trim()
         }
       });
 
-      if (!response.data) {
-        throw new Error("Pas de données reçues");
+      if (error) {
+        console.error('❌ Erreur de l\'Edge Function:', error);
+        throw error;
       }
 
-      const reader = new ReadableStreamDefaultReader(response.data as ReadableStream);
-      const decoder = new TextDecoder();
-      let accumulatedContent = "";
-
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const events = chunk.split('\n\n').filter(Boolean);
-
-          for (const event of events) {
-            const [eventLine, dataLine] = event.split('\n');
-            if (!eventLine || !dataLine) continue;
-
-            const eventType = eventLine.replace('event: ', '');
-            try {
-              const data = JSON.parse(dataLine.replace('data: ', ''));
-
-              switch (eventType) {
-                case 'start':
-                  console.log("🔵 Début du streaming");
-                  break;
-                case 'content':
-                  if (data.content) {
-                    accumulatedContent += data.content;
-                    setStreamingContent(accumulatedContent);
-                  }
-                  break;
-                case 'error':
-                  throw new Error(data.message || "Erreur lors de la génération");
-                case 'end':
-                  console.log("✅ Streaming terminé");
-                  break;
-              }
-            } catch (e) {
-              console.error("Erreur lors du parsing des données:", e);
-              continue;
-            }
-          }
-        }
-      } finally {
-        reader.releaseLock();
+      if (!data?.exercises) {
+        throw new Error('Pas de contenu généré');
       }
 
-      if (!accumulatedContent) {
-        throw new Error("Aucun contenu n'a été généré");
-      }
+      const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
 
-      const result: GenerationResult = {
-        content: accumulatedContent,
-        title: `${formData.subject} - ${formData.objective}`,
+      return {
+        content: data.exercises,
+        title,
         metadata: {
           subject: formData.subject,
           classLevel: formData.classLevel,
@@ -112,15 +103,11 @@ export function useExerciseGeneration() {
           specificNeeds: formData.specificNeeds,
         }
       };
-
-      return result;
-
     } catch (error) {
       console.error('❌ Erreur lors de la génération:', error);
-      setError(error instanceof Error ? error.message : "Une erreur inattendue est survenue");
       toast({
         title: "Erreur",
-        description: error instanceof Error && error.message === "Délai d'attente dépassé"
+        description: error.message === "Délai d'attente dépassé" 
           ? "La génération a pris trop de temps, veuillez réessayer"
           : "Une erreur est survenue lors de la génération des exercices",
         variant: "destructive",
@@ -134,7 +121,5 @@ export function useExerciseGeneration() {
   return {
     isLoading,
     generateExercises,
-    streamingContent,
-    error
   };
 }

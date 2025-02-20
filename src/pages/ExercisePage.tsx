@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
 import { ResultDisplay } from '@/components/exercise/ResultDisplay';
-import { useExerciseGeneration, type GenerationResult } from '@/hooks/useExerciseGeneration';
+import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import { useSavedContent } from '@/hooks/useSavedContent';
 import { SEO } from "@/components/SEO";
 import { ContentHistory } from '@/components/history/ContentHistory';
@@ -13,10 +14,10 @@ import { format, formatDistance, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 const ExercisePage = () => {
-  const { isLoading, generateExercises, streamingContent } = useExerciseGeneration();
+  const { isLoading, generateExercises } = useExerciseGeneration();
   const { saveExercise, getSavedExercises } = useSavedContent();
   const [savedExercises, setSavedExercises] = useState([]);
-  const [currentExercise, setCurrentExercise] = useState<GenerationResult | null>(null);
+  const [currentExercise, setCurrentExercise] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [lastSaveTimestamp, setLastSaveTimestamp] = useState<number | null>(null);
   const navigate = useNavigate();
@@ -148,10 +149,12 @@ const ExercisePage = () => {
         }
         setLastSaveTimestamp(currentTime);
         
+        const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
+        
         console.log("🔵 Sauvegarde de l'exercice");
         await saveExercise({
-          title: generatedExercises.title,
-          content: generatedExercises.content,
+          title,
+          content: generatedExercises,
           subject: formData.subject,
           class_level: formData.classLevel,
           exercise_type: formData.exerciseType,
@@ -192,17 +195,7 @@ const ExercisePage = () => {
   };
 
   const handleExerciseClick = (exercise: any) => {
-    const generationResult: GenerationResult = {
-      content: exercise.content,
-      title: exercise.title,
-      metadata: {
-        subject: exercise.subject,
-        classLevel: exercise.class_level,
-        exerciseType: exercise.exercise_type,
-        specificNeeds: exercise.specific_needs || ''
-      }
-    };
-    setCurrentExercise(generationResult);
+    setCurrentExercise(exercise.content);
   };
 
   if (isAuthChecking) {
@@ -247,7 +240,7 @@ const ExercisePage = () => {
             </div>
             {currentExercise && (
               <div className="xl:sticky xl:top-8 w-full">
-                <ResultDisplay exercises={currentExercise} streamingContent={streamingContent} />
+                <ResultDisplay exercises={currentExercise} />
               </div>
             )}
           </div>

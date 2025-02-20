@@ -1,33 +1,21 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { HeaderSection } from './result/HeaderSection';
 import { FeedbackButtons } from './result/FeedbackButtons';
 import { ExerciseTabs } from './result/ExerciseTabs';
 import { ShareButton } from './result/ShareButton';
-import { Progress } from "@/components/ui/progress";
-import type { GenerationResult } from "@/hooks/useExerciseGeneration";
 
 interface ResultDisplayProps {
-  exercises: GenerationResult | null;
-  streamingContent?: string;
+  exercises: string | null;
 }
 
-export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProps) {
+export function ResultDisplay({ exercises }: ResultDisplayProps) {
   const { toast } = useToast();
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
   const [isCopied, setIsCopied] = useState(false);
-  const [progress, setProgress] = useState(0);
 
-  useEffect(() => {
-    if (streamingContent && exercises?.content) {
-      const ratio = streamingContent.length / exercises.content.length;
-      setProgress(Math.min(ratio * 100, 100));
-    }
-  }, [streamingContent, exercises]);
-
-  if (!exercises?.content && !streamingContent) return null;
+  if (!exercises) return null;
 
   const handleFeedback = async (type: 'like' | 'dislike') => {
     const score = type === 'like' ? 1 : -1;
@@ -45,8 +33,7 @@ export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProp
     };
   };
 
-  const content = streamingContent || (exercises?.content || '');
-  const { studentSheet, teacherSheet } = splitContent(content);
+  const { studentSheet, teacherSheet } = splitContent(exercises);
 
   const handleCopy = async (text: string) => {
     try {
@@ -68,14 +55,14 @@ export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProp
   const handleShare = async () => {
     try {
       await navigator.share({
-        title: exercises?.title || 'Exercices générés par Pedagoia',
-        text: exercises?.content || '',
+        title: 'Exercices générés par Pedagoia',
+        text: exercises,
       });
       toast({
         description: "Merci d'avoir partagé ces exercices !",
       });
     } catch (err) {
-      await handleCopy(exercises?.content || '');
+      await handleCopy(exercises);
       toast({
         description: "Les exercices ont été copiés, vous pouvez maintenant les partager",
       });
@@ -85,21 +72,14 @@ export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProp
   return (
     <Card className="relative bg-white p-4 sm:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
-        <HeaderSection exerciseCount={content} />
+        <HeaderSection exerciseCount={exercises} />
         <FeedbackButtons
           feedbackScore={feedbackScore}
           isCopied={isCopied}
           onFeedback={handleFeedback}
-          onCopy={() => handleCopy(content)}
+          onCopy={() => handleCopy(exercises)}
         />
       </div>
-
-      {streamingContent && progress < 100 && (
-        <div className="mb-4">
-          <Progress value={progress} className="h-2" />
-          <p className="text-sm text-gray-500 mt-1">Génération en cours... {Math.round(progress)}%</p>
-        </div>
-      )}
 
       <ExerciseTabs 
         studentSheet={studentSheet}
