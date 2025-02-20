@@ -1,59 +1,24 @@
+
 import { useEffect, useState } from "react";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
 import { useSavedContent } from "@/hooks/useSavedContent";
 import { Loader2, AlertCircle } from "lucide-react";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { HistoryCarousel } from "@/components/history/HistoryCarousel";
 import { type SavedContent } from "@/types/saved-content";
-import { Link } from "react-router-dom";
-
-const carouselCategories = [
-  {
-    title: "Mes séquences pédagogiques",
-    type: "lesson-plan",
-    displayType: "Séquence",
-    emptyMessage: "Vous n'avez pas encore généré de séquence pédagogique. C'est le moment de laisser libre cours à votre créativité !",
-    colorScheme: {
-      color: '#FF9EBC',
-      backgroundColor: '#FF9EBC20',
-      borderColor: '#FF9EBC4D'
-    }
-  },
-  {
-    title: "Mes exercices",
-    type: "exercise",
-    displayType: "Exercice",
-    emptyMessage: "Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !",
-    colorScheme: {
-      color: '#22C55E',
-      backgroundColor: '#22C55E20',
-      borderColor: '#22C55E4D'
-    }
-  },
-  {
-    title: "Mes images",
-    type: "Image",
-    displayType: "Image",
-    emptyMessage: "Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !",
-    colorScheme: {
-      color: '#F2FCE2',
-      backgroundColor: '#F2FCE220',
-      borderColor: '#F2FCE24D'
-    }
-  }
-];
+import { SavedContentHeader } from "@/components/saved-content/SavedContentHeader";
+import { DeleteDialog } from "@/components/saved-content/DeleteDialog";
+import { carouselCategories } from "@/components/saved-content/CarouselCategories";
+import { HistoryCarousel } from "@/components/history/HistoryCarousel";
 
 export default function SavedContentPage() {
-  const [content, setContent] = useState<SavedContent[]>([])
-  const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null)
+  const [content, setContent] = useState<SavedContent[]>([]);
+  const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null);
   const [errors, setErrors] = useState<{
     exercises?: string;
     lessonPlans?: string;
     delete?: string;
-  }>({})
+  }>({});
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     itemId: string;
@@ -72,35 +37,52 @@ export default function SavedContentPage() {
     deleteSavedExercise,
     deleteSavedLessonPlan
   } = useSavedContent();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
 
   const fetchContent = async () => {
     try {
       const exercises = await getSavedExercises();
-      setErrors(prev => ({
-        ...prev,
-        exercises: undefined
-      }));
+      setErrors(prev => ({ ...prev, exercises: undefined }));
+      
       const lessonPlans = await getSavedLessonPlans();
-      setErrors(prev => ({
-        ...prev,
-        lessonPlans: undefined
-      }));
-      const formattedExercises = exercises.map(ex => ({
-        ...ex,
+      setErrors(prev => ({ ...prev, lessonPlans: undefined }));
+      
+      const formattedExercises: SavedContent[] = exercises.map(ex => ({
+        id: ex.id,
+        title: ex.title,
+        content: ex.content,
+        subject: ex.subject,
+        class_level: ex.class_level,
+        created_at: ex.created_at,
         type: 'exercise',
         displayType: 'Exercice',
-        description: ex.content.substring(0, 100) + '...'
+        tags: [{
+          label: 'Exercice',
+          color: '#22C55E',
+          backgroundColor: '#22C55E20',
+          borderColor: '#22C55E4D'
+        }]
       }));
-      const formattedLessonPlans = lessonPlans.map(plan => ({
-        ...plan,
+
+      const formattedLessonPlans: SavedContent[] = lessonPlans.map(plan => ({
+        id: plan.id,
+        title: plan.title,
+        content: plan.content,
+        subject: plan.subject,
+        class_level: plan.class_level,
+        created_at: plan.created_at,
         type: 'lesson-plan',
         displayType: 'Séquence',
-        description: plan.content.substring(0, 100) + '...'
+        tags: [{
+          label: 'Séquence',
+          color: '#FF9EBC',
+          backgroundColor: '#FF9EBC20',
+          borderColor: '#FF9EBC4D'
+        }]
       }));
-      setContent([...formattedExercises, ...formattedLessonPlans].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+
+      setContent([...formattedExercises, ...formattedLessonPlans]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
     } catch (err) {
       console.error("Erreur lors du chargement des contenus:", err);
       if (err instanceof Error) {
@@ -116,7 +98,7 @@ export default function SavedContentPage() {
     fetchContent();
   }, []);
 
-  const handleDelete = async (id: string, type: string) => {
+  const handleDelete = async (id: string, type: 'lesson-plan' | 'exercise' | 'Image') => {
     setErrors(prev => ({
       ...prev,
       delete: undefined
@@ -124,11 +106,11 @@ export default function SavedContentPage() {
     try {
       if (type === 'exercise') {
         await deleteSavedExercise(id);
-      } else {
+      } else if (type === 'lesson-plan') {
         await deleteSavedLessonPlan(id);
       }
       toast({
-        description: `${type} supprimé avec succès`
+        description: `${type === 'exercise' ? 'Exercice' : 'Séquence'} supprimé avec succès`
       });
       setDeleteDialog({
         isOpen: false,
@@ -139,13 +121,13 @@ export default function SavedContentPage() {
     } catch (err) {
       setErrors(prev => ({
         ...prev,
-        delete: `Erreur lors de la suppression du ${type.toLowerCase()}`
+        delete: `Erreur lors de la suppression du ${type === 'exercise' ? 'exercice' : 'séquence'}`
       }));
       console.error("Erreur lors de la suppression:", err);
     }
   };
 
-  const transformToHistoryItems = (items: SavedContent[], type: string) => {
+  const transformToHistoryItems = (items: SavedContent[], type: 'lesson-plan' | 'exercise' | 'Image'): SavedContent[] => {
     const category = carouselCategories.find(cat => cat.type === type);
     if (!category) return [];
 
@@ -188,18 +170,7 @@ export default function SavedContentPage() {
       />
       
       <div className="container mx-auto py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <Link to="/home" className="flex-shrink-0">
-              <img 
-                src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
-                alt="PedagoIA Logo" 
-                className="w-[100px] h-[120px] object-contain"
-              />
-            </Link>
-            <h1 className="text-3xl font-bold ml-4">Mes ressources pédagogiques générées</h1>
-          </div>
-        </div>
+        <SavedContentHeader />
 
         <div className="space-y-8">
           {carouselCategories.map(category => {
@@ -212,15 +183,12 @@ export default function SavedContentPage() {
                   <HistoryCarousel
                     items={items}
                     onItemSelect={(item) => {
-                      const selectedItem = content.find(c => c.id === item.id);
-                      if (selectedItem) {
-                        setSelectedContent(selectedItem);
-                        setDeleteDialog({
-                          isOpen: true,
-                          itemId: selectedItem.id,
-                          itemType: selectedItem.type
-                        });
-                      }
+                      setSelectedContent(item);
+                      setDeleteDialog({
+                        isOpen: true,
+                        itemId: item.id,
+                        itemType: category.displayType
+                      });
                     }}
                     selectedItemId={selectedContent?.id}
                   />
@@ -235,33 +203,13 @@ export default function SavedContentPage() {
         </div>
       </div>
 
-      <AlertDialog 
-        open={deleteDialog.isOpen} 
-        onOpenChange={(isOpen) => 
-          setDeleteDialog(prev => ({ ...prev, isOpen }))
-        }
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action ne peut pas être annulée. Cela supprimera définitivement votre {deleteDialog.itemType.toLowerCase()}.
-              {errors.delete && (
-                <p className="text-red-500 mt-2">{errors.delete}</p>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => handleDelete(deleteDialog.itemId, deleteDialog.itemType)}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteDialog 
+        isOpen={deleteDialog.isOpen}
+        onOpenChange={(isOpen) => setDeleteDialog(prev => ({ ...prev, isOpen }))}
+        onDelete={() => handleDelete(deleteDialog.itemId, content.find(item => item.id === deleteDialog.itemId)?.type || 'lesson-plan')}
+        itemType={deleteDialog.itemType}
+        error={errors.delete}
+      />
     </>
   );
 }
