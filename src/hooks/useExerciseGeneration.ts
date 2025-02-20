@@ -104,7 +104,7 @@ export function useExerciseGeneration() {
 
       const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
 
-      return {
+      const result: GenerationResult = {
         content: accumulatedContent,
         title,
         metadata: {
@@ -114,6 +114,8 @@ export function useExerciseGeneration() {
           specificNeeds: formData.specificNeeds,
         }
       };
+
+      return result;
     } catch (error) {
       console.error('❌ Erreur lors de la génération:', error);
       toast({

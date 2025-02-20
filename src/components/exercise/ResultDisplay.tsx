@@ -7,9 +7,10 @@ import { FeedbackButtons } from './result/FeedbackButtons';
 import { ExerciseTabs } from './result/ExerciseTabs';
 import { ShareButton } from './result/ShareButton';
 import { Progress } from "@/components/ui/progress";
+import type { GenerationResult } from "@/hooks/useExerciseGeneration";
 
 interface ResultDisplayProps {
-  exercises: string | null;
+  exercises: GenerationResult | null;
   streamingContent?: string;
 }
 
@@ -20,13 +21,13 @@ export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProp
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    if (streamingContent && exercises) {
-      const ratio = streamingContent.length / exercises.length;
+    if (streamingContent && exercises?.content) {
+      const ratio = streamingContent.length / exercises.content.length;
       setProgress(Math.min(ratio * 100, 100));
     }
   }, [streamingContent, exercises]);
 
-  if (!exercises && !streamingContent) return null;
+  if (!exercises?.content && !streamingContent) return null;
 
   const handleFeedback = async (type: 'like' | 'dislike') => {
     const score = type === 'like' ? 1 : -1;
@@ -44,7 +45,7 @@ export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProp
     };
   };
 
-  const content = streamingContent || exercises || '';
+  const content = streamingContent || (exercises?.content || '');
   const { studentSheet, teacherSheet } = splitContent(content);
 
   const handleCopy = async (text: string) => {
@@ -67,14 +68,14 @@ export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProp
   const handleShare = async () => {
     try {
       await navigator.share({
-        title: 'Exercices générés par Pedagoia',
-        text: exercises,
+        title: exercises?.title || 'Exercices générés par Pedagoia',
+        text: exercises?.content || '',
       });
       toast({
         description: "Merci d'avoir partagé ces exercices !",
       });
     } catch (err) {
-      await handleCopy(exercises || '');
+      await handleCopy(exercises?.content || '');
       toast({
         description: "Les exercices ont été copiés, vous pouvez maintenant les partager",
       });
@@ -84,7 +85,7 @@ export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProp
   return (
     <Card className="relative bg-white p-4 sm:p-6 rounded-xl border border-orange-100 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
-        <HeaderSection exerciseCount={exercises} />
+        <HeaderSection exerciseCount={content} />
         <FeedbackButtons
           feedbackScore={feedbackScore}
           isCopied={isCopied}

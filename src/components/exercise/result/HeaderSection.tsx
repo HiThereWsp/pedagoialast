@@ -3,7 +3,7 @@ import React from 'react';
 import { Sparkles } from "lucide-react";
 
 interface HeaderSectionProps {
-  exerciseCount: string | null;
+  exerciseCount: string;
 }
 
 export function HeaderSection({ exerciseCount }: HeaderSectionProps) {
