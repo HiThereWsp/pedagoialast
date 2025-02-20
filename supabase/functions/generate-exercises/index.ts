@@ -7,6 +7,9 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  const startTime = performance.now();
+  console.log("🔵 Début de la génération d'exercices");
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -27,6 +30,8 @@ serve(async (req) => {
       learningDifficulties,
       learningStyle
     } = await req.json()
+
+    console.log("📝 Paramètres reçus:", { subject, classLevel, objective });
 
     let prompt = ""
     
@@ -132,7 +137,7 @@ CONSEILS DE MISE EN ŒUVRE :
 - Indices progressifs :`
     }
 
-    console.log('Calling OpenAI with prompt:', prompt)
+    console.log('🤖 Appel OpenAI en cours...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -158,14 +163,15 @@ CONSEILS DE MISE EN ŒUVRE :
 
     if (!response.ok) {
       const error = await response.text()
-      console.error('OpenAI API error:', error)
+      console.error('❌ Erreur OpenAI:', error)
       throw new Error(`OpenAI API error: ${response.statusText}`)
     }
 
     const data = await response.json()
     const exercises = data.choices[0].message.content
 
-    console.log('Successfully generated exercises')
+    const endTime = performance.now();
+    console.log(`✅ Exercices générés en ${Math.round(endTime - startTime)}ms`);
 
     return new Response(
       JSON.stringify({ exercises }), 
@@ -174,7 +180,7 @@ CONSEILS DE MISE EN ŒUVRE :
       }
     )
   } catch (error) {
-    console.error('Error in generate-exercises function:', error)
+    console.error('❌ Erreur dans la fonction generate-exercises:', error)
     return new Response(
       JSON.stringify({ 
         error: error.message,

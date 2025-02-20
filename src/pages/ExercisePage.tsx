@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
@@ -11,9 +12,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 
 const ExercisePage = () => {
-  const { exercises, isLoading, generateExercises } = useExerciseGeneration();
+  const { isLoading, generateExercises } = useExerciseGeneration();
   const { saveExercise, getSavedExercises, deleteSavedExercise } = useSavedContent();
   const [savedExercises, setSavedExercises] = useState([]);
+  const [currentExercise, setCurrentExercise] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -113,11 +115,15 @@ const ExercisePage = () => {
   }, [getSavedExercises, isAuthChecking, toast]);
 
   const handleSubmit = async () => {
-    const { success, exercises: generatedExercises } = await generateExercises(formData);
+    console.log("🔵 Début de la génération et sauvegarde");
     
-    if (success && generatedExercises) {
+    const generatedExercises = await generateExercises(formData);
+    
+    if (generatedExercises) {
       try {
-        // Sauvegarde l'exercice généré avec les données générées
+        setCurrentExercise(generatedExercises);
+        
+        console.log("🔵 Sauvegarde de l'exercice");
         await saveExercise({
           title: `Exercice ${formData.subject} - ${formData.classLevel}`,
           content: generatedExercises,
@@ -130,7 +136,6 @@ const ExercisePage = () => {
           specific_needs: formData.specificNeeds
         });
 
-        // Recharge les exercices sauvegardés immédiatement après la sauvegarde
         const updatedExercises = await getSavedExercises();
         setSavedExercises(updatedExercises.map(ex => ({
           ...ex,
@@ -200,9 +205,9 @@ const ExercisePage = () => {
                 isLoading={isLoading}
               />
             </div>
-            {exercises && (
+            {currentExercise && (
               <div className="xl:sticky xl:top-8 w-full">
-                <ResultDisplay exercises={exercises} />
+                <ResultDisplay exercises={currentExercise} />
               </div>
             )}
           </div>

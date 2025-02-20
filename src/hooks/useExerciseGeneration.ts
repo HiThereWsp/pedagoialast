@@ -18,7 +18,6 @@ export interface ExerciseFormData {
 export function useExerciseGeneration() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [exercises, setExercises] = useState<string | null>(null);
 
   const validateFormData = (formData: ExerciseFormData) => {
     if (!formData.subject.trim()) {
@@ -53,10 +52,12 @@ export function useExerciseGeneration() {
 
   const generateExercises = async (formData: ExerciseFormData) => {
     if (!validateFormData(formData)) {
-      return { success: false, exercises: null };
+      return null;
     }
 
     setIsLoading(true);
+    console.log("🔵 Début de la génération d'exercices");
+
     try {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
@@ -67,30 +68,27 @@ export function useExerciseGeneration() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erreur de l\'Edge Function:', error);
+        throw error;
+      }
 
-      setExercises(data.exercises);
-      toast({
-        title: "Exercices générés avec succès",
-        description: "Vos exercices ont été créés", // Message modifié
-      });
-      
-      return { success: true, exercises: data.exercises };
+      console.log("✅ Exercices générés avec succès");
+      return data.exercises;
     } catch (error) {
-      console.error('Error generating exercises:', error);
+      console.error('❌ Erreur lors de la génération:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de la génération des exercices",
         variant: "destructive",
       });
-      return { success: false, exercises: null };
+      return null;
     } finally {
       setIsLoading(false);
     }
   };
 
   return {
-    exercises,
     isLoading,
     generateExercises,
   };
