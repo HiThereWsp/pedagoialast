@@ -194,6 +194,8 @@ export function LessonPlanCreator() {
       content: plan.content,
       subject: plan.subject,
       created_at: plan.created_at,
+      type: 'lesson-plan' as const,
+      displayType: 'Séquence',
       tags: [{
         label: 'Séquence',
         color: '#FF9EBC',

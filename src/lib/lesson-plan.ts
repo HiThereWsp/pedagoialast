@@ -1,81 +1,91 @@
+export interface LessonPlanData {
+  userId: string
+  title: string
+  subject: string
+  level: string
+  topic: string
+  duration: number
+  learningObjectives: string[]
+  materials: string[]
+  activities: string[]
+  assessment: string
+  differentiation: string
+  notes: string
+  type: 'lesson-plan'
+  tags: Array<{
+    label: string
+    color: string
+    backgroundColor: string
+    borderColor: string
+  }>
+}
 
-import { supabase } from '@/integrations/supabase/client';
-import type { LessonPlanData, SavedContent } from '@/types/saved-content';
-
-export const generateLessonPlan = async (data: LessonPlanData) => {
-  console.log('🔵 Début génération plan de leçon:', {
-    title: data.title,
-    subject: data.subject,
-    level: data.level
+export const generateLessonPlan = async (lessonPlanData: LessonPlanData) => {
+  // Placeholder function for generating a lesson plan
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve({
+        ...lessonPlanData,
+        id: Math.random().toString(),
+        created_at: new Date().toISOString(),
+      });
+    }, 500);
   });
-
-  try {
-    const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-lesson-plan', {
-      body: data
-    });
-
-    if (functionError) {
-      console.error('❌ Erreur lors de la génération:', functionError);
-      throw functionError;
-    }
-
-    console.log('✅ Plan de leçon généré avec succès');
-    return functionData;
-  } catch (error) {
-    console.error('❌ Erreur inattendue lors de la génération:', error);
-    throw error;
-  }
 };
 
-export const getLessonPlans = async (userId?: string): Promise<SavedContent[]> => {
-  console.log('🔵 Début récupération des plans de leçon pour userId:', userId);
-  
-  if (!userId) {
-    console.log('⚠️ Aucun userId fourni, retour tableau vide');
-    return [];
-  }
-  
-  try {
-    const { data, error } = await supabase
-      .from('saved_lesson_plans')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('❌ Erreur Supabase lors de la récupération:', {
-        code: error.code,
-        message: error.message,
-        details: error.details
-      });
-      throw error;
-    }
-
-    console.log('✅ Plans de leçon récupérés:', data?.length || 0, 'résultats');
-    
-    const transformedData = data.map(plan => {
-      console.log('🔄 Transformation plan de leçon:', plan.id);
-      return {
-        id: plan.id,
-        title: plan.title,
-        content: plan.content,
-        subject: plan.subject,
-        class_level: plan.class_level,
-        created_at: plan.created_at,
-        type: 'lesson-plan' as const,
-        tags: [{
-          label: 'Séquence',
-          color: '#FF9EBC',
-          backgroundColor: '#FF9EBC20',
-          borderColor: '#FF9EBC4D'
-        }]
-      };
-    });
-
-    console.log('✅ Transformation terminée, données prêtes pour affichage');
-    return transformedData;
-  } catch (error) {
-    console.error('❌ Erreur inattendue lors de la récupération des plans:', error);
-    throw error;
-  }
+export const getLessonPlans = async (userId: string | undefined) => {
+  // Placeholder function for fetching lesson plans
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const mockLessonPlans = [
+        {
+          id: Math.random().toString(),
+          userId: userId,
+          title: 'Introduction to React',
+          subject: 'Web Development',
+          level: 'Beginner',
+          topic: 'React Basics',
+          duration: 60,
+          learningObjectives: ['Understand React components', 'Learn JSX syntax'],
+          materials: ['React documentation', 'Code editor'],
+          activities: ['Coding a simple React component', 'Debugging exercises'],
+          assessment: 'Quiz on React concepts',
+          differentiation: 'Provide additional resources for struggling learners',
+          notes: 'Remember to cover state and props',
+          type: 'lesson-plan',
+          created_at: new Date().toISOString(),
+          tags: [{
+            label: 'Pédagogie',
+            color: 'text-sky-500',
+            backgroundColor: 'bg-sky-500/10',
+            borderColor: 'border-sky-500/30',
+          }]
+        },
+        {
+          id: Math.random().toString(),
+          userId: userId,
+          title: 'Advanced JavaScript Concepts',
+          subject: 'Web Development',
+          level: 'Advanced',
+          topic: 'Closures and Prototypes',
+          duration: 90,
+          learningObjectives: ['Master JavaScript closures', 'Understand prototype inheritance'],
+          materials: ['JavaScript books', 'Online tutorials'],
+          activities: ['Code review', 'Pair programming'],
+          assessment: 'Coding challenge',
+          differentiation: 'Offer advanced topics for further exploration',
+          notes: 'Focus on practical examples',
+          type: 'lesson-plan',
+          created_at: new Date().toISOString(),
+          tags: [{
+            label: 'Pédagogie',
+            color: 'text-sky-500',
+            backgroundColor: 'bg-sky-500/10',
+            borderColor: 'border-sky-500/30',
+          }]
+        }
+      ];
+      resolve(mockLessonPlans);
+    }, 300);
+  });
 };

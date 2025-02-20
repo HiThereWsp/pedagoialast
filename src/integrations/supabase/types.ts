@@ -395,10 +395,14 @@ export type Database = {
           content: string
           created_at: string
           difficulty_level: string | null
+          exercise_category: string | null
           exercise_type: string | null
           id: string
+          learning_style: string | null
           source_lesson_plan_id: string | null
           source_type: string | null
+          specific_needs: string | null
+          student_profile: string | null
           subject: string | null
           title: string
           updated_at: string
@@ -409,10 +413,14 @@ export type Database = {
           content: string
           created_at?: string
           difficulty_level?: string | null
+          exercise_category?: string | null
           exercise_type?: string | null
           id?: string
+          learning_style?: string | null
           source_lesson_plan_id?: string | null
           source_type?: string | null
+          specific_needs?: string | null
+          student_profile?: string | null
           subject?: string | null
           title: string
           updated_at?: string
@@ -423,10 +431,14 @@ export type Database = {
           content?: string
           created_at?: string
           difficulty_level?: string | null
+          exercise_category?: string | null
           exercise_type?: string | null
           id?: string
+          learning_style?: string | null
           source_lesson_plan_id?: string | null
           source_type?: string | null
+          specific_needs?: string | null
+          student_profile?: string | null
           subject?: string | null
           title?: string
           updated_at?: string

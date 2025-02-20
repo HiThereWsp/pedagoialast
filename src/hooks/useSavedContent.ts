@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useToast } from "@/hooks/use-toast"
 import { exercisesService } from "@/services/exercises"
 import { lessonPlansService } from "@/services/lesson-plans"
-import type { SaveExerciseParams, SaveLessonPlanParams } from "@/types/saved-content"
+import type { SaveExerciseParams, SaveLessonPlanParams, SavedContent } from "@/types/saved-content"
 import { exerciseCategories } from "@/components/saved-content/CarouselCategories"
 
 export function useSavedContent() {
@@ -73,15 +73,17 @@ export function useSavedContent() {
       const exercises = await exercisesService.getAll()
       return exercises.map(exercise => ({
         ...exercise,
+        type: 'exercise' as const,
+        displayType: 'Exercice',
         tags: [
           {
-            label: exercise.exercise_category === 'differentiated' 
+            label: (exercise as any).exercise_category === 'differentiated' 
               ? exerciseCategories.differentiated.label 
               : exerciseCategories.standard.label,
-            ...exerciseCategories[exercise.exercise_category || 'standard']
+            ...(exerciseCategories[(exercise as any).exercise_category || 'standard'])
           }
         ]
-      }))
+      })) as SavedContent[]
     } catch (error) {
       console.error('Error fetching exercises:', error)
       throw error
