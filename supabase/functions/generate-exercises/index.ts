@@ -5,19 +5,17 @@ import "https://deno.land/x/xhr@0.3.0/mod.ts"
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Content-Type': 'application/json'
 }
 
 const TIMEOUT_MS = 25000; // 25 secondes de timeout
 
 serve(async (req) => {
-  const startTime = performance.now();
-  console.log("🔵 Début de la génération d'exercices");
-
+  // Gestion du CORS préflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Créer un contrôleur de timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -112,7 +110,7 @@ FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
       },
       signal: controller.signal,
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           { role: 'system', content: baseSystemPrompt },
           { role: 'user', content: isDifferentiation ? differentiatePrompt : generatePrompt }
@@ -131,6 +129,11 @@ FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
     }
 
     const data = await response.json();
+    
+    if (!data?.choices?.[0]?.message?.content) {
+      throw new Error('Pas de contenu généré');
+    }
+
     const exercises = data.choices[0].message.content;
 
     // Post-traitement pour garantir le formatage
@@ -143,16 +146,13 @@ FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
       .replace(/\n{3,}/g, '\n\n')   // Limite les sauts de ligne consécutifs
       .trim();
 
-    const endTime = performance.now();
-    console.log(`✅ Exercices générés en ${Math.round(endTime - startTime)}ms`);
-
     clearTimeout(timeoutId);
+    
     return new Response(
       JSON.stringify({ exercises: cleanedExercises }), 
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { headers: corsHeaders }
     );
+
   } catch (error) {
     clearTimeout(timeoutId);
     console.error('❌ Erreur dans la fonction generate-exercises:', error);
@@ -165,7 +165,7 @@ FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
         }), 
         {
           status: 408,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: corsHeaders,
         }
       );
     }
@@ -177,7 +177,7 @@ FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
       }), 
       {
         status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: corsHeaders,
       }
     );
   }
