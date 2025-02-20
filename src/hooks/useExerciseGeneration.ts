@@ -31,82 +31,66 @@ export function useExerciseGeneration() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState<string>("");
-
-  const validateFormData = (formData: ExerciseFormData) => {
-    if (!formData.subject.trim()) {
-      toast({
-        title: "Matière requise",
-        description: "Veuillez spécifier la matière",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (!formData.classLevel.trim()) {
-      toast({
-        title: "Niveau requis",
-        description: "Veuillez spécifier le niveau de la classe",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (!formData.objective.trim()) {
-      toast({
-        title: "Objectif requis",
-        description: "Veuillez spécifier l'objectif de l'exercice",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    return true;
-  };
+  const [error, setError] = useState<string | null>(null);
 
   const generateExercises = async (formData: ExerciseFormData): Promise<GenerationResult | null> => {
-    if (!validateFormData(formData)) {
-      return null;
-    }
-
     setIsLoading(true);
     setStreamingContent("");
+    setError(null);
     console.log("🔵 Début de la génération d'exercices");
 
     try {
+      // Configuration de l'EventSource pour SSE
       const response = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
           numberOfExercises: parseInt(formData.numberOfExercises) || 4,
           questionsPerExercise: parseInt(formData.questionsPerExercise) || 5,
-          specificNeeds: formData.specificNeeds.trim(),
-          strengths: formData.strengths.trim(),
-          challenges: formData.challenges.trim()
         },
+        responseType: 'stream',
       });
 
-      if (response.error) {
-        console.error('❌ Erreur de l\'Edge Function:', response.error);
-        throw response.error;
+      if (!response.data) {
+        throw new Error("Pas de données reçues");
       }
 
-      const reader = new ReadableStreamDefaultReader(response.data as ReadableStream);
-      const decoder = new TextDecoder();
       let accumulatedContent = "";
+
+      const reader = (response.data as ReadableStream).getReader();
+      const decoder = new TextDecoder();
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
-        const chunk = decoder.decode(value);
-        accumulatedContent += chunk;
-        setStreamingContent(accumulatedContent);
-      }
 
-      const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
+        const chunk = decoder.decode(value);
+        const events = chunk.split('\n\n').filter(Boolean);
+
+        for (const event of events) {
+          const [eventLine, dataLine] = event.split('\n');
+          const eventType = eventLine.replace('event: ', '');
+          const data = JSON.parse(dataLine.replace('data: ', ''));
+
+          switch (eventType) {
+            case 'start':
+              console.log("🔵 Début du streaming");
+              break;
+            case 'content':
+              accumulatedContent += data.content;
+              setStreamingContent(accumulatedContent);
+              break;
+            case 'error':
+              throw new Error(data.message);
+            case 'end':
+              console.log("✅ Streaming terminé");
+              break;
+          }
+        }
+      }
 
       const result: GenerationResult = {
         content: accumulatedContent,
-        title,
+        title: `${formData.subject} - ${formData.objective}`,
         metadata: {
           subject: formData.subject,
           classLevel: formData.classLevel,
@@ -118,6 +102,7 @@ export function useExerciseGeneration() {
       return result;
     } catch (error) {
       console.error('❌ Erreur lors de la génération:', error);
+      setError(error.message);
       toast({
         title: "Erreur",
         description: error.message === "Délai d'attente dépassé" 
@@ -134,6 +119,7 @@ export function useExerciseGeneration() {
   return {
     isLoading,
     generateExercises,
-    streamingContent
+    streamingContent,
+    error
   };
 }
