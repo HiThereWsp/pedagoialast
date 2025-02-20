@@ -32,56 +32,75 @@ serve(async (req) => {
       exerciseType = '',
       additionalInstructions = '',
       specificNeeds = '',
-      challenges = '',
+      originalExercise = '',
+      studentProfile = '',
+      learningDifficulties = '',
+      isDifferentiation = false
     } = requestData;
 
     console.log("📝 Paramètres reçus:", { 
       subject, classLevel, objective,
       numberOfExercises, questionsPerExercise,
-      exerciseType, specificNeeds 
+      exerciseType, specificNeeds,
+      isDifferentiation
     });
 
-    const systemPrompt = `Tu es un expert en pédagogie spécialisé dans la création d'exercices. 
-Crée une fiche d'exercices claire et structurée avec ces règles strictes de formatage :
-- Texte aligné à gauche uniquement
-- Pas d'indentation excessive
-- Titres en MAJUSCULES
-- Questions numérotées clairement
-- Espacement optimisé pour la lisibilité
-- Structure hiérarchique claire`;
+    const baseSystemPrompt = `Tu es un expert en pédagogie spécialisé dans la création d'exercices. 
+Ta mission est de créer une fiche d'exercices claire et structurée en suivant ces règles strictes :
+- Titres EN MAJUSCULES sans formatage
+- Alignement gauche strict
+- Numérotation simple (1., 2., etc.)
+- Espace simple entre sections
+- Retour à la ligne si nécessaire
+- Langage adapté au niveau ${classLevel}`;
 
-    const userPrompt = `Crée ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
+    const generatePrompt = `
+Génère des exercices scolaires pour ${subject} niveau ${classLevel}.
 
-Objectif pédagogique : ${objective}
-${exerciseType ? `Type d'exercice : ${exerciseType}` : ''}
-Nombre de questions par exercice : ${questionsPerExercise}
-
-${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
-${challenges ? `Points de vigilance : ${challenges}` : ''}
-${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
-
-Structure attendue :
+STRUCTURE STRICTE À SUIVRE :
 
 FICHE ÉLÈVE
-
-[EXERCICE 1]
-CONSIGNE : 
-1. Question
-2. Question
-[répéter selon nombre de questions]
+[EXERCICE X] (répéter ${numberOfExercises} fois)
+Consigne :
+[${questionsPerExercise} questions maximum]
 
 FICHE PÉDAGOGIQUE
-
-[EXERCICE 1]
-OBJECTIFS :
-PRÉREQUIS :
+[EXERCICE X]
+OBJECTIFS : ${objective}
+MATÉRIEL NÉCESSAIRE : [à déduire selon le contexte]
+NOTIONS PRÉALABLES : [à déduire selon le niveau/objectif]
 CORRIGÉ :
-1. Réponse
-   Explicitation
-   Points de vigilance
-   Remédiations
+1. Réponse brève
+   Explicitation (2 phrases max)
+${additionalInstructions ? `Instructions supplémentaires : ${additionalInstructions}` : ''}
 
-[Répéter pour chaque exercice]`;
+FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
+1. Question
+Correction : Phrase unique
+Explication : 1-2 phrases claires`;
+
+    const differentiatePrompt = `
+Adapte cet exercice pour ${classLevel} avec les besoins spécifiques suivants : ${specificNeeds}
+
+EXERCICE ORIGINAL :
+${originalExercise}
+
+STRUCTURE DE SORTIE :
+FICHE ÉLÈVE (adaptée)
+[Même format que l'original mais adapté]
+
+FICHE PÉDAGOGIQUE
+OBJECTIFS : ${objective}
+MATÉRIEL NÉCESSAIRE : [à déduire + adaptations nécessaires]
+NOTIONS PRÉALABLES : [à déduire + points d'attention]
+ADAPTATIONS SPÉCIFIQUES : 
+- Pour le profil : ${studentProfile}
+- Difficultés : ${learningDifficulties}
+CORRIGÉ :
+[Format standard avec adaptations]
+
+FICHE ÉLÈVE AVEC CORRECTION EXPLIQUÉE
+[Version adaptée avec explications simplifiées si nécessaire]`;
 
     console.log('🤖 Appel OpenAI en cours...');
 
@@ -95,10 +114,13 @@ CORRIGÉ :
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'system', content: baseSystemPrompt },
+          { role: 'user', content: isDifferentiation ? differentiatePrompt : generatePrompt }
         ],
         temperature: 0.7,
+        max_tokens: 800,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1
       }),
     });
 

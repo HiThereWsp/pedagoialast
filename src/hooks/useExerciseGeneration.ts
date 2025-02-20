@@ -12,8 +12,9 @@ export interface ExerciseFormData {
   exerciseType: string;
   additionalInstructions: string;
   specificNeeds: string;
-  strengths: string;
-  challenges: string;
+  originalExercise: string;
+  studentProfile: string;
+  learningDifficulties: string;
 }
 
 export interface GenerationResult {
@@ -31,7 +32,7 @@ export function useExerciseGeneration() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateFormData = (formData: ExerciseFormData) => {
+  const validateFormData = (formData: ExerciseFormData, isDifferentiation: boolean) => {
     if (!formData.subject.trim()) {
       toast({
         title: "Matière requise",
@@ -59,11 +60,20 @@ export function useExerciseGeneration() {
       return false;
     }
 
+    if (isDifferentiation && !formData.originalExercise.trim()) {
+      toast({
+        title: "Exercice original requis",
+        description: "Veuillez fournir l'exercice à différencier",
+        variant: "destructive",
+      });
+      return false;
+    }
+
     return true;
   };
 
-  const generateExercises = async (formData: ExerciseFormData): Promise<GenerationResult | null> => {
-    if (!validateFormData(formData)) {
+  const generateExercises = async (formData: ExerciseFormData, isDifferentiation: boolean = false): Promise<GenerationResult | null> => {
+    if (!validateFormData(formData, isDifferentiation)) {
       return null;
     }
 
@@ -74,11 +84,10 @@ export function useExerciseGeneration() {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
+          isDifferentiation,
           numberOfExercises: parseInt(formData.numberOfExercises) || 4,
           questionsPerExercise: parseInt(formData.questionsPerExercise) || 5,
           specificNeeds: formData.specificNeeds.trim(),
-          strengths: formData.strengths.trim(),
-          challenges: formData.challenges.trim()
         }
       });
 
