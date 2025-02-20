@@ -29,10 +29,32 @@ const corsHeaders = {
 
 function buildSystemPrompt(): string {
   return `Tu es un assistant pédagogique expert dans la création d'exercices scolaires adaptés au système éducatif français.
-Ton objectif est de générer des exercices pertinents, clairs et adaptés au niveau demandé.
-Format de réponse attendu :
-1. Une fiche élève contenant les exercices
-2. Une fiche pédagogique pour l'enseignant contenant les corrections et des conseils`
+Ton objectif est de générer des exercices pertinents, clairs et adaptés au niveau demandé, avec une attention particulière à la progression pédagogique.
+
+Format de réponse STRICT à suivre :
+
+FICHE ÉLÈVE
+- Titre de la séquence
+- Objectifs d'apprentissage clairement énoncés
+- Exercices numérotés avec consignes précises
+- Espace de réponse clairement délimité
+- Conseils méthodologiques si nécessaire
+
+FICHE CORRECTION ÉLÈVE
+- Corrections détaillées pas à pas
+- Explications adaptées au niveau
+- Méthodes et astuces pour comprendre
+- Points clés à retenir
+- Auto-évaluation suggérée
+
+FICHE PÉDAGOGIQUE
+- Objectifs pédagogiques détaillés
+- Prérequis nécessaires
+- Points d'attention particuliers
+- Suggestions de différenciation
+- Erreurs courantes à anticiper
+- Critères d'évaluation
+- Prolongements possibles`
 }
 
 function buildPrompt(params: GenerationParams): Message[] {
@@ -43,13 +65,23 @@ function buildPrompt(params: GenerationParams): Message[] {
     }
   ]
 
-  let userPrompt = `Crée ${params.numberOfExercises} exercices de ${params.subject} pour une classe de ${params.classLevel}.
-Objectif pédagogique : ${params.objective}
-${params.exerciseType ? `Type d'exercice souhaité : ${params.exerciseType}` : ''}
-${params.additionalInstructions ? `Instructions supplémentaires : ${params.additionalInstructions}` : ''}
-${params.specificNeeds ? `Besoins spécifiques : ${params.specificNeeds}` : ''}
-${params.studentProfile ? `Profil de l'élève : ${params.studentProfile}` : ''}
-${params.learningDifficulties ? `Difficultés d'apprentissage : ${params.learningDifficulties}` : ''}`
+  let userPrompt = `Je souhaite créer ${params.numberOfExercises} exercices de ${params.subject} pour une classe de ${params.classLevel}.
+
+CONTEXTE PÉDAGOGIQUE :
+- Objectif pédagogique : ${params.objective}
+${params.exerciseType ? `- Type d'exercice souhaité : ${params.exerciseType}` : ''}
+${params.additionalInstructions ? `- Instructions spécifiques : ${params.additionalInstructions}` : ''}
+
+${params.specificNeeds ? `ADAPTATIONS PÉDAGOGIQUES :
+- Besoins spécifiques : ${params.specificNeeds}
+${params.studentProfile ? `- Profil de l'élève : ${params.studentProfile}` : ''}
+${params.learningDifficulties ? `- Difficultés d'apprentissage : ${params.learningDifficulties}` : ''}` : ''}
+
+FORMAT DEMANDÉ :
+- ${params.numberOfExercises} exercices
+- ${params.questionsPerExercise} questions par exercice
+- Progression logique dans la difficulté
+- Exercices courts et ciblés`
 
   messages.push({
     role: 'user',
@@ -73,9 +105,11 @@ serve(async (req) => {
     }
 
     const params = await req.json()
-    console.log('🔵 Paramètres reçus:', {
-      ...params,
-      MISTRAL_API_KEY: '***' // Masquer la clé dans les logs
+    console.log('🔵 Début de la génération:', {
+      subject: params.subject,
+      classLevel: params.classLevel,
+      numberOfExercises: params.numberOfExercises,
+      timestamp: new Date().toISOString()
     })
 
     // Validation des paramètres requis
@@ -94,8 +128,9 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'mistral-large-latest',
         messages: messages,
-        temperature: 0.4, // Température réduite pour plus de cohérence
-        max_tokens: 2000
+        temperature: 0.3, // Réduit pour plus de précision
+        max_tokens: 1500, // Optimisé pour la concision
+        top_p: 0.9 // Ajouté pour plus de cohérence
       })
     })
 
@@ -108,7 +143,15 @@ serve(async (req) => {
     const data = await response.json()
     const content = data.choices[0].message.content
 
-    console.log('✅ Exercices générés en', Date.now() - startTime, 'ms')
+    // Log des métriques de génération
+    const endTime = Date.now()
+    const duration = endTime - startTime
+    console.log('✅ Génération réussie:', {
+      duration_ms: duration,
+      estimated_tokens: content.length / 4, // Estimation approximative
+      subject: params.subject,
+      timestamp: new Date().toISOString()
+    })
 
     return new Response(
       JSON.stringify({ exercises: content }),
