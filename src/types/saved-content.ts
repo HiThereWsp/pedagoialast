@@ -7,6 +7,7 @@ export interface SavedContent {
   created_at: string
   type: 'lesson-plan' | 'exercise' | 'Image'
   displayType?: string
+  exercise_category?: 'standard' | 'differentiated'
   tags: Array<{
     label: string
     color: string
@@ -53,6 +54,10 @@ export interface SaveExerciseParams {
   class_level?: string
   exercise_type?: string
   difficulty_level?: string
+  exercise_category?: 'standard' | 'differentiated'
+  student_profile?: string
+  learning_style?: string
+  specific_needs?: string
 }
 
 export interface DatabaseTypes {
@@ -83,9 +88,18 @@ export interface DatabaseTypes {
         difficulty_level?: string
         created_at: string
         user_id: string
+        exercise_category?: 'standard' | 'differentiated'
+        student_profile?: string
+        learning_style?: string
+        specific_needs?: string
       }
-      Insert: Omit<DatabaseTypes['Tables']['saved_exercises']['Row'], 'id' | 'created_at'>
-      Update: Partial<DatabaseTypes['Tables']['saved_exercises']['Insert']>
+      Insert: Omit<DatabaseTypes['Tables']['saved_exercises']['Row'], 'id' | 'created_at' | 'exercise_category' | 'student_profile' | 'learning_style' | 'specific_needs'> & {
+        exercise_category?: 'standard' | 'differentiated'
+        student_profile?: string
+        learning_style?: string
+        specific_needs?: string
+      }
+      Update: Partial<Omit<DatabaseTypes['Tables']['saved_exercises']['Insert'], 'user_id'>>
     }
   }
 }

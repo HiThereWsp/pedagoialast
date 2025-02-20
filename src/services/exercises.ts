@@ -22,6 +22,7 @@ export const exercisesService = {
         .from('saved_exercises')
         .insert([{
           ...params,
+          exercise_category: params.exercise_category || 'standard',
           user_id: user.id
         }])
         .select()

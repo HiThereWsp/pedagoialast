@@ -4,6 +4,7 @@ import { useToast } from "@/hooks/use-toast"
 import { exercisesService } from "@/services/exercises"
 import { lessonPlansService } from "@/services/lesson-plans"
 import type { SaveExerciseParams, SaveLessonPlanParams } from "@/types/saved-content"
+import { exerciseCategories } from "@/components/saved-content/CarouselCategories"
 
 export function useSavedContent() {
   const [isLoadingExercises, setIsLoadingExercises] = useState(false)
@@ -69,7 +70,18 @@ export function useSavedContent() {
   const getSavedExercises = async () => {
     try {
       setIsLoadingExercises(true)
-      return await exercisesService.getAll()
+      const exercises = await exercisesService.getAll()
+      return exercises.map(exercise => ({
+        ...exercise,
+        tags: [
+          {
+            label: exercise.exercise_category === 'differentiated' 
+              ? exerciseCategories.differentiated.label 
+              : exerciseCategories.standard.label,
+            ...exerciseCategories[exercise.exercise_category || 'standard']
+          }
+        ]
+      }))
     } catch (error) {
       console.error('Error fetching exercises:', error)
       throw error
