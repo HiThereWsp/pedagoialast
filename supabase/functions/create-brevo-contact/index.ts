@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
                 headers: { "Content-Type": "application/json", ...corsHeaders },
             });
         }
-
+        console.log("Creating Bevo for", firstName, email);
         // Create Brevo contact
         const response = await fetch("https://api.brevo.com/v3/contacts", {
             method: "POST",
@@ -37,15 +37,15 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
                 email: email,
                 attributes: {
-                    FNAME: firstName || "Unknown", // Optional: First name
+                    PRENOM: firstName || "Unknown", // Optional: First name
                 },
                 updateEnabled: false, // Do not update existing contacts
             }),
         });
-
+        const response_detail = await response.text()
         // Handle Brevo API response
         if (!response.ok) {
-            const msg = JSON.stringify({ error: "Failed to create Brevo contact", details: await response.text() });
+            const msg = JSON.stringify({ error: "Failed to create Brevo contact", details: response_detail });
             console.log(msg);
             return new Response(msg, {
                 status: response.status,
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
         }
 
         // Success response
-        const msg = JSON.stringify({ message: `Brevo contact created for ${email}` });
+        const msg = JSON.stringify({ message: `Brevo contact created for ${email}, response: ${response_detail}` });
         console.log(msg);
         return new Response(msg, {
             headers: { "Content-Type": "application/json", ...corsHeaders },
