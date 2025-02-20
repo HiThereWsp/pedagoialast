@@ -1,162 +1,186 @@
 
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
-import "https://deno.land/x/xhr@0.3.0/mod.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const systemPrompt = `Tu es un expert en pédagogie spécialisé dans la création d'exercices.
+RÈGLES STRICTES:
+- Texte aligné à gauche uniquement
+- Titres en MAJUSCULES
+- Questions numérotées
+- Réponses concises et claires
+- Format cohérent pour tous les exercices`;
+
+interface ExerciseParams {
+  subject: string;
+  classLevel: string;
+  numberOfExercises: number;
+  questionsPerExercise: number;
+  objective: string;
+  exerciseType?: string;
+  specificNeeds?: string;
+  strengths?: string;
+  challenges?: string;
 }
 
-const TIMEOUT_MS = 25000; // 25 secondes de timeout
+function createPrompt(params: ExerciseParams): string {
+  const {
+    subject,
+    classLevel,
+    objective,
+    numberOfExercises,
+    questionsPerExercise,
+    specificNeeds,
+    exerciseType,
+    strengths,
+    challenges
+  } = params;
 
-serve(async (req) => {
-  const startTime = performance.now();
-  console.log("🔵 Début de la génération d'exercices");
+  return `
+MATIÈRE: ${subject}
+NIVEAU: ${classLevel}
+OBJECTIF: ${objective}
+FORMAT: ${numberOfExercises} exercices, ${questionsPerExercise} questions/exercice
+${specificNeeds ? `BESOINS SPÉCIFIQUES: ${specificNeeds}` : ''}
+${exerciseType ? `TYPE: ${exerciseType}` : ''}
+${strengths ? `POINTS FORTS: ${strengths}` : ''}
+${challenges ? `DIFFICULTÉS: ${challenges}` : ''}
 
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
-  // Créer un contrôleur de timeout
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-  try {
-    const requestData = await req.json();
-    const { 
-      subject, 
-      classLevel, 
-      objective,
-      numberOfExercises = 4,
-      questionsPerExercise = 5,
-      exerciseType = '',
-      additionalInstructions = '',
-      specificNeeds = '',
-      challenges = '',
-    } = requestData;
-
-    console.log("📝 Paramètres reçus:", { 
-      subject, classLevel, objective,
-      numberOfExercises, questionsPerExercise,
-      exerciseType, specificNeeds 
-    });
-
-    const systemPrompt = `Tu es un expert en pédagogie spécialisé dans la création d'exercices. 
-Crée une fiche d'exercices claire et structurée avec ces règles strictes de formatage :
-- Texte aligné à gauche uniquement
-- Pas d'indentation excessive
-- Titres en MAJUSCULES
-- Questions numérotées clairement
-- Espacement optimisé pour la lisibilité
-- Structure hiérarchique claire`;
-
-    const userPrompt = `Crée ${numberOfExercises} exercices en ${subject} pour le niveau ${classLevel}.
-
-Objectif pédagogique : ${objective}
-${exerciseType ? `Type d'exercice : ${exerciseType}` : ''}
-Nombre de questions par exercice : ${questionsPerExercise}
-
-${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
-${challenges ? `Points de vigilance : ${challenges}` : ''}
-${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
-
-Structure attendue :
-
+Structure requise:
 FICHE ÉLÈVE
-
-[EXERCICE 1]
-CONSIGNE : 
-1. Question
-2. Question
-[répéter selon nombre de questions]
+[Ex.1] à [Ex.${numberOfExercises}]
+- Consignes claires
+- Questions numérotées de 1 à ${questionsPerExercise}
 
 FICHE PÉDAGOGIQUE
+- Objectifs spécifiques
+- Compétences travaillées
+- Corrections détaillées
+- Adaptations proposées
+`;
+}
 
-[EXERCICE 1]
-OBJECTIFS :
-PRÉREQUIS :
-CORRIGÉ :
-1. Réponse
-   Explicitation
-   Points de vigilance
-   Remédiations
+async function* streamCompletion(payload: any) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${Deno.env.get("OPENAI_API_KEY")}`,
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: payload },
+      ],
+      temperature: 0.3,
+      max_tokens: 1500,
+      stream: true,
+    }),
+  });
 
-[Répéter pour chaque exercice]`;
+  const reader = response.body?.getReader();
+  const decoder = new TextDecoder();
 
-    console.log('🤖 Appel OpenAI en cours...');
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('❌ Erreur OpenAI:', error);
-      throw new Error(`OpenAI API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const exercises = data.choices[0].message.content;
-
-    // Post-traitement pour garantir le formatage
-    const cleanedExercises = exercises
-      .replace(/###/g, '')
-      .replace(/---/g, '')
-      .replace(/\n\s+\n/g, '\n\n')  // Supprime l'espacement excessif
-      .replace(/^\s+/gm, '')        // Supprime l'indentation en début de ligne
-      .replace(/\[EXERCICE/g, '\n[EXERCICE')  // Assure l'espacement des sections
-      .replace(/\n{3,}/g, '\n\n')   // Limite les sauts de ligne consécutifs
-      .trim();
-
-    const endTime = performance.now();
-    console.log(`✅ Exercices générés en ${Math.round(endTime - startTime)}ms`);
-
-    clearTimeout(timeoutId);
-    return new Response(
-      JSON.stringify({ exercises: cleanedExercises }), 
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
-  } catch (error) {
-    clearTimeout(timeoutId);
-    console.error('❌ Erreur dans la fonction generate-exercises:', error);
+  while (true) {
+    const { done, value } = await reader!.read();
+    if (done) break;
     
-    if (error.name === 'AbortError') {
-      return new Response(
-        JSON.stringify({ 
-          error: "Délai d'attente dépassé",
-          details: "La génération a pris trop de temps, veuillez réessayer"
-        }), 
-        {
-          status: 408,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const chunk = decoder.decode(value);
+    const lines = chunk.split("\n");
+    
+    for (const line of lines) {
+      if (line.startsWith("data: ")) {
+        const data = line.slice(6);
+        if (data === "[DONE]") return;
+        
+        try {
+          const parsed = JSON.parse(data);
+          const content = parsed.choices[0]?.delta?.content;
+          if (content) yield content;
+        } catch (e) {
+          console.error("Erreur parsing JSON:", e);
         }
+      }
+    }
+  }
+}
+
+serve(async (req) => {
+  // Gérer les requêtes OPTIONS pour CORS
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { body } = req;
+    const {
+      subject,
+      classLevel,
+      numberOfExercises,
+      questionsPerExercise,
+      objective,
+      exerciseType,
+      specificNeeds,
+      strengths,
+      challenges,
+    } = await body!.json();
+
+    // Validation des paramètres
+    if (!subject || !classLevel || !objective) {
+      return new Response(
+        JSON.stringify({ error: "Paramètres requis manquants" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: 'Une erreur est survenue lors de la génération des exercices'
-      }), 
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    const prompt = createPrompt({
+      subject,
+      classLevel,
+      numberOfExercises: Number(numberOfExercises) || 3,
+      questionsPerExercise: Number(questionsPerExercise) || 5,
+      objective,
+      exerciseType,
+      specificNeeds,
+      strengths,
+      challenges,
+    });
+
+    // Création d'un TransformStream pour le streaming
+    const stream = new TransformStream();
+    const writer = stream.writable.getWriter();
+    const encoder = new TextEncoder();
+
+    // Streaming asynchrone
+    (async () => {
+      try {
+        for await (const chunk of streamCompletion(prompt)) {
+          await writer.write(encoder.encode(chunk));
+        }
+      } catch (error) {
+        console.error("Erreur streaming:", error);
+      } finally {
+        await writer.close();
       }
+    })();
+
+    return new Response(stream.readable, {
+      headers: {
+        ...corsHeaders,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
+      },
+    });
+  } catch (error) {
+    console.error("Erreur générale:", error);
+    return new Response(
+      JSON.stringify({ error: "Erreur lors de la génération" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });

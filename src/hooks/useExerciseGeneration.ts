@@ -30,6 +30,7 @@ export interface GenerationResult {
 export function useExerciseGeneration() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [streamingContent, setStreamingContent] = useState<string>("");
 
   const validateFormData = (formData: ExerciseFormData) => {
     if (!formData.subject.trim()) {
@@ -68,10 +69,11 @@ export function useExerciseGeneration() {
     }
 
     setIsLoading(true);
+    setStreamingContent("");
     console.log("🔵 Début de la génération d'exercices");
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-exercises', {
+      const response = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
           numberOfExercises: parseInt(formData.numberOfExercises) || 4,
@@ -79,22 +81,31 @@ export function useExerciseGeneration() {
           specificNeeds: formData.specificNeeds.trim(),
           strengths: formData.strengths.trim(),
           challenges: formData.challenges.trim()
-        }
+        },
       });
 
-      if (error) {
-        console.error('❌ Erreur de l\'Edge Function:', error);
-        throw error;
+      if (response.error) {
+        console.error('❌ Erreur de l\'Edge Function:', response.error);
+        throw response.error;
       }
 
-      if (!data?.exercises) {
-        throw new Error('Pas de contenu généré');
+      const reader = new ReadableStreamDefaultReader(response.data as ReadableStream);
+      const decoder = new TextDecoder();
+      let accumulatedContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value);
+        accumulatedContent += chunk;
+        setStreamingContent(accumulatedContent);
       }
 
       const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
 
       return {
-        content: data.exercises,
+        content: accumulatedContent,
         title,
         metadata: {
           subject: formData.subject,
@@ -121,5 +132,6 @@ export function useExerciseGeneration() {
   return {
     isLoading,
     generateExercises,
+    streamingContent
   };
 }

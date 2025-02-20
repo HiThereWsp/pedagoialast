@@ -1,21 +1,32 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { HeaderSection } from './result/HeaderSection';
 import { FeedbackButtons } from './result/FeedbackButtons';
 import { ExerciseTabs } from './result/ExerciseTabs';
 import { ShareButton } from './result/ShareButton';
+import { Progress } from "@/components/ui/progress";
 
 interface ResultDisplayProps {
   exercises: string | null;
+  streamingContent?: string;
 }
 
-export function ResultDisplay({ exercises }: ResultDisplayProps) {
+export function ResultDisplay({ exercises, streamingContent }: ResultDisplayProps) {
   const { toast } = useToast();
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
   const [isCopied, setIsCopied] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  if (!exercises) return null;
+  useEffect(() => {
+    if (streamingContent && exercises) {
+      const ratio = streamingContent.length / exercises.length;
+      setProgress(Math.min(ratio * 100, 100));
+    }
+  }, [streamingContent, exercises]);
+
+  if (!exercises && !streamingContent) return null;
 
   const handleFeedback = async (type: 'like' | 'dislike') => {
     const score = type === 'like' ? 1 : -1;
@@ -33,7 +44,8 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     };
   };
 
-  const { studentSheet, teacherSheet } = splitContent(exercises);
+  const content = streamingContent || exercises || '';
+  const { studentSheet, teacherSheet } = splitContent(content);
 
   const handleCopy = async (text: string) => {
     try {
@@ -62,7 +74,7 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
         description: "Merci d'avoir partagé ces exercices !",
       });
     } catch (err) {
-      await handleCopy(exercises);
+      await handleCopy(exercises || '');
       toast({
         description: "Les exercices ont été copiés, vous pouvez maintenant les partager",
       });
@@ -77,9 +89,16 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           feedbackScore={feedbackScore}
           isCopied={isCopied}
           onFeedback={handleFeedback}
-          onCopy={() => handleCopy(exercises)}
+          onCopy={() => handleCopy(content)}
         />
       </div>
+
+      {streamingContent && progress < 100 && (
+        <div className="mb-4">
+          <Progress value={progress} className="h-2" />
+          <p className="text-sm text-gray-500 mt-1">Génération en cours... {Math.round(progress)}%</p>
+        </div>
+      )}
 
       <ExerciseTabs 
         studentSheet={studentSheet}
