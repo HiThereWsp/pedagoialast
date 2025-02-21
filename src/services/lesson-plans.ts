@@ -86,8 +86,8 @@ export const lessonPlansService = {
         id: plan.id,
         title: plan.title,
         content: plan.content,
-        subject: plan.subject,
-        class_level: plan.class_level,
+        subject: plan.subject || '',
+        class_level: plan.class_level || '',
         created_at: plan.created_at,
         type: 'lesson-plan' as const,
         tags: [{
