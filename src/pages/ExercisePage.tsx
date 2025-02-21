@@ -58,6 +58,7 @@ const ExercisePage = () => {
     studentProfile: '',
     learningStyle: '',
     learningDifficulties: '',
+    selectedLessonPlan: '',
   });
 
   useEffect(() => {
@@ -113,8 +114,8 @@ const ExercisePage = () => {
     
     const exerciseParams = {
       ...formData,
-      numberOfExercises: Number(formData.numberOfExercises) || 3,
-      questionsPerExercise: Number(formData.questionsPerExercise) || 5
+      numberOfExercises: formData.numberOfExercises,
+      questionsPerExercise: formData.questionsPerExercise
     };
     
     const generatedExercises = await generateExercises(exerciseParams);

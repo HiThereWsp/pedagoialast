@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { lessonPlansService } from "@/services/lesson-plans";
+import { Card } from "@/components/ui/card";
+import ReactMarkdown from 'react-markdown';
 
 interface FieldProps {
   value: string;
@@ -187,27 +189,57 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
     }
   });
 
+  useEffect(() => {
+    const selectedPlan = lessonPlans.find(plan => plan.id === value);
+    if (selectedPlan) {
+      // Remplissage automatique des champs
+      onChange('subject', selectedPlan.subject || '');
+      onChange('classLevel', selectedPlan.class_level || '');
+    }
+  }, [value, lessonPlans, onChange]);
+
   return (
-    <div className="mb-6">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Séquence pédagogique (optionnel)
-      </label>
-      <Select
-        value={value || "none"}
-        onValueChange={(val) => onChange('selectedLessonPlan', val === "none" ? "" : val)}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Sélectionner une séquence..." />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="none">Aucune séquence</SelectItem>
-          {lessonPlans.map((plan) => (
-            <SelectItem key={plan.id} value={plan.id}>
-              {plan.title}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Séquence pédagogique (optionnel)
+        </label>
+        <Select
+          value={value || "none"}
+          onValueChange={(val) => onChange('selectedLessonPlan', val === "none" ? "" : val)}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Sélectionner une séquence..." />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Aucune séquence</SelectItem>
+            {lessonPlans.map((plan) => (
+              <SelectItem key={plan.id} value={plan.id}>
+                {plan.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {value && value !== "none" && (
+        <Card className="p-4 bg-gray-50">
+          <div className="prose prose-sm max-w-none">
+            <ReactMarkdown
+              components={{
+                h1: ({ children }) => <h1 className="text-xl font-bold mb-4">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-lg font-semibold mb-3">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-md font-medium mb-2">{children}</h3>,
+                p: ({ children }) => <p className="mb-2 text-gray-700">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
+                li: ({ children }) => <li className="text-gray-700">{children}</li>,
+              }}
+            >
+              {lessonPlans.find(plan => plan.id === value)?.content || ''}
+            </ReactMarkdown>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };

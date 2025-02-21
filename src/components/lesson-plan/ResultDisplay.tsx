@@ -79,12 +79,9 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
   };
 
   const handleCreateExercise = () => {
-    // Stocker temporairement la séquence dans le localStorage
     localStorage.setItem('selectedLessonPlan', lessonPlan);
     navigate('/exercise');
-    toast({
-      description: "Redirection vers la création d'exercice",
-    });
+    // Suppression de la notification toast
   };
 
   return (
