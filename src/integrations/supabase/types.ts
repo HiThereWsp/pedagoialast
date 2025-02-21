@@ -389,6 +389,39 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_correspondences: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          recipient_type: string
+          title: string
+          tone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          recipient_type: string
+          title: string
+          tone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          recipient_type?: string
+          title?: string
+          tone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_exercises: {
         Row: {
           class_level: string | null

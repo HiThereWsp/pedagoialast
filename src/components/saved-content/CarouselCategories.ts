@@ -34,6 +34,17 @@ export const carouselCategories = [
     colorScheme: exerciseCategories.standard
   },
   {
+    title: "Mes correspondances",
+    type: "correspondence" as const,
+    displayType: "Correspondance",
+    emptyMessage: "Aucune correspondance n'a encore été créée. Générez votre première correspondance administrative !",
+    colorScheme: {
+      color: '#9b87f5',
+      backgroundColor: '#9b87f520',
+      borderColor: '#9b87f54D'
+    }
+  },
+  {
     title: "Mes images",
     type: "Image" as const,
     displayType: "Image",

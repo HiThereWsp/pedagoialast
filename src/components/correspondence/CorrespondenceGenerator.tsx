@@ -9,6 +9,8 @@ import { Loader2, Mail, MessageSquare, User, Users } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { supabase } from "@/integrations/supabase/client"
 import { ResultDisplay } from "./ResultDisplay"
+import { useSavedContent } from "@/hooks/useSavedContent"
+import { useQueryClient } from "@tanstack/react-query"
 
 export function CorrespondenceGenerator() {
   const [topic, setTopic] = useState("")
@@ -18,6 +20,8 @@ export function CorrespondenceGenerator() {
   const [generatedText, setGeneratedText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const { saveCorrespondence } = useSavedContent()
+  const queryClient = useQueryClient()
 
   const handleGenerate = async () => {
     if (!topic) {
@@ -37,8 +41,20 @@ export function CorrespondenceGenerator() {
       if (error) throw error
 
       setGeneratedText(data.text)
+
+      // Sauvegarder la correspondance générée
+      await saveCorrespondence({
+        title: `${topic} - ${recipient}`,
+        content: data.text,
+        recipient_type: recipient,
+        tone: tone
+      });
+
+      // Invalider la requête pour forcer le rechargement des correspondances
+      await queryClient.invalidateQueries({ queryKey: ['saved-content'] });
+
       toast({
-        description: "Correspondance générée avec succès !",
+        description: "Correspondance générée et sauvegardée avec succès !",
       })
     } catch (error) {
       console.error('Error:', error)
