@@ -5,6 +5,7 @@ import { ExerciseForm } from "@/components/exercise/ExerciseForm";
 import { ResultDisplay } from "@/components/exercise/ResultDisplay";
 import { SEO } from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ExercisePage() {
   const { toast } = useToast();
@@ -38,20 +39,20 @@ export default function ExercisePage() {
       setIsLoading(true);
       console.log("Submitting form data:", formData);
 
-      // Appel à la fonction Edge generate-exercises
-      const response = await fetch('/api/generate-exercises', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
+      // Utilisation de supabase.functions.invoke pour appeler la fonction edge
+      const { data, error } = await supabase.functions.invoke('generate-exercises', {
+        body: formData,
       });
 
-      if (!response.ok) {
+      if (error) {
+        console.error("Supabase function error:", error);
         throw new Error('Erreur lors de la génération des exercices');
       }
 
-      const data = await response.json();
+      if (!data?.exercises) {
+        throw new Error('Aucun exercice n\'a été généré');
+      }
+
       setGeneratedContent(data.exercises);
       
       toast({
