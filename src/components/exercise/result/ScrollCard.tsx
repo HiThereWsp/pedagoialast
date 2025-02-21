@@ -56,7 +56,7 @@ export const ScrollCard = ({ exercises, onBack }: ScrollCardProps) => {
   };
 
   return (
-    <Card className="p-4 relative">
+    <Card className="p-4 relative bg-white">
       <div className="flex justify-between items-center mb-4">
         <Button
           variant="ghost"
