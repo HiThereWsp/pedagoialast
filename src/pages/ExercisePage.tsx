@@ -8,7 +8,6 @@ import { ScrollCard } from '@/components/exercise/result/ScrollCard';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import { useSavedContent } from '@/hooks/useSavedContent';
 import { SEO } from "@/components/SEO";
-import { HistoryCarousel } from '@/components/history/HistoryCarousel';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { exercisesService } from '@/services/exercises';
@@ -22,27 +21,6 @@ const ExercisePage = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Récupération des exercices avec React Query
-  const { data: savedExercises = [], isLoading: isLoadingExercises } = useQuery({
-    queryKey: ['saved-exercises'],
-    queryFn: async () => {
-      const exercises = await exercisesService.getAll();
-      return exercises.map(ex => ({
-        ...ex,
-        type: 'exercise',
-        tags: [{
-          label: ex.exercise_category === 'differentiated' ? 'Exercice différencié' : 'Exercice standard',
-          color: '#22C55E',
-          backgroundColor: '#22C55E20',
-          borderColor: '#22C55E4D'
-        }]
-      }));
-    },
-    enabled: !isAuthChecking,
-    gcTime: 5 * 60 * 1000,
-    staleTime: 30000
-  });
-  
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
@@ -155,10 +133,6 @@ const ExercisePage = () => {
     }
   };
 
-  const handleExerciseClick = (exercise: any) => {
-    setCurrentExercise(exercise.content);
-  };
-
   if (isAuthChecking) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -187,20 +161,6 @@ const ExercisePage = () => {
           <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
             Créez facilement des exercices adaptés à vos besoins et objectifs d'apprentissage.
           </p>
-        </div>
-
-        <div className="mt-12">
-          {isLoadingExercises ? (
-            <div className="flex justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <HistoryCarousel
-              items={savedExercises}
-              onItemSelect={handleExerciseClick}
-              formatContent={(content) => content}
-            />
-          )}
         </div>
 
         <div className="max-w-4xl mx-auto">
