@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { SEO } from "@/components/SEO";
 import { Card } from "@/components/ui/card";
@@ -98,7 +97,7 @@ export default function SavedContentPage() {
     fetchContent();
   }, []);
 
-  const handleDelete = async (id: string, type: 'lesson-plan' | 'exercise' | 'Image') => {
+  const handleDelete = async (id: string, type: SavedContent['type']) => {
     setErrors(prev => ({
       ...prev,
       delete: undefined
