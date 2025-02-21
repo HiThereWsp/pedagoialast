@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
@@ -22,19 +21,20 @@ serve(async (req) => {
     console.log('📝 Paramètres reçus:', JSON.stringify(params, null, 2));
 
     const systemPrompt = `Tu es un assistant pédagogique expert qui crée des exercices adaptés au système éducatif français.
-Tu dois générer deux fiches distinctes avec EXACTEMENT ces titres et dans cet ordre :
+Génère deux fiches distinctes avec EXACTEMENT ces titres et dans cet ordre :
 
 "FICHE ÉLÈVE"
-- Titre de la séquence
-- Objectifs d'apprentissage
-- Consignes claires
-- Exercices numérotés
-- Espace pour les réponses
+[Génère directement :
+- Le titre de la séquence
+- Les objectifs d'apprentissage
+- Les exercices
+- Espace pour les réponses]
 
 "FICHE CORRECTION"
-- Toutes les réponses détaillées
-- Explications pédagogiques
-- Points clés à retenir
+[Génère directement :
+- Les réponses détaillées
+- Les explications pédagogiques
+- Les points clés à retenir]
 
 Format REQUIS :
 FICHE ÉLÈVE

@@ -1,301 +1,350 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from "@/lib/utils";
-import { generateLessonPlan, getLessonPlans, type LessonPlanData } from '@/lib/lesson-plan';
-import { CommonFields } from './CommonFields';
-import { ResultDisplay } from './ResultDisplay';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TextTab } from './tabs/TextTab';
-import { SubjectTab } from './tabs/SubjectTab';
-import { Button } from "@/components/ui/button";
-import { Wand2, History, ChevronRight } from "lucide-react";
-import { useToolMetrics } from "@/hooks/useToolMetrics";
-import { useSavedContent } from "@/hooks/useSavedContent";
-import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import { formatDistanceToNowStrict } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { HistoryCarousel } from '@/components/history/HistoryCarousel';
+import React, { useState, useEffect, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { toast } from "@/hooks/use-toast"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { lessonPlansService } from '@/services/lesson-plans';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { useSettings } from '@/hooks/useSettings';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { useProModal } from "@/hooks/use-pro-modal"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useSubscription } from "@/hooks/use-subscription"
+import { BackButton } from "@/components/settings/BackButton";
+import { useNavigate } from 'react-router-dom';
+import { SEO } from "@/components/SEO";
 
-export function LessonPlanCreator() {
-  const { toast } = useToast();
+export const LessonPlanCreator = () => {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
-  const [level, setLevel] = useState('');
-  const [topic, setTopic] = useState('');
-  const [duration, setDuration] = useState<number>(60);
-  const [learningObjectives, setLearningObjectives] = useState(['']);
+  const [classLevel, setClassLevel] = useState('');
+  const [duration, setDuration] = useState('');
+  const [objective, setObjective] = useState('');
   const [materials, setMaterials] = useState(['']);
-  const [activities, setActivities] = useState(['']);
+  const [activities, setActivities] = useState([{ id: uuidv4(), description: '', duration: '' }]);
   const [assessment, setAssessment] = useState('');
   const [differentiation, setDifferentiation] = useState('');
   const [notes, setNotes] = useState('');
-  const [searchParams] = useSearchParams();
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: searchParams.get("from") ? new Date(searchParams.get("from") as string) : undefined,
-    to: searchParams.get("to") ? new Date(searchParams.get("to") as string) : undefined,
-  });
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [search, setSearch] = useState<string>('');
-  const { user } = useAuth();
-  const isMobile = useIsMobile();
-  const {
-    logToolUsage
-  } = useToolMetrics();
-  const {
-    saveLessonPlan,
-    getSavedLessonPlans
-  } = useSavedContent();
-  const [isLoading, setIsLoading] = useState(false);
-  const [savedPlans, setSavedPlans] = useState<any[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
-  const [formData, setFormData] = useState({
-    classLevel: '',
-    additionalInstructions: '',
-    totalSessions: '',
-    subject: '',
-    text: '',
-    lessonPlan: ''
+  const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { settings } = useSettings();
+	const { subscription } = useSubscription();
+  const proModal = useProModal();
+  const navigate = useNavigate();
+
+  const { data } = useQuery({
+    queryKey: ['lesson-plans'],
+    queryFn: lessonPlansService.getAll,
   });
 
-  const { data: lessonPlans, refetch } = useQuery({
-    queryKey: ['lessonPlans', user?.id],
-    queryFn: () => getLessonPlans(user?.id),
-    enabled: !!user?.id,
-  });
-
-  const { mutate, isPending } = useMutation({
-    mutationFn: (data: LessonPlanData) => generateLessonPlan(data),
-    onSuccess: () => {
-      toast({
-        title: 'Plan de leçon créé !',
-        description: 'Votre plan de leçon a été créé avec succès.',
-      });
-      refetch();
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Erreur lors de la création du plan de leçon.',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  });
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-  const loadSavedPlans = async () => {
-    try {
-      const plans = await getSavedLessonPlans();
-      setSavedPlans(plans);
-    } catch (error) {
-      console.error('Error loading saved plans:', error);
-    }
-  };
-  const handleSelectPlan = (plan: any) => {
-    setSelectedPlan(plan);
-    setFormData(prev => ({
-      ...prev,
-      lessonPlan: plan.content,
-      classLevel: plan.class_level || '',
-      subject: plan.subject || '',
-      totalSessions: plan.total_sessions?.toString() || '',
-      additionalInstructions: plan.additional_instructions || ''
-    }));
-  };
-  const formatTitle = (title: string) => {
-    return title.replace(/^Séquence[\s:-]+/i, '').trim();
-  };
-  const handleGenerate = async () => {
-    if (!formData.classLevel || !formData.totalSessions) {
-      toast({
-        variant: "destructive",
-        description: "Veuillez remplir tous les champs obligatoires."
-      });
-      return;
-    }
-    setIsLoading(true);
-    const startTime = performance.now();
-    try {
-      const {
-        data: functionData,
-        error: functionError
-      } = await supabase.functions.invoke('generate-lesson-plan', {
-        body: {
-          classLevel: formData.classLevel,
-          totalSessions: formData.totalSessions,
-          subject: formData.subject,
-          text: formData.text,
-          additionalInstructions: formData.additionalInstructions
-        }
-      });
-      if (functionError) {
-        throw functionError;
+  const { mutate: createLessonPlan, isLoading: isCreating } = useMutation(
+    lessonPlansService.create,
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['lesson-plans']);
+        toast({
+          title: "Succès",
+          description: "Le plan de leçon a été créé avec succès.",
+        })
+        setOpen(false);
+        setTitle('');
+        setSubject('');
+        setClassLevel('');
+        setDuration('');
+        setObjective('');
+        setMaterials(['']);
+        setActivities([{ id: uuidv4(), description: '', duration: '' }]);
+        setAssessment('');
+        setDifferentiation('');
+        setNotes('');
+        navigate('/settings');
+      },
+      onError: (error: any) => {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: error.message || "Une erreur est survenue lors de la création du plan de leçon.",
+        })
       }
-      const generationTime = Math.round(performance.now() - startTime);
-      setFormData(prev => ({
-        ...prev,
-        lessonPlan: functionData.lessonPlan
-      }));
-      await saveLessonPlan({
-        title: formatTitle(`${formData.subject || ''} - ${formData.classLevel}`.trim()),
-        content: functionData.lessonPlan,
-        subject: formData.subject,
-        class_level: formData.classLevel,
-        total_sessions: parseInt(formData.totalSessions),
-        additional_instructions: formData.additionalInstructions
-      });
-      await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
-      await loadSavedPlans(); // Recharger l'historique après la génération
-
-      toast({
-        description: "Votre séquence a été générée et sauvegardée avec succès !"
-      });
-    } catch (error) {
-      console.error('Error generating lesson plan:', error);
-      toast({
-        variant: "destructive",
-        description: "Une erreur est survenue lors de la génération de la séquence."
-      });
-    } finally {
-      setIsLoading(false);
     }
-  };
-  useEffect(() => {
-    loadSavedPlans();
-  }, []);
-  const getRelativeDate = (date: string) => {
-    return formatDistanceToNowStrict(new Date(date), {
-      addSuffix: true,
-      locale: fr
-    }).replace('dans ', 'il y a ');
-  };
-  const formatPreviewContent = (content: string) => {
-    const cleanContent = content.replace(/^Séquence pédagogique[\s-]*/i, '').replace(/^###\s*/gm, '').replace(/^\s*\*\*/gm, '').replace(/\*\*\s*$/gm, '').trim();
-    return cleanContent;
+  );
+
+  const handleAddMaterial = () => {
+    setMaterials([...materials, '']);
   };
 
-  const transformSavedPlansToHistoryItems = (plans: any[]) => {
-    return plans.map(plan => ({
-      id: plan.id,
-      title: formatTitle(plan.title),
-      content: plan.content,
-      subject: plan.subject,
-      created_at: plan.created_at,
-      type: 'lesson-plan' as const,
-      displayType: 'Séquence',
-      tags: [{
-        label: 'Séquence',
-        color: '#FF9EBC',
-        backgroundColor: '#FF9EBC20',
-        borderColor: '#FF9EBC4D'
-      }]
-    }));
+  const handleMaterialChange = (index: number, value: string) => {
+    const newMaterials = [...materials];
+    newMaterials[index] = value;
+    setMaterials(newMaterials);
   };
 
-  const handleGenerateLessonPlan = () => {
-    if (!user) {
-      toast({
-        title: 'Erreur',
-        description: 'Vous devez être connecté pour générer un plan de leçon.',
-        variant: 'destructive',
-      });
+  const handleRemoveMaterial = (index: number) => {
+    const newMaterials = [...materials];
+    newMaterials.splice(index, 1);
+    setMaterials(newMaterials);
+  };
+
+  const handleAddActivity = () => {
+    setActivities([...activities, { id: uuidv4(), description: '', duration: '' }]);
+  };
+
+  const handleActivityChange = (id: string, field: string, value: string) => {
+    const newActivities = activities.map(activity =>
+      activity.id === id ? { ...activity, [field]: value } : activity
+    );
+    setActivities(newActivities);
+  };
+
+  const handleRemoveActivity = (id: string) => {
+    const newActivities = activities.filter(activity => activity.id !== id);
+    setActivities(newActivities);
+  };
+
+  const handleSubmit = () => {
+		if (!subscription?.isPro && data && (data as any[]).length >= (settings?.free_lesson_plans_limit || 3)) {
+      proModal.onOpen();
       return;
     }
 
-    const lessonPlanData: LessonPlanData = {
-      userId: user.id,
+    createLessonPlan({
       title,
       subject,
-      level,
-      topic,
+      class_level: classLevel,
       duration,
-      learningObjectives,
+      objective,
       materials,
       activities,
       assessment,
       differentiation,
-      notes,
-      type: 'lesson-plan',
-      tags: [{
-        label: 'Pédagogie',
-        color: 'text-sky-500',
-        backgroundColor: 'bg-sky-500/10',
-        borderColor: 'border-sky-500/30',
-      }]
-    };
-
-    mutate(lessonPlanData);
+      notes
+    });
   };
 
-  const filteredItems = lessonPlans?.filter((item) => {
-    if (!item) return false;
-    
-    const searchTerm = search.toLowerCase();
-    const itemTitle = item.title?.toLowerCase() || '';
-    const itemSubject = item.subject?.toLowerCase() || '';
-
-    const dateMatches = !date?.from || !date?.to ||
-      (new Date(item.created_at) >= date.from && new Date(item.created_at) <= date.to);
-
-    const tagMatches = selectedTags.length === 0 ||
-      (item.tags && item.tags.some(tag => selectedTags.includes(tag.label)));
-
-    const searchMatches = searchTerm === '' ||
-      itemTitle.includes(searchTerm) ||
-      itemSubject.includes(searchTerm);
-
-    return dateMatches && tagMatches && searchMatches;
-  }) || [];
+  const filteredPlans = data ? (data as any[]).filter(plan => {
+    const searchTerm = title.toLowerCase();
+    return plan.title.toLowerCase().includes(searchTerm);
+  }) : [];
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
-            <Tabs defaultValue="subject" className="mb-6">
-              <TabsList className="grid grid-cols-2 gap-4">
-                <TabsTrigger value="subject">Programme scolaire</TabsTrigger>
-                <TabsTrigger value="text">Texte</TabsTrigger>
-              </TabsList>
-              <TabsContent value="subject">
-                <SubjectTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
-              </TabsContent>
-              <TabsContent value="text">
-                <TextTab formData={formData} handleInputChange={handleInputChange} showCommonFields={false} />
-              </TabsContent>
-            </Tabs>
-            <CommonFields formData={formData} handleInputChange={handleInputChange} />
-            <div className="mt-8">
-              <Button onClick={handleGenerate} disabled={isLoading} className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
-                <Wand2 className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
-                {isLoading ? 'Génération en cours...' : 'Générer la séquence'}
-              </Button>
-            </div>
-          </div>
-          
-          <HistoryCarousel
-            items={transformSavedPlansToHistoryItems(savedPlans)}
-            onItemSelect={handleSelectPlan}
-            selectedItemId={selectedPlan?.id}
+    <>
+      <SEO
+        title="Créateur de plans de leçon | PedagoIA"
+        description="Créez des plans de leçon personnalisés et adaptés à vos besoins pédagogiques."
+      />
+      <div className="container mx-auto px-4 py-8">
+        <BackButton />
+        <div className="text-center mb-8">
+          <img
+            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
+            alt="PedagoIA Logo"
+            className="w-[100px] h-[120px] object-contain mx-auto mb-4"
           />
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
+            Créateur de plans de leçon
+          </h1>
+          <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
+            Créez facilement des plans de leçon adaptés à vos besoins et objectifs d'apprentissage.
+          </p>
         </div>
-        <div className="xl:sticky xl:top-8 space-y-6">
-          <ResultDisplay lessonPlan={formData.lessonPlan} />
+
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow">
+              Créer un plan de leçon
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Créer un plan de leçon</DialogTitle>
+              <DialogDescription>
+                Remplissez le formulaire ci-dessous pour créer un nouveau plan de leçon.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="title" className="text-right">
+                  Titre
+                </Label>
+                <Input type="text" id="title" value={title} onChange={(e) => setTitle(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="subject" className="text-right">
+                  Matière
+                </Label>
+                <Input type="text" id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="classLevel" className="text-right">
+                  Niveau
+                </Label>
+                <Input type="text" id="classLevel" value={classLevel} onChange={(e) => setClassLevel(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="duration" className="text-right">
+                  Durée
+                </Label>
+                <Input type="text" id="duration" value={duration} onChange={(e) => setDuration(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="objective" className="text-right">
+                  Objectif
+                </Label>
+                <Textarea id="objective" value={objective} onChange={(e) => setObjective(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label className="text-right mt-2">
+                  Matériel
+                </Label>
+                <div className="col-span-3">
+                  {materials.map((material, index) => (
+                    <div key={index} className="flex items-center space-x-2 mb-2">
+                      <Input
+                        type="text"
+                        value={material}
+                        onChange={(e) => handleMaterialChange(index, e.target.value)}
+                        className="flex-1"
+                      />
+                      <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveMaterial(index)}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                      </Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="secondary" onClick={handleAddMaterial}>
+                    Ajouter du matériel
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-start gap-4">
+                <Label className="text-right mt-2">
+                  Activités
+                </Label>
+                <div className="col-span-3">
+                  {activities.map((activity) => (
+                    <div key={activity.id} className="mb-4 p-4 border rounded-md">
+                      <div className="mb-2">
+                        <Label htmlFor={`description-${activity.id}`} className="block text-sm font-medium text-gray-700">Description</Label>
+                        <Textarea
+                          id={`description-${activity.id}`}
+                          value={activity.description}
+                          onChange={(e) => handleActivityChange(activity.id, 'description', e.target.value)}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor={`duration-${activity.id}`} className="block text-sm font-medium text-gray-700">Durée</Label>
+                        <Input
+                          type="text"
+                          id={`duration-${activity.id}`}
+                          value={activity.duration}
+                          onChange={(e) => handleActivityChange(activity.id, 'duration', e.target.value)}
+                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                        />
+                      </div>
+                      <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveActivity(activity.id)} className="mt-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                      </Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="secondary" onClick={handleAddActivity}>
+                    Ajouter une activité
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="assessment" className="text-right">
+                  Évaluation
+                </Label>
+                <Textarea id="assessment" value={assessment} onChange={(e) => setAssessment(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="differentiation" className="text-right">
+                  Différenciation
+                </Label>
+                <Textarea id="differentiation" value={differentiation} onChange={(e) => setDifferentiation(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="notes" className="text-right">
+                  Notes
+                </Label>
+                <Textarea id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} className="col-span-3" />
+              </div>
+            </div>
+            <Button type="submit" onClick={handleSubmit} disabled={isCreating}>
+              {isCreating ? (
+                <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+              ) : null}
+              Créer
+            </Button>
+          </DialogContent>
+        </Dialog>
+
+        <div className="mt-12">
+          <h2 className="text-2xl font-semibold mb-4">Mes plans de leçon</h2>
+          {data ? (
+            <Table>
+              <TableCaption>Vos plans de leçon créés.</TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[100px]">Titre</TableHead>
+                  <TableHead>Matière</TableHead>
+                  <TableHead>Niveau</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredPlans.map((plan: any) => (
+                  <TableRow key={plan.id}>
+                    <TableCell className="font-medium">{plan.title}</TableCell>
+                    <TableCell>{plan.subject}</TableCell>
+                    <TableCell>{plan.class_level}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="flex flex-col space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+              <Skeleton className="h-4 w-[150px]" />
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </>
   );
-}
+};
