@@ -13,9 +13,9 @@ export interface ExerciseFormData {
   additionalInstructions: string;
   specificNeeds: string;
   challenges: string;
-  originalExercise?: string;
-  studentProfile?: string;
-  learningDifficulties?: string;
+  originalExercise: string;
+  studentProfile: string;
+  learningDifficulties: string;
 }
 
 export function useExerciseGeneration() {
@@ -28,7 +28,7 @@ export function useExerciseGeneration() {
     }
 
     setIsLoading(true);
-    console.log("🔵 Début de la génération d'exercices");
+    console.log("🔵 Début de la génération d'exercices", formData);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
@@ -65,6 +65,11 @@ export function useExerciseGeneration() {
   };
 
   const validateFormData = (formData: ExerciseFormData): boolean => {
+    if (!formData) {
+      console.error("FormData est undefined");
+      return false;
+    }
+
     const requiredFields = ['subject', 'classLevel', 'objective'];
     const missingFields = requiredFields.filter(field => !formData[field as keyof ExerciseFormData]?.trim());
 

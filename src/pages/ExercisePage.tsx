@@ -20,10 +20,11 @@ export default function ExercisePage() {
     challenges: '',
     originalExercise: '',
     studentProfile: '',
-    learningDifficulties: ''
+    learningDifficulties: '',
   });
 
   const handleInputChange = (field: string, value: string) => {
+    console.log("Updating field:", field, "with value:", value);
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -31,6 +32,7 @@ export default function ExercisePage() {
   };
 
   const handleSubmit = async () => {
+    console.log("Submitting form with data:", formData);
     try {
       const result = await generateExercises(formData);
       if (result) {
