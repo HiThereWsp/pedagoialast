@@ -15,33 +15,35 @@ interface CommonFieldsProps {
 export function CommonFields({ formData, handleInputChange }: CommonFieldsProps) {
   return (
     <div className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Niveau de la classe <span className="text-red-500">*</span>
-        </label>
-        <Input
-          placeholder="Par exemple : 6ème, CM2, CE1"
-          value={formData.classLevel}
-          onChange={(e) => handleInputChange("classLevel", e.target.value)}
-          className="w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
-          required
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Niveau de la classe <span className="text-red-500">*</span>
+          </label>
+          <Input
+            placeholder="Par exemple : 6ème, CM2, CE1"
+            value={formData.classLevel}
+            onChange={(e) => handleInputChange("classLevel", e.target.value)}
+            className="w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Nombre de séances <span className="text-red-500">*</span>
+          </label>
+          <Input
+            type="number"
+            min="1"
+            required
+            placeholder="Exemple : 5"
+            value={formData.totalSessions}
+            onChange={(e) => handleInputChange("totalSessions", e.target.value)}
+            className="w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
+          />
+        </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Nombre de séances <span className="text-red-500">*</span>
-        </label>
-        <Input
-          type="number"
-          min="1"
-          required
-          placeholder="Exemple : 5"
-          value={formData.totalSessions}
-          onChange={(e) => handleInputChange("totalSessions", e.target.value)}
-          className="w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
-        />
-      </div>
-      <div className="mt-8">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Instructions supplémentaires (facultatif)
         </label>
