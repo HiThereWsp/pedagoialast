@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo } from 'react';
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +31,10 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     // Fonction utilitaire pour extraire le contenu entre deux marqueurs
     const extractContent = (text: string, startMarker: string, endMarkers: string[]): string => {
       const startIndex = text.indexOf(startMarker);
-      if (startIndex === -1) return '';
+      if (startIndex === -1) {
+        console.log(`❌ Marqueur "${startMarker}" non trouvé`);
+        return '';
+      }
 
       const contentStart = startIndex + startMarker.length;
       let contentEnd = text.length;
@@ -44,25 +46,28 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
         }
       }
 
-      return text.substring(contentStart, contentEnd).trim();
+      const content = text.substring(contentStart, contentEnd).trim();
+      console.log(`✅ Contenu extrait pour "${startMarker}" :`, content.substring(0, 50) + "...");
+      return content;
     };
 
     // Extraire chaque section
-    const studentContent = extractContent(exercises, STUDENT_MARKER, [CORRECTION_MARKER, TEACHER_MARKER]);
-    const correctionContent = extractContent(exercises, CORRECTION_MARKER, [TEACHER_MARKER]);
-    const teacherContent = extractContent(exercises, TEACHER_MARKER, []);
+    const sections = {
+      student: extractContent(exercises, STUDENT_MARKER, [CORRECTION_MARKER, TEACHER_MARKER]),
+      correction: extractContent(exercises, CORRECTION_MARKER, [TEACHER_MARKER]),
+      teacher: extractContent(exercises, TEACHER_MARKER, [])
+    };
 
-    console.log("🔍 Découpage des fiches :", {
-      student: studentContent ? "✅" : "❌",
-      correction: correctionContent ? "✅" : "❌",
-      teacher: teacherContent ? "✅" : "❌"
+    // Log détaillé pour le debugging
+    Object.entries(sections).forEach(([key, content]) => {
+      console.log(`📄 Section ${key}:`, {
+        length: content.length,
+        present: content.length > 0,
+        firstLine: content.split('\n')[0]
+      });
     });
 
-    return {
-      student: studentContent,
-      correction: correctionContent,
-      teacher: teacherContent
-    };
+    return sections;
   }, [exercises]);
 
   const handleFeedback = async (type: 'like' | 'dislike') => {
@@ -108,22 +113,16 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   };
 
   const getActiveContent = () => {
-    switch (activeTab) {
-      case 'student':
-        return splitContent.student;
-      case 'correction':
-        return splitContent.correction;
-      case 'teacher':
-        return splitContent.teacher;
-      default:
-        return '';
+    const content = splitContent[activeTab] || '';
+    if (!content) {
+      return "Aucun contenu n'est disponible pour cette section.";
     }
+    return content;
   };
 
   return (
     <div className="max-w-3xl mx-auto">
       <Card className="overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
-        {/* En-tête avec les onglets */}
         <div className="border-b border-gray-100 p-4">
           <div className="flex gap-2 overflow-x-auto pb-2 mb-2">
             <TabButton
@@ -157,7 +156,6 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           </div>
         </div>
 
-        {/* Contenu principal */}
         <div className="p-4">
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
@@ -166,7 +164,7 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
           ) : (
             <ProgressiveContent
               content={getActiveContent()}
-              className="print:block"
+              className="prose prose-sm max-w-none print:block"
             />
           )}
         </div>

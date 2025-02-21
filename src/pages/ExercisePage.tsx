@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -50,8 +49,8 @@ const ExercisePage = () => {
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
-    numberOfExercises: '3',
-    questionsPerExercise: '5',
+    numberOfExercises: '3', // Gardé en string pour le formulaire
+    questionsPerExercise: '5', // Gardé en string pour le formulaire
     objective: '',
     exerciseType: '',
     additionalInstructions: '',
@@ -128,28 +127,28 @@ const ExercisePage = () => {
   }, [navigate, toast]);
 
   const handleSubmit = async () => {
-    console.log("🔵 Début de la génération et sauvegarde");
+    console.log("🔵 Début de la génération d'exercices");
     
-    const generatedExercises = await generateExercises({
+    const exerciseParams = {
       ...formData,
-      numberOfExercises: parseInt(formData.numberOfExercises) || 3,
-      questionsPerExercise: parseInt(formData.questionsPerExercise) || 5
-    });
+      numberOfExercises: Number(formData.numberOfExercises) || 3,
+      questionsPerExercise: Number(formData.questionsPerExercise) || 5
+    };
+    
+    const generatedExercises = await generateExercises(exerciseParams);
     
     if (generatedExercises) {
       try {
         setCurrentExercise(generatedExercises);
         
-        // Empêcher les doubles sauvegardes
         const currentTime = Date.now();
-        if (lastSaveTimestamp && currentTime - lastSaveTimestamp < 300000) { // 5 minutes
+        if (lastSaveTimestamp && currentTime - lastSaveTimestamp < 300000) {
           return;
         }
         setLastSaveTimestamp(currentTime);
         
         const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
         
-        console.log("🔵 Sauvegarde de l'exercice");
         await saveExercise({
           title,
           content: generatedExercises,
@@ -162,15 +161,12 @@ const ExercisePage = () => {
           specific_needs: formData.specificNeeds
         });
 
-        // Rafraîchir la liste des exercices après la sauvegarde
         await queryClient.invalidateQueries({ queryKey: ['saved-exercises'] });
 
         toast({
           title: "Succès",
           description: "L'exercice a été généré et sauvegardé avec succès"
         });
-
-        console.log("✅ Exercice sauvegardé et historique mis à jour");
       } catch (error) {
         console.error("❌ Erreur lors de la sauvegarde de l'exercice:", error);
         toast({
