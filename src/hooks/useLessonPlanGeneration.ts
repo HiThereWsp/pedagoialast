@@ -1,69 +1,114 @@
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
-import { useMutation } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
 import { useToolMetrics } from '@/hooks/useToolMetrics';
+import { useSavedContent } from '@/hooks/useSavedContent';
 
-interface GenerateLessonPlanParams {
-  subject: string;
+interface LessonPlanFormData {
   classLevel: string;
-  objective: string;
+  additionalInstructions: string;
+  totalSessions: string;
+  subject: string;
+  text: string;
+  lessonPlan: string;
 }
 
 export function useLessonPlanGeneration() {
-  const [generatedContent, setGeneratedContent] = useState<string | null>(null);
+  const { toast } = useToast();
   const { logToolUsage } = useToolMetrics();
+  const { saveLessonPlan } = useSavedContent();
+  
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<LessonPlanFormData>({
+    classLevel: '',
+    additionalInstructions: '',
+    totalSessions: '',
+    subject: '',
+    text: '',
+    lessonPlan: ''
+  });
 
-  const generateMutation = useMutation({
-    mutationFn: async (params: GenerateLessonPlanParams) => {
-      const startTime = Date.now();
-      
-      const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
+  const handleInputChange = useCallback((field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  }, []);
+
+  const formatTitle = useCallback((title: string) => {
+    return title.replace(/^Séquence[\s:-]+/i, '').trim();
+  }, []);
+
+  const resetLessonPlan = useCallback(() => {
+    setFormData(prev => ({
+      ...prev,
+      lessonPlan: ''
+    }));
+  }, []);
+
+  const generateLessonPlan = useCallback(async () => {
+    if (!formData.classLevel || !formData.totalSessions) {
+      toast({
+        variant: "destructive",
+        description: "Veuillez remplir tous les champs obligatoires."
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    const startTime = performance.now();
+
+    try {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
-          subject: params.subject,
-          classLevel: params.classLevel,
-          text: params.objective,
+          classLevel: formData.classLevel,
+          totalSessions: formData.totalSessions,
+          subject: formData.subject,
+          text: formData.text,
+          additionalInstructions: formData.additionalInstructions
         }
       });
 
-      if (error) {
-        console.error('Error generating lesson plan:', error);
-        throw new Error('Erreur lors de la génération de la séquence');
-      }
+      if (functionError) throw functionError;
 
-      const generationTime = Date.now() - startTime;
+      const generationTime = Math.round(performance.now() - startTime);
+      
+      setFormData(prev => ({
+        ...prev,
+        lessonPlan: functionData.lessonPlan
+      }));
 
-      // Log l'utilisation de l'outil
-      await logToolUsage(
-        'lesson_plan',
-        'generate',
-        data.lessonPlan.length,
-        generationTime
-      );
-
-      return data.lessonPlan;
-    },
-    onSuccess: (data) => {
-      setGeneratedContent(data);
-      toast({
-        title: "Succès",
-        description: "Votre séquence a été générée avec succès"
+      await saveLessonPlan({
+        title: formatTitle(`${formData.subject || ''} - ${formData.classLevel}`.trim()),
+        content: functionData.lessonPlan,
+        subject: formData.subject,
+        class_level: formData.classLevel,
+        total_sessions: parseInt(formData.totalSessions),
+        additional_instructions: formData.additionalInstructions
       });
-    },
-    onError: (error) => {
+
+      await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
+
+      toast({
+        description: "Votre séquence a été générée et sauvegardée avec succès !"
+      });
+    } catch (error) {
+      console.error('Error generating lesson plan:', error);
       toast({
         variant: "destructive",
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la génération"
+        description: "Une erreur est survenue lors de la génération de la séquence."
       });
+    } finally {
+      setIsLoading(false);
     }
-  });
+  }, [formData, toast, logToolUsage, saveLessonPlan]);
 
   return {
-    generateLessonPlan: generateMutation.mutate,
-    isGenerating: generateMutation.isPending,
-    generatedContent,
-    setGeneratedContent
+    formData,
+    isLoading,
+    handleInputChange,
+    generateLessonPlan,
+    resetLessonPlan
   };
 }
