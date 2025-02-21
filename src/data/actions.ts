@@ -31,7 +31,7 @@ export const actions: Action[] = [
     icon: Image,
   },
   {
-    title: "Historique de mon contenu",
+    title: "Mes ressources",
     route: "/saved-content",
     icon: BookOpen,
   },
