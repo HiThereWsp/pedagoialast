@@ -1,9 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
-import { BackButton } from "@/components/settings/BackButton";
 import { ScrollCard } from '@/components/exercise/result/ScrollCard';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import { useSavedContent } from '@/hooks/useSavedContent';
@@ -148,13 +147,15 @@ const ExercisePage = () => {
         description="Créez facilement des exercices personnalisés et adaptés avec notre générateur intelligent."
       />
       <div className="container mx-auto px-4 py-8">
-        <BackButton />
-        <div className="text-center mb-8">
+        <Link to="/home" className="block mb-8">
           <img 
             src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
             alt="PedagoIA Logo" 
-            className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
+            className="w-[100px] h-[120px] object-contain mx-auto" 
           />
+        </Link>
+        
+        <div className="text-center mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
             Générateur d'exercices
           </h1>
@@ -186,3 +187,4 @@ const ExercisePage = () => {
 };
 
 export default ExercisePage;
+

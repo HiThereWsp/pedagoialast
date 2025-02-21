@@ -2,7 +2,7 @@
 import { SEO } from "@/components/SEO"
 import { ImageGenerator } from "@/components/image-generation/ImageGenerator"
 import { Image } from "lucide-react"
-import { BackButton } from "@/components/settings/BackButton"
+import { Link } from "react-router-dom"
 import { ContentHistory } from "@/components/history/ContentHistory"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
@@ -54,14 +54,15 @@ export default function ImageGenerationPage() {
         description="Générez des images pour vos contenus pédagogiques avec PedagoIA"
       />
       <div className="container mx-auto py-8">
-        <BackButton />
-        
-        <div className="text-center mb-8">
+        <Link to="/home" className="block mb-8">
           <img 
             src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
             alt="PedagoIA Logo" 
-            className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
+            className="w-[100px] h-[120px] object-contain mx-auto" 
           />
+        </Link>
+        
+        <div className="text-center mb-8">
           <h1 className="text-3xl font-bold">Générateur d'images</h1>
         </div>
         
@@ -91,3 +92,4 @@ export default function ImageGenerationPage() {
     </>
   );
 }
+
