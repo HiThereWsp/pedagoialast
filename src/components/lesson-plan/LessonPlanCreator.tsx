@@ -1,169 +1,111 @@
 
 import React, { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { toast } from "@/hooks/use-toast";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { lessonPlansService } from '@/services/lesson-plans';
-import { useNavigate } from 'react-router-dom';
-import { SEO } from "@/components/SEO";
-import { BackButton } from "@/components/settings/BackButton";
-import { Header } from './components/Header';
-import { LessonPlanForm } from './components/LessonPlanForm';
-import { LessonPlanTable } from './components/LessonPlanTable';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { SUBJECTS } from './constants';
+import { ResultDisplay } from './ResultDisplay';
+import { useLessonPlanGeneration } from '@/hooks/useLessonPlanGeneration';
+import { Loader2, Sparkles } from 'lucide-react';
 
 export const LessonPlanCreator = () => {
   const [formData, setFormData] = useState({
-    title: '',
     subject: '',
     classLevel: '',
-    duration: '',
-    objective: '',
-    materials: [''],
-    activities: [{ id: uuidv4(), description: '', duration: '' }],
-    assessment: '',
-    differentiation: '',
-    notes: ''
-  });
-  const [open, setOpen] = useState(false);
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
-  const { data, isLoading: isLoadingData } = useQuery({
-    queryKey: ['lesson-plans'],
-    queryFn: lessonPlansService.getAll,
+    objective: ''
   });
 
-  const { mutate: createLessonPlan, isLoading: isCreating } = useMutation({
-    mutationFn: lessonPlansService.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['lesson-plans'] });
-      toast({
-        title: "Succès",
-        description: "Le plan de leçon a été créé avec succès.",
-      });
-      setOpen(false);
-      setFormData({
-        title: '',
-        subject: '',
-        classLevel: '',
-        duration: '',
-        objective: '',
-        materials: [''],
-        activities: [{ id: uuidv4(), description: '', duration: '' }],
-        assessment: '',
-        differentiation: '',
-        notes: ''
-      });
-      navigate('/settings');
-    },
-    onError: (error: any) => {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: error.message || "Une erreur est survenue lors de la création du plan de leçon.",
-      });
-    }
-  });
+  const {
+    generateLessonPlan,
+    isGenerating,
+    generatedContent,
+    setGeneratedContent
+  } = useLessonPlanGeneration();
 
-  const handleChange = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    generateLessonPlan(formData);
   };
 
-  const handleAddMaterial = () => {
-    setFormData(prev => ({
-      ...prev,
-      materials: [...prev.materials, '']
-    }));
-  };
-
-  const handleRemoveMaterial = (index: number) => {
-    setFormData(prev => {
-      const newMaterials = [...prev.materials];
-      newMaterials.splice(index, 1);
-      return { ...prev, materials: newMaterials };
-    });
-  };
-
-  const handleAddActivity = () => {
-    setFormData(prev => ({
-      ...prev,
-      activities: [...prev.activities, { id: uuidv4(), description: '', duration: '' }]
-    }));
-  };
-
-  const handleRemoveActivity = (id: string) => {
-    setFormData(prev => ({
-      ...prev,
-      activities: prev.activities.filter(activity => activity.id !== id)
-    }));
-  };
-
-  const handleSubmit = () => {
-    createLessonPlan({
-      title: formData.title,
-      subject: formData.subject,
-      class_level: formData.classLevel,
-      duration: formData.duration,
-      objective: formData.objective,
-      materials: formData.materials,
-      activities: formData.activities,
-      assessment: formData.assessment,
-      differentiation: formData.differentiation,
-      notes: formData.notes
-    });
-  };
+  if (generatedContent) {
+    return (
+      <ResultDisplay
+        content={generatedContent}
+        onReset={() => setGeneratedContent(null)}
+        type="lesson-plan"
+      />
+    );
+  }
 
   return (
-    <>
-      <SEO
-        title="Créateur de plans de leçon | PedagoIA"
-        description="Créez des plans de leçon personnalisés et adaptés à vos besoins pédagogiques."
-      />
-      <div className="container mx-auto px-4 py-8">
-        <BackButton />
-        <Header />
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow">
-              Créer un plan de leçon
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="subject">Matière</Label>
+          <Select
+            value={formData.subject}
+            onValueChange={(value) => setFormData(prev => ({ ...prev, subject: value }))}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionnez une matière" />
+            </SelectTrigger>
+            <SelectContent>
+              {SUBJECTS.map((subject) => (
+                <SelectItem key={subject} value={subject}>
+                  {subject}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
--w-2xl">
-            <DialogHeader>
-              <DialogTitle>Créer un plan de leçon</DialogTitle>
-              <DialogDescription>
-                Remplissez le formulaire ci-dessous pour créer un nouveau plan de leçon.
-              </DialogDescription>
-            </DialogHeader>
-            <LessonPlanForm
-              formData={formData}
-              onChange={handleChange}
-              onSubmit={handleSubmit}
-              isLoading={isCreating}
-              onAddMaterial={handleAddMaterial}
-              onRemoveMaterial={handleRemoveMaterial}
-              onAddActivity={handleAddActivity}
-              onRemoveActivity={handleRemoveActivity}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="space-y-2">
+          <Label htmlFor="classLevel">Niveau</Label>
+          <Input
+            id="classLevel"
+            value={formData.classLevel}
+            onChange={(e) => setFormData(prev => ({ ...prev, classLevel: e.target.value }))}
+            placeholder="Ex: 6ème, 5ème, 4ème..."
+          />
+        </div>
 
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold mb-4">Mes plans de leçon</h2>
-          <LessonPlanTable data={data} isLoading={isLoadingData} />
+        <div className="space-y-2">
+          <Label htmlFor="objective">Objectifs d'apprentissage</Label>
+          <Textarea
+            id="objective"
+            value={formData.objective}
+            onChange={(e) => setFormData(prev => ({ ...prev, objective: e.target.value }))}
+            placeholder="Décrivez les objectifs d'apprentissage de votre séquence..."
+            className="min-h-[100px]"
+          />
         </div>
       </div>
-    </>
+
+      <Button
+        type="submit"
+        disabled={isGenerating || !formData.subject || !formData.classLevel || !formData.objective}
+        className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Génération en cours...
+          </>
+        ) : (
+          <>
+            <Sparkles className="h-5 w-5" />
+            Générer la séquence
+          </>
+        )}
+      </Button>
+    </form>
   );
 };
