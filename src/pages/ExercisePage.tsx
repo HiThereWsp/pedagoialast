@@ -3,15 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
-import { ResultDisplay } from '@/components/exercise/ResultDisplay';
+import { ScrollCard } from '@/components/exercise/result/ScrollCard';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import { useSavedContent } from '@/hooks/useSavedContent';
 import { SEO } from "@/components/SEO";
 import { ContentHistory } from '@/components/history/ContentHistory';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
-import { format, formatDistance, isToday, isYesterday } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { exercisesService } from '@/services/exercises';
 
 const ExercisePage = () => {
@@ -32,7 +30,6 @@ const ExercisePage = () => {
       return exercises.map(ex => ({
         ...ex,
         type: 'exercise',
-        formattedDate: formatDate(ex.created_at),
         tags: [{
           label: 'Exercice',
           color: '#22C55E',
@@ -42,15 +39,15 @@ const ExercisePage = () => {
       }));
     },
     enabled: !isAuthChecking,
-    gcTime: 5 * 60 * 1000, // 5 minutes
-    staleTime: 30000 // 30 secondes
+    gcTime: 5 * 60 * 1000,
+    staleTime: 30000
   });
   
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
-    numberOfExercises: '3', // Gardé en string pour le formulaire
-    questionsPerExercise: '5', // Gardé en string pour le formulaire
+    numberOfExercises: '3',
+    questionsPerExercise: '5',
     objective: '',
     exerciseType: '',
     additionalInstructions: '',
@@ -62,28 +59,6 @@ const ExercisePage = () => {
     learningStyle: '',
     learningDifficulties: '',
   });
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    if (isToday(date)) {
-      return "Aujourd'hui";
-    }
-    if (isYesterday(date)) {
-      return "Hier";
-    }
-    const distance = formatDistance(date, new Date(), { 
-      addSuffix: true,
-      locale: fr 
-    });
-    return distance.charAt(0).toUpperCase() + distance.slice(1);
-  };
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -125,6 +100,13 @@ const ExercisePage = () => {
       subscription.unsubscribe();
     };
   }, [navigate, toast]);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   const handleSubmit = async () => {
     console.log("🔵 Début de la génération d'exercices");
@@ -212,24 +194,6 @@ const ExercisePage = () => {
           </p>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8">
-            <div className="w-full overflow-x-hidden">
-              <ExerciseForm 
-                formData={formData}
-                handleInputChange={handleInputChange}
-                handleSubmit={handleSubmit}
-                isLoading={isGenerating}
-              />
-            </div>
-            {currentExercise && (
-              <div className="xl:sticky xl:top-8 w-full">
-                <ResultDisplay exercises={currentExercise} />
-              </div>
-            )}
-          </div>
-        </div>
-
         <div className="mt-12">
           {isLoadingExercises ? (
             <div className="flex justify-center">
@@ -249,6 +213,24 @@ const ExercisePage = () => {
               }}
             />
           )}
+        </div>
+
+        <div className="max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 gap-8">
+            <ExerciseForm 
+              formData={formData}
+              handleInputChange={handleInputChange}
+              handleSubmit={handleSubmit}
+              isLoading={isGenerating}
+            />
+            
+            {currentExercise && (
+              <ScrollCard 
+                exercises={currentExercise}
+                onBack={() => setCurrentExercise(null)}
+              />
+            )}
+          </div>
         </div>
       </div>
     </>
