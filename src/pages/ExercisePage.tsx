@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
 import { ResultDisplay } from '@/components/exercise/ResultDisplay';
@@ -12,16 +13,38 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { format, formatDistance, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { exercisesService } from '@/services/exercises';
 
 const ExercisePage = () => {
-  const { isLoading, generateExercises } = useExerciseGeneration();
-  const { saveExercise, getSavedExercises } = useSavedContent();
-  const [savedExercises, setSavedExercises] = useState([]);
+  const { isLoading: isGenerating, generateExercises } = useExerciseGeneration();
+  const { saveExercise } = useSavedContent();
   const [currentExercise, setCurrentExercise] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [lastSaveTimestamp, setLastSaveTimestamp] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Récupération des exercices avec React Query
+  const { data: savedExercises = [], isLoading: isLoadingExercises } = useQuery({
+    queryKey: ['saved-exercises'],
+    queryFn: async () => {
+      const exercises = await exercisesService.getAll();
+      return exercises.map(ex => ({
+        ...ex,
+        type: 'exercise',
+        formattedDate: formatDate(ex.created_at),
+        tags: [{
+          label: 'Exercice',
+          color: '#22C55E',
+          backgroundColor: '#22C55E20',
+          borderColor: '#22C55E4D'
+        }]
+      }));
+    },
+    enabled: !isAuthChecking,
+    staleTime: 30000, // 30 secondes avant revalidation
+    cacheTime: 5 * 60 * 1000, // Cache de 5 minutes
+  });
   
   const [formData, setFormData] = useState({
     subject: '',
@@ -103,36 +126,6 @@ const ExercisePage = () => {
     };
   }, [navigate, toast]);
 
-  useEffect(() => {
-    const loadSavedExercises = async () => {
-      if (isAuthChecking) return;
-      
-      try {
-        const exercises = await getSavedExercises();
-        setSavedExercises(exercises.map(ex => ({
-          ...ex,
-          type: 'exercise',
-          formattedDate: formatDate(ex.created_at),
-          tags: [{
-            label: 'Exercice',
-            color: '#22C55E',
-            backgroundColor: '#22C55E20',
-            borderColor: '#22C55E4D'
-          }]
-        })));
-      } catch (error) {
-        console.error('Error loading saved exercises:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de charger les exercices sauvegardés."
-        });
-      }
-    };
-
-    loadSavedExercises();
-  }, [getSavedExercises, isAuthChecking, toast]);
-
   const handleSubmit = async () => {
     console.log("🔵 Début de la génération et sauvegarde");
     
@@ -163,19 +156,6 @@ const ExercisePage = () => {
           learning_style: formData.learningStyle,
           specific_needs: formData.specificNeeds
         });
-
-        const updatedExercises = await getSavedExercises();
-        setSavedExercises(updatedExercises.map(ex => ({
-          ...ex,
-          type: 'exercise',
-          formattedDate: formatDate(ex.created_at),
-          tags: [{
-            label: 'Exercice',
-            color: '#22C55E',
-            backgroundColor: '#22C55E20',
-            borderColor: '#22C55E4D'
-          }]
-        })));
 
         toast({
           title: "Succès",
@@ -235,7 +215,7 @@ const ExercisePage = () => {
                 formData={formData}
                 handleInputChange={handleInputChange}
                 handleSubmit={handleSubmit}
-                isLoading={isLoading}
+                isLoading={isGenerating}
               />
             </div>
             {currentExercise && (
@@ -247,18 +227,24 @@ const ExercisePage = () => {
         </div>
 
         <div className="mt-12">
-          <ContentHistory
-            title="Mes exercices générés"
-            type="Exercice"
-            items={savedExercises}
-            onItemClick={handleExerciseClick}
-            emptyMessage="Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
-            colorScheme={{
-              color: '#22C55E',
-              backgroundColor: '#22C55E20',
-              borderColor: '#22C55E4D'
-            }}
-          />
+          {isLoadingExercises ? (
+            <div className="flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <ContentHistory
+              title="Mes exercices générés"
+              type="Exercice"
+              items={savedExercises}
+              onItemClick={handleExerciseClick}
+              emptyMessage="Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
+              colorScheme={{
+                color: '#22C55E',
+                backgroundColor: '#22C55E20',
+                borderColor: '#22C55E4D'
+              }}
+            />
+          )}
         </div>
       </div>
     </>
