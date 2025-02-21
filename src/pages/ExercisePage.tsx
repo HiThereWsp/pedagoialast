@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ExerciseForm } from '@/components/exercise/ExerciseForm';
 import { BackButton } from "@/components/settings/BackButton";
 import { ResultDisplay } from '@/components/exercise/ResultDisplay';
@@ -23,6 +23,7 @@ const ExercisePage = () => {
   const [lastSaveTimestamp, setLastSaveTimestamp] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Récupération des exercices avec React Query
   const { data: savedExercises = [], isLoading: isLoadingExercises } = useQuery({
@@ -42,8 +43,8 @@ const ExercisePage = () => {
       }));
     },
     enabled: !isAuthChecking,
-    staleTime: 30000, // 30 secondes avant revalidation
-    cacheTime: 5 * 60 * 1000, // Cache de 5 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30000 // 30 secondes
   });
   
   const [formData, setFormData] = useState({
@@ -129,7 +130,11 @@ const ExercisePage = () => {
   const handleSubmit = async () => {
     console.log("🔵 Début de la génération et sauvegarde");
     
-    const generatedExercises = await generateExercises(formData);
+    const generatedExercises = await generateExercises({
+      ...formData,
+      numberOfExercises: parseInt(formData.numberOfExercises) || 3,
+      questionsPerExercise: parseInt(formData.questionsPerExercise) || 5
+    });
     
     if (generatedExercises) {
       try {
@@ -156,6 +161,9 @@ const ExercisePage = () => {
           learning_style: formData.learningStyle,
           specific_needs: formData.specificNeeds
         });
+
+        // Rafraîchir la liste des exercices après la sauvegarde
+        await queryClient.invalidateQueries({ queryKey: ['saved-exercises'] });
 
         toast({
           title: "Succès",
