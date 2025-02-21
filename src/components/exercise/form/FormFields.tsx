@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -193,6 +192,7 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
   useEffect(() => {
     const selectedPlan = lessonPlans.find(plan => plan.id === value);
     if (selectedPlan) {
+      // On utilise directement le subject de la séquence qui est maintenant une matière générale
       onChange('subject', selectedPlan.subject || '');
       onChange('classLevel', selectedPlan.class_level || '');
     }

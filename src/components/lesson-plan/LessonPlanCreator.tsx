@@ -46,6 +46,25 @@ import { BackButton } from "@/components/settings/BackButton";
 import { useNavigate } from 'react-router-dom';
 import { SEO } from "@/components/SEO";
 
+const SUBJECTS = [
+  "Mathématiques",
+  "Français",
+  "Histoire-Géographie",
+  "Sciences de la Vie et de la Terre",
+  "Physique-Chimie",
+  "Anglais",
+  "Espagnol",
+  "Allemand",
+  "Sciences Économiques et Sociales",
+  "Éducation Physique et Sportive",
+  "Arts Plastiques",
+  "Musique",
+  "Technologie",
+  "Philosophie",
+  "Latin",
+  "Grec"
+];
+
 export const LessonPlanCreator = () => {
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
@@ -204,7 +223,18 @@ export const LessonPlanCreator = () => {
                 <Label htmlFor="subject" className="text-right">
                   Matière
                 </Label>
-                <Input type="text" id="subject" value={subject} onChange={(e) => setSubject(e.target.value)} className="col-span-3" />
+                <Select value={subject} onValueChange={setSubject}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Sélectionnez une matière" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SUBJECTS.map((subj) => (
+                      <SelectItem key={subj} value={subj}>
+                        {subj}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="classLevel" className="text-right">
