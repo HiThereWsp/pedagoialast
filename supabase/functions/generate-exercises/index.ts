@@ -23,19 +23,24 @@ serve(async (req) => {
     console.log('📝 Paramètres reçus:', JSON.stringify(params, null, 2));
 
     const systemPrompt = `Tu es un assistant pédagogique expert qui crée des exercices adaptés au système éducatif français.
-Génère deux sections distinctes avec EXACTEMENT ces marqueurs et dans cet ordre :
+IMPORTANT: Commence directement avec les exercices, sans titre ni introduction.
+Génère deux sections distinctes avec EXACTEMENT ces marqueurs :
 
 FICHE ÉLÈVE
-[Le titre directement, suivi des exercices uniquement. Ne pas mentionner "Titre de la séquence" ni les objectifs.]
+[Exercices uniquement, sans titre ni préambule. PAS de mention de "Titre de la séquence" ou d'objectifs.]
 
 FICHE CORRECTION
-[La correction détaillée de chaque exercice, avec des explications complètes.]`;
+[Correction détaillée de chaque exercice avec explications complètes.]
 
-    const userPrompt = `Crée un ensemble d'exercices de ${params.subject} pour une classe de ${params.classLevel}.
+NE JAMAIS ajouter de texte avant "FICHE ÉLÈVE" ni entre les sections.`;
+
+    const userPrompt = `Crée des exercices de ${params.subject} pour une classe de ${params.classLevel}.
 Objectif principal : ${params.objective}
 ${params.exerciseType ? `Type d'exercices souhaité : ${params.exerciseType}` : ''}
 ${params.specificNeeds ? `Besoins spécifiques : ${params.specificNeeds}` : ''}
-${params.additionalInstructions ? `Instructions supplémentaires : ${params.additionalInstructions}` : ''}`;
+${params.additionalInstructions ? `Instructions supplémentaires : ${params.additionalInstructions}` : ''}
+
+RAPPEL : Commence directement avec "FICHE ÉLÈVE" suivi des exercices, sans titre ni introduction.`;
 
     console.log('📤 Envoi du prompt à Mistral AI');
 
@@ -63,9 +68,16 @@ ${params.additionalInstructions ? `Instructions supplémentaires : ${params.addi
     }
 
     const data = await response.json();
-    const result = data.choices[0].message.content;
+    let result = data.choices[0].message.content;
 
-    // Vérification de la présence des deux sections
+    // Post-traitement pour supprimer tout texte avant "FICHE ÉLÈVE"
+    const studentMarker = "FICHE ÉLÈVE";
+    const markerIndex = result.indexOf(studentMarker);
+    if (markerIndex !== -1) {
+      result = result.substring(markerIndex);
+    }
+
+    // Vérification des sections
     const sections = ['FICHE ÉLÈVE', 'FICHE CORRECTION'];
     for (const section of sections) {
       if (!result.includes(section)) {

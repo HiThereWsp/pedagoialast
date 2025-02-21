@@ -6,6 +6,9 @@ import { ResultDisplay } from "@/components/exercise/ResultDisplay";
 import { SEO } from "@/components/SEO";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { exercisesService } from "@/services/exercises";
+import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 
 export default function ExercisePage() {
   const { toast } = useToast();
@@ -25,6 +28,7 @@ export default function ExercisePage() {
     selectedLessonPlan: '',
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
@@ -39,12 +43,11 @@ export default function ExercisePage() {
       setIsLoading(true);
       console.log("Submitting form data:", formData);
 
-      // Utilisation de supabase.functions.invoke pour appeler la fonction edge
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: formData,
       });
 
-      console.log("Response from generate-exercises:", data); // Log pour debug
+      console.log("Response from generate-exercises:", data);
 
       if (error) {
         console.error("Supabase function error:", error);
@@ -52,7 +55,7 @@ export default function ExercisePage() {
       }
 
       if (!data?.exercises) {
-        console.error("No exercises in response:", data); // Log pour debug
+        console.error("No exercises in response:", data);
         throw new Error('Aucun exercice n\'a été généré');
       }
 
@@ -71,6 +74,43 @@ export default function ExercisePage() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!generatedContent) return;
+
+    try {
+      setIsSaving(true);
+      
+      // Formatage des données selon SaveExerciseParams
+      const saveParams = {
+        title: `Exercices de ${formData.subject} - ${formData.classLevel}`,
+        content: generatedContent,
+        subject: formData.subject,
+        class_level: formData.classLevel,
+        exercise_type: formData.exerciseType || undefined,
+        difficulty_level: 'standard',
+        exercise_category: 'standard',
+        student_profile: formData.studentProfile || undefined,
+        specific_needs: formData.specificNeeds || undefined
+      };
+
+      await exercisesService.save(saveParams);
+      
+      toast({
+        title: "Sauvegardé !",
+        description: "Les exercices ont été sauvegardés avec succès.",
+      });
+    } catch (error) {
+      console.error("Error saving exercises:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde des exercices.",
+      });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -104,6 +144,16 @@ export default function ExercisePage() {
         />
         {generatedContent && (
           <div className="mt-8">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isSaving ? "Sauvegarde..." : "Sauvegarder les exercices"}
+              </Button>
+            </div>
             <ResultDisplay exercises={generatedContent} />
           </div>
         )}
