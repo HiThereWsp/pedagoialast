@@ -73,7 +73,9 @@ export const ScrollCard = ({ exercises, onBack, showCorrection = true, className
 
   const handleFeedback = (isPositive: boolean) => {
     toast({
-      description: isPositive ? "Merci pour votre retour positif !" : "Merci pour votre retour, nous allons nous améliorer.",
+      description: isPositive 
+        ? "Merci pour votre retour positif !" 
+        : "Merci pour votre retour, nous allons nous améliorer.",
     });
   };
 

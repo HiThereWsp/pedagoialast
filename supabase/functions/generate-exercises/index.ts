@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
@@ -6,12 +7,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const MISTRAL_API_KEY = Deno.env.get('MISTRAL_API_KEY');
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const MISTRAL_API_KEY = Deno.env.get('MISTRAL_API_KEY');
   if (!MISTRAL_API_KEY) {
     throw new Error('Clé API Mistral non configurée');
   }
@@ -21,28 +23,15 @@ serve(async (req) => {
     console.log('📝 Paramètres reçus:', JSON.stringify(params, null, 2));
 
     const systemPrompt = `Tu es un assistant pédagogique expert qui crée des exercices adaptés au système éducatif français.
-Génère deux fiches distinctes avec EXACTEMENT ces titres et dans cet ordre :
+Génère deux sections distinctes avec EXACTEMENT ces marqueurs et dans cet ordre :
 
-"FICHE ÉLÈVE"
-[Génère directement :
-- Le titre de la séquence
-- Les objectifs d'apprentissage
-- Les exercices
-- Espace pour les réponses]
-
-"FICHE CORRECTION"
-[Génère directement :
-- Les réponses détaillées
-- Les explications pédagogiques
-- Les points clés à retenir]
-
-Format REQUIS :
 FICHE ÉLÈVE
-[contenu]
-FICHE CORRECTION
-[contenu]`;
+[Le titre directement, suivi des exercices uniquement. Ne pas mentionner "Titre de la séquence" ni les objectifs.]
 
-    const userPrompt = `Crée un ensemble complet d'exercices de ${params.subject} pour une classe de ${params.classLevel}.
+FICHE CORRECTION
+[La correction détaillée de chaque exercice, avec des explications complètes.]`;
+
+    const userPrompt = `Crée un ensemble d'exercices de ${params.subject} pour une classe de ${params.classLevel}.
 Objectif principal : ${params.objective}
 ${params.exerciseType ? `Type d'exercices souhaité : ${params.exerciseType}` : ''}
 ${params.specificNeeds ? `Besoins spécifiques : ${params.specificNeeds}` : ''}
