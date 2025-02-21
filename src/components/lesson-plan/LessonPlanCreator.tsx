@@ -240,25 +240,27 @@ export function LessonPlanCreator() {
     mutate(lessonPlanData);
   };
 
-  const filteredItems = lessonPlans?.filter((item) => {
-    if (!item) return false;
-    
-    const searchTerm = search.toLowerCase();
-    const itemTitle = item.title?.toLowerCase() || '';
-    const itemSubject = item.subject?.toLowerCase() || '';
+  const filteredItems = lessonPlans && Array.isArray(lessonPlans) 
+    ? lessonPlans.filter((item) => {
+        if (!item) return false;
+        
+        const searchTerm = search.toLowerCase();
+        const itemTitle = item.title?.toLowerCase() || '';
+        const itemSubject = item.subject?.toLowerCase() || '';
 
-    const dateMatches = !date?.from || !date?.to ||
-      (new Date(item.created_at) >= date.from && new Date(item.created_at) <= date.to);
+        const dateMatches = !date?.from || !date?.to ||
+          (new Date(item.created_at) >= date.from && new Date(item.created_at) <= date.to);
 
-    const tagMatches = selectedTags.length === 0 ||
-      (item.tags && item.tags.some(tag => selectedTags.includes(tag.label)));
+        const tagMatches = selectedTags.length === 0 ||
+          (item.tags && item.tags.some(tag => selectedTags.includes(tag.label)));
 
-    const searchMatches = searchTerm === '' ||
-      itemTitle.includes(searchTerm) ||
-      itemSubject.includes(searchTerm);
+        const searchMatches = searchTerm === '' ||
+          itemTitle.includes(searchTerm) ||
+          itemSubject.includes(searchTerm);
 
-    return dateMatches && tagMatches && searchMatches;
-  }) || [];
+        return dateMatches && tagMatches && searchMatches;
+      }) 
+    : [];
 
   return (
     <div className="space-y-6">

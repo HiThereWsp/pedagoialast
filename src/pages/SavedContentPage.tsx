@@ -47,42 +47,44 @@ export default function SavedContentPage() {
       const lessonPlans = await getSavedLessonPlans();
       setErrors(prev => ({ ...prev, lessonPlans: undefined }));
       
-      const formattedExercises: SavedContent[] = exercises.map(ex => ({
-        id: ex.id,
-        title: ex.title,
-        content: ex.content,
-        subject: ex.subject,
-        class_level: ex.class_level,
-        created_at: ex.created_at,
-        type: 'exercise',
-        displayType: 'Exercice',
-        tags: [{
-          label: 'Exercice',
-          color: '#22C55E',
-          backgroundColor: '#22C55E20',
-          borderColor: '#22C55E4D'
-        }]
-      }));
+      if (Array.isArray(exercises) && Array.isArray(lessonPlans)) {
+        const formattedExercises: SavedContent[] = exercises.map(ex => ({
+          id: ex.id,
+          title: ex.title,
+          content: ex.content,
+          subject: ex.subject || '',
+          class_level: ex.class_level || '',
+          created_at: ex.created_at,
+          type: 'exercise',
+          displayType: 'Exercice',
+          tags: [{
+            label: 'Exercice',
+            color: '#22C55E',
+            backgroundColor: '#22C55E20',
+            borderColor: '#22C55E4D'
+          }]
+        }));
 
-      const formattedLessonPlans: SavedContent[] = lessonPlans.map(plan => ({
-        id: plan.id,
-        title: plan.title,
-        content: plan.content,
-        subject: plan.subject,
-        class_level: plan.class_level,
-        created_at: plan.created_at,
-        type: 'lesson-plan',
-        displayType: 'Séquence',
-        tags: [{
-          label: 'Séquence',
-          color: '#FF9EBC',
-          backgroundColor: '#FF9EBC20',
-          borderColor: '#FF9EBC4D'
-        }]
-      }));
+        const formattedLessonPlans: SavedContent[] = lessonPlans.map(plan => ({
+          id: plan.id,
+          title: plan.title,
+          content: plan.content,
+          subject: plan.subject || '',
+          class_level: plan.class_level || '',
+          created_at: plan.created_at,
+          type: 'lesson-plan',
+          displayType: 'Séquence',
+          tags: [{
+            label: 'Séquence',
+            color: '#FF9EBC',
+            backgroundColor: '#FF9EBC20',
+            borderColor: '#FF9EBC4D'
+          }]
+        }));
 
-      setContent([...formattedExercises, ...formattedLessonPlans]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+        setContent([...formattedExercises, ...formattedLessonPlans]
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+      }
     } catch (err) {
       console.error("Erreur lors du chargement des contenus:", err);
       if (err instanceof Error) {
