@@ -112,65 +112,52 @@ const ExercisePage = () => {
   const handleSubmit = async () => {
     console.log("🔵 Début de la génération d'exercices");
     
-    try {
-      const exerciseParams = {
-        ...formData,
-        numberOfExercises: formData.numberOfExercises,
-        questionsPerExercise: formData.questionsPerExercise
-      };
-      
-      const generatedExercises = await generateExercises(exerciseParams);
-      
-      if (generatedExercises) {
+    const exerciseParams = {
+      ...formData,
+      numberOfExercises: formData.numberOfExercises,
+      questionsPerExercise: formData.questionsPerExercise
+    };
+    
+    const generatedExercises = await generateExercises(exerciseParams);
+    
+    if (generatedExercises) {
+      try {
         setCurrentExercise(generatedExercises);
         
-        const title = `${formData.subject} - ${formData.classLevel}`;
-        
-        try {
-          await saveExercise({
-            title,
-            content: generatedExercises,
-            subject: formData.subject,
-            class_level: formData.classLevel,
-            exercise_type: formData.exerciseType,
-            exercise_category: formData.specificNeeds ? 'differentiated' : 'standard',
-            student_profile: formData.studentProfile,
-            learning_style: formData.learningStyle,
-            specific_needs: formData.specificNeeds
-          });
-
-          // Force le rafraîchissement immédiat des données
-          await queryClient.invalidateQueries({ queryKey: ['saved-exercises'] });
-          queryClient.refetchQueries({ queryKey: ['saved-exercises'] });
-
-          toast({
-            title: "Succès",
-            description: "L'exercice a été généré et sauvegardé avec succès"
-          });
-        } catch (error: any) {
-          if (error.message && error.message.includes('Limite de contenu')) {
-            toast({
-              variant: "destructive",
-              title: "Limite atteinte",
-              description: "Vous avez atteint la limite de 15 contenus sauvegardés. Veuillez en supprimer avant d'en créer de nouveaux."
-            });
-          } else {
-            console.error("❌ Erreur lors de la sauvegarde de l'exercice:", error);
-            toast({
-              variant: "destructive",
-              title: "Erreur",
-              description: "Une erreur est survenue lors de la sauvegarde de l'exercice"
-            });
-          }
+        const currentTime = Date.now();
+        if (lastSaveTimestamp && currentTime - lastSaveTimestamp < 300000) {
+          return;
         }
+        setLastSaveTimestamp(currentTime);
+        
+        const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
+        
+        await saveExercise({
+          title,
+          content: generatedExercises,
+          subject: formData.subject,
+          class_level: formData.classLevel,
+          exercise_type: formData.exerciseType,
+          exercise_category: formData.specificNeeds ? 'differentiated' : 'standard',
+          student_profile: formData.studentProfile,
+          learning_style: formData.learningStyle,
+          specific_needs: formData.specificNeeds
+        });
+
+        await queryClient.invalidateQueries({ queryKey: ['saved-exercises'] });
+
+        toast({
+          title: "Succès",
+          description: "L'exercice a été généré et sauvegardé avec succès"
+        });
+      } catch (error) {
+        console.error("❌ Erreur lors de la sauvegarde de l'exercice:", error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la sauvegarde de l'exercice"
+        });
       }
-    } catch (error) {
-      console.error("❌ Erreur lors de la génération:", error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la génération de l'exercice"
-      });
     }
   };
 

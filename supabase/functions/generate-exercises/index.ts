@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
@@ -24,17 +25,16 @@ serve(async (req) => {
 Tu dois générer deux fiches distinctes avec EXACTEMENT ces titres et dans cet ordre :
 
 "FICHE ÉLÈVE"
-[Génère directement le contenu avec :
-- Un titre simple et concis
-- Les objectifs d'apprentissage
-- Les exercices (bien numérotés et avec des consignes claires)
-- Espace pour les réponses]
+- Titre de la séquence
+- Objectifs d'apprentissage
+- Consignes claires
+- Exercices numérotés
+- Espace pour les réponses
 
 "FICHE CORRECTION"
-[Génère directement :
-- Les réponses détaillées
-- Les explications pédagogiques
-- Les points clés à retenir]
+- Toutes les réponses détaillées
+- Explications pédagogiques
+- Points clés à retenir
 
 Format REQUIS :
 FICHE ÉLÈVE
