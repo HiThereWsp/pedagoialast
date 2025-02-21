@@ -22,7 +22,7 @@ serve(async (req) => {
     console.log('📝 Paramètres reçus:', JSON.stringify(params, null, 2));
 
     const systemPrompt = `Tu es un assistant pédagogique expert qui crée des exercices adaptés au système éducatif français.
-Tu DOIS ABSOLUMENT générer trois fiches distinctes avec EXACTEMENT ces titres et dans cet ordre :
+Tu dois générer deux fiches distinctes avec EXACTEMENT ces titres et dans cet ordre :
 
 "FICHE ÉLÈVE"
 - Titre de la séquence
@@ -36,24 +36,11 @@ Tu DOIS ABSOLUMENT générer trois fiches distinctes avec EXACTEMENT ces titres 
 - Explications pédagogiques
 - Points clés à retenir
 
-"FICHE PÉDAGOGIQUE"
-- Objectifs d'apprentissage détaillés
-- Compétences travaillées
-- Prérequis nécessaires
-- Points d'attention particuliers
-- Propositions de différenciation
-- Critères d'évaluation
-- Prolongements possibles
-
 Format REQUIS :
 FICHE ÉLÈVE
 [contenu]
 FICHE CORRECTION
-[contenu]
-FICHE PÉDAGOGIQUE
-[contenu]
-
-Ne jamais omettre une des trois fiches.`;
+[contenu]`;
 
     const userPrompt = `Crée un ensemble complet d'exercices de ${params.subject} pour une classe de ${params.classLevel}.
 Objectif principal : ${params.objective}
@@ -89,8 +76,8 @@ ${params.additionalInstructions ? `Instructions supplémentaires : ${params.addi
     const data = await response.json();
     const result = data.choices[0].message.content;
 
-    // Vérification de la présence des trois sections
-    const sections = ['FICHE ÉLÈVE', 'FICHE CORRECTION', 'FICHE PÉDAGOGIQUE'];
+    // Vérification de la présence des deux sections
+    const sections = ['FICHE ÉLÈVE', 'FICHE CORRECTION'];
     for (const section of sections) {
       if (!result.includes(section)) {
         console.error(`❌ Section manquante: ${section}`);
@@ -98,7 +85,7 @@ ${params.additionalInstructions ? `Instructions supplémentaires : ${params.addi
       }
     }
 
-    console.log('✅ Génération réussie avec les trois sections');
+    console.log('✅ Génération réussie avec les deux sections');
     
     return new Response(
       JSON.stringify({ exercises: result }),

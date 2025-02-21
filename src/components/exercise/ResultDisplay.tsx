@@ -11,7 +11,7 @@ interface ResultDisplayProps {
   exercises: string | null;
 }
 
-type Tab = 'student' | 'correction' | 'teacher';
+type Tab = 'student' | 'correction';
 
 export function ResultDisplay({ exercises }: ResultDisplayProps) {
   const { toast } = useToast();
@@ -26,51 +26,32 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     // Définir les marqueurs de séparation
     const STUDENT_MARKER = "FICHE ÉLÈVE";
     const CORRECTION_MARKER = "FICHE CORRECTION";
-    const TEACHER_MARKER = "FICHE PÉDAGOGIQUE";
 
     // Fonction utilitaire pour extraire le contenu entre deux marqueurs
-    const extractContent = (text: string, startMarker: string, endMarkers: string[]): string => {
+    const extractContent = (text: string, startMarker: string, endMarker: string): string => {
       const startIndex = text.indexOf(startMarker);
       if (startIndex === -1) {
-        console.log(`❌ Marqueur "${startMarker}" non trouvé`, 
-          `\nDébut du texte : ${text.substring(0, 100)}...`,
-          `\nMarqueurs disponibles : ${text.match(/FICHE [A-ZÉ]+/g)?.join(', ') || 'aucun'}`
-        );
+        console.log(`❌ Marqueur "${startMarker}" non trouvé`);
         return '';
       }
 
       const contentStart = startIndex + startMarker.length;
       let contentEnd = text.length;
 
-      for (const endMarker of endMarkers) {
-        const endIndex = text.indexOf(endMarker, contentStart);
-        if (endIndex !== -1 && endIndex < contentEnd) {
-          contentEnd = endIndex;
-        }
+      const endIndex = text.indexOf(endMarker, contentStart);
+      if (endIndex !== -1) {
+        contentEnd = endIndex;
       }
 
       const content = text.substring(contentStart, contentEnd).trim();
-      console.log(`✅ Contenu extrait pour "${startMarker}" :`, content.substring(0, 50) + "...");
+      console.log(`✅ Contenu extrait pour "${startMarker}"`, content.substring(0, 50) + "...");
       return content;
     };
 
-    // Extraire chaque section
-    const sections = {
-      student: extractContent(exercises, STUDENT_MARKER, [CORRECTION_MARKER, TEACHER_MARKER]),
-      correction: extractContent(exercises, CORRECTION_MARKER, [TEACHER_MARKER]),
-      teacher: extractContent(exercises, TEACHER_MARKER, [])
+    return {
+      student: extractContent(exercises, STUDENT_MARKER, CORRECTION_MARKER),
+      correction: extractContent(exercises, CORRECTION_MARKER, "")
     };
-
-    // Log détaillé pour le debugging
-    Object.entries(sections).forEach(([key, content]) => {
-      console.log(`📄 Section ${key}:`, {
-        length: content.length,
-        present: content.length > 0,
-        firstLine: content.split('\n')[0]
-      });
-    });
-
-    return sections;
   }, [exercises]);
 
   const handleFeedback = async (type: 'like' | 'dislike') => {
@@ -139,12 +120,6 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
               onClick={() => setActiveTab('correction')}
             >
               Correction
-            </TabButton>
-            <TabButton
-              isActive={activeTab === 'teacher'}
-              onClick={() => setActiveTab('teacher')}
-            >
-              Fiche Pédagogique
             </TabButton>
           </div>
           
