@@ -1,22 +1,24 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Share2 } from 'lucide-react';
+import { Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { ProgressiveContent } from './ProgressiveContent';
 import { useToast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
 
 interface ScrollCardProps {
   exercises: string | null;
   onBack?: () => void;
+  showCorrection?: boolean;
 }
 
-export const ScrollCard = ({ exercises, onBack }: ScrollCardProps) => {
+export const ScrollCard = ({ exercises, onBack, showCorrection = true }: ScrollCardProps) => {
   const [activeTab, setActiveTab] = useState('eleve');
   const { toast } = useToast();
 
   const tabs = [
     { id: 'eleve', label: 'Fiche Élève' },
-    { id: 'correction', label: 'Correction' }
+    ...(showCorrection ? [{ id: 'correction', label: 'Correction' }] : [])
   ];
 
   const splitContent = useMemo(() => {
@@ -46,67 +48,75 @@ export const ScrollCard = ({ exercises, onBack }: ScrollCardProps) => {
     };
   }, [exercises]);
 
-  const handleShare = async () => {
+  const handleCopy = async () => {
     try {
-      await navigator.share({
-        title: 'Exercices générés par PedagoIA',
-        text: exercises || '',
-      });
+      await navigator.clipboard.writeText(exercises || '');
       toast({
-        description: "Merci d'avoir partagé ces exercices !",
+        description: "Contenu copié dans le presse-papier",
       });
-    } catch (err) {
-      try {
-        await navigator.clipboard.writeText(exercises || '');
-        toast({
-          description: "Contenu copié dans le presse-papier",
-        });
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          description: "Erreur lors de la copie du contenu",
-        });
-      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "Erreur lors de la copie du contenu",
+      });
     }
+  };
+
+  const handleFeedback = (isPositive: boolean) => {
+    toast({
+      description: isPositive ? "Merci pour votre retour positif !" : "Merci pour votre retour, nous allons nous améliorer.",
+    });
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
-      {/* Navigation header */}
-      <div className="flex justify-between items-center mb-6 px-2">
-        <button 
-          onClick={onBack}
-          className="flex items-center text-gray-600 hover:text-gray-800"
+      {/* Actions header */}
+      <div className="flex justify-end items-center mb-6 gap-2">
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => handleFeedback(true)}
+          className="text-gray-600 hover:text-gray-800"
         >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Retour
-        </button>
-        <button 
-          onClick={handleShare}
-          className="flex items-center text-gray-600 hover:text-gray-800"
+          <ThumbsUp className="h-5 w-5" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => handleFeedback(false)}
+          className="text-gray-600 hover:text-gray-800"
         >
-          <Share2 className="w-5 h-5 mr-2" />
-          Partager
-        </button>
+          <ThumbsDown className="h-5 w-5" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={handleCopy}
+          className="text-gray-600 hover:text-gray-800"
+        >
+          <Copy className="h-5 w-5" />
+        </Button>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex justify-center mb-6">
-        <div className="inline-flex rounded-lg border border-gray-200 bg-white">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-8 py-3 text-sm font-medium transition-colors duration-200 
-                ${activeTab === tab.id 
-                  ? 'bg-orange-50 text-orange-800 border-orange-300 rounded-lg' 
-                  : 'text-gray-700 hover:bg-gray-50'}`}
-            >
-              {tab.label}
-            </button>
-          ))}
+      {tabs.length > 1 && (
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex rounded-lg border border-gray-200 bg-white">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`px-8 py-3 text-sm font-medium transition-colors duration-200 
+                  ${activeTab === tab.id 
+                    ? 'bg-orange-50 text-orange-800 border-orange-300 rounded-lg' 
+                    : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Main card with scroll content */}
       <Card className="w-full bg-white shadow-lg">
@@ -118,7 +128,7 @@ export const ScrollCard = ({ exercises, onBack }: ScrollCardProps) => {
             />
           )}
 
-          {activeTab === 'correction' && (
+          {activeTab === 'correction' && showCorrection && (
             <ProgressiveContent
               content={splitContent.correction}
               className="prose prose-sm max-w-none print:block"

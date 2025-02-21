@@ -28,7 +28,7 @@ export function LessonPlanCreator() {
         <div className="max-w-6xl mx-auto mt-12">
           <ScrollCard 
             exercises={formData.lessonPlan}
-            onBack={resetLessonPlan}
+            showCorrection={false}
             className="min-h-[800px] p-8 md:p-12 animate-fade-in"
           />
         </div>
