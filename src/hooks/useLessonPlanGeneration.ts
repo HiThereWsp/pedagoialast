@@ -10,6 +10,7 @@ interface LessonPlanFormData {
   additionalInstructions: string;
   totalSessions: string;
   subject: string;
+  subject_matter?: string;
   text: string;
   lessonPlan: string;
 }
@@ -25,6 +26,7 @@ export function useLessonPlanGeneration() {
     additionalInstructions: '',
     totalSessions: '',
     subject: '',
+    subject_matter: '',
     text: '',
     lessonPlan: ''
   });
@@ -48,7 +50,7 @@ export function useLessonPlanGeneration() {
   }, []);
 
   const generateLessonPlan = useCallback(async () => {
-    if (!formData.classLevel || !formData.totalSessions) {
+    if (!formData.classLevel || !formData.totalSessions || !formData.subject_matter) {
       toast({
         variant: "destructive",
         description: "Veuillez remplir tous les champs obligatoires."
@@ -65,6 +67,7 @@ export function useLessonPlanGeneration() {
           classLevel: formData.classLevel,
           totalSessions: formData.totalSessions,
           subject: formData.subject,
+          subject_matter: formData.subject_matter,
           text: formData.text,
           additionalInstructions: formData.additionalInstructions
         }
@@ -80,9 +83,9 @@ export function useLessonPlanGeneration() {
       }));
 
       await saveLessonPlan({
-        title: formatTitle(`${formData.subject || ''} - ${formData.classLevel}`.trim()),
+        title: formatTitle(`${formData.subject_matter} - ${formData.subject || ''} - ${formData.classLevel}`.trim()),
         content: functionData.lessonPlan,
-        subject: formData.subject,
+        subject: formData.subject_matter,
         class_level: formData.classLevel,
         total_sessions: parseInt(formData.totalSessions),
         additional_instructions: formData.additionalInstructions

@@ -5,7 +5,7 @@ export interface SavedContent {
   subject?: string
   class_level?: string
   created_at: string
-  type: 'lesson-plan' | 'exercise' | 'correspondence' | 'Image'
+  type: 'lesson-plan' | 'exercise' | 'Image'
   displayType?: string
   exercise_category?: 'standard' | 'differentiated'
   tags: Array<{
