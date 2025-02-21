@@ -192,7 +192,7 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
   useEffect(() => {
     const selectedPlan = lessonPlans.find(plan => plan.id === value);
     if (selectedPlan) {
-      onChange('subject', selectedPlan.subject || '');
+      onChange('subject', selectedPlan.subject_matter || '');
       onChange('classLevel', selectedPlan.class_level || '');
     }
   }, [value, lessonPlans, onChange]);
@@ -223,15 +223,15 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
 
       {value && value !== "none" && (
         <Card className="p-4 bg-gray-50">
-          <div className="prose prose-sm max-w-none max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+          <div className="prose prose-sm max-w-none max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 select-text user-select-text">
             <ReactMarkdown
               components={{
-                h1: ({ children }) => <h1 className="text-base font-bold mb-2">{children}</h1>,
-                h2: ({ children }) => <h2 className="text-sm font-semibold mb-2">{children}</h2>,
-                h3: ({ children }) => <h3 className="text-sm font-medium mb-1">{children}</h3>,
-                p: ({ children }) => <p className="text-sm mb-2 text-gray-700">{children}</p>,
-                ul: ({ children }) => <ul className="list-disc pl-4 mb-2 text-sm">{children}</ul>,
-                li: ({ children }) => <li className="text-gray-700 text-sm">{children}</li>,
+                h1: ({ children }) => <h1 className="text-base font-bold mb-2 text-left">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-sm font-semibold mb-2 text-left">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-sm font-medium mb-1 text-left">{children}</h3>,
+                p: ({ children }) => <p className="text-sm mb-2 text-gray-700 text-left whitespace-pre-wrap">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc pl-4 mb-2 text-sm text-left">{children}</ul>,
+                li: ({ children }) => <li className="text-gray-700 text-sm text-left">{children}</li>,
               }}
             >
               {lessonPlans.find(plan => plan.id === value)?.content || ''}
