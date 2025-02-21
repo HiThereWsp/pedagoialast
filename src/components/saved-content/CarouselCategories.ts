@@ -1,6 +1,21 @@
 
 import { type SavedContent } from "@/types/saved-content"
 
+export const exerciseCategories = {
+  standard: {
+    label: 'Standard',
+    color: '#22C55E',
+    backgroundColor: '#22C55E20',
+    borderColor: '#22C55E4D'
+  },
+  differentiated: {
+    label: 'Différencié',
+    color: '#9333EA',
+    backgroundColor: '#9333EA20',
+    borderColor: '#9333EA4D'
+  }
+} as const;
+
 export const carouselCategories = [
   {
     type: 'lesson-plan' as const,
@@ -33,6 +48,17 @@ export const carouselCategories = [
       color: '#F2FCE2',
       backgroundColor: '#F2FCE220',
       borderColor: '#F2FCE24D'
+    }
+  },
+  {
+    type: 'correspondence' as const,
+    title: 'Mes correspondances',
+    displayType: 'Correspondance',
+    emptyMessage: "Vous n'avez pas encore créé de correspondance.",
+    colorScheme: {
+      color: '#9b87f5',
+      backgroundColor: '#9b87f520',
+      borderColor: '#9b87f54D'
     }
   }
 ] as const;
