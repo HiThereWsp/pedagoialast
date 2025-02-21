@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -82,8 +81,11 @@ export function useLessonPlanGeneration() {
         lessonPlan: functionData.lessonPlan
       }));
 
+      // Sauvegarde automatique
+      const title = formatTitle(`${formData.subject_matter} - ${formData.subject || ''} - ${formData.classLevel}`.trim());
+      
       await saveLessonPlan({
-        title: formatTitle(`${formData.subject_matter} - ${formData.subject || ''} - ${formData.classLevel}`.trim()),
+        title,
         content: functionData.lessonPlan,
         subject: formData.subject_matter,
         class_level: formData.classLevel,
@@ -94,7 +96,7 @@ export function useLessonPlanGeneration() {
       await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
 
       toast({
-        description: "Votre séquence a été générée et sauvegardée avec succès !"
+        description: "🎉 Votre séquence a été générée et sauvegardée dans 'Mes ressources' !"
       });
     } catch (error) {
       console.error('Error generating lesson plan:', error);

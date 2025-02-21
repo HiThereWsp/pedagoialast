@@ -10,9 +10,11 @@ interface ScrollCardProps {
   exercises: string | null;
   onBack?: () => void;
   showCorrection?: boolean;
+  className?: string;
+  customClass?: string;
 }
 
-export const ScrollCard = ({ exercises, onBack, showCorrection = true }: ScrollCardProps) => {
+export const ScrollCard = ({ exercises, onBack, showCorrection = true, className, customClass }: ScrollCardProps) => {
   const [activeTab, setActiveTab] = useState('eleve');
   const { toast } = useToast();
 
@@ -69,7 +71,7 @@ export const ScrollCard = ({ exercises, onBack, showCorrection = true }: ScrollC
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
+    <div className={`w-full max-w-4xl mx-auto p-4 ${className || ''}`}>
       {/* Actions header */}
       <div className="flex justify-end items-center mb-6 gap-2">
         <Button 
@@ -120,18 +122,18 @@ export const ScrollCard = ({ exercises, onBack, showCorrection = true }: ScrollC
 
       {/* Main card with scroll content */}
       <Card className="w-full bg-white shadow-lg">
-        <CardContent className="h-[600px] overflow-y-auto p-8">
+        <CardContent className="h-[600px] md:h-[800px] lg:h-[900px] overflow-y-auto p-8">
           {activeTab === 'eleve' && (
             <ProgressiveContent
               content={splitContent.student}
-              className="prose prose-sm max-w-none print:block"
+              className={`prose prose-sm max-w-none print:block ${customClass || ''}`}
             />
           )}
 
           {activeTab === 'correction' && showCorrection && (
             <ProgressiveContent
               content={splitContent.correction}
-              className="prose prose-sm max-w-none print:block"
+              className={`prose prose-sm max-w-none print:block ${customClass || ''}`}
             />
           )}
         </CardContent>
