@@ -4,6 +4,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GenerateExerciseForm } from './form/GenerateExerciseForm';
 import { DifferentiateExerciseForm } from './form/DifferentiateExerciseForm';
+import { FormFields } from './form/FormFields';
 
 interface ExerciseFormProps {
   formData: {
@@ -19,6 +20,7 @@ interface ExerciseFormProps {
     originalExercise: string;
     studentProfile: string;
     learningDifficulties: string;
+    selectedLessonPlan?: string;
   };
   handleInputChange: (field: string, value: string) => void;
   handleSubmit: () => Promise<void>;
@@ -52,6 +54,7 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
       </div>
 
       <div className="space-y-6">
+        {!isDifferentiation && <FormFields.LessonPlanSelect value={formData.selectedLessonPlan || ''} onChange={handleInputChange} />}
         {isDifferentiation ? (
           <DifferentiateExerciseForm formData={formData} handleInputChange={handleInputChange} />
         ) : (

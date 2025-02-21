@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
-import { ThumbsDown, Heart, Copy } from "lucide-react";
+import { ThumbsDown, Heart, Copy, ArrowRightCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
+import { useNavigate } from 'react-router-dom';
 
 interface ResultDisplayProps {
   lessonPlan: string | undefined;
@@ -20,6 +21,7 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const navigate = useNavigate();
 
   if (!lessonPlan) return null;
 
@@ -76,6 +78,15 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
     setFeedback("");
   };
 
+  const handleCreateExercise = () => {
+    // Stocker temporairement la séquence dans le localStorage
+    localStorage.setItem('selectedLessonPlan', lessonPlan);
+    navigate('/exercise');
+    toast({
+      description: "Redirection vers la création d'exercice",
+    });
+  };
+
   return (
     <>
       <Card className="relative bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
@@ -116,7 +127,7 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
             </button>
           </div>
         </div>
-        <div className="prose prose-sm max-w-none">
+        <div className="prose prose-sm max-w-none mb-6">
           <ReactMarkdown
             components={{
               h1: ({ children }) => (
@@ -158,6 +169,17 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
           >
             {lessonPlan}
           </ReactMarkdown>
+        </div>
+
+        {/* Nouveau bouton pour créer un exercice */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <Button
+            onClick={handleCreateExercise}
+            className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-3 rounded-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-sm hover:shadow-md group"
+          >
+            <ArrowRightCircle className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            Créer un exercice à partir de cette séquence
+          </Button>
         </div>
       </Card>
 

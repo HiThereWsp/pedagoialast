@@ -1,6 +1,9 @@
 import React from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { lessonPlansService } from "@/services/lesson-plans";
 
 interface FieldProps {
   value: string;
@@ -174,6 +177,41 @@ const StudentProfile = ({ value, onChange }: FieldProps) => (
   />
 );
 
+// Ajout du nouveau composant pour la sélection de séquence
+const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
+  const { data: lessonPlans = [] } = useQuery({
+    queryKey: ['saved-lesson-plans'],
+    queryFn: async () => {
+      const plans = await lessonPlansService.getAll();
+      return plans;
+    }
+  });
+
+  return (
+    <div className="mb-6">
+      <label className="block text-sm font-medium text-gray-700 mb-2">
+        Séquence pédagogique (optionnel)
+      </label>
+      <Select
+        value={value}
+        onValueChange={(val) => onChange('selectedLessonPlan', val)}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Sélectionner une séquence..." />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">Aucune séquence</SelectItem>
+          {lessonPlans.map((plan) => (
+            <SelectItem key={plan.id} value={plan.id}>
+              {plan.title}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+};
+
 export const FormFields = {
   Subject,
   ClassLevel,
@@ -185,4 +223,5 @@ export const FormFields = {
   OriginalExercise,
   StudentProfile,
   LearningDifficulties,
+  LessonPlanSelect,
 };
