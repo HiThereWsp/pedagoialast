@@ -1,25 +1,14 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GenerateExerciseForm } from './form/GenerateExerciseForm';
 import { DifferentiateExerciseForm } from './form/DifferentiateExerciseForm';
+import type { ExerciseFormData } from "@/hooks/useExerciseGeneration";
 
 interface ExerciseFormProps {
-  formData: {
-    subject: string;
-    classLevel: string;
-    numberOfExercises: string;
-    questionsPerExercise: string;
-    objective: string;
-    exerciseType: string;
-    additionalInstructions: string;
-    specificNeeds: string;
-    challenges: string;
-    originalExercise: string;
-    studentProfile: string;
-    learningDifficulties: string;
-  };
+  formData: ExerciseFormData;
   handleInputChange: (field: string, value: string) => void;
   handleSubmit: () => Promise<void>;
   isLoading: boolean;

@@ -12,83 +12,30 @@ export interface ExerciseFormData {
   exerciseType: string;
   additionalInstructions: string;
   specificNeeds: string;
-  originalExercise: string;
-  studentProfile: string;
-  learningDifficulties: string;
-  strengths?: string;
-  challenges?: string;
-  learningStyle?: string;
-}
-
-export interface GenerationResult {
-  content: string;
-  title: string;
-  metadata: {
-    subject: string;
-    classLevel: string;
-    exerciseType: string;
-    specificNeeds: string;
-  };
+  challenges: string;
+  originalExercise?: string;
+  studentProfile?: string;
+  learningDifficulties?: string;
 }
 
 export function useExerciseGeneration() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateFormData = (formData: ExerciseFormData, isDifferentiation: boolean) => {
-    if (!formData.subject.trim()) {
-      toast({
-        title: "Matière requise",
-        description: "Veuillez spécifier la matière",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (!formData.classLevel.trim()) {
-      toast({
-        title: "Niveau requis",
-        description: "Veuillez spécifier le niveau de la classe",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (!formData.objective.trim()) {
-      toast({
-        title: "Objectif requis",
-        description: "Veuillez spécifier l'objectif de l'exercice",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (isDifferentiation && !formData.originalExercise.trim()) {
-      toast({
-        title: "Exercice original requis",
-        description: "Veuillez fournir l'exercice à différencier",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const generateExercises = async (formData: ExerciseFormData, isDifferentiation: boolean = false): Promise<string | null> => {
-    if (!validateFormData(formData, isDifferentiation)) {
+  const generateExercises = async (formData: ExerciseFormData): Promise<string | null> => {
+    if (!validateFormData(formData)) {
       return null;
     }
 
     setIsLoading(true);
-    console.log("🔵 Début de la génération d'exercices avec Mistral AI");
+    console.log("🔵 Début de la génération d'exercices");
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
-          isDifferentiation,
-          specificNeeds: formData.specificNeeds.trim(),
+          numberOfExercises: formData.numberOfExercises.toString(),
+          questionsPerExercise: formData.questionsPerExercise.toString()
         }
       });
 
@@ -115,6 +62,22 @@ export function useExerciseGeneration() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const validateFormData = (formData: ExerciseFormData): boolean => {
+    const requiredFields = ['subject', 'classLevel', 'objective'];
+    const missingFields = requiredFields.filter(field => !formData[field as keyof ExerciseFormData]?.trim());
+
+    if (missingFields.length > 0) {
+      toast({
+        title: "Champs requis",
+        description: `Veuillez remplir les champs suivants : ${missingFields.join(', ')}`,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    return true;
   };
 
   return {
