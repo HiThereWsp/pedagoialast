@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveLessonPlanParams } from "@/types/saved-content"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "@/hooks/use-toast"
 
 export const lessonPlansService = {
   async save(params: SaveLessonPlanParams) {
@@ -45,6 +45,10 @@ export const lessonPlansService = {
       console.error('Erreur lors de la sauvegarde:', err)
       throw err
     }
+  },
+
+  async create(params: SaveLessonPlanParams) {
+    return this.save(params);
   },
 
   async getAll() {
