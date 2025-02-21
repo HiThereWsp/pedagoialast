@@ -15,6 +15,19 @@ export function ProgressiveContent({ content, className }: ProgressiveContentPro
     setIsLoaded(true);
   }, []);
 
+  // Fonction pour nettoyer le Markdown
+  const cleanMarkdown = (text: string) => {
+    // Enlever les ** superflus au début du texte
+    let cleaned = text.replace(/^\*\*/, '');
+    // Enlever les ** superflus à la fin du texte
+    cleaned = cleaned.replace(/\*\*$/, '');
+    // Remplacer les séries de ** par des simples *
+    cleaned = cleaned.replace(/\*\*\*\*/g, '**');
+    // Nettoyer les lignes vides avec des **
+    cleaned = cleaned.replace(/^\*\*\s*\*\*$/gm, '');
+    return cleaned;
+  };
+
   return (
     <div className={cn(
       "prose prose-sm max-w-none transition-opacity duration-500",
@@ -50,7 +63,7 @@ export function ProgressiveContent({ content, className }: ProgressiveContentPro
           ),
         }}
       >
-        {content}
+        {cleanMarkdown(content)}
       </ReactMarkdown>
     </div>
   );

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +14,9 @@ export interface ExerciseFormData {
   originalExercise: string;
   studentProfile: string;
   learningDifficulties: string;
+  strengths?: string;
+  challenges?: string;
+  learningStyle?: string;
 }
 
 export interface GenerationResult {

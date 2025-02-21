@@ -32,7 +32,10 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
     const extractContent = (text: string, startMarker: string, endMarkers: string[]): string => {
       const startIndex = text.indexOf(startMarker);
       if (startIndex === -1) {
-        console.log(`❌ Marqueur "${startMarker}" non trouvé`);
+        console.log(`❌ Marqueur "${startMarker}" non trouvé`, 
+          `\nDébut du texte : ${text.substring(0, 100)}...`,
+          `\nMarqueurs disponibles : ${text.match(/FICHE [A-ZÉ]+/g)?.join(', ') || 'aucun'}`
+        );
         return '';
       }
 
