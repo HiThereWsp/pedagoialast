@@ -177,7 +177,7 @@ const StudentProfile = ({ value, onChange }: FieldProps) => (
   />
 );
 
-// Ajout du nouveau composant pour la sélection de séquence
+// Modification du composant LessonPlanSelect
 const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
   const { data: lessonPlans = [] } = useQuery({
     queryKey: ['saved-lesson-plans'],
@@ -193,14 +193,14 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
         Séquence pédagogique (optionnel)
       </label>
       <Select
-        value={value}
-        onValueChange={(val) => onChange('selectedLessonPlan', val)}
+        value={value || "none"}
+        onValueChange={(val) => onChange('selectedLessonPlan', val === "none" ? "" : val)}
       >
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Sélectionner une séquence..." />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">Aucune séquence</SelectItem>
+          <SelectItem value="none">Aucune séquence</SelectItem>
           {lessonPlans.map((plan) => (
             <SelectItem key={plan.id} value={plan.id}>
               {plan.title}
