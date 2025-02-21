@@ -1,28 +1,89 @@
-
-import React, { useState, useCallback } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Share2 } from "lucide-react";
+import React, { useState, useCallback, useMemo } from 'react';
+import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { FeedbackButtons } from './result/FeedbackButtons';
+import { ShareButton } from './result/ShareButton';
+import { TabButton } from './result/TabButton';
+import { ProgressiveContent } from './result/ProgressiveContent';
+import { Loader2 } from "lucide-react";
 
 interface ResultDisplayProps {
   exercises: string | null;
 }
 
+type Tab = 'student' | 'correction';
+
 export function ResultDisplay({ exercises }: ResultDisplayProps) {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('eleve');
+  const [activeTab, setActiveTab] = useState<Tab>('student');
+  const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   if (!exercises) return null;
 
-  const tabs = [
-    { id: 'eleve', label: 'Fiche Élève' },
-    { id: 'correction', label: 'Correction' }
-  ];
+  const splitContent = useMemo(() => {
+    // Définir les marqueurs de séparation
+    const STUDENT_MARKER = "FICHE ÉLÈVE";
+    const CORRECTION_MARKER = "FICHE CORRECTION";
+
+    // Fonction utilitaire pour extraire le contenu entre deux marqueurs
+    const extractContent = (text: string, startMarker: string, endMarker: string): string => {
+      const startIndex = text.indexOf(startMarker);
+      if (startIndex === -1) {
+        console.log(`❌ Marqueur "${startMarker}" non trouvé`);
+        return '';
+      }
+
+      const contentStart = startIndex + startMarker.length;
+      let contentEnd = text.length;
+
+      const endIndex = text.indexOf(endMarker, contentStart);
+      if (endIndex !== -1) {
+        contentEnd = endIndex;
+      }
+
+      const content = text.substring(contentStart, contentEnd).trim();
+      console.log(`✅ Contenu extrait pour "${startMarker}"`, content.substring(0, 50) + "...");
+      return content;
+    };
+
+    return {
+      student: extractContent(exercises, STUDENT_MARKER, CORRECTION_MARKER),
+      correction: extractContent(exercises, CORRECTION_MARKER, "")
+    };
+  }, [exercises]);
+
+  const handleFeedback = async (type: 'like' | 'dislike') => {
+    const score = type === 'like' ? 1 : -1;
+    setFeedbackScore(score);
+    toast({
+      description: type === 'like' ? "Merci pour votre retour positif !" : "Merci pour votre retour",
+    });
+  };
+
+  const handleCopy = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      await navigator.clipboard.writeText(exercises);
+      setIsCopied(true);
+      toast({
+        description: "Contenu copié dans le presse-papier",
+        duration: 2000,
+      });
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        description: "Erreur lors de la copie du contenu",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [exercises, toast]);
 
   const handleShare = async () => {
     try {
-      setIsLoading(true);
       await navigator.share({
         title: 'Exercices générés par Pedagoia',
         text: exercises,
@@ -31,83 +92,60 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
         description: "Merci d'avoir partagé ces exercices !",
       });
     } catch (err) {
-      try {
-        await navigator.clipboard.writeText(exercises);
-        toast({
-          description: "Contenu copié dans le presse-papier",
-        });
-      } catch (clipErr) {
-        toast({
-          variant: "destructive",
-          description: "Erreur lors de la copie du contenu",
-        });
-      }
-    } finally {
-      setIsLoading(false);
+      handleCopy();
     }
   };
 
+  const getActiveContent = () => {
+    const content = splitContent[activeTab] || '';
+    if (!content) {
+      return "Aucun contenu n'est disponible pour cette section.";
+    }
+    return content;
+  };
+
   return (
-    <div className="w-full max-w-4xl mx-auto p-4">
-      {/* Navigation header */}
-      <div className="flex justify-between items-center mb-6 px-2">
-        <button className="flex items-center text-gray-600 hover:text-gray-800">
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Retour
-        </button>
-        <button 
-          onClick={handleShare}
-          className="flex items-center text-gray-600 hover:text-gray-800"
-        >
-          <Share2 className="w-5 h-5 mr-2" />
-          Partager
-        </button>
-      </div>
-
-      {/* Tabs Navigation */}
-      <div className="flex justify-center mb-6">
-        <div className="inline-flex rounded-lg border border-gray-200 bg-white">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`px-8 py-3 text-sm font-medium transition-colors duration-200 
-                ${activeTab === tab.id 
-                  ? 'bg-orange-50 text-orange-800 border-orange-300 rounded-lg' 
-                  : 'text-gray-700 hover:bg-gray-50'}`}
+    <div className="max-w-3xl mx-auto">
+      <Card className="overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div className="border-b border-gray-100 p-4">
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-2">
+            <TabButton
+              isActive={activeTab === 'student'}
+              onClick={() => setActiveTab('student')}
             >
-              {tab.label}
-            </button>
-          ))}
+              Fiche Élève
+            </TabButton>
+            <TabButton
+              isActive={activeTab === 'correction'}
+              onClick={() => setActiveTab('correction')}
+            >
+              Correction
+            </TabButton>
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <FeedbackButtons
+              feedbackScore={feedbackScore}
+              isCopied={isCopied}
+              onFeedback={handleFeedback}
+              onCopy={handleCopy}
+            />
+            <ShareButton onShare={handleShare} />
+          </div>
         </div>
-      </div>
 
-      {/* Main card with scroll content */}
-      <Card className="w-full bg-white shadow-lg">
-        <CardContent className="h-[600px] overflow-y-auto p-8">
-          {activeTab === 'eleve' ? (
-            <>
-              <div className="mb-8 text-center">
-                <h1 className="text-2xl font-bold mb-6">FICHE ÉLÈVE</h1>
-                <div className="w-full border-b border-gray-200 mb-6"></div>
-              </div>
-
-              <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-4">Titre de la séquence</h2>
-                <div className="prose max-w-none">
-                  {exercises}
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="text-center">
-              <h1 className="text-2xl font-bold mb-6">CORRECTION</h1>
-              <div className="prose max-w-none">
-                {exercises}
-              </div>
+        <div className="p-4">
+          {isLoading ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
             </div>
+          ) : (
+            <ProgressiveContent
+              content={getActiveContent()}
+              className="prose prose-sm max-w-none print:block"
+            />
           )}
-        </CardContent>
+        </div>
       </Card>
     </div>
   );

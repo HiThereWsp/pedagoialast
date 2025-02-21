@@ -1,19 +1,19 @@
 export interface SavedContent {
-  id: string;
-  title: string;
-  content: string;
-  subject: string;
-  class_level: string;
-  created_at: string;
-  type: 'lesson-plan' | 'exercise' | 'Image';
-  displayType: string;
-  exercise_category?: 'standard' | 'differentiated';
+  id: string
+  title: string
+  content: string
+  subject?: string
+  class_level?: string
+  created_at: string
+  type: 'lesson-plan' | 'exercise' | 'Image'
+  displayType?: string
+  exercise_category?: 'standard' | 'differentiated'
   tags: Array<{
-    label: string;
-    color: string;
-    backgroundColor: string;
-    borderColor: string;
-  }>;
+    label: string
+    color: string
+    backgroundColor: string
+    borderColor: string
+  }>
 }
 
 export interface LessonPlanData {
