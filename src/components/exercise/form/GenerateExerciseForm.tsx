@@ -23,12 +23,10 @@ export function GenerateExerciseForm({ formData, handleInputChange, isLessonPlan
         <FormFields.Subject 
           value={formData.subject} 
           onChange={handleInputChange}
-          disabled={isLessonPlanSelected}
         />
         <FormFields.ClassLevel 
           value={formData.classLevel} 
           onChange={handleInputChange}
-          disabled={isLessonPlanSelected}
         />
       </div>
       

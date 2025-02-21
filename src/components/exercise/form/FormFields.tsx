@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,7 +22,7 @@ const InputField = ({
   field, 
   required = false,
   type = "text",
-  disabled = false 
+  disabled = false
 }: FieldProps & { 
   label: string, 
   placeholder: string, 
@@ -95,7 +95,7 @@ const LearningDifficulties = ({ value, onChange }: FieldProps) => (
 );
 
 // Specific field components
-const Subject = ({ value, onChange, disabled }: FieldProps) => (
+const Subject = ({ value, onChange }: FieldProps) => (
   <InputField
     label="Matière"
     placeholder="Par exemple : Mathématiques, Français..."
@@ -103,11 +103,10 @@ const Subject = ({ value, onChange, disabled }: FieldProps) => (
     onChange={onChange}
     field="subject"
     required
-    disabled={disabled}
   />
 );
 
-const ClassLevel = ({ value, onChange, disabled }: FieldProps) => (
+const ClassLevel = ({ value, onChange }: FieldProps) => (
   <InputField
     label="Niveau de la classe"
     placeholder="Par exemple : 6ème, CM2..."
@@ -115,7 +114,6 @@ const ClassLevel = ({ value, onChange, disabled }: FieldProps) => (
     onChange={onChange}
     field="classLevel"
     required
-    disabled={disabled}
   />
 );
 
@@ -186,33 +184,33 @@ const StudentProfile = ({ value, onChange }: FieldProps) => (
 
 // Modification du composant LessonPlanSelect
 const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
+  const [lastSelectedPlan, setLastSelectedPlan] = useState<string | null>(null);
+  
   const { data: lessonPlans = [] } = useQuery({
     queryKey: ['saved-lesson-plans'],
     queryFn: async () => {
       const plans = await lessonPlansService.getAll();
-      console.log('Fetched lesson plans:', plans);
       return plans;
     }
   });
 
   useEffect(() => {
+    if (value === lastSelectedPlan) return;
+    
     const selectedPlan = lessonPlans.find(plan => plan.id === value);
-    console.log('Selected plan:', selectedPlan);
     if (selectedPlan) {
-      console.log('Updating subject to:', selectedPlan.subject);
+      setLastSelectedPlan(value);
       onChange('subject', selectedPlan.subject);
       onChange('classLevel', selectedPlan.class_level || '');
     }
-  }, [value, lessonPlans, onChange]);
+  }, [value, lessonPlans, onChange, lastSelectedPlan]);
 
   const handlePlanChange = (newValue: string) => {
     const val = newValue === "none" ? "" : newValue;
     onChange('selectedLessonPlan', val);
     
     if (newValue === "none") {
-      // Réinitialiser les champs et permettre leur édition
-      onChange('subject', '');
-      onChange('classLevel', '');
+      setLastSelectedPlan(null);
     }
   };
 
@@ -242,19 +240,21 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
 
       {value && value !== "none" && (
         <Card className="p-4 bg-gray-50">
-          <div className="prose prose-sm max-w-none max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 select-text user-select-text">
-            <ReactMarkdown
-              components={{
-                h1: ({ children }) => <h1 className="text-base font-bold mb-2 text-left">{children}</h1>,
-                h2: ({ children }) => <h2 className="text-sm font-semibold mb-2 text-left">{children}</h2>,
-                h3: ({ children }) => <h3 className="text-sm font-medium mb-1 text-left">{children}</h3>,
-                p: ({ children }) => <p className="text-sm mb-2 text-gray-700 text-left whitespace-pre-wrap">{children}</p>,
-                ul: ({ children }) => <ul className="list-disc pl-4 mb-2 text-sm text-left">{children}</ul>,
-                li: ({ children }) => <li className="text-gray-700 text-sm text-left">{children}</li>,
-              }}
-            >
-              {lessonPlans.find(plan => plan.id === value)?.content || ''}
-            </ReactMarkdown>
+          <div className="prose prose-sm max-w-none max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pointer-events-auto">
+            <div className="select-text user-select-text">
+              <ReactMarkdown
+                components={{
+                  h1: ({ children }) => <h1 className="text-base font-bold mb-2 text-left select-text">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-sm font-semibold mb-2 text-left select-text">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-sm font-medium mb-1 text-left select-text">{children}</h3>,
+                  p: ({ children }) => <p className="text-sm mb-2 text-gray-700 text-left whitespace-pre-wrap select-text">{children}</p>,
+                  ul: ({ children }) => <ul className="list-disc pl-4 mb-2 text-sm text-left select-text">{children}</ul>,
+                  li: ({ children }) => <li className="text-gray-700 text-sm text-left select-text">{children}</li>,
+                }}
+              >
+                {lessonPlans.find(plan => plan.id === value)?.content || ''}
+              </ReactMarkdown>
+            </div>
           </div>
         </Card>
       )}
