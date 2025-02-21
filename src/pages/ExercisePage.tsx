@@ -44,12 +44,15 @@ export default function ExercisePage() {
         body: formData,
       });
 
+      console.log("Response from generate-exercises:", data); // Log pour debug
+
       if (error) {
         console.error("Supabase function error:", error);
         throw new Error('Erreur lors de la génération des exercices');
       }
 
       if (!data?.exercises) {
+        console.error("No exercises in response:", data); // Log pour debug
         throw new Error('Aucun exercice n\'a été généré');
       }
 
@@ -101,7 +104,7 @@ export default function ExercisePage() {
         />
         {generatedContent && (
           <div className="mt-8">
-            <ResultDisplay content={generatedContent} />
+            <ResultDisplay exercises={generatedContent} />
           </div>
         )}
       </div>
