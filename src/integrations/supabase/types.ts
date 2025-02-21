@@ -919,12 +919,6 @@ export type Database = {
             }
             Returns: unknown
           }
-      check_saved_content_limit: {
-        Args: {
-          user_id_param: string
-        }
-        Returns: boolean
-      }
       generate_report: {
         Args: Record<PropertyKey, never>
         Returns: string
