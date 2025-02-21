@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CommonFields } from './CommonFields';
 import { ResultDisplay } from './ResultDisplay';
@@ -5,33 +6,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TextTab } from './tabs/TextTab';
 import { SubjectTab } from './tabs/SubjectTab';
 import { Button } from "@/components/ui/button";
-import { Wand2, History, ChevronRight } from "lucide-react";
+import { Wand2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
 import { useSavedContent } from "@/hooks/useSavedContent";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import { formatDistanceToNowStrict } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { HistoryCarousel } from '@/components/history/HistoryCarousel';
+import { SavedContent } from '@/types/saved-content';
 
 export function LessonPlanCreator() {
-  const isMobile = useIsMobile();
-  const {
-    toast
-  } = useToast();
-  const {
-    logToolUsage
-  } = useToolMetrics();
-  const {
-    saveLessonPlan,
-    getSavedLessonPlans
-  } = useSavedContent();
+  const { toast } = useToast();
+  const { logToolUsage } = useToolMetrics();
+  const { saveLessonPlan, getSavedLessonPlans } = useSavedContent();
+  
   const [isLoading, setIsLoading] = useState(false);
-  const [savedPlans, setSavedPlans] = useState<any[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [savedPlans, setSavedPlans] = useState<SavedContent[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<SavedContent | null>(null);
   const [formData, setFormData] = useState({
     classLevel: '',
     additionalInstructions: '',
@@ -40,12 +30,14 @@ export function LessonPlanCreator() {
     text: '',
     lessonPlan: ''
   });
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
+
   const loadSavedPlans = async () => {
     try {
       const plans = await getSavedLessonPlans();
@@ -54,20 +46,23 @@ export function LessonPlanCreator() {
       console.error('Error loading saved plans:', error);
     }
   };
-  const handleSelectPlan = (plan: any) => {
+
+  const handleSelectPlan = (plan: SavedContent) => {
     setSelectedPlan(plan);
     setFormData(prev => ({
       ...prev,
       lessonPlan: plan.content,
       classLevel: plan.class_level || '',
       subject: plan.subject || '',
-      totalSessions: plan.total_sessions?.toString() || '',
-      additionalInstructions: plan.additional_instructions || ''
+      totalSessions: '', // Reset totalSessions as it's not in SavedContent type
+      additionalInstructions: ''
     }));
   };
+
   const formatTitle = (title: string) => {
     return title.replace(/^Séquence[\s:-]+/i, '').trim();
   };
+
   const handleGenerate = async () => {
     if (!formData.classLevel || !formData.totalSessions) {
       toast({
@@ -76,13 +71,12 @@ export function LessonPlanCreator() {
       });
       return;
     }
+
     setIsLoading(true);
     const startTime = performance.now();
+
     try {
-      const {
-        data: functionData,
-        error: functionError
-      } = await supabase.functions.invoke('generate-lesson-plan', {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-lesson-plan', {
         body: {
           classLevel: formData.classLevel,
           totalSessions: formData.totalSessions,
@@ -91,14 +85,16 @@ export function LessonPlanCreator() {
           additionalInstructions: formData.additionalInstructions
         }
       });
-      if (functionError) {
-        throw functionError;
-      }
+
+      if (functionError) throw functionError;
+
       const generationTime = Math.round(performance.now() - startTime);
+      
       setFormData(prev => ({
         ...prev,
         lessonPlan: functionData.lessonPlan
       }));
+
       await saveLessonPlan({
         title: formatTitle(`${formData.subject || ''} - ${formData.classLevel}`.trim()),
         content: functionData.lessonPlan,
@@ -107,8 +103,9 @@ export function LessonPlanCreator() {
         total_sessions: parseInt(formData.totalSessions),
         additional_instructions: formData.additionalInstructions
       });
+
       await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
-      await loadSavedPlans(); // Recharger l'historique après la génération
+      await loadSavedPlans();
 
       toast({
         description: "Votre séquence a été générée et sauvegardée avec succès !"
@@ -123,27 +120,20 @@ export function LessonPlanCreator() {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     loadSavedPlans();
   }, []);
-  const getRelativeDate = (date: string) => {
-    return formatDistanceToNowStrict(new Date(date), {
-      addSuffix: true,
-      locale: fr
-    }).replace('dans ', 'il y a ');
-  };
-  const formatPreviewContent = (content: string) => {
-    const cleanContent = content.replace(/^Séquence pédagogique[\s-]*/i, '').replace(/^###\s*/gm, '').replace(/^\s*\*\*/gm, '').replace(/\*\*\s*$/gm, '').trim();
-    return cleanContent;
-  };
 
-  const transformSavedPlansToHistoryItems = (plans: any[]) => {
+  const transformSavedPlansToHistoryItems = (plans: SavedContent[]): SavedContent[] => {
     return plans.map(plan => ({
+      ...plan,
       id: plan.id,
       title: formatTitle(plan.title),
       content: plan.content,
       subject: plan.subject,
       created_at: plan.created_at,
+      type: 'lesson-plan',
       tags: [{
         label: 'Séquence',
         color: '#FF9EBC',
