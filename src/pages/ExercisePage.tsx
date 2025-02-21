@@ -1,11 +1,48 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { ExerciseForm } from "@/components/exercise/ExerciseForm";
 import { ResultDisplay } from "@/components/exercise/ResultDisplay";
 import { SEO } from "@/components/SEO";
 
 export default function ExercisePage() {
+  const [formData, setFormData] = useState({
+    subject: '',
+    classLevel: '',
+    numberOfExercises: '',
+    questionsPerExercise: '',
+    objective: '',
+    exerciseType: '',
+    additionalInstructions: '',
+    specificNeeds: '',
+    challenges: '',
+    originalExercise: '',
+    studentProfile: '',
+    learningDifficulties: '',
+    selectedLessonPlan: '',
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setIsLoading(true);
+      // Logique de soumission à implémenter
+      console.log("Submitting form data:", formData);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       <SEO 
@@ -28,7 +65,12 @@ export default function ExercisePage() {
             Créez des exercices différenciés et adaptés à vos élèves en quelques clics.
           </p>
         </div>
-        <ExerciseForm />
+        <ExerciseForm 
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+        />
       </div>
     </>
   );

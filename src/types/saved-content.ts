@@ -4,6 +4,7 @@ export interface SavedContent {
   title: string
   content: string
   subject?: string
+  subject_matter?: string
   class_level?: string
   created_at: string
   type: 'lesson-plan' | 'exercise' | 'Image' | 'correspondence'
