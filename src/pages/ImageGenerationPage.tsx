@@ -1,12 +1,11 @@
 
-import { SEO } from "@/components/SEO"
-import { ImageGenerator } from "@/components/image-generation/ImageGenerator"
-import { Image } from "lucide-react"
-import { Link } from "react-router-dom"
-import { ContentHistory } from "@/components/history/ContentHistory"
-import { useEffect, useState } from "react"
-import { supabase } from "@/integrations/supabase/client"
-import type { SavedContent } from "@/types/saved-content"
+import { SEO } from "@/components/SEO";
+import { ImageGenerator } from "@/components/image-generation/ImageGenerator";
+import { Link } from "react-router-dom";
+import { ContentHistory } from "@/components/history/ContentHistory";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import type { SavedContent } from "@/types/saved-content";
 
 export default function ImageGenerationPage() {
   const [images, setImages] = useState<SavedContent[]>([]);
@@ -56,9 +55,9 @@ export default function ImageGenerationPage() {
       <div className="container mx-auto py-8">
         <Link to="/home" className="block mb-8">
           <img 
-            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+            src="/lovable-uploads/93d432b8-78fb-4807-ba55-719b6b6dc7ef.png" 
             alt="PedagoIA Logo" 
-            className="w-[100px] h-[120px] object-contain mx-auto" 
+            className="w-[100px] h-[120px] object-contain mx-auto hover:scale-105 transition-transform duration-200" 
           />
         </Link>
         
@@ -66,13 +65,6 @@ export default function ImageGenerationPage() {
           <h1 className="text-3xl font-bold">Générateur d'images</h1>
         </div>
         
-        <div className="text-center mb-12">
-          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-[#FEF7CD] via-[#FFDEE2] to-[#FEC6A1] flex items-center justify-center">
-            <Image className="w-10 h-10 text-[#F97316] animate-pulse" />
-          </div>
-          <p className="text-lg text-gray-600">Qu'est ce que l'on crée aujourd'hui ?</p>
-        </div>
-
         <ImageGenerator />
 
         <div className="mt-12">
@@ -92,4 +84,3 @@ export default function ImageGenerationPage() {
     </>
   );
 }
-

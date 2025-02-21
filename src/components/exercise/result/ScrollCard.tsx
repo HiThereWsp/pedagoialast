@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { ProgressiveContent } from './ProgressiveContent';

@@ -13,9 +13,9 @@ export default function CorrespondencePage() {
       <div className="container mx-auto py-8">
         <Link to="/home" className="block mb-8">
           <img 
-            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+            src="/lovable-uploads/93d432b8-78fb-4807-ba55-719b6b6dc7ef.png" 
             alt="PedagoIA Logo" 
-            className="w-[100px] h-[120px] object-contain mx-auto" 
+            className="w-[100px] h-[120px] object-contain mx-auto hover:scale-105 transition-transform duration-200" 
           />
         </Link>
         <div className="text-center pt-8 pb-4">
@@ -29,6 +29,5 @@ export default function CorrespondencePage() {
         <CorrespondenceGenerator />
       </div>
     </>
-  )
+  );
 }
-

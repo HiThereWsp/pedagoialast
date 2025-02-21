@@ -192,7 +192,7 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
   useEffect(() => {
     const selectedPlan = lessonPlans.find(plan => plan.id === value);
     if (selectedPlan) {
-      onChange('subject', selectedPlan.subject_matter || '');
+      onChange('subject', selectedPlan.subject || '');
       onChange('classLevel', selectedPlan.class_level || '');
     }
   }, [value, lessonPlans, onChange]);
