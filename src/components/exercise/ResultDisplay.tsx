@@ -24,11 +24,44 @@ export function ResultDisplay({ exercises }: ResultDisplayProps) {
   if (!exercises) return null;
 
   const splitContent = useMemo(() => {
-    const parts = exercises.split('FICHE');
+    // Définir les marqueurs de séparation
+    const STUDENT_MARKER = "FICHE ÉLÈVE";
+    const CORRECTION_MARKER = "FICHE CORRECTION";
+    const TEACHER_MARKER = "FICHE PÉDAGOGIQUE";
+
+    // Fonction utilitaire pour extraire le contenu entre deux marqueurs
+    const extractContent = (text: string, startMarker: string, endMarkers: string[]): string => {
+      const startIndex = text.indexOf(startMarker);
+      if (startIndex === -1) return '';
+
+      const contentStart = startIndex + startMarker.length;
+      let contentEnd = text.length;
+
+      for (const endMarker of endMarkers) {
+        const endIndex = text.indexOf(endMarker, contentStart);
+        if (endIndex !== -1 && endIndex < contentEnd) {
+          contentEnd = endIndex;
+        }
+      }
+
+      return text.substring(contentStart, contentEnd).trim();
+    };
+
+    // Extraire chaque section
+    const studentContent = extractContent(exercises, STUDENT_MARKER, [CORRECTION_MARKER, TEACHER_MARKER]);
+    const correctionContent = extractContent(exercises, CORRECTION_MARKER, [TEACHER_MARKER]);
+    const teacherContent = extractContent(exercises, TEACHER_MARKER, []);
+
+    console.log("🔍 Découpage des fiches :", {
+      student: studentContent ? "✅" : "❌",
+      correction: correctionContent ? "✅" : "❌",
+      teacher: teacherContent ? "✅" : "❌"
+    });
+
     return {
-      student: parts[0].trim(),
-      correction: parts[1]?.includes('CORRECTION ÉLÈVE') ? parts[1].split('FICHE')[0].trim() : '',
-      teacher: parts[2] || parts[1] || ''
+      student: studentContent,
+      correction: correctionContent,
+      teacher: teacherContent
     };
   }, [exercises]);
 
