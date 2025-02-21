@@ -4,8 +4,10 @@ import { Link } from "react-router-dom";
 import { ExerciseForm } from "@/components/exercise/ExerciseForm";
 import { ResultDisplay } from "@/components/exercise/ResultDisplay";
 import { SEO } from "@/components/SEO";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ExercisePage() {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     subject: '',
     classLevel: '',
@@ -21,8 +23,8 @@ export default function ExercisePage() {
     learningDifficulties: '',
     selectedLessonPlan: '',
   });
-
   const [isLoading, setIsLoading] = useState(false);
+  const [generatedContent, setGeneratedContent] = useState<string | null>(null);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -34,10 +36,35 @@ export default function ExercisePage() {
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
-      // Logique de soumission à implémenter
       console.log("Submitting form data:", formData);
+
+      // Appel à la fonction Edge generate-exercises
+      const response = await fetch('/api/generate-exercises', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la génération des exercices');
+      }
+
+      const data = await response.json();
+      setGeneratedContent(data.exercises);
+      
+      toast({
+        title: "Succès !",
+        description: "Les exercices ont été générés avec succès.",
+      });
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la génération des exercices.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +98,11 @@ export default function ExercisePage() {
           handleSubmit={handleSubmit}
           isLoading={isLoading}
         />
+        {generatedContent && (
+          <div className="mt-8">
+            <ResultDisplay content={generatedContent} />
+          </div>
+        )}
       </div>
     </>
   );
