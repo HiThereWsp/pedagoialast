@@ -1,3 +1,4 @@
+
 export interface SavedContent {
   id: string
   title: string
@@ -46,7 +47,7 @@ export interface SaveLessonPlanParams {
   class_level?: string
   total_sessions?: number
   additional_instructions?: string
-  duration?: number  // Ajout du champ duration
+  duration?: number
 }
 
 export interface SaveExerciseParams {

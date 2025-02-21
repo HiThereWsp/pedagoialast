@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { exercisesService } from "@/services/exercises";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
+import type { SaveExerciseParams } from "@/types/saved-content";
 
 export default function ExercisePage() {
   const { toast } = useToast();
@@ -84,14 +85,13 @@ export default function ExercisePage() {
       setIsSaving(true);
       
       // Formatage des données selon SaveExerciseParams
-      const saveParams = {
+      const saveParams: SaveExerciseParams = {
         title: `Exercices de ${formData.subject} - ${formData.classLevel}`,
         content: generatedContent,
         subject: formData.subject,
         class_level: formData.classLevel,
         exercise_type: formData.exerciseType || undefined,
-        difficulty_level: 'standard',
-        exercise_category: 'standard',
+        exercise_category: 'standard' as const,
         student_profile: formData.studentProfile || undefined,
         specific_needs: formData.specificNeeds || undefined
       };
