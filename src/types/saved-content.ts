@@ -1,3 +1,4 @@
+
 export interface SavedContent {
   id: string
   title: string
@@ -5,7 +6,7 @@ export interface SavedContent {
   subject?: string
   class_level?: string
   created_at: string
-  type: 'lesson-plan' | 'exercise' | 'Image'
+  type: 'lesson-plan' | 'exercise' | 'correspondence' | 'Image'
   displayType?: string
   exercise_category?: 'standard' | 'differentiated'
   tags: Array<{
@@ -45,6 +46,7 @@ export interface SaveLessonPlanParams {
   class_level?: string
   total_sessions?: number
   additional_instructions?: string
+  duration?: number  // Ajout du champ duration
 }
 
 export interface SaveExerciseParams {
@@ -73,6 +75,7 @@ export interface DatabaseTypes {
         additional_instructions?: string
         created_at: string
         user_id: string
+        duration?: number  // Ajout du champ duration
       }
       Insert: Omit<DatabaseTypes['Tables']['saved_lesson_plans']['Row'], 'id' | 'created_at'>
       Update: Partial<DatabaseTypes['Tables']['saved_lesson_plans']['Insert']>
