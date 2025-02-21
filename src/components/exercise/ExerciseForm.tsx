@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Loader2, Sparkles } from "lucide-react";
@@ -20,7 +21,7 @@ interface ExerciseFormProps {
     originalExercise: string;
     studentProfile: string;
     learningDifficulties: string;
-    selectedLessonPlan?: string;
+    selectedLessonPlan: string;
   };
   handleInputChange: (field: string, value: string) => void;
   handleSubmit: () => Promise<void>;
@@ -29,6 +30,7 @@ interface ExerciseFormProps {
 
 export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoading }: ExerciseFormProps) {
   const [isDifferentiation, setIsDifferentiation] = useState(false);
+  const isLessonPlanSelected = formData.selectedLessonPlan !== '' && formData.selectedLessonPlan !== 'none';
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-all duration-200">
@@ -54,11 +56,15 @@ export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoad
       </div>
 
       <div className="space-y-6">
-        {!isDifferentiation && <FormFields.LessonPlanSelect value={formData.selectedLessonPlan || ''} onChange={handleInputChange} />}
+        {!isDifferentiation && <FormFields.LessonPlanSelect value={formData.selectedLessonPlan} onChange={handleInputChange} />}
         {isDifferentiation ? (
           <DifferentiateExerciseForm formData={formData} handleInputChange={handleInputChange} />
         ) : (
-          <GenerateExerciseForm formData={formData} handleInputChange={handleInputChange} />
+          <GenerateExerciseForm 
+            formData={formData} 
+            handleInputChange={handleInputChange}
+            isLessonPlanSelected={isLessonPlanSelected}
+          />
         )}
       </div>
 

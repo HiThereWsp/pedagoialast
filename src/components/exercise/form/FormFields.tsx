@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown';
 interface FieldProps {
   value: string;
   onChange: (field: string, value: string) => void;
+  disabled?: boolean;
 }
 
 // Base components
@@ -20,7 +21,8 @@ const InputField = ({
   onChange, 
   field, 
   required = false,
-  type = "text" 
+  type = "text",
+  disabled = false 
 }: FieldProps & { 
   label: string, 
   placeholder: string, 
@@ -39,6 +41,7 @@ const InputField = ({
       onChange={(e) => onChange(field, e.target.value)}
       className="w-full"
       required={required}
+      disabled={disabled}
     />
   </div>
 );
@@ -92,7 +95,7 @@ const LearningDifficulties = ({ value, onChange }: FieldProps) => (
 );
 
 // Specific field components
-const Subject = ({ value, onChange }: FieldProps) => (
+const Subject = ({ value, onChange, disabled }: FieldProps) => (
   <InputField
     label="Matière"
     placeholder="Par exemple : Mathématiques, Français..."
@@ -100,10 +103,11 @@ const Subject = ({ value, onChange }: FieldProps) => (
     onChange={onChange}
     field="subject"
     required
+    disabled={disabled}
   />
 );
 
-const ClassLevel = ({ value, onChange }: FieldProps) => (
+const ClassLevel = ({ value, onChange, disabled }: FieldProps) => (
   <InputField
     label="Niveau de la classe"
     placeholder="Par exemple : 6ème, CM2..."
@@ -111,6 +115,7 @@ const ClassLevel = ({ value, onChange }: FieldProps) => (
     onChange={onChange}
     field="classLevel"
     required
+    disabled={disabled}
   />
 );
 
@@ -185,17 +190,31 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
     queryKey: ['saved-lesson-plans'],
     queryFn: async () => {
       const plans = await lessonPlansService.getAll();
+      console.log('Fetched lesson plans:', plans);
       return plans;
     }
   });
 
   useEffect(() => {
     const selectedPlan = lessonPlans.find(plan => plan.id === value);
+    console.log('Selected plan:', selectedPlan);
     if (selectedPlan) {
-      onChange('subject', selectedPlan.subject || '');
+      console.log('Updating subject to:', selectedPlan.subject);
+      onChange('subject', selectedPlan.subject);
       onChange('classLevel', selectedPlan.class_level || '');
     }
   }, [value, lessonPlans, onChange]);
+
+  const handlePlanChange = (newValue: string) => {
+    const val = newValue === "none" ? "" : newValue;
+    onChange('selectedLessonPlan', val);
+    
+    if (newValue === "none") {
+      // Réinitialiser les champs et permettre leur édition
+      onChange('subject', '');
+      onChange('classLevel', '');
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -205,7 +224,7 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
         </label>
         <Select
           value={value || "none"}
-          onValueChange={(val) => onChange('selectedLessonPlan', val === "none" ? "" : val)}
+          onValueChange={handlePlanChange}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Sélectionner une séquence..." />
