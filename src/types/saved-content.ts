@@ -1,4 +1,3 @@
-
 export interface SavedContent {
   id: string
   title: string

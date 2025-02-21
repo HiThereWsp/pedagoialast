@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CommonFields } from './CommonFields';
-import { ResultDisplay } from './ResultDisplay';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TextTab } from './tabs/TextTab';
 import { SubjectTab } from './tabs/SubjectTab';
@@ -11,17 +10,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
 import { useSavedContent } from "@/hooks/useSavedContent";
 import { supabase } from "@/integrations/supabase/client";
-import { HistoryCarousel } from '@/components/history/HistoryCarousel';
-import { SavedContent } from '@/types/saved-content';
+import { ScrollCard } from '@/components/exercise/result/ScrollCard';
 
 export function LessonPlanCreator() {
   const { toast } = useToast();
   const { logToolUsage } = useToolMetrics();
-  const { saveLessonPlan, getSavedLessonPlans } = useSavedContent();
+  const { saveLessonPlan } = useSavedContent();
   
   const [isLoading, setIsLoading] = useState(false);
-  const [savedPlans, setSavedPlans] = useState<SavedContent[]>([]);
-  const [selectedPlan, setSelectedPlan] = useState<SavedContent | null>(null);
   const [formData, setFormData] = useState({
     classLevel: '',
     additionalInstructions: '',
@@ -35,27 +31,6 @@ export function LessonPlanCreator() {
     setFormData(prev => ({
       ...prev,
       [field]: value
-    }));
-  };
-
-  const loadSavedPlans = async () => {
-    try {
-      const plans = await getSavedLessonPlans();
-      setSavedPlans(plans);
-    } catch (error) {
-      console.error('Error loading saved plans:', error);
-    }
-  };
-
-  const handleSelectPlan = (plan: SavedContent) => {
-    setSelectedPlan(plan);
-    setFormData(prev => ({
-      ...prev,
-      lessonPlan: plan.content,
-      classLevel: plan.class_level || '',
-      subject: plan.subject || '',
-      totalSessions: '', // Reset totalSessions as it's not in SavedContent type
-      additionalInstructions: ''
     }));
   };
 
@@ -105,7 +80,6 @@ export function LessonPlanCreator() {
       });
 
       await logToolUsage('lesson_plan', 'generate', functionData.lessonPlan.length, generationTime);
-      await loadSavedPlans();
 
       toast({
         description: "Votre séquence a été générée et sauvegardée avec succès !"
@@ -121,25 +95,10 @@ export function LessonPlanCreator() {
     }
   };
 
-  useEffect(() => {
-    loadSavedPlans();
-  }, []);
-
-  const transformSavedPlansToHistoryItems = (plans: SavedContent[]): SavedContent[] => {
-    return plans.map(plan => ({
-      ...plan,
-      id: plan.id,
-      title: formatTitle(plan.title),
-      content: plan.content,
-      subject: plan.subject,
-      created_at: plan.created_at,
-      type: 'lesson-plan',
-      tags: [{
-        label: 'Séquence',
-        color: '#FF9EBC',
-        backgroundColor: '#FF9EBC20',
-        borderColor: '#FF9EBC4D'
-      }]
+  const handleReset = () => {
+    setFormData(prev => ({
+      ...prev,
+      lessonPlan: ''
     }));
   };
 
@@ -162,21 +121,24 @@ export function LessonPlanCreator() {
             </Tabs>
             <CommonFields formData={formData} handleInputChange={handleInputChange} />
             <div className="mt-8">
-              <Button onClick={handleGenerate} disabled={isLoading} className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+              <Button 
+                onClick={handleGenerate} 
+                disabled={isLoading} 
+                className="w-full bg-gradient-to-r from-pink-500 to-violet-500 hover:from-pink-600 hover:to-violet-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center gap-2"
+              >
                 <Wand2 className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
                 {isLoading ? 'Génération en cours...' : 'Générer la séquence'}
               </Button>
             </div>
           </div>
-          
-          <HistoryCarousel
-            items={transformSavedPlansToHistoryItems(savedPlans)}
-            onItemSelect={handleSelectPlan}
-            selectedItemId={selectedPlan?.id}
-          />
         </div>
         <div className="xl:sticky xl:top-8 space-y-6">
-          <ResultDisplay lessonPlan={formData.lessonPlan} />
+          {formData.lessonPlan && (
+            <ScrollCard 
+              exercises={formData.lessonPlan}
+              onBack={handleReset}
+            />
+          )}
         </div>
       </div>
     </div>
