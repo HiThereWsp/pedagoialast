@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -124,7 +125,13 @@ const ExercisePage = () => {
       if (generatedExercises) {
         setCurrentExercise(generatedExercises);
         
-        const title = `${formData.subject} - ${formData.classLevel}`;
+        const currentTime = Date.now();
+        if (lastSaveTimestamp && currentTime - lastSaveTimestamp < 300000) {
+          return;
+        }
+        setLastSaveTimestamp(currentTime);
+        
+        const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
         
         try {
           await saveExercise({
@@ -139,19 +146,17 @@ const ExercisePage = () => {
             specific_needs: formData.specificNeeds
           });
 
-          // Force le rafraîchissement immédiat des données
           await queryClient.invalidateQueries({ queryKey: ['saved-exercises'] });
-          queryClient.refetchQueries({ queryKey: ['saved-exercises'] });
 
           toast({
             title: "Succès",
-            description: "L'exercice a été généré et sauvegardé avec succès"
+            description: "L'exercice a été généré avec succès"
           });
         } catch (error: any) {
           if (error.message && error.message.includes('Limite de contenu')) {
             toast({
               variant: "destructive",
-              title: "Limite atteinte",
+              title: "Erreur de sauvegarde",
               description: "Vous avez atteint la limite de 15 contenus sauvegardés. Veuillez en supprimer avant d'en créer de nouveaux."
             });
           } else {
