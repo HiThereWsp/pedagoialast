@@ -14,25 +14,25 @@ export function LessonPlanCreator() {
   } = useLessonPlanGeneration();
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        <div className="space-y-4">
-          <LessonPlanForm
-            formData={formData}
-            isLoading={isLoading}
-            onInputChange={handleInputChange}
-            onGenerate={generateLessonPlan}
+    <div className="space-y-8">
+      <div className="max-w-4xl mx-auto">
+        <LessonPlanForm
+          formData={formData}
+          isLoading={isLoading}
+          onInputChange={handleInputChange}
+          onGenerate={generateLessonPlan}
+        />
+      </div>
+      
+      {formData.lessonPlan && (
+        <div className="max-w-6xl mx-auto mt-12">
+          <ScrollCard 
+            exercises={formData.lessonPlan}
+            onBack={resetLessonPlan}
+            className="min-h-[800px] p-8 md:p-12 animate-fade-in"
           />
         </div>
-        <div className="xl:sticky xl:top-8 space-y-6">
-          {formData.lessonPlan && (
-            <ScrollCard 
-              exercises={formData.lessonPlan}
-              onBack={resetLessonPlan}
-            />
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -12,16 +12,16 @@ const LessonPlanPage = () => {
         title="Générateur de séquences | PedagoIA - Planification pédagogique"
         description="Créez des séquences pédagogiques complètes et adaptées à vos objectifs d'apprentissage avec notre assistant intelligent."
       />
-      <div className="container mx-auto py-2">
-        <Link to="/home" className="block mb-2">
+      <div className="container mx-auto py-4 px-4 min-h-screen">
+        <Link to="/home" className="block mb-4">
           <img 
-            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+            src="/lovable-uploads/20acd86e-07df-4e64-9a9a-7e0ae0df29f4.png" 
             alt="PedagoIA Logo" 
-            className="w-[120px] h-[140px] object-contain mx-auto" 
+            className="w-[140px] h-[160px] object-contain mx-auto hover:scale-105 transition-transform duration-200" 
           />
         </Link>
-        <div className="text-center pt-2 pb-4">
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] bg-clip-text text-transparent">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent">
             Générateur de séquences
           </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -29,8 +29,10 @@ const LessonPlanPage = () => {
           </p>
         </div>
         <div className="max-w-4xl mx-auto">
-          <Header />
-          <LessonPlanCreator />
+          <div className="space-y-8">
+            <Header />
+            <LessonPlanCreator />
+          </div>
         </div>
       </div>
     </>
