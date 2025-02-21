@@ -192,8 +192,7 @@ const LessonPlanSelect = ({ value, onChange }: FieldProps) => {
   useEffect(() => {
     const selectedPlan = lessonPlans.find(plan => plan.id === value);
     if (selectedPlan) {
-      // On utilise directement le subject de la séquence qui est maintenant une matière générale
-      onChange('subject', selectedPlan.subject || '');
+      onChange('subject', selectedPlan.subject_matter || '');
       onChange('classLevel', selectedPlan.class_level || '');
     }
   }, [value, lessonPlans, onChange]);

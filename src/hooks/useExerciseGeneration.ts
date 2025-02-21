@@ -94,7 +94,12 @@ export function useExerciseGeneration() {
 
       if (error) {
         console.error('❌ Erreur de l\'Edge Function:', error);
-        throw error;
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la génération des exercices"
+        });
+        return null;
       }
 
       if (!data?.exercises) {
@@ -102,6 +107,10 @@ export function useExerciseGeneration() {
       }
 
       console.log("✅ Exercices générés avec succès");
+      toast({
+        title: "Succès !",
+        description: "🎉 Votre exercice a été généré et sauvegardé dans 'Mes ressources' !",
+      });
       return data.exercises;
 
     } catch (error) {

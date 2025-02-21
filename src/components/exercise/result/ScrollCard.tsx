@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { ProgressiveContent } from './ProgressiveContent';
@@ -17,6 +17,13 @@ interface ScrollCardProps {
 export const ScrollCard = ({ exercises, onBack, showCorrection = true, className, customClass }: ScrollCardProps) => {
   const [activeTab, setActiveTab] = useState('eleve');
   const { toast } = useToast();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [exercises]);
 
   const tabs = [
     { id: 'eleve', label: 'Fiche Élève' },
@@ -71,7 +78,7 @@ export const ScrollCard = ({ exercises, onBack, showCorrection = true, className
   };
 
   return (
-    <div className={`w-full max-w-4xl mx-auto p-4 ${className || ''}`}>
+    <div ref={contentRef} className={`w-full max-w-4xl mx-auto p-4 animate-fade-in ${className || ''}`}>
       {/* Actions header */}
       <div className="flex justify-end items-center mb-6 gap-2">
         <Button 
