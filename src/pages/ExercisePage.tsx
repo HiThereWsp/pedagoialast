@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -7,7 +8,7 @@ import { ScrollCard } from '@/components/exercise/result/ScrollCard';
 import { useExerciseGeneration } from '@/hooks/useExerciseGeneration';
 import { useSavedContent } from '@/hooks/useSavedContent';
 import { SEO } from "@/components/SEO";
-import { ContentHistory } from '@/components/history/ContentHistory';
+import { HistoryCarousel } from '@/components/history/HistoryCarousel';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from "@/hooks/use-toast";
 import { exercisesService } from '@/services/exercises';
@@ -17,7 +18,6 @@ const ExercisePage = () => {
   const { saveExercise } = useSavedContent();
   const [currentExercise, setCurrentExercise] = useState<string | null>(null);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [lastSaveTimestamp, setLastSaveTimestamp] = useState<number | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -31,7 +31,7 @@ const ExercisePage = () => {
         ...ex,
         type: 'exercise',
         tags: [{
-          label: 'Exercice',
+          label: ex.exercise_category === 'differentiated' ? 'Exercice différencié' : 'Exercice standard',
           color: '#22C55E',
           backgroundColor: '#22C55E20',
           borderColor: '#22C55E4D'
@@ -124,12 +124,6 @@ const ExercisePage = () => {
       try {
         setCurrentExercise(generatedExercises);
         
-        const currentTime = Date.now();
-        if (lastSaveTimestamp && currentTime - lastSaveTimestamp < 300000) {
-          return;
-        }
-        setLastSaveTimestamp(currentTime);
-        
         const title = `${formData.subject} - ${formData.objective} - ${formData.classLevel}`;
         
         await saveExercise({
@@ -201,17 +195,10 @@ const ExercisePage = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <ContentHistory
-              title="Mes exercices générés"
-              type="Exercice"
+            <HistoryCarousel
               items={savedExercises}
-              onItemClick={handleExerciseClick}
-              emptyMessage="Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
-              colorScheme={{
-                color: '#22C55E',
-                backgroundColor: '#22C55E20',
-                borderColor: '#22C55E4D'
-              }}
+              onItemSelect={handleExerciseClick}
+              formatContent={(content) => content}
             />
           )}
         </div>
