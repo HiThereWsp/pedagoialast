@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
@@ -81,7 +82,6 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
   const handleCreateExercise = () => {
     localStorage.setItem('selectedLessonPlan', lessonPlan);
     navigate('/exercise');
-    // Suppression de la notification toast
   };
 
   return (
@@ -168,7 +168,6 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
           </ReactMarkdown>
         </div>
 
-        {/* Nouveau bouton pour créer un exercice */}
         <div className="mt-8 pt-6 border-t border-gray-200">
           <Button
             onClick={handleCreateExercise}

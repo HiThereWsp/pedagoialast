@@ -36,7 +36,7 @@ export function useLessonPlanGeneration() {
 
       // Log l'utilisation de l'outil
       await logToolUsage(
-        'lesson-plan',
+        'lesson_plan',
         'generate',
         data.lessonPlan.length,
         generationTime
