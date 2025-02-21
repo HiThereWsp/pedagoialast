@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -87,8 +88,6 @@ export function useExerciseGeneration() {
         body: {
           ...formData,
           isDifferentiation,
-          numberOfExercises: parseInt(formData.numberOfExercises) || 4,
-          questionsPerExercise: parseInt(formData.questionsPerExercise) || 5,
           specificNeeds: formData.specificNeeds.trim(),
         }
       });
@@ -109,9 +108,7 @@ export function useExerciseGeneration() {
       console.error('❌ Erreur lors de la génération:', error);
       toast({
         title: "Erreur",
-        description: error.message === "Délai d'attente dépassé" 
-          ? "La génération a pris trop de temps, veuillez réessayer"
-          : "Une erreur est survenue lors de la génération des exercices",
+        description: "Une erreur est survenue lors de la génération des exercices",
         variant: "destructive",
       });
       return null;
