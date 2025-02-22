@@ -1,4 +1,3 @@
-
 export interface SavedContent {
   id: string
   title: string
@@ -38,6 +37,7 @@ export interface SaveExerciseParams {
   exercise_type?: string
   source_lesson_plan_id?: string
   exercise_category?: ExerciseCategory
+  source_type?: 'direct' | 'from_lesson_plan'  // Ajout du champ manquant
 }
 
 // Interface pour les exercices extraits

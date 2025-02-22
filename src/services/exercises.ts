@@ -81,6 +81,7 @@ export const exercisesService = {
       const transformedData: SavedContent[] = (data || []).map(exercise => ({
         ...exercise,
         type: 'exercise' as const,
+        exercise_category: isExerciseCategory(exercise.exercise_category) ? exercise.exercise_category : 'standard',
         source_type: exercise.source_type as 'direct' | 'from_lesson_plan',
         tags: [{
           label: 'Exercice',
