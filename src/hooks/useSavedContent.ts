@@ -14,7 +14,6 @@ export function useSavedContent() {
   const { toast } = useToast();
 
   const saveImage = async (params: {
-    title: string;
     prompt: string;
     image_url: string;
   }) => {
@@ -24,18 +23,12 @@ export function useSavedContent() {
         .insert([{
           prompt: params.prompt,
           image_url: params.image_url,
-          title: params.title,
           user_id: (await supabase.auth.getUser()).data.user?.id
         }])
         .select()
         .single();
 
       if (error) throw error;
-
-      toast({
-        title: "Image sauvegardée",
-        description: "Votre image a été sauvegardée avec succès"
-      });
 
       return data;
     } catch (error) {

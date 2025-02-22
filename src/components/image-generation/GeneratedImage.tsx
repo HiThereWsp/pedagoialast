@@ -22,13 +22,12 @@ export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading, prompt }: Ge
 
   useEffect(() => {
     const saveGeneratedImage = async () => {
-      if (!imageUrl) return
+      if (!imageUrl || !prompt) return
 
       try {
         setIsSaving(true)
         await saveImage({
-          title: `Image générée - ${new Date().toLocaleDateString()}`,
-          prompt: prompt || 'Image générée',
+          prompt: prompt,
           image_url: imageUrl
         })
 
@@ -47,7 +46,7 @@ export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading, prompt }: Ge
     }
 
     saveGeneratedImage()
-  }, [imageUrl, prompt])
+  }, [imageUrl, prompt, saveImage, toast])
 
   return (
     <div className="mt-8 space-y-6">
