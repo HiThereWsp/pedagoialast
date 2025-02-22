@@ -1,3 +1,4 @@
+Reprends le code complet avec les modifs 
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
@@ -163,12 +164,3 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
     </>
   );
 }
-
-export const ExerciseForm = ({ formData, handleInputChange, handleSubmit, isLoading }) => {
-  return (
-    <form onSubmit={handleSubmit}>
-      {/* Implémentation du formulaire */}
-      <button type="submit" disabled={isLoading}>Submit</button>
-    </form>
-  );
-};
