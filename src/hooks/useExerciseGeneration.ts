@@ -1,7 +1,8 @@
 
-import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useToolMetrics } from '@/hooks/useToolMetrics';
 
 export interface ExerciseFormData {
   subject: string;
@@ -15,119 +16,59 @@ export interface ExerciseFormData {
   originalExercise: string;
   studentProfile: string;
   learningDifficulties: string;
-  strengths?: string;
-  challenges?: string;
-  learningStyle?: string;
-}
-
-export interface GenerationResult {
-  content: string;
-  title: string;
-  metadata: {
-    subject: string;
-    classLevel: string;
-    exerciseType: string;
-    specificNeeds: string;
-  };
+  selectedLessonPlan?: string;
 }
 
 export function useExerciseGeneration() {
   const { toast } = useToast();
+  const { logToolUsage } = useToolMetrics();
   const [isLoading, setIsLoading] = useState(false);
 
-  const validateFormData = (formData: ExerciseFormData, isDifferentiation: boolean) => {
-    if (!formData.subject.trim()) {
+  const generateExercises = useCallback(async (formData: ExerciseFormData, isDifferentiation: boolean = false) => {
+    if (!formData.subject || !formData.classLevel || !formData.objective) {
       toast({
-        title: "Matière requise",
-        description: "Veuillez spécifier la matière",
         variant: "destructive",
+        description: "Veuillez remplir tous les champs obligatoires."
       });
-      return false;
-    }
-
-    if (!formData.classLevel.trim()) {
-      toast({
-        title: "Niveau requis",
-        description: "Veuillez spécifier le niveau de la classe",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (!formData.objective.trim()) {
-      toast({
-        title: "Objectif requis",
-        description: "Veuillez spécifier l'objectif de l'exercice",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (isDifferentiation && !formData.originalExercise.trim()) {
-      toast({
-        title: "Exercice original requis",
-        description: "Veuillez fournir l'exercice à différencier",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  const generateExercises = async (formData: ExerciseFormData, isDifferentiation: boolean = false): Promise<string | null> => {
-    if (!validateFormData(formData, isDifferentiation)) {
       return null;
     }
 
     setIsLoading(true);
-    console.log("🔵 Début de la génération d'exercices avec Mistral AI");
+    const startTime = performance.now();
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-exercises', {
+      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-exercises', {
         body: {
           ...formData,
-          isDifferentiation,
-          specificNeeds: formData.specificNeeds.trim(),
+          isDifferentiation
         }
       });
 
-      if (error) {
-        console.error('❌ Erreur de l\'Edge Function:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la génération des exercices"
-        });
-        return null;
-      }
+      if (functionError) throw functionError;
 
-      if (!data?.exercises) {
-        throw new Error('Pas de contenu généré');
-      }
+      const generationTime = Math.round(performance.now() - startTime);
+      await logToolUsage('exercise', 'generate', functionData?.exercises?.length || 0, generationTime);
 
-      console.log("✅ Exercices générés avec succès");
       toast({
-        title: "Succès !",
-        description: "🎉 Votre exercice a été généré et sauvegardé dans 'Mes ressources' !",
+        description: "🎉 Vos exercices ont été générés avec succès !"
       });
-      return data.exercises;
+
+      return functionData?.exercises || "";
 
     } catch (error) {
-      console.error('❌ Erreur lors de la génération:', error);
+      console.error('Error generating exercises:', error);
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la génération des exercices",
         variant: "destructive",
+        description: "Une erreur est survenue lors de la génération des exercices."
       });
       return null;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast, logToolUsage]);
 
   return {
     isLoading,
-    generateExercises,
+    generateExercises
   };
 }

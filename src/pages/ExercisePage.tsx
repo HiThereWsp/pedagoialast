@@ -5,9 +5,39 @@ import { ResultDisplay } from "@/components/exercise/ResultDisplay";
 import { useExerciseGeneration } from "@/hooks/useExerciseGeneration";
 import { Link } from "react-router-dom";
 import { Tiles } from "@/components/ui/tiles";
+import { useState } from "react";
 
 export default function ExercisePage() {
-  const { exercises } = useExerciseGeneration();
+  const { generateExercises, isLoading } = useExerciseGeneration();
+  const [exercises, setExercises] = useState<string>("");
+  const [formData, setFormData] = useState({
+    subject: "",
+    classLevel: "",
+    numberOfExercises: "",
+    questionsPerExercise: "",
+    objective: "",
+    exerciseType: "",
+    additionalInstructions: "",
+    specificNeeds: "",
+    originalExercise: "",
+    studentProfile: "",
+    learningDifficulties: "",
+    selectedLessonPlan: "",
+  });
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSubmit = async () => {
+    const result = await generateExercises(formData);
+    if (result) {
+      setExercises(result);
+    }
+  };
 
   return (
     <>
@@ -43,7 +73,12 @@ export default function ExercisePage() {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <ExerciseForm />
+            <ExerciseForm 
+              formData={formData}
+              handleInputChange={handleInputChange}
+              handleSubmit={handleSubmit}
+              isLoading={isLoading}
+            />
             <ResultDisplay exercises={exercises} />
           </div>
         </div>
