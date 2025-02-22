@@ -24,6 +24,7 @@ export const exercisesService = {
           ...params,
           user_id: user.id,
           type: 'exercise' as const,
+          exercise_category: params.exercise_category || 'standard',
           source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
         }])
         .select()
