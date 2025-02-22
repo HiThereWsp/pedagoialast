@@ -2,10 +2,10 @@
 import { SEO } from "@/components/SEO";
 import { ImageGenerator } from "@/components/image-generation/ImageGenerator";
 import { Link } from "react-router-dom";
-import { ContentHistory } from "@/components/history/ContentHistory";
 import { useEffect, useState } from "react";
 import { useImageContent } from "@/hooks/content/useImageContent";
 import type { SavedContent } from "@/types/saved-content";
+import { ImageGrid } from "@/components/image-generation/ImageGrid";
 
 export default function ImageGenerationPage() {
   const [images, setImages] = useState<SavedContent[]>([]);
@@ -49,17 +49,8 @@ export default function ImageGenerationPage() {
         <ImageGenerator />
 
         <div className="mt-12">
-          <ContentHistory
-            title="Mes images générées"
-            type="Image"
-            items={images}
-            emptyMessage="Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !"
-            colorScheme={{
-              color: '#F2FCE2',
-              backgroundColor: '#F2FCE220',
-              borderColor: '#F2FCE24D'
-            }}
-          />
+          <h2 className="text-2xl font-bold mb-6">Mes images générées</h2>
+          <ImageGrid images={images} />
         </div>
       </div>
     </>
