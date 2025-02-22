@@ -70,20 +70,13 @@ export const ContentPreviewSheet = ({
                 exercises={content.content} 
                 showCorrection={activeTab === 'correction'}
                 customClass="text-sm"
+                hideActions={true}
+                disableInternalTabs={true}
               />
             </div>
           </>
         )
       case 'lesson-plan':
-        return (
-          <div className="mt-6">
-            <ScrollCard 
-              exercises={content.content} 
-              showCorrection={false}
-              customClass="text-sm"
-            />
-          </div>
-        )
       case 'correspondence':
         return (
           <div className="mt-6">
@@ -91,6 +84,7 @@ export const ContentPreviewSheet = ({
               exercises={content.content} 
               showCorrection={false}
               customClass="text-sm"
+              hideActions={true}
             />
           </div>
         )

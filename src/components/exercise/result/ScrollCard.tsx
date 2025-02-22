@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { ProgressiveContent } from './ProgressiveContent';
@@ -12,10 +12,19 @@ interface ScrollCardProps {
   showCorrection?: boolean;
   className?: string;
   customClass?: string;
+  hideActions?: boolean;
+  disableInternalTabs?: boolean;
 }
 
-export const ScrollCard = ({ exercises, onBack, showCorrection = true, className, customClass }: ScrollCardProps) => {
-  const [activeTab, setActiveTab] = useState('eleve');
+export const ScrollCard = ({ 
+  exercises, 
+  onBack, 
+  showCorrection = true, 
+  className, 
+  customClass,
+  hideActions = false,
+  disableInternalTabs = false
+}: ScrollCardProps) => {
   const { toast } = useToast();
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -25,37 +34,33 @@ export const ScrollCard = ({ exercises, onBack, showCorrection = true, className
     }
   }, [exercises]);
 
-  const tabs = [
-    { id: 'eleve', label: 'Fiche Élève' },
-    ...(showCorrection ? [{ id: 'correction', label: 'Correction' }] : [])
-  ];
-
-  const splitContent = useMemo(() => {
-    if (!exercises) return { student: '', correction: '' };
+  const splitContent = (content: string) => {
+    if (!content) return { student: '', correction: '' };
 
     const STUDENT_MARKER = "FICHE ÉLÈVE";
     const CORRECTION_MARKER = "FICHE CORRECTION";
 
-    const studentStart = exercises.indexOf(STUDENT_MARKER);
-    const correctionStart = exercises.indexOf(CORRECTION_MARKER);
-
-    let studentContent = '';
-    let correctionContent = '';
+    const studentStart = content.indexOf(STUDENT_MARKER);
+    const correctionStart = content.indexOf(CORRECTION_MARKER);
 
     if (studentStart !== -1 && correctionStart !== -1) {
-      studentContent = exercises
-        .substring(studentStart + STUDENT_MARKER.length, correctionStart)
-        .trim();
-      correctionContent = exercises
-        .substring(correctionStart + CORRECTION_MARKER.length)
-        .trim();
+      return {
+        student: content
+          .substring(studentStart + STUDENT_MARKER.length, correctionStart)
+          .trim(),
+        correction: content
+          .substring(correctionStart + CORRECTION_MARKER.length)
+          .trim()
+      };
     }
 
     return {
-      student: studentContent || exercises,
-      correction: correctionContent
+      student: content,
+      correction: ''
     };
-  }, [exercises]);
+  };
+
+  const { student, correction } = splitContent(exercises || '');
 
   const handleCopy = async () => {
     try {
@@ -81,70 +86,41 @@ export const ScrollCard = ({ exercises, onBack, showCorrection = true, className
 
   return (
     <div ref={contentRef} className={`w-full max-w-4xl mx-auto p-4 animate-fade-in ${className || ''}`}>
-      {/* Actions header */}
-      <div className="flex justify-end items-center mb-6 gap-2">
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => handleFeedback(true)}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <ThumbsUp className="h-5 w-5" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => handleFeedback(false)}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <ThumbsDown className="h-5 w-5" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={handleCopy}
-          className="text-gray-600 hover:text-gray-800"
-        >
-          <Copy className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* Tabs Navigation */}
-      {tabs.length > 1 && (
-        <div className="flex justify-center mb-6">
-          <div className="inline-flex rounded-lg border border-gray-200 bg-white">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-8 py-3 text-sm font-medium transition-colors duration-200 
-                  ${activeTab === tab.id 
-                    ? 'bg-orange-50 text-orange-800 border-orange-300 rounded-lg' 
-                    : 'text-gray-700 hover:bg-gray-50'}`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+      {!hideActions && (
+        <div className="flex justify-end items-center mb-6 gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => handleFeedback(true)}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <ThumbsUp className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={() => handleFeedback(false)}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <ThumbsDown className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleCopy}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <Copy className="h-5 w-5" />
+          </Button>
         </div>
       )}
 
-      {/* Main card with scroll content */}
       <Card className="w-full bg-white shadow-lg">
         <CardContent className="h-[600px] md:h-[800px] lg:h-[900px] overflow-y-auto p-8">
-          {activeTab === 'eleve' && (
-            <ProgressiveContent
-              content={splitContent.student}
-              className={`prose prose-sm max-w-none print:block ${customClass || ''}`}
-            />
-          )}
-
-          {activeTab === 'correction' && showCorrection && (
-            <ProgressiveContent
-              content={splitContent.correction}
-              className={`prose prose-sm max-w-none print:block ${customClass || ''}`}
-            />
-          )}
+          <ProgressiveContent
+            content={showCorrection ? correction : student}
+            className={`prose prose-sm max-w-none print:block ${customClass || ''}`}
+          />
         </CardContent>
       </Card>
     </div>

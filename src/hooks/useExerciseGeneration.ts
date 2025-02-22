@@ -1,7 +1,9 @@
+
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useToolMetrics } from '@/hooks/useToolMetrics';
+import { useExerciseContent } from '@/hooks/content/useExerciseContent';
 
 export interface ExerciseFormData {
   subject: string;
@@ -21,6 +23,7 @@ export interface ExerciseFormData {
 export function useExerciseGeneration() {
   const { toast } = useToast();
   const { logToolUsage } = useToolMetrics();
+  const { saveExercise } = useExerciseContent();
   const [isLoading, setIsLoading] = useState(false);
 
   const generateExercises = useCallback(async (formData: ExerciseFormData, isDifferentiation: boolean = false) => {
@@ -48,8 +51,22 @@ export function useExerciseGeneration() {
       const generationTime = Math.round(performance.now() - startTime);
       await logToolUsage('exercise', 'generate', functionData?.exercises?.length || 0, generationTime);
 
+      // Sauvegarder l'exercice généré
+      if (functionData?.exercises) {
+        const title = `Exercice - ${formData.subject} - ${formData.classLevel}`;
+        await saveExercise({
+          title,
+          content: functionData.exercises,
+          subject: formData.subject,
+          class_level: formData.classLevel,
+          exercise_type: formData.exerciseType,
+          source_lesson_plan_id: formData.selectedLessonPlan || undefined,
+          source_type: formData.selectedLessonPlan ? 'from_lesson_plan' : 'direct'
+        });
+      }
+
       toast({
-        description: "🎉 Vos exercices ont été générés avec succès !"
+        description: "🎉 Vos exercices ont été générés et sauvegardés avec succès !"
       });
 
       return functionData?.exercises || "";
@@ -64,7 +81,7 @@ export function useExerciseGeneration() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, logToolUsage]);
+  }, [toast, logToolUsage, saveExercise]);
 
   return {
     isLoading,
