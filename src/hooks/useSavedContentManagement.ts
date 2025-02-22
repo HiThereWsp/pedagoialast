@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useSavedContent } from "@/hooks/useSavedContent";
 import { useToast } from "@/hooks/use-toast";
 import type { SavedContent } from "@/types/saved-content";
+import type { ImageGenerationUsage } from "@/types/saved-content";
 
 export function useSavedContentManagement() {
   const [content, setContent] = useState<SavedContent[]>([]);
@@ -95,27 +96,35 @@ export function useSavedContentManagement() {
         }]
       }));
 
-      const formattedImages: SavedContent[] = images.map(img => ({
-        id: img.id,
-        title: img.prompt || "Image générée",
-        content: img.image_url || '',
-        created_at: img.generated_at,
-        type: 'Image',
-        displayType: 'Image générée',
-        tags: [{
-          label: 'Image',
-          color: '#F2FCE2',
-          backgroundColor: '#F2FCE220',
-          borderColor: '#F2FCE24D'
-        }]
-      }));
+      // S'assurer que les images existent et ont les propriétés requises
+      const formattedImages: SavedContent[] = (images || [])
+        .filter((img): img is ImageGenerationUsage => img !== null && img.status === 'success')
+        .map(img => ({
+          id: img.id,
+          title: "Image générée",
+          content: img.image_url || '',
+          created_at: img.generated_at,
+          type: 'Image' as const,
+          displayType: 'Image générée',
+          tags: [{
+            label: 'Image',
+            color: '#F2FCE2',
+            backgroundColor: '#F2FCE220',
+            borderColor: '#F2FCE24D'
+          }]
+        }));
 
-      setContent([
+      // Filtrer les contenus null avant de les combiner
+      const allContent = [
         ...formattedExercises, 
         ...formattedLessonPlans, 
         ...formattedCorrespondences,
         ...formattedImages
-      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+      ].filter(content => content !== null);
+
+      setContent(allContent.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ));
 
     } catch (err) {
       console.error("Erreur lors du chargement des contenus:", err);
@@ -129,41 +138,47 @@ export function useSavedContentManagement() {
   };
 
   const handleDelete = async (id: string, type: SavedContent['type']) => {
+    if (!id || !type) {
+      console.error("ID ou type manquant pour la suppression");
+      return;
+    }
+
     setErrors(prev => ({
       ...prev,
       delete: undefined
     }));
+
     try {
-      if (type === 'exercise') {
-        await deleteSavedExercise(id);
-        toast({
-          description: "Exercice supprimé avec succès"
-        });
-      } else if (type === 'lesson-plan') {
-        await deleteSavedLessonPlan(id);
-        toast({
-          description: "Séquence supprimée avec succès"
-        });
-      } else if (type === 'correspondence') {
-        await deleteSavedCorrespondence(id);
-        toast({
-          description: "Correspondance supprimée avec succès"
-        });
-      } else if (type === 'Image') {
-        // Note: La suppression d'image n'est pas encore implémentée dans l'API
-        toast({
-          description: "Image supprimée avec succès"
-        });
+      switch (type) {
+        case 'exercise':
+          await deleteSavedExercise(id);
+          toast({ description: "Exercice supprimé avec succès" });
+          break;
+        case 'lesson-plan':
+          await deleteSavedLessonPlan(id);
+          toast({ description: "Séquence supprimée avec succès" });
+          break;
+        case 'correspondence':
+          await deleteSavedCorrespondence(id);
+          toast({ description: "Correspondance supprimée avec succès" });
+          break;
+        case 'Image':
+          // Note: La suppression d'image n'est pas encore implémentée dans l'API
+          toast({ description: "Image supprimée avec succès" });
+          break;
+        default:
+          console.error("Type de contenu non reconnu:", type);
+          return;
       }
+      
       await fetchContent();
     } catch (err) {
-      const typeLabel = type === 'exercise' 
-        ? "l'exercice" 
-        : type === 'lesson-plan' 
-          ? 'la séquence' 
-          : type === 'Image'
-            ? "l'image"
-            : 'la correspondance';
+      const typeLabel = {
+        'exercise': "l'exercice",
+        'lesson-plan': 'la séquence',
+        'Image': "l'image",
+        'correspondence': 'la correspondance'
+      }[type] || 'le contenu';
       
       setErrors(prev => ({
         ...prev,
