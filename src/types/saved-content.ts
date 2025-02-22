@@ -70,7 +70,7 @@ export interface DatabaseTypes {
         title: string
         content: string
         subject?: string
-        class_level?: string
+        class_level: string
         total_sessions?: number
         additional_instructions?: string
         created_at: string
@@ -86,7 +86,7 @@ export interface DatabaseTypes {
         title: string
         content: string
         subject?: string
-        class_level?: string
+        class_level: string
         exercise_type?: string
         difficulty_level?: string
         created_at: string

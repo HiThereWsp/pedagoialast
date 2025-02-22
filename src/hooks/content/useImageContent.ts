@@ -51,7 +51,7 @@ export function useImageContent() {
         id: img.id,
         title: img.prompt,
         content: img.image_url,
-        created_at: img.generated_at,
+        created_at: img.generated_at || img.created_at || new Date().toISOString(),
         type: 'Image' as const,
         displayType: 'Image',
         tags: [{

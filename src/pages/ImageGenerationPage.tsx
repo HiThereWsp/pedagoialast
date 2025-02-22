@@ -4,38 +4,19 @@ import { ImageGenerator } from "@/components/image-generation/ImageGenerator";
 import { Link } from "react-router-dom";
 import { ContentHistory } from "@/components/history/ContentHistory";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useImageContent } from "@/hooks/content/useImageContent";
 import type { SavedContent } from "@/types/saved-content";
 
 export default function ImageGenerationPage() {
   const [images, setImages] = useState<SavedContent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { getSavedImages } = useImageContent();
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const { data, error } = await supabase
-          .from('image_generation_usage')
-          .select('*')
-          .order('generated_at', { ascending: false });
-
-        if (error) throw error;
-
-        const formattedImages: SavedContent[] = data.map(img => ({
-          id: img.id,
-          title: img.prompt,
-          content: img.image_url,
-          created_at: img.generated_at,
-          type: 'Image' as const,
-          tags: [{
-            label: 'Image',
-            color: '#F2FCE2',
-            backgroundColor: '#F2FCE220',
-            borderColor: '#F2FCE24D'
-          }]
-        }));
-
-        setImages(formattedImages);
+        const fetchedImages = await getSavedImages();
+        setImages(fetchedImages);
       } catch (error) {
         console.error('Erreur lors du chargement des images:', error);
       } finally {
@@ -44,7 +25,7 @@ export default function ImageGenerationPage() {
     };
 
     fetchImages();
-  }, []);
+  }, [getSavedImages]);
 
   return (
     <>
