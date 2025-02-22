@@ -1,4 +1,3 @@
-
 export interface SavedContent {
   id: string
   title: string
@@ -104,6 +103,19 @@ export interface DatabaseTypes {
         specific_needs?: string
       }
       Update: Partial<Omit<DatabaseTypes['Tables']['saved_exercises']['Insert'], 'user_id'>>
+    }
+    saved_correspondences: {
+      Row: {
+        id: string
+        title: string
+        content: string
+        recipient_type: string
+        tone?: string
+        created_at: string
+        user_id: string
+      }
+      Insert: Omit<DatabaseTypes['Tables']['saved_correspondences']['Row'], 'id' | 'created_at'>
+      Update: Partial<DatabaseTypes['Tables']['saved_correspondences']['Insert']>
     }
   }
 }

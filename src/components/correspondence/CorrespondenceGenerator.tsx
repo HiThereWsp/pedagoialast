@@ -156,7 +156,13 @@ export function CorrespondenceGenerator() {
         </Button>
       </Card>
 
-      {generatedText && <ResultDisplay text={generatedText} />}
+      {generatedText && (
+        <ResultDisplay 
+          text={generatedText} 
+          recipientType={recipient}
+          tone={tone}
+        />
+      )}
     </div>
   )
 }
