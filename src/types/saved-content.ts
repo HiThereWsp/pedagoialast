@@ -122,11 +122,15 @@ export interface DatabaseTypes {
 }
 
 export interface ImageGenerationUsage {
-  id: string
-  prompt: string
-  image_url: string
-  user_id: string
-  generated_at: string
-  monthly_generation_count?: number
-  generation_month?: string
+  id: string;
+  prompt: string;
+  image_url?: string;
+  user_id: string;
+  generated_at: string;
+  status: 'pending' | 'processing' | 'success' | 'error';
+  error_message?: string;
+  retry_count: number;
+  last_retry?: string;
+  monthly_generation_count?: number;
+  generation_month?: string;
 }
