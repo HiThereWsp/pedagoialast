@@ -10,31 +10,44 @@ export function useImageContent() {
 
   const saveImage = async (params: {
     prompt: string;
-    image_url: string;
+    image_url?: string;
   }) => {
     try {
-      // Vérifie si l'utilisateur est connecté
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      const { data, error } = await supabase
+      // Créer d'abord l'enregistrement avec le statut 'pending'
+      const { data: record, error: insertError } = await supabase
         .from('image_generation_usage')
         .insert([{
           prompt: params.prompt,
-          image_url: params.image_url,
           user_id: user.id,
+          status: 'pending',
           generated_at: new Date().toISOString()
         }])
         .select()
         .single();
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
-      toast({
-        description: "Image sauvegardée avec succès",
-      });
+      if (params.image_url) {
+        // Mettre à jour l'enregistrement avec l'URL de l'image
+        const { error: updateError } = await supabase
+          .from('image_generation_usage')
+          .update({ 
+            image_url: params.image_url,
+            status: 'success'
+          })
+          .eq('id', record.id);
 
-      return data;
+        if (updateError) throw updateError;
+
+        toast({
+          description: "Image sauvegardée avec succès",
+        });
+      }
+
+      return record;
     } catch (error) {
       console.error('Error saving image:', error);
       toast({
@@ -57,6 +70,7 @@ export function useImageContent() {
         .from('image_generation_usage')
         .select('*')
         .eq('user_id', user.id)
+        .eq('status', 'success')
         .order('generated_at', { ascending: false });
 
       if (error) throw error;

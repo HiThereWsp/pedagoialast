@@ -1,8 +1,9 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 serve(async (req) => {
@@ -18,8 +19,7 @@ serve(async (req) => {
       throw new Error('La clé API DALL-E n\'est pas configurée')
     }
 
-    const body = await req.json()
-    const { prompt, size = "1024x1024", style = "vivid", quality = "standard", originalImageUrl } = body
+    const { prompt, size = "1024x1024", quality = "standard", style = "vivid" } = await req.json()
 
     if (!prompt) {
       return new Response(
@@ -30,65 +30,34 @@ serve(async (req) => {
       )
     }
 
-    console.log("Generating/Editing image with DALL-E 3")
-    console.log("Original image URL:", originalImageUrl)
+    console.log("Generating image with DALL-E 3")
     console.log("Prompt:", prompt)
     
-    let response;
-    
-    if (originalImageUrl) {
-      // For now, we'll use the generations endpoint with the original context
-      // as the edits endpoint requires specific image format requirements
-      // that are complex to handle in a serverless function
-      try {
-        response = await fetch('https://api.openai.com/v1/images/generations', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${DALLE_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: "dall-e-3",
-            prompt: `Using this as reference: ${originalImageUrl}, ${prompt}`,
-            n: 1,
-            size,
-            quality,
-            style,
-            response_format: "url"
-          })
-        })
-      } catch (error) {
-        console.error("Error modifying image:", error)
-        throw new Error('Erreur lors de la modification de l\'image')
-      }
-    } else {
-      // Standard generation endpoint
-      response = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${DALLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: "dall-e-3",
-          prompt,
-          n: 1,
-          size,
-          quality,
-          style,
-          response_format: "url"
-        })
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${DALLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt,
+        n: 1,
+        size,
+        quality,
+        style,
+        response_format: "url"
       })
-    }
+    })
 
     if (!response.ok) {
       const error = await response.json()
       console.error("OpenAI API error:", error)
-      throw new Error(error.error?.message || 'Erreur lors de la génération/modification de l\'image')
+      throw new Error(error.error?.message || 'Erreur lors de la génération de l\'image')
     }
 
     const data = await response.json()
-    console.log("Generation/Edition successful, returning URL")
+    console.log("Generation successful, returning URL")
     
     return new Response(JSON.stringify({ 
       output: data.data[0].url 
@@ -98,14 +67,8 @@ serve(async (req) => {
     })
   } catch (error) {
     console.error("Error in generate-image function:", error)
-    let errorMessage = "Une erreur est survenue lors de la génération/modification de l'image"
-    
-    if (error.message.includes('API')) {
-      errorMessage = error.message
-    }
-    
     return new Response(JSON.stringify({ 
-      error: errorMessage,
+      error: "Une erreur est survenue lors de la génération de l'image",
       details: error.message 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
