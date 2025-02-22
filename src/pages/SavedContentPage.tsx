@@ -101,7 +101,7 @@ export default function SavedContentPage() {
           <div className="flex items-center gap-6">
             <Link to="/home" className="shrink-0">
               <img 
-                src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+                src="/lovable-uploads/d13e3386-8e0a-49a4-b20f-e4bf5030fdb1.png" 
                 alt="PedagoIA Logo" 
                 className="w-[50px] h-[60px] object-contain" 
               />
@@ -113,7 +113,7 @@ export default function SavedContentPage() {
           
           <Button 
             onClick={handleCreate}
-            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+            className="bg-gradient-to-r from-[#FFDD00] via-[#FFA800] to-[#FF7A00] hover:opacity-90 text-white shadow-sm"
           >
             <Plus className="w-5 h-5 mr-2" />
             <span className="hidden sm:inline">{getCurrentTab()?.buttonText}</span>
@@ -132,7 +132,7 @@ export default function SavedContentPage() {
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 transition-colors rounded-none"
+                className="py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-[#FFA800] data-[state=active]:border-b-2 data-[state=active]:border-[#FFA800] transition-colors rounded-none"
               >
                 {tab.label}
               </TabsTrigger>

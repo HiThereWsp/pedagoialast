@@ -11,7 +11,7 @@ export const ResourceCard = ({ resource, onSelect }: ResourceCardProps) => {
   return (
     <Card 
       onClick={() => onSelect(resource)}
-      className="group cursor-pointer transition-all duration-300 hover:shadow-lg relative overflow-hidden hover:border-blue-500 bg-white dark:bg-gray-900"
+      className="group cursor-pointer transition-all duration-300 hover:shadow-lg relative overflow-hidden hover:border-[#FFA800] bg-white dark:bg-gray-900"
     >
       {resource.type === 'Image' ? (
         <div className="aspect-square">
