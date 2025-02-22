@@ -62,38 +62,10 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
 
   const handleFeedbackSubmit = async () => {
     if (feedback.trim()) {
-      await logToolUsage('lesson_plan', 'detailed_feedback');
+      await logToolUsage('lesson_plan', 'feedback');
       setFeedback("");
     }
     setIsDialogOpen(false);
-  };
-
-  const formatContent = (content: string) => {
-    const formattedContent = content
-      .replace(/#{3,4}\s/g, '')
-      .replace(/\*\*/g, '')
-      .split('\n')
-      .map(line => {
-        if (line.includes('Séquence pédagogique')) {
-          return `<h1 class="text-2xl font-bold mb-6">${line}</h1>`;
-        }
-        if (line.match(/^\d+\./)) {
-          return `<h2 class="text-xl font-bold mt-8 mb-4">${line}</h2>`;
-        }
-        if (line.match(/^Phase \d+:/)) {
-          return `<h3 class="text-lg font-bold mt-6 mb-3 text-black">${line}</h3>`;
-        }
-        if (line.match(/^Séance \d+/)) {
-          return `<h4 class="font-bold mt-4 mb-2 text-black">${line}</h4>`;
-        }
-        if (line.trim().startsWith('-')) {
-          return `<p class="ml-4 my-1 text-black">${line}</p>`;
-        }
-        return line ? `<p class="my-2 text-black">${line}</p>` : '<br/>';
-      })
-      .join('\n');
-
-    return formattedContent;
   };
 
   return (
