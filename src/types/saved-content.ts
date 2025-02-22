@@ -119,3 +119,13 @@ export interface DatabaseTypes {
     }
   }
 }
+
+export interface ImageGenerationUsage {
+  id?: string
+  prompt: string
+  image_url?: string
+  user_id: string
+  status: 'pending' | 'success' | 'error'
+  error_message?: string
+  generated_at?: string
+}

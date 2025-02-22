@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import type { SavedContent } from "@/types/saved-content";
+import type { SavedContent, ImageGenerationUsage } from "@/types/saved-content";
 
 export function useImageContent() {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,37 +11,32 @@ export function useImageContent() {
   const saveImage = async (params: {
     prompt: string;
     image_url?: string;
-  }) => {
+  }): Promise<ImageGenerationUsage | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      // Créer d'abord l'enregistrement avec le statut 'pending'
-      const { data: record, error: insertError } = await supabase
+      const newRecord: Partial<ImageGenerationUsage> = {
+        prompt: params.prompt,
+        user_id: user.id,
+        status: 'pending',
+        generated_at: new Date().toISOString(),
+      };
+
+      if (params.image_url) {
+        newRecord.image_url = params.image_url;
+        newRecord.status = 'success';
+      }
+
+      const { data: record, error } = await supabase
         .from('image_generation_usage')
-        .insert([{
-          prompt: params.prompt,
-          user_id: user.id,
-          status: 'pending',
-          generated_at: new Date().toISOString()
-        }])
+        .insert(newRecord)
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (error) throw error;
 
       if (params.image_url) {
-        // Mettre à jour l'enregistrement avec l'URL de l'image
-        const { error: updateError } = await supabase
-          .from('image_generation_usage')
-          .update({ 
-            image_url: params.image_url,
-            status: 'success'
-          })
-          .eq('id', record.id);
-
-        if (updateError) throw updateError;
-
         toast({
           description: "Image sauvegardée avec succès",
         });
@@ -55,7 +50,7 @@ export function useImageContent() {
         title: "Erreur",
         description: "Une erreur est survenue lors de la sauvegarde"
       });
-      throw error;
+      return null;
     }
   };
 
@@ -75,11 +70,11 @@ export function useImageContent() {
 
       if (error) throw error;
 
-      return images.map(img => ({
+      return (images || []).map(img => ({
         id: img.id,
         title: img.prompt,
-        content: img.image_url,
-        created_at: img.generated_at,
+        content: img.image_url || '',
+        created_at: img.generated_at || new Date().toISOString(),
         type: 'Image' as const,
         displayType: 'Image',
         tags: [{
@@ -88,7 +83,7 @@ export function useImageContent() {
           backgroundColor: '#F2FCE220',
           borderColor: '#F2FCE24D'
         }]
-      })) as SavedContent[];
+      })) satisfies SavedContent[];
     } catch (error) {
       console.error('Error fetching images:', error);
       toast({
