@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { SEO } from "@/components/SEO";
 import { ExerciseForm } from "@/components/exercise/ExerciseForm";
 import { ResultDisplay } from "@/components/exercise/ResultDisplay";
 import { useExerciseGeneration } from "@/hooks/useExerciseGeneration";
-import type { ExerciseFormData } from "@/hooks/useExerciseGeneration";
+import type { ExerciseFormData } from "@/types/saved-content";
 import { Link } from "react-router-dom";
 import { Tiles } from "@/components/ui/tiles";
 
@@ -23,7 +24,7 @@ export default function ExercisePage() {
     studentProfile: "",
     learningDifficulties: "",
     selectedLessonPlan: "",
-    challenges: [] as string[]
+    challenges: ""
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -33,7 +34,8 @@ export default function ExercisePage() {
     }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     const result = await generateExercises(formData);
     if (result) {
       setExercises(result);
@@ -80,7 +82,7 @@ export default function ExercisePage() {
               handleSubmit={handleSubmit}
               isLoading={isLoading}
             />
-            <ResultDisplay exercises={exercises} />
+            {exercises && <ResultDisplay exercises={exercises} />}
           </div>
         </div>
       </div>

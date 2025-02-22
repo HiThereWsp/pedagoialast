@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
@@ -37,52 +38,34 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
     });
   };
 
-  const handleFeedback = (type: 'like' | 'dislike') => {
+  const handleFeedback = async (type: 'like' | 'dislike') => {
     const newScore = type === 'like' ? 1 : -1;
     setFeedbackScore(newScore);
+    setIsDialogOpen(true);
+    
     toast({
-      title: type === 'like' ? 'Merci pour votre feedback positif !' : 'Merci pour votre feedback négatif.',
-      description: 'Votre avis nous aide à nous améliorer.',
+      title: type === 'like' ? 'Merci pour votre feedback positif !' : 'Merci pour votre retour.',
+      description: 'Votre avis nous aide à nous améliorer.'
     });
-    logToolUsage('feedback', { score: newScore });
+
+    await logToolUsage('lesson_plan', 'feedback', undefined, undefined, newScore);
   };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(lessonPlan);
     setIsCopied(true);
     toast({
-      title: 'Copié !',
-      description: 'La séquence pédagogique a été copiée dans votre presse-papiers.',
+      description: "La séquence a été copiée dans votre presse-papiers."
     });
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const formatContent = (content: string) => {
-    const formattedContent = content
-      .replace(/#{3,4}\s/g, '')
-      .replace(/\*\*/g, '')
-      .split('\n')
-      .map(line => {
-        if (line.includes('Séquence pédagogique')) {
-          return `<h1 class="text-2xl font-bold mb-6">${line}</h1>`;
-        }
-        if (line.match(/^\d+\./)) {
-          return `<h2 class="text-xl font-bold mt-8 mb-4">${line}</h2>`;
-        }
-        if (line.match(/^Phase \d+:/)) {
-          return `<h3 class="text-lg font-bold mt-6 mb-3 text.black">${line}</h3>`;
-        }
-        if (line.match(/^Séance \d+/)) {
-          return `<h4 class="font-bold mt-4 mb-2 text-black">${line}</h4>`;
-        }
-        if (line.trim().startsWith('-')) {
-          return `<p class="ml-4 my-1 text-black">${line}</p>`;
-        }
-        return line ? `<p class="my-2 text-black">${line}</p>` : '<br/>';
-      })
-      .join('\n');
-
-    return formattedContent;
+  const handleFeedbackSubmit = async () => {
+    if (feedback.trim()) {
+      await logToolUsage('lesson_plan', 'feedback');
+      setFeedback("");
+    }
+    setIsDialogOpen(false);
   };
 
   return (
@@ -119,17 +102,18 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
                 "rounded p-1.5 text-gray-400 hover:bg-gray-50 transition-all duration-300",
                 isCopied && "text-blue-500"
               )}
-              aria-label="Copier la séquence"
+              aria-label="Copier le contenu"
             >
               <Copy className="h-5 w-5" />
             </button>
           </div>
         </div>
+
         <div className="prose prose-sm max-w-none mb-6">
           <ReactMarkdown
             components={{
               h1: ({ children }) => (
-                <h1 className="text-2xl font-bold mt-8 mb-4 text-gray-900 first:mt-0 border-b border-gray-200 pb-2">
+                <h1 className="text-2xl font-bold mt-8 mb-4 text-gray-900 first:mt-0">
                   {children}
                 </h1>
               ),
@@ -169,7 +153,7 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
           </ReactMarkdown>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-gray-200">
+        <div className="mt-6 pt-6 border-t border-gray-200">
           <Button
             onClick={handleGenerateExercise}
             className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-3 rounded-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-sm hover:shadow-md group"
@@ -180,14 +164,27 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
         </div>
       </Card>
 
-      <div className="flex justify-end space-x-4">
-        <Button
-          onClick={handleGenerateExercise}
-          className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
-        >
-          Générer un exercice à partir de cette séquence
-        </Button>
-      </div>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Votre avis nous intéresse</DialogTitle>
+            <DialogDescription>
+              N'hésitez pas à nous donner plus de détails sur votre expérience
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+            placeholder="Partagez votre retour d'expérience..."
+            className="min-h-[100px]"
+          />
+          <div className="flex justify-end">
+            <Button onClick={handleFeedbackSubmit}>
+              Envoyer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
