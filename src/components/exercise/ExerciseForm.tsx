@@ -163,3 +163,8 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
     </>
   );
 }
+export const ExerciseForm = () => {
+    // Implémentation du composant
+};
+
+
