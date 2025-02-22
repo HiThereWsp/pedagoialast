@@ -245,30 +245,42 @@ export type Database = {
       }
       image_generation_usage: {
         Row: {
+          error_message: string | null
           generated_at: string | null
           generation_month: string | null
           id: string
-          image_url: string
+          image_url: string | null
+          last_retry: string | null
           monthly_generation_count: number | null
           prompt: string
+          retry_count: number | null
+          status: string | null
           user_id: string
         }
         Insert: {
+          error_message?: string | null
           generated_at?: string | null
           generation_month?: string | null
           id?: string
-          image_url: string
+          image_url?: string | null
+          last_retry?: string | null
           monthly_generation_count?: number | null
           prompt: string
+          retry_count?: number | null
+          status?: string | null
           user_id: string
         }
         Update: {
+          error_message?: string | null
           generated_at?: string | null
           generation_month?: string | null
           id?: string
-          image_url?: string
+          image_url?: string | null
+          last_retry?: string | null
           monthly_generation_count?: number | null
           prompt?: string
+          retry_count?: number | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []

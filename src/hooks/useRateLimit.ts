@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 
@@ -31,14 +32,18 @@ export const useRateLimit = ({ maxRequests = 5, timeWindow = 2592000000 }: RateL
 
       if (!usageData) {
         // If no record exists, create one
+        const initialRecord = {
+          user_id: user.id,
+          monthly_generation_count: 1,
+          generation_month: currentMonth,
+          prompt: 'Initial rate limit check',
+          image_url: null,
+          status: 'pending'
+        }
+
         const { error: insertError } = await supabase
           .from('image_generation_usage')
-          .insert({
-            user_id: user.id,
-            monthly_generation_count: 1,
-            generation_month: currentMonth,
-            prompt: 'Initial rate limit check' // Adding required prompt field
-          })
+          .insert(initialRecord)
 
         if (insertError) {
           console.error('Error creating usage record:', insertError)

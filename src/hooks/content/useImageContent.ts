@@ -19,17 +19,14 @@ export function useImageContent() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      const newRecord: Partial<ImageGenerationUsage> = {
+      const newRecord = {
         prompt: params.prompt,
         user_id: user.id,
         generated_at: new Date().toISOString(),
         status: params.image_url ? 'success' : 'pending',
-        retry_count: 0
-      };
-
-      if (params.image_url) {
-        newRecord.image_url = params.image_url;
-      }
+        retry_count: 0,
+        image_url: params.image_url || null
+      } as const;
 
       const { data: record, error } = await supabase
         .from('image_generation_usage')
@@ -67,20 +64,20 @@ export function useImageContent() {
 
       if (fetchError || !record) return false;
 
-      if (record.retry_count >= MAX_RETRIES) return false;
+      const currentRetryCount = record.retry_count || 0;
+      if (currentRetryCount >= MAX_RETRIES) return false;
 
       const { error: updateError } = await supabase
         .from('image_generation_usage')
         .update({
           status: 'processing',
-          retry_count: record.retry_count + 1,
+          retry_count: currentRetryCount + 1,
           last_retry: new Date().toISOString()
         })
         .eq('id', recordId);
 
       if (updateError) return false;
 
-      // Attendez un délai avant de réessayer
       await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
       return true;
     } catch (error) {
@@ -109,7 +106,7 @@ export function useImageContent() {
         id: img.id,
         title: img.prompt,
         content: img.image_url || '',
-        created_at: img.generated_at || new Date().toISOString(),
+        created_at: img.generated_at,
         type: 'Image' as const,
         displayType: 'Image',
         tags: [{
@@ -118,7 +115,7 @@ export function useImageContent() {
           backgroundColor: '#F2FCE220',
           borderColor: '#F2FCE24D'
         }]
-      })) satisfies SavedContent[];
+      }));
     } catch (error) {
       console.error('Error fetching images:', error);
       toast({
