@@ -24,7 +24,9 @@ export function useImageContent() {
         retry_count: 0,
         monthly_generation_count: 0,
         generation_month: new Date().toISOString().slice(0, 7) + '-01',
-        image_url: params.image_url || null
+        image_url: params.image_url || null,
+        error_message: undefined,
+        last_retry: undefined
       };
 
       const { data: record, error } = await supabase
@@ -120,8 +122,7 @@ export function useImageContent() {
           'status' in img &&
           'retry_count' in img &&
           'monthly_generation_count' in img &&
-          'generation_month' in img &&
-          img.status === 'success';
+          'generation_month' in img;
 
         if (!isValid) {
           console.log('Image invalide détectée:', img);
