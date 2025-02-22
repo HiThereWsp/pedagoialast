@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveLessonPlanParams } from "@/types/saved-content"
 import { toast } from "@/hooks/use-toast"

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
@@ -12,10 +11,13 @@ import { useToolMetrics } from "@/hooks/useToolMetrics";
 import { useNavigate } from 'react-router-dom';
 
 interface ResultDisplayProps {
-  lessonPlan: string | undefined;
+  lessonPlan: string;
+  lessonPlanId?: string;
+  subject?: string;
+  classLevel?: string;
 }
 
-export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
+export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }: ResultDisplayProps) {
   const { toast } = useToast();
   const { logToolUsage } = useToolMetrics();
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
@@ -24,64 +26,63 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
   const [feedback, setFeedback] = useState("");
   const navigate = useNavigate();
 
-  if (!lessonPlan) return null;
-
-  const handleFeedback = async (type: 'like' | 'dislike') => {
-    const score = type === 'like' ? 1 : -1;
-    
-    try {
-      setFeedbackScore(score);
-      await logToolUsage('lesson_plan', 'feedback', undefined, undefined, score);
-      
-      if (type === 'dislike') {
-        setIsDialogOpen(true);
-      } else {
-        toast({
-          description: "Merci pour votre retour positif !",
-        });
+  const handleGenerateExercise = () => {
+    navigate('/exercise', {
+      state: {
+        lessonPlanId,
+        lessonPlanContent: lessonPlan,
+        subject,
+        classLevel
       }
-    } catch (err) {
-      console.error('Erreur lors de l\'enregistrement du feedback:', err);
-      setFeedbackScore(null);
-      toast({
-        variant: "destructive",
-        description: "Erreur lors de l'enregistrement de votre retour",
-      });
-    }
+    });
   };
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(lessonPlan);
-      await logToolUsage('lesson_plan', 'copy', lessonPlan.length);
-      setIsCopied(true);
-      toast({
-        description: "Séquence copiée dans le presse-papier",
-        duration: 2000,
-      });
-      setTimeout(() => setIsCopied(false), 2000);
-    } catch (err) {
-      toast({
-        variant: "destructive",
-        description: "Erreur lors de la copie de la séquence",
-      });
-    }
+  const handleFeedback = (type: 'like' | 'dislike') => {
+    const newScore = type === 'like' ? 1 : -1;
+    setFeedbackScore(newScore);
+    toast({
+      title: type === 'like' ? 'Merci pour votre feedback positif !' : 'Merci pour votre feedback négatif.',
+      description: 'Votre avis nous aide à nous améliorer.',
+    });
+    logToolUsage('feedback', { score: newScore });
   };
 
-  const handleSubmitFeedback = async () => {
-    if (feedback.trim()) {
-      await logToolUsage('lesson_plan', 'feedback', feedback.length);
-      toast({
-        description: "Merci pour votre retour détaillé",
-      });
-    }
-    setIsDialogOpen(false);
-    setFeedback("");
+  const handleCopy = () => {
+    navigator.clipboard.writeText(lessonPlan);
+    setIsCopied(true);
+    toast({
+      title: 'Copié !',
+      description: 'La séquence pédagogique a été copiée dans votre presse-papiers.',
+    });
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const handleCreateExercise = () => {
-    localStorage.setItem('selectedLessonPlan', lessonPlan);
-    navigate('/exercise');
+  const formatContent = (content: string) => {
+    const formattedContent = content
+      .replace(/#{3,4}\s/g, '')
+      .replace(/\*\*/g, '')
+      .split('\n')
+      .map(line => {
+        if (line.includes('Séquence pédagogique')) {
+          return `<h1 class="text-2xl font-bold mb-6">${line}</h1>`;
+        }
+        if (line.match(/^\d+\./)) {
+          return `<h2 class="text-xl font-bold mt-8 mb-4">${line}</h2>`;
+        }
+        if (line.match(/^Phase \d+:/)) {
+          return `<h3 class="text-lg font-bold mt-6 mb-3 text.black">${line}</h3>`;
+        }
+        if (line.match(/^Séance \d+/)) {
+          return `<h4 class="font-bold mt-4 mb-2 text-black">${line}</h4>`;
+        }
+        if (line.trim().startsWith('-')) {
+          return `<p class="ml-4 my-1 text-black">${line}</p>`;
+        }
+        return line ? `<p class="my-2 text-black">${line}</p>` : '<br/>';
+      })
+      .join('\n');
+
+    return formattedContent;
   };
 
   return (
@@ -170,7 +171,7 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
 
         <div className="mt-8 pt-6 border-t border-gray-200">
           <Button
-            onClick={handleCreateExercise}
+            onClick={handleGenerateExercise}
             className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-3 rounded-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-sm hover:shadow-md group"
           >
             <ArrowRightCircle className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -179,30 +180,14 @@ export function ResultDisplay({ lessonPlan }: ResultDisplayProps) {
         </div>
       </Card>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Votre retour nous intéresse</DialogTitle>
-            <DialogDescription>
-              Aidez-nous à améliorer la qualité des séquences générées en nous expliquant ce qui ne vous convient pas.
-            </DialogDescription>
-          </DialogHeader>
-          <Textarea
-            value={feedback}
-            onChange={(e) => setFeedback(e.target.value)}
-            placeholder="Décrivez ce qui pourrait être amélioré..."
-            className="min-h-[100px]"
-          />
-          <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-              Annuler
-            </Button>
-            <Button onClick={handleSubmitFeedback}>
-              Envoyer
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <div className="flex justify-end space-x-4">
+        <Button
+          onClick={handleGenerateExercise}
+          className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
+        >
+          Générer un exercice à partir de cette séquence
+        </Button>
+      </div>
     </>
   );
 }

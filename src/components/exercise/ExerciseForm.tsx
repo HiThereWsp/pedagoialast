@@ -1,90 +1,165 @@
-
 import React, { useState } from 'react';
+import { Card } from "@/components/ui/card";
+import ReactMarkdown from 'react-markdown';
+import { ThumbsDown, Heart, Copy, ArrowRightCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GenerateExerciseForm } from './form/GenerateExerciseForm';
-import { DifferentiateExerciseForm } from './form/DifferentiateExerciseForm';
-import { FormFields } from './form/FormFields';
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useToolMetrics } from "@/hooks/useToolMetrics";
+import { useNavigate } from 'react-router-dom';
 
-interface ExerciseFormProps {
-  formData: {
-    subject: string;
-    classLevel: string;
-    numberOfExercises: string;
-    questionsPerExercise: string;
-    objective: string;
-    exerciseType: string;
-    additionalInstructions: string;
-    specificNeeds: string;
-    challenges: string;
-    originalExercise: string;
-    studentProfile: string;
-    learningDifficulties: string;
-    selectedLessonPlan: string;
-  };
-  handleInputChange: (field: string, value: string) => void;
-  handleSubmit: () => Promise<void>;
-  isLoading: boolean;
+interface ResultDisplayProps {
+  lessonPlan: string;
+  lessonPlanId?: string;
+  subject?: string;
+  classLevel?: string;
 }
 
-export function ExerciseForm({ formData, handleInputChange, handleSubmit, isLoading }: ExerciseFormProps) {
-  const [isDifferentiation, setIsDifferentiation] = useState(false);
-  const isLessonPlanSelected = formData.selectedLessonPlan !== '' && formData.selectedLessonPlan !== 'none';
+export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }: ResultDisplayProps) {
+  const { toast } = useToast();
+  const { logToolUsage } = useToolMetrics();
+  const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const navigate = useNavigate();
+
+  const handleGenerateExercise = () => {
+    navigate('/exercise', {
+      state: {
+        lessonPlanId,
+        lessonPlanContent: lessonPlan,
+        subject,
+        classLevel
+      }
+    });
+  };
+
+  const handleFeedback = (type: 'like' | 'dislike') => {
+    const newScore = type === 'like' ? 1 : -1;
+    setFeedbackScore(newScore);
+    toast({
+      title: type === 'like' ? 'Merci pour votre feedback positif !' : 'Merci pour votre feedback négatif.',
+      description: 'Votre avis nous aide à nous améliorer.',
+    });
+    logToolUsage('feedback', { score: newScore });
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(lessonPlan);
+    setIsCopied(true);
+    toast({
+      title: 'Copié !',
+      description: 'La séquence pédagogique a été copiée dans votre presse-papiers.',
+    });
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto p-4 sm:p-6 bg-white rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-all duration-200">
-      <div className="flex justify-center mb-8">
-        <Tabs defaultValue={isDifferentiation ? "differentiate" : "generate"} className="w-full max-w-[400px]">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger 
-              value="generate" 
-              onClick={() => setIsDifferentiation(false)}
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
+    <>
+      <Card className="relative bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">
+            Séquence pédagogique générée
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handleFeedback('like')}
+              className={cn(
+                "rounded p-1.5 text-gray-400 hover:bg-gray-50 transition-all duration-300",
+                feedbackScore === 1 && "text-emerald-500"
+              )}
+              aria-label="J'aime"
             >
-              Générer
-            </TabsTrigger>
-            <TabsTrigger 
-              value="differentiate" 
-              onClick={() => setIsDifferentiation(true)}
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#F97316] data-[state=active]:via-[#D946EF] data-[state=active]:to-pink-500 data-[state=active]:text-white"
+              <Heart className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => handleFeedback('dislike')}
+              className={cn(
+                "rounded p-1.5 text-gray-400 hover:bg-gray-50 transition-all duration-300",
+                feedbackScore === -1 && "text-red-500"
+              )}
+              aria-label="Je n'aime pas"
             >
-              Différencier
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
+              <ThumbsDown className="h-5 w-5" />
+            </button>
+            <button
+              onClick={handleCopy}
+              className={cn(
+                "rounded p-1.5 text-gray-400 hover:bg-gray-50 transition-all duration-300",
+                isCopied && "text-blue-500"
+              )}
+              aria-label="Copier la séquence"
+            >
+              <Copy className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+        <div className="prose prose-sm max-w-none mb-6">
+          <ReactMarkdown
+            components={{
+              h1: ({ children }) => (
+                <h1 className="text-2xl font-bold mt-8 mb-4 text-gray-900 first:mt-0 border-b border-gray-200 pb-2">
+                  {children}
+                </h1>
+              ),
+              h2: ({ children }) => (
+                <h2 className="text-xl font-bold mt-6 mb-3 text-gray-800">
+                  {children}
+                </h2>
+              ),
+              h3: ({ children }) => (
+                <h3 className="text-lg font-semibold mt-4 mb-2 text-gray-800">
+                  {children}
+                </h3>
+              ),
+              p: ({ children }) => (
+                <p className="mb-4 text-gray-700 leading-relaxed">
+                  {children}
+                </p>
+              ),
+              ul: ({ children }) => (
+                <ul className="list-disc pl-6 mb-4 mt-2 space-y-2 text-gray-700">
+                  {children}
+                </ul>
+              ),
+              ol: ({ children }) => (
+                <ol className="list-decimal pl-6 mb-4 mt-2 space-y-2 text-gray-700">
+                  {children}
+                </ol>
+              ),
+              li: ({ children }) => (
+                <li className="mb-1">
+                  {children}
+                </li>
+              ),
+            }}
+          >
+            {lessonPlan}
+          </ReactMarkdown>
+        </div>
 
-      <div className="space-y-6">
-        {!isDifferentiation && <FormFields.LessonPlanSelect value={formData.selectedLessonPlan} onChange={handleInputChange} />}
-        {isDifferentiation ? (
-          <DifferentiateExerciseForm formData={formData} handleInputChange={handleInputChange} />
-        ) : (
-          <GenerateExerciseForm 
-            formData={formData} 
-            handleInputChange={handleInputChange}
-            isLessonPlanSelected={isLessonPlanSelected}
-          />
-        )}
-      </div>
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <Button
+            onClick={handleGenerateExercise}
+            className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-3 rounded-lg flex items-center justify-center gap-3 transition-all duration-300 shadow-sm hover:shadow-md group"
+          >
+            <ArrowRightCircle className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+            Créer un exercice à partir de cette séquence
+          </Button>
+        </div>
+      </Card>
 
-      <Button
-        className="w-full bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 hover:from-pink-500 hover:via-[#D946EF] hover:to-[#F97316] text-white font-medium py-2.5 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow"
-        onClick={handleSubmit}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : (
-          <Sparkles className="h-5 w-5" />
-        )}
-        {isLoading 
-          ? "Génération en cours..." 
-          : isDifferentiation 
-            ? "Différencier l'exercice"
-            : "Générer les exercices"
-        }
-      </Button>
-    </div>
+      <div className="flex justify-end space-x-4">
+        <Button
+          onClick={handleGenerateExercise}
+          className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
+        >
+          Générer un exercice à partir de cette séquence
+        </Button>
+      </div>
+    </>
   );
 }
