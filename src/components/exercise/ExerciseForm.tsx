@@ -163,3 +163,12 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
     </>
   );
 }
+
+export const ExerciseForm = ({ formData, handleInputChange, handleSubmit, isLoading }) => {
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Implémentation du formulaire */}
+      <button type="submit" disabled={isLoading}>Submit</button>
+    </form>
+  );
+};
