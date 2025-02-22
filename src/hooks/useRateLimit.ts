@@ -7,7 +7,7 @@ interface RateLimitConfig {
   timeWindow?: number // in milliseconds
 }
 
-export const useRateLimit = ({ maxRequests = 5, timeWindow = 2592000000 }: RateLimitConfig = {}) => {
+export const useRateLimit = ({ maxRequests = 999999, timeWindow = 2592000000 }: RateLimitConfig = {}) => {
   const [isLimited, setIsLimited] = useState(false)
 
   const checkRateLimit = useCallback(async () => {
@@ -38,7 +38,7 @@ export const useRateLimit = ({ maxRequests = 5, timeWindow = 2592000000 }: RateL
           generation_month: currentMonth,
           prompt: 'Initial rate limit check',
           image_url: null,
-          status: 'pending'
+          status: 'pending' as const
         }
 
         const { error: insertError } = await supabase
@@ -51,26 +51,6 @@ export const useRateLimit = ({ maxRequests = 5, timeWindow = 2592000000 }: RateL
         }
 
         return true
-      }
-
-      // Check if user has reached the limit
-      if (usageData.monthly_generation_count >= maxRequests) {
-        setIsLimited(true)
-        return false
-      }
-
-      // Increment the counter
-      const { error: updateError } = await supabase
-        .from('image_generation_usage')
-        .update({ 
-          monthly_generation_count: (usageData.monthly_generation_count || 0) + 1 
-        })
-        .eq('user_id', user.id)
-        .eq('generation_month', currentMonth)
-
-      if (updateError) {
-        console.error('Error updating usage count:', updateError)
-        return false
       }
 
       return true

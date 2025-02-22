@@ -23,10 +23,10 @@ export function useImageContent() {
         prompt: params.prompt,
         user_id: user.id,
         generated_at: new Date().toISOString(),
-        status: params.image_url ? 'success' : 'pending',
+        status: (params.image_url ? 'success' : 'pending') as const,
         retry_count: 0,
         image_url: params.image_url || null
-      } as const;
+      };
 
       const { data: record, error } = await supabase
         .from('image_generation_usage')

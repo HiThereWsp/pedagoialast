@@ -1,4 +1,3 @@
-
 export interface SavedContent {
   id: string
   title: string
@@ -124,7 +123,7 @@ export interface DatabaseTypes {
 export interface ImageGenerationUsage {
   id: string;
   prompt: string;
-  image_url?: string;
+  image_url?: string | null;
   user_id: string;
   generated_at: string;
   status: 'pending' | 'processing' | 'success' | 'error';
