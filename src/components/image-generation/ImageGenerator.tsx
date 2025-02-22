@@ -3,9 +3,7 @@ import { Card } from '@/components/ui/card'
 import { LoadingIndicator } from '@/components/ui/loading-indicator'
 import { GenerationForm } from './GenerationForm'
 import { GeneratedImage } from './GeneratedImage'
-import { RemainingCredits } from './RemainingCredits'
 import { useImageGeneration } from '@/hooks/useImageGeneration'
-import { useRateLimit } from '@/hooks/useRateLimit'
 import { useState } from 'react'
 import { ImageStyle, GenerationPrompt } from './types'
 import { useToast } from '@/hooks/use-toast'
@@ -15,11 +13,6 @@ export const ImageGenerator = () => {
   const [lastPrompt, setLastPrompt] = useState<GenerationPrompt | null>(null)
   const { toast } = useToast()
   
-  const { isLimited, checkRateLimit } = useRateLimit({
-    maxRequests: 5,
-    timeWindow: 2592000000
-  })
-
   const { 
     isLoading, 
     generatedImageUrl, 
@@ -27,15 +20,6 @@ export const ImageGenerator = () => {
   } = useImageGeneration()
 
   const handleGenerateImage = async (prompt: GenerationPrompt) => {
-    if (isLimited) {
-      toast({
-        variant: "destructive",
-        title: "Limite atteinte",
-        description: "Vous avez atteint votre limite de 5 générations d'images pour ce mois-ci. Le compteur sera réinitialisé le mois prochain."
-      })
-      return
-    }
-
     if (prompt.user_prompt.length < 3) {
       toast({
         variant: "destructive",
@@ -52,11 +36,6 @@ export const ImageGenerator = () => {
       return
     }
 
-    const canProceed = await checkRateLimit()
-    if (!canProceed) {
-      return
-    }
-
     setSelectedStyle(prompt.style)
     setLastPrompt(prompt)
     generateImage(prompt)
@@ -64,28 +43,11 @@ export const ImageGenerator = () => {
 
   const handleRegenerate = async () => {
     if (!lastPrompt) return
-    
-    if (isLimited) {
-      toast({
-        variant: "destructive",
-        title: "Limite atteinte",
-        description: "Vous avez atteint votre limite de 5 générations d'images pour ce mois-ci. Le compteur sera réinitialisé le mois prochain."
-      })
-      return
-    }
-
-    const canProceed = await checkRateLimit()
-    if (!canProceed) {
-      return
-    }
-
     generateImage(lastPrompt)
   }
 
   return (
     <Card className="p-6 max-w-2xl mx-auto">
-      <RemainingCredits />
-      
       <GenerationForm 
         onSubmit={handleGenerateImage}
         isLoading={isLoading}
