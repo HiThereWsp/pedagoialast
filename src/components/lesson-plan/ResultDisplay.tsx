@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import ReactMarkdown from 'react-markdown';
@@ -5,8 +6,6 @@ import { ThumbsDown, Heart, Copy, ArrowRightCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToolMetrics } from "@/hooks/useToolMetrics";
 import { useNavigate } from 'react-router-dom';
 
@@ -22,8 +21,6 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
   const { logToolUsage } = useToolMetrics();
   const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
   const [isCopied, setIsCopied] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [feedback, setFeedback] = useState("");
   const navigate = useNavigate();
 
   const handleGenerateExercise = () => {
@@ -55,34 +52,6 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
       description: 'La séquence pédagogique a été copiée dans votre presse-papiers.',
     });
     setTimeout(() => setIsCopied(false), 2000);
-  };
-
-  const formatContent = (content: string) => {
-    const formattedContent = content
-      .replace(/#{3,4}\s/g, '')
-      .replace(/\*\*/g, '')
-      .split('\n')
-      .map(line => {
-        if (line.includes('Séquence pédagogique')) {
-          return `<h1 class="text-2xl font-bold mb-6">${line}</h1>`;
-        }
-        if (line.match(/^\d+\./)) {
-          return `<h2 class="text-xl font-bold mt-8 mb-4">${line}</h2>`;
-        }
-        if (line.match(/^Phase \d+:/)) {
-          return `<h3 class="text-lg font-bold mt-6 mb-3 text.black">${line}</h3>`;
-        }
-        if (line.match(/^Séance \d+/)) {
-          return `<h4 class="font-bold mt-4 mb-2 text-black">${line}</h4>`;
-        }
-        if (line.trim().startsWith('-')) {
-          return `<p class="ml-4 my-1 text-black">${line}</p>`;
-        }
-        return line ? `<p class="my-2 text-black">${line}</p>` : '<br/>';
-      })
-      .join('\n');
-
-    return formattedContent;
   };
 
   return (
@@ -125,6 +94,7 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
             </button>
           </div>
         </div>
+
         <div className="prose prose-sm max-w-none mb-6">
           <ReactMarkdown
             components={{
@@ -179,15 +149,6 @@ export function ResultDisplay({ lessonPlan, lessonPlanId, subject, classLevel }:
           </Button>
         </div>
       </Card>
-
-      <div className="flex justify-end space-x-4">
-        <Button
-          onClick={handleGenerateExercise}
-          className="bg-gradient-to-r from-[#F97316] via-[#D946EF] to-pink-500 text-white"
-        >
-          Générer un exercice à partir de cette séquence
-        </Button>
-      </div>
     </>
   );
 }
