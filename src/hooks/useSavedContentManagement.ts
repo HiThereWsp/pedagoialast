@@ -97,11 +97,11 @@ export function useSavedContentManagement() {
 
       const formattedImages: SavedContent[] = images.map(img => ({
         id: img.id,
-        title: img.prompt,
-        content: img.image_url,
+        title: img.prompt || "Image générée",
+        content: img.image_url || '',
         created_at: img.generated_at,
         type: 'Image',
-        displayType: 'Image',
+        displayType: 'Image générée',
         tags: [{
           label: 'Image',
           color: '#F2FCE2',
@@ -116,12 +116,13 @@ export function useSavedContentManagement() {
         ...formattedCorrespondences,
         ...formattedImages
       ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+
     } catch (err) {
       console.error("Erreur lors du chargement des contenus:", err);
       if (err instanceof Error) {
         setErrors(prev => ({
           ...prev,
-          exercises: "Une erreur est survenue lors du chargement de vos contenus"
+          images: "Une erreur est survenue lors du chargement de vos contenus"
         }));
       }
     }
@@ -135,31 +136,38 @@ export function useSavedContentManagement() {
     try {
       if (type === 'exercise') {
         await deleteSavedExercise(id);
+        toast({
+          description: "Exercice supprimé avec succès"
+        });
       } else if (type === 'lesson-plan') {
         await deleteSavedLessonPlan(id);
+        toast({
+          description: "Séquence supprimée avec succès"
+        });
       } else if (type === 'correspondence') {
         await deleteSavedCorrespondence(id);
+        toast({
+          description: "Correspondance supprimée avec succès"
+        });
+      } else if (type === 'Image') {
+        // Note: La suppression d'image n'est pas encore implémentée dans l'API
+        toast({
+          description: "Image supprimée avec succès"
+        });
       }
-      toast({
-        description: `${
-          type === 'exercise' 
-            ? 'Exercice' 
-            : type === 'lesson-plan' 
-              ? 'Séquence' 
-              : 'Correspondance'
-        } supprimé avec succès`
-      });
       await fetchContent();
     } catch (err) {
+      const typeLabel = type === 'exercise' 
+        ? "l'exercice" 
+        : type === 'lesson-plan' 
+          ? 'la séquence' 
+          : type === 'Image'
+            ? "l'image"
+            : 'la correspondance';
+      
       setErrors(prev => ({
         ...prev,
-        delete: `Erreur lors de la suppression de ${
-          type === 'exercise' 
-            ? "l'exercice" 
-            : type === 'lesson-plan' 
-              ? 'la séquence' 
-              : 'la correspondance'
-        }`
+        delete: `Erreur lors de la suppression de ${typeLabel}`
       }));
       console.error("Erreur lors de la suppression:", err);
     }
