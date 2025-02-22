@@ -248,7 +248,7 @@ export type Database = {
           generated_at: string | null
           generation_month: string | null
           id: string
-          image_url: string | null
+          image_url: string
           monthly_generation_count: number | null
           prompt: string
           user_id: string
@@ -257,7 +257,7 @@ export type Database = {
           generated_at?: string | null
           generation_month?: string | null
           id?: string
-          image_url?: string | null
+          image_url: string
           monthly_generation_count?: number | null
           prompt: string
           user_id: string
@@ -266,7 +266,7 @@ export type Database = {
           generated_at?: string | null
           generation_month?: string | null
           id?: string
-          image_url?: string | null
+          image_url?: string
           monthly_generation_count?: number | null
           prompt?: string
           user_id?: string
