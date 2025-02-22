@@ -19,13 +19,11 @@ export function useImageContent() {
       const newRecord: Partial<ImageGenerationUsage> = {
         prompt: params.prompt,
         user_id: user.id,
-        status: 'pending',
         generated_at: new Date().toISOString(),
       };
 
       if (params.image_url) {
         newRecord.image_url = params.image_url;
-        newRecord.status = 'success';
       }
 
       const { data: record, error } = await supabase
@@ -65,7 +63,7 @@ export function useImageContent() {
         .from('image_generation_usage')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'success')
+        .not('image_url', 'is', null)
         .order('generated_at', { ascending: false });
 
       if (error) throw error;
