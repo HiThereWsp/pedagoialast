@@ -6,6 +6,7 @@ import { SavedContentLoader } from "@/components/saved-content/SavedContentLoade
 import { SavedContentError } from "@/components/saved-content/SavedContentError";
 import { SavedContentList } from "@/components/saved-content/SavedContentList";
 import { DeleteDialog } from "@/components/saved-content/DeleteDialog";
+import { ContentPreviewSheet } from "@/components/saved-content/ContentPreviewSheet";
 import { useSavedContentManagement } from "@/hooks/useSavedContentManagement";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ const tabs = [
 export default function SavedContentPage() {
   const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null);
   const [activeTab, setActiveTab] = useState<string>('sequences');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     itemId: string;
@@ -75,6 +77,15 @@ export default function SavedContentPage() {
     if (currentTab) {
       navigate(currentTab.path);
     }
+  };
+
+  const handleDeleteRequest = (content: SavedContent) => {
+    setIsPreviewOpen(false);
+    setDeleteDialog({
+      isOpen: true,
+      itemId: content.id,
+      itemType: content.displayType || ""
+    });
   };
 
   if (isLoading) {
@@ -135,16 +146,19 @@ export default function SavedContentPage() {
           content={content}
           onItemSelect={(item) => {
             setSelectedContent(item);
-            setDeleteDialog({
-              isOpen: true,
-              itemId: item.id,
-              itemType: item.displayType || ""
-            });
+            setIsPreviewOpen(true);
           }}
           selectedItemId={selectedContent?.id}
           activeTab={activeTab}
         />
       </div>
+
+      <ContentPreviewSheet
+        content={selectedContent}
+        isOpen={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        onDelete={handleDeleteRequest}
+      />
 
       <DeleteDialog 
         isOpen={deleteDialog.isOpen}

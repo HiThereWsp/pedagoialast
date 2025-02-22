@@ -45,5 +45,19 @@ export interface ExerciseFormData {
   studentProfile: string;
   learningDifficulties: string;
   selectedLessonPlan: string;
-  challenges?: string[];
+  challenges: string[];
+}
+
+export interface SaveExerciseParams {
+  title: string;
+  content: string;
+  subject?: string;
+  class_level?: string;
+}
+
+export interface SaveLessonPlanParams {
+  title: string;
+  content: string;
+  subject?: string;
+  class_level?: string;
 }
