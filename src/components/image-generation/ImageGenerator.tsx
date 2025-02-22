@@ -1,3 +1,4 @@
+
 import { Card } from '@/components/ui/card'
 import { LoadingIndicator } from '@/components/ui/loading-indicator'
 import { GenerationForm } from './GenerationForm'
@@ -101,6 +102,7 @@ export const ImageGenerator = () => {
           imageUrl={generatedImageUrl}
           onRegenerate={handleRegenerate}
           isLoading={isLoading}
+          prompt={lastPrompt?.user_prompt}
         />
       )}
     </Card>

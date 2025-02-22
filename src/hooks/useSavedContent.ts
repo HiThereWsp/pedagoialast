@@ -13,6 +13,42 @@ export function useSavedContent() {
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const { toast } = useToast();
 
+  const saveImage = async (params: {
+    title: string;
+    prompt: string;
+    image_url: string;
+  }) => {
+    try {
+      const { data, error } = await supabase
+        .from('image_generation_usage')
+        .insert([{
+          prompt: params.prompt,
+          image_url: params.image_url,
+          title: params.title,
+          user_id: (await supabase.auth.getUser()).data.user?.id
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Image sauvegardée",
+        description: "Votre image a été sauvegardée avec succès"
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Error saving image:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde"
+      });
+      throw error;
+    }
+  };
+
   const saveExercise = async (params: SaveExerciseParams) => {
     try {
       setIsLoadingExercises(true);
@@ -272,6 +308,7 @@ export function useSavedContent() {
     getSavedImages,
     deleteSavedExercise,
     deleteSavedLessonPlan,
-    deleteSavedCorrespondence
+    deleteSavedCorrespondence,
+    saveImage,
   };
 }
