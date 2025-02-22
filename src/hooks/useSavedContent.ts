@@ -231,6 +231,33 @@ export function useSavedContent() {
     }
   };
 
+  const deleteSavedCorrespondence = async (id: string) => {
+    try {
+      setIsLoadingCorrespondences(true);
+      const { error } = await supabase
+        .from('saved_correspondences')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Correspondance supprimée",
+        description: "Votre correspondance a été supprimée avec succès"
+      });
+    } catch (error) {
+      console.error('Error deleting correspondence:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la suppression"
+      });
+      throw error;
+    } finally {
+      setIsLoadingCorrespondences(false);
+    }
+  };
+
   return {
     isLoadingExercises,
     isLoadingLessonPlans,
@@ -244,6 +271,7 @@ export function useSavedContent() {
     getSavedCorrespondences,
     getSavedImages,
     deleteSavedExercise,
-    deleteSavedLessonPlan
+    deleteSavedLessonPlan,
+    deleteSavedCorrespondence
   };
 }
