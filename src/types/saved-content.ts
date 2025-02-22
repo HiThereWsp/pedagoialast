@@ -1,4 +1,3 @@
-
 export interface SavedContent {
   id: string
   title: string
@@ -26,20 +25,31 @@ export interface SavedContent {
   }>
 }
 
-export interface ImageGenerationUsage {
-  id: string
-  prompt: string
-  image_url: string | null
-  user_id: string
-  generated_at: string
-  status: 'pending' | 'processing' | 'success' | 'error'
-  error_message?: string
-  retry_count: number
-  last_retry?: string
-  monthly_generation_count: number
-  generation_month: string
+// Types pour les exercices
+export type ExerciseCategory = 'standard' | 'differentiated';
+
+// Interface pour la sauvegarde des exercices
+export interface SaveExerciseParams {
+  title: string
+  content: string
+  subject?: string
+  class_level?: string
+  exercise_type?: string
+  source_lesson_plan_id?: string
+  exercise_category?: ExerciseCategory
+  source_type?: 'direct' | 'from_lesson_plan'  // Ajout du champ manquant
 }
 
+// Interface pour les exercices extraits
+export interface ExtractedExercise {
+  title: string
+  content: string
+  subject?: string
+  class_level?: string
+  lesson_plan_id: string
+}
+
+// Interface pour le formulaire d'exercice
 export interface ExerciseFormData {
   subject: string
   classLevel: string
@@ -56,18 +66,7 @@ export interface ExerciseFormData {
   challenges: string
 }
 
-export interface SaveExerciseParams {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  exercise_type?: string
-  difficulty_level?: string
-  source_lesson_plan_id?: string
-  source_type?: 'direct' | 'from_lesson_plan'
-  exercise_category?: 'standard' | 'differentiated'
-}
-
+// Interface pour la sauvegarde des plans de leçon
 export interface SaveLessonPlanParams {
   title: string
   content: string
@@ -77,10 +76,27 @@ export interface SaveLessonPlanParams {
   additional_instructions?: string
 }
 
-export interface ExtractedExercise {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  lesson_plan_id: string
+// Types pour la gestion des images
+export type ImageStatus = 'pending' | 'processing' | 'success' | 'error';
+
+// Interface de base pour la validation des images
+export interface BaseImageValidation {
+  id: string
+  prompt: string
+  image_url: string | null
+  user_id: string
+  generated_at: string
+  status: ImageStatus
+  retry_count: number
+  monthly_generation_count: number
+  generation_month: string
 }
+
+// Champs optionnels pour les images
+export interface OptionalImageFields {
+  error_message?: string
+  last_retry?: string
+}
+
+// Type final pour ImageGenerationUsage
+export type ImageGenerationUsage = BaseImageValidation & OptionalImageFields;

@@ -1,12 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client"
-import type { SaveExerciseParams, ExtractedExercise, SavedContent } from "@/types/saved-content"
+import type { SaveExerciseParams, ExtractedExercise, SavedContent, ExerciseCategory } from "@/types/saved-content"
+import { isExerciseCategory } from "@/utils/type-guards"
 
 export const exercisesService = {
   async save(params: SaveExerciseParams) {
     console.log('🔵 Début de la sauvegarde exercice:', {
       ...params,
-      content: params.content.substring(0, 100) + '...' // Log partiel du contenu
+      content: params.content.substring(0, 100) + '...'
     });
 
     try {
@@ -17,6 +18,10 @@ export const exercisesService = {
       }
       
       console.log('👤 Utilisateur authentifié:', user.id);
+
+      const exercise_category: ExerciseCategory = isExerciseCategory(params.exercise_category) 
+        ? params.exercise_category 
+        : 'standard';
       
       const { data, error } = await supabase
         .from('saved_exercises')
@@ -24,6 +29,7 @@ export const exercisesService = {
           ...params,
           user_id: user.id,
           type: 'exercise' as const,
+          exercise_category,
           source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
         }])
         .select()
@@ -75,6 +81,7 @@ export const exercisesService = {
       const transformedData: SavedContent[] = (data || []).map(exercise => ({
         ...exercise,
         type: 'exercise' as const,
+        exercise_category: isExerciseCategory(exercise.exercise_category) ? exercise.exercise_category : 'standard',
         source_type: exercise.source_type as 'direct' | 'from_lesson_plan',
         tags: [{
           label: 'Exercice',
