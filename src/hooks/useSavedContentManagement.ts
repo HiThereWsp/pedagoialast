@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useSavedContent } from "@/hooks/useSavedContent";
 import { useToast } from "@/hooks/use-toast";
@@ -96,20 +95,20 @@ export function useSavedContentManagement() {
         }]
       }));
 
-      // S'assurer que les images existent et ont les propriétés requises
-      const validImages = (images || []).filter((img): img is ImageGenerationUsage => 
+      const validImages = (images || []).filter((img) => 
         img !== null && 
         typeof img === 'object' && 
         'status' in img && 
-        img.status === 'success'
+        img.status === 'success' &&
+        'image_url' in img
       );
 
       const formattedImages: SavedContent[] = validImages.map(img => ({
         id: img.id,
         title: "Image générée",
         content: img.image_url || '',
-        created_at: img.generated_at,
-        type: 'Image' as const,
+        created_at: img.generated_at || new Date().toISOString(),
+        type: 'Image',
         displayType: 'Image générée',
         tags: [{
           label: 'Image',
@@ -119,7 +118,6 @@ export function useSavedContentManagement() {
         }]
       }));
 
-      // Ne garder que les contenus valides
       const allContent = [
         ...formattedExercises, 
         ...formattedLessonPlans, 

@@ -98,18 +98,9 @@ export default function SavedContentPage() {
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-6">
-            <Link to="/home" className="shrink-0">
-              <img 
-                src="/lovable-uploads/d13e3386-8e0a-49a4-b20f-e4bf5030fdb1.png" 
-                alt="PedagoIA Logo" 
-                className="w-[50px] h-[60px] object-contain" 
-              />
-            </Link>
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
-              Mes ressources
-            </h1>
-          </div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+            Mes ressources
+          </h1>
           
           <Button 
             onClick={handleCreate}
