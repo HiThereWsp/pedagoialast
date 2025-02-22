@@ -23,6 +23,7 @@ export default function ExercisePage() {
     studentProfile: "",
     learningDifficulties: "",
     selectedLessonPlan: "",
+    challenges: [] as string[]
   });
 
   const handleInputChange = (field: string, value: string) => {

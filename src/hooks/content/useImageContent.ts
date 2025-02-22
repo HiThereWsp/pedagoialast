@@ -4,9 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import type { SavedContent, ImageGenerationUsage } from "@/types/saved-content";
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY = 1000; // 1 seconde
-
 export function useImageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -23,7 +20,7 @@ export function useImageContent() {
         prompt: params.prompt,
         user_id: user.id,
         generated_at: new Date().toISOString(),
-        status: (params.image_url ? 'success' : 'pending') as const,
+        status: params.image_url ? 'success' as const : 'pending' as const,
         retry_count: 0,
         image_url: params.image_url || null
       };
@@ -42,7 +39,7 @@ export function useImageContent() {
         });
       }
 
-      return record;
+      return record as ImageGenerationUsage;
     } catch (error) {
       console.error('Error saving image:', error);
       toast({
@@ -65,12 +62,12 @@ export function useImageContent() {
       if (fetchError || !record) return false;
 
       const currentRetryCount = record.retry_count || 0;
-      if (currentRetryCount >= MAX_RETRIES) return false;
+      if (currentRetryCount >= 3) return false;
 
       const { error: updateError } = await supabase
         .from('image_generation_usage')
         .update({
-          status: 'processing',
+          status: 'processing' as const,
           retry_count: currentRetryCount + 1,
           last_retry: new Date().toISOString()
         })
@@ -78,7 +75,7 @@ export function useImageContent() {
 
       if (updateError) return false;
 
-      await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
     } catch (error) {
       console.error('Error retrying image:', error);
@@ -103,7 +100,6 @@ export function useImageContent() {
 
       if (error) throw error;
 
-      // Vérification et transformation des données
       if (!images || !Array.isArray(images)) {
         console.log('Aucune image trouvée ou format invalide');
         return [];
@@ -111,7 +107,6 @@ export function useImageContent() {
 
       console.log('Images récupérées:', images.length);
 
-      // Validation et transformation des données
       const validImages = images.filter((img): img is ImageGenerationUsage => {
         const isValid = img !== null &&
           typeof img === 'object' &&
@@ -131,20 +126,7 @@ export function useImageContent() {
 
       console.log('Images valides:', validImages.length);
 
-      return validImages.map(img => ({
-        id: img.id,
-        title: img.prompt || "Image générée",
-        content: img.image_url || '',
-        created_at: img.generated_at,
-        type: 'Image' as const,
-        displayType: 'Image générée',
-        tags: [{
-          label: 'Image',
-          color: '#F2FCE2',
-          backgroundColor: '#F2FCE220',
-          borderColor: '#F2FCE24D'
-        }]
-      }));
+      return validImages;
     } catch (error) {
       console.error('Error fetching images:', error);
       toast({
@@ -165,4 +147,3 @@ export function useImageContent() {
     retryFailedImage
   };
 }
-
