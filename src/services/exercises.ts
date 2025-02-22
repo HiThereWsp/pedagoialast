@@ -17,6 +17,8 @@ export const exercisesService = {
       }
       
       console.log('👤 Utilisateur authentifié:', user.id);
+
+      const exercise_category = (params.exercise_category || 'standard') as 'standard' | 'differentiated';
       
       const { data, error } = await supabase
         .from('saved_exercises')
@@ -24,7 +26,7 @@ export const exercisesService = {
           ...params,
           user_id: user.id,
           type: 'exercise' as const,
-          exercise_category: params.exercise_category || 'standard',
+          exercise_category,
           source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
         }])
         .select()

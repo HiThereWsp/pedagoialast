@@ -22,6 +22,8 @@ export function useImageContent() {
         generated_at: new Date().toISOString(),
         status: params.image_url ? 'success' as const : 'pending' as const,
         retry_count: 0,
+        monthly_generation_count: 0,
+        generation_month: new Date().toISOString().slice(0, 7) + '-01',
         image_url: params.image_url || null
       };
 
@@ -113,8 +115,12 @@ export function useImageContent() {
           'id' in img &&
           'prompt' in img &&
           'image_url' in img &&
+          'user_id' in img &&
           'generated_at' in img &&
           'status' in img &&
+          'retry_count' in img &&
+          'monthly_generation_count' in img &&
+          'generation_month' in img &&
           img.status === 'success';
 
         if (!isValid) {
@@ -125,7 +131,6 @@ export function useImageContent() {
       });
 
       console.log('Images valides:', validImages.length);
-
       return validImages;
     } catch (error) {
       console.error('Error fetching images:', error);
