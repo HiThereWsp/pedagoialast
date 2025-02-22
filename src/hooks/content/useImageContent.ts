@@ -1,8 +1,8 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import type { SavedContent, ImageGenerationUsage } from "@/types/saved-content";
+import type { ImageGenerationUsage } from "@/types/saved-content";
+import { isImageGenerationUsage } from "@/utils/type-guards";
 
 export function useImageContent() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,17 +16,15 @@ export function useImageContent() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
 
-      const newRecord = {
+      const newRecord: Omit<ImageGenerationUsage, 'id'> = {
         prompt: params.prompt,
         user_id: user.id,
         generated_at: new Date().toISOString(),
-        status: params.image_url ? 'success' as const : 'pending' as const,
+        status: params.image_url ? 'success' : 'pending',
         retry_count: 0,
         monthly_generation_count: 0,
         generation_month: new Date().toISOString().slice(0, 7) + '-01',
-        image_url: params.image_url || null,
-        error_message: undefined,
-        last_retry: undefined
+        image_url: params.image_url || null
       };
 
       const { data: record, error } = await supabase
@@ -37,13 +35,17 @@ export function useImageContent() {
 
       if (error) throw error;
 
+      if (!isImageGenerationUsage(record)) {
+        throw new Error('Invalid image data returned from database');
+      }
+
       if (params.image_url) {
         toast({
           description: "Image sauvegardée avec succès",
         });
       }
 
-      return record as ImageGenerationUsage;
+      return record;
     } catch (error) {
       console.error('Error saving image:', error);
       toast({
@@ -111,25 +113,7 @@ export function useImageContent() {
 
       console.log('Images récupérées:', images.length);
 
-      const validImages = images.filter((img): img is ImageGenerationUsage => {
-        const isValid = img !== null &&
-          typeof img === 'object' &&
-          'id' in img &&
-          'prompt' in img &&
-          'image_url' in img &&
-          'user_id' in img &&
-          'generated_at' in img &&
-          'status' in img &&
-          'retry_count' in img &&
-          'monthly_generation_count' in img &&
-          'generation_month' in img;
-
-        if (!isValid) {
-          console.log('Image invalide détectée:', img);
-        }
-
-        return isValid;
-      });
+      const validImages = images.filter(isImageGenerationUsage);
 
       console.log('Images valides:', validImages.length);
       return validImages;

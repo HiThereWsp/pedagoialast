@@ -1,4 +1,3 @@
-
 export interface SavedContent {
   id: string
   title: string
@@ -26,61 +25,28 @@ export interface SavedContent {
   }>
 }
 
-export interface ImageGenerationUsage {
+// Types stricts pour les exercices
+export type ExerciseCategory = 'standard' | 'differentiated';
+export type ImageStatus = 'pending' | 'processing' | 'success' | 'error';
+
+// Interface de base pour la validation des images
+export interface BaseImageValidation {
   id: string
   prompt: string
   image_url: string | null
   user_id: string
   generated_at: string
-  status: 'pending' | 'processing' | 'success' | 'error'
-  error_message?: string
+  status: ImageStatus
   retry_count: number
-  last_retry?: string
   monthly_generation_count: number
   generation_month: string
 }
 
-export interface ExerciseFormData {
-  subject: string
-  classLevel: string
-  numberOfExercises: string
-  questionsPerExercise: string
-  objective: string
-  exerciseType: string
-  additionalInstructions: string
-  specificNeeds: string
-  originalExercise: string
-  studentProfile: string
-  learningDifficulties: string
-  selectedLessonPlan: string
-  challenges: string
+// Champs optionnels pour les images
+export interface OptionalImageFields {
+  error_message?: string
+  last_retry?: string
 }
 
-export interface SaveExerciseParams {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  exercise_type?: string
-  difficulty_level?: string
-  source_lesson_plan_id?: string
-  source_type?: 'direct' | 'from_lesson_plan'
-  exercise_category?: 'standard' | 'differentiated'
-}
-
-export interface SaveLessonPlanParams {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  total_sessions?: number
-  additional_instructions?: string
-}
-
-export interface ExtractedExercise {
-  title: string
-  content: string
-  subject?: string
-  class_level?: string
-  lesson_plan_id: string
-}
+// Type final pour ImageGenerationUsage
+export type ImageGenerationUsage = BaseImageValidation & OptionalImageFields;

@@ -1,12 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client"
-import type { SaveExerciseParams, ExtractedExercise, SavedContent } from "@/types/saved-content"
+import type { SaveExerciseParams, ExtractedExercise, SavedContent, ExerciseCategory } from "@/types/saved-content"
+import { isExerciseCategory } from "@/utils/type-guards"
 
 export const exercisesService = {
   async save(params: SaveExerciseParams) {
     console.log('🔵 Début de la sauvegarde exercice:', {
       ...params,
-      content: params.content.substring(0, 100) + '...' // Log partiel du contenu
+      content: params.content.substring(0, 100) + '...'
     });
 
     try {
@@ -18,7 +19,9 @@ export const exercisesService = {
       
       console.log('👤 Utilisateur authentifié:', user.id);
 
-      const exercise_category = (params.exercise_category || 'standard') as const;
+      const exercise_category: ExerciseCategory = isExerciseCategory(params.exercise_category) 
+        ? params.exercise_category 
+        : 'standard';
       
       const { data, error } = await supabase
         .from('saved_exercises')
