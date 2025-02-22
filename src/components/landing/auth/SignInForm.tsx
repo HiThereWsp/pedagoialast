@@ -1,9 +1,11 @@
+
 import { Button } from "@/components/ui/button"
 import { useAuthForm } from "@/hooks/use-auth-form"
 import { AuthFormField } from "./AuthFormField"
 import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
 import { useNavigate } from "react-router-dom"
+import { AuthError } from "@supabase/supabase-js"
 
 interface SignInFormProps {
   onToggleMode: () => void
@@ -17,6 +19,16 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (!formState.email || !formState.password) {
+      toast({
+        variant: "destructive",
+        title: "Champs requis",
+        description: "Veuillez remplir tous les champs",
+        duration: 3000,
+      })
+      return
+    }
+
     try {
       // Track login attempt
       posthog.capture('login_started')
@@ -36,18 +48,36 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
       // Redirect to home page
       navigate('/home', { replace: true })
       
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error)
+      
+      let errorMessage = "Une erreur est survenue lors de la connexion"
+      
+      if (error instanceof AuthError) {
+        switch (error.message) {
+          case "Invalid login credentials":
+            errorMessage = "Email ou mot de passe incorrect"
+            break
+          case "Email not confirmed":
+            errorMessage = "Veuillez confirmer votre email avant de vous connecter"
+            break
+          case "Rate limit exceeded":
+            errorMessage = "Trop de tentatives. Veuillez réessayer plus tard"
+            break
+          default:
+            errorMessage = "Erreur lors de la connexion. Veuillez réessayer"
+        }
+      }
       
       // Track login error
       posthog.capture('login_error', {
-        error_type: error?.message || 'unknown'
+        error_type: error instanceof Error ? error.message : 'unknown'
       })
       
       toast({
         variant: "destructive",
         title: "Erreur de connexion",
-        description: error?.message || "Une erreur est survenue lors de la connexion. Veuillez réessayer.",
+        description: errorMessage,
       })
     }
   }
@@ -61,6 +91,7 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
         value={formState.email}
         onChange={(value) => setField("email", value)}
         placeholder="Votre email"
+        required
       />
       
       <AuthFormField
@@ -70,6 +101,7 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
         value={formState.password}
         onChange={(value) => setField("password", value)}
         placeholder="Votre mot de passe"
+        required
       />
 
       <Button type="submit" className="w-full" disabled={formState.isLoading}>

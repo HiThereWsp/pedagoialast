@@ -1,192 +1,105 @@
-
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts"
-import "https://deno.land/x/xhr@0.3.0/mod.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+const MISTRAL_API_KEY = Deno.env.get('MISTRAL_API_KEY');
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  if (!MISTRAL_API_KEY) {
+    throw new Error('Clé API Mistral non configurée');
   }
 
   try {
-    const { 
-      subject, 
-      classLevel, 
-      numberOfExercises, 
-      questionsPerExercise,
-      objective, 
-      exerciseType, 
-      additionalInstructions,
-      specificNeeds,
-      challenges,
-      originalExercise,
-      studentProfile,
-      learningDifficulties,
-      learningStyle,
-      lessonPlanContent
-    } = await req.json()
+    const params = await req.json();
+    console.log('📝 Paramètres reçus:', JSON.stringify(params, null, 2));
 
-    let prompt = ""
-    
-    if (originalExercise) {
-      // Prompt pour la différenciation
-      prompt = `Adaptez cette activité selon le contexte suivant :
-
-SITUATION PÉDAGOGIQUE
---------------------
-Activité de départ : "${originalExercise}"
-Discipline : "${subject}"
-Niveau : "${classLevel}"
-Objectif d'apprentissage : "${objective}"
-
-CONTEXTE D'APPRENTISSAGE
------------------------
-Observations de l'élève : "${studentProfile}"
-${learningStyle ? `Modalités d'apprentissage privilégiées : "${learningStyle}"` : ''}
-${learningDifficulties ? `Points de vigilance particuliers : "${learningDifficulties}"` : ''}
-
-FORMAT ATTENDU :
+    const systemPrompt = `Tu es un assistant pédagogique expert qui crée des exercices adaptés au système éducatif français.
+IMPORTANT: Commence directement avec les exercices, sans titre ni introduction.
+Génère deux sections distinctes avec EXACTEMENT ces marqueurs :
 
 FICHE ÉLÈVE
------------
-Consigne : 
-Questions :
-1.
-2.
-etc.
+[Exercices uniquement, sans titre ni préambule. PAS de mention de "Titre de la séquence" ou d'objectifs.]
 
-FICHE PÉDAGOGIQUE
-----------------
-PRÉPARATION :
-- Matériel nécessaire :
-- Organisation spatiale :
-- Temps estimé :
+FICHE CORRECTION
+[Correction détaillée de chaque exercice avec explications complètes.]
 
-ACCOMPAGNEMENT :
-1. [Question 1]
-   • Réponse attendue :
-   • Étayage possible :
-   • Indices progressifs :
-   • Alternatives acceptables :
+NE JAMAIS ajouter de texte avant "FICHE ÉLÈVE" ni entre les sections.`;
 
-2. [Question 2]
-   [Même structure]
+    const userPrompt = `Crée des exercices de ${params.subject} pour une classe de ${params.classLevel}.
+Objectif principal : ${params.objective}
+${params.exerciseType ? `Type d'exercices souhaité : ${params.exerciseType}` : ''}
+${params.specificNeeds ? `Besoins spécifiques : ${params.specificNeeds}` : ''}
+${params.additionalInstructions ? `Instructions supplémentaires : ${params.additionalInstructions}` : ''}
 
-OBSERVATIONS POUR LE SUIVI :
-- Points d'attention :
-- Indicateurs de réussite :
-- Prolongements possibles :
+RAPPEL : Commence directement avec "FICHE ÉLÈVE" suivi des exercices, sans titre ni introduction.`;
 
-OUTILS COMPLÉMENTAIRES :
-- Supports spécifiques :
-- Aides méthodologiques :`
-    } else {
-      // Prompt pour la génération
-      prompt = `Créez ${numberOfExercises || 1} exercices en ${subject} pour le niveau ${classLevel}.
-${lessonPlanContent ? `Contexte pédagogique de la séquence : ${lessonPlanContent}` : ''}
-Objectif pédagogique : ${objective}
-${exerciseType ? `Type d'exercice attendu : ${exerciseType}` : ''}
-${questionsPerExercise ? `Nombre de questions par exercice : ${questionsPerExercise}` : 'Nombre de questions adapté selon pertinence'}
+    console.log('📤 Envoi du prompt à Mistral AI');
 
-Contexte d'enseignement :
-${specificNeeds ? `Besoins spécifiques : ${specificNeeds}` : ''}
-${challenges ? `Points de vigilance : ${challenges}` : ''}
-${additionalInstructions ? `Consignes particulières : ${additionalInstructions}` : ''}
-
-FORMAT ATTENDU POUR CHAQUE EXERCICE:
-
-FICHE ÉLÈVE
------------
-Exercice [Numéro]
-Consigne : 
-Questions :
-1.
-2.
-etc.
-
-[Répéter ce format ${numberOfExercises || 1} fois]
-
-FICHE PÉDAGOGIQUE
-----------------
-PRÉPARATION :
-- Matériel nécessaire :
-- Durée conseillée :
-- Prérequis :
-
-CORRIGÉ ET AIDE À L'ACCOMPAGNEMENT :
-Pour chaque exercice :
-1. [Réponse]
-   Explicitation : 
-   Points de vigilance :
-   Remédiations possibles :
-2. [Réponse]
-   Explicitation :
-   Points de vigilance :
-   Remédiations possibles :
-etc.
-
-CONSEILS DE MISE EN ŒUVRE :
-- Organisation : 
-- Étayage possible :
-- Indices progressifs :`
-    }
-
-    console.log('Calling OpenAI with prompt:', prompt)
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MISTRAL_API_KEY}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'mistral-large-latest',
         messages: [
-          {
-            role: 'system',
-            content: 'Tu es un expert en pédagogie spécialisé dans la création d\'exercices adaptés. Tu génères exactement le nombre d\'exercices demandé en respectant scrupuleusement le format attendu.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
         ],
         temperature: 0.7,
-      }),
+        max_tokens: 4000
+      })
     });
 
     if (!response.ok) {
-      const error = await response.text()
-      console.error('OpenAI API error:', error)
-      throw new Error(`OpenAI API error: ${response.statusText}`)
+      const error = await response.text();
+      console.error('❌ Erreur de l\'API Mistral:', error);
+      throw new Error(`Erreur API Mistral: ${response.status}`);
     }
 
-    const data = await response.json()
-    const exercises = data.choices[0].message.content
+    const data = await response.json();
+    let result = data.choices[0].message.content;
 
-    console.log('Successfully generated exercises')
+    // Post-traitement pour supprimer tout texte avant "FICHE ÉLÈVE"
+    const studentMarker = "FICHE ÉLÈVE";
+    const markerIndex = result.indexOf(studentMarker);
+    if (markerIndex !== -1) {
+      result = result.substring(markerIndex);
+    }
 
+    // Vérification des sections
+    const sections = ['FICHE ÉLÈVE', 'FICHE CORRECTION'];
+    for (const section of sections) {
+      if (!result.includes(section)) {
+        console.error(`❌ Section manquante: ${section}`);
+        throw new Error(`La section "${section}" est manquante dans la génération`);
+      }
+    }
+
+    console.log('✅ Génération réussie avec les deux sections');
+    
     return new Response(
-      JSON.stringify({ exercises }), 
+      JSON.stringify({ exercises: result }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('❌ Erreur lors de la génération:', error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
       { 
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
-    )
-  } catch (error) {
-    console.error('Error in generate-exercises function:', error)
-    return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        details: 'An error occurred while generating the exercises'
-      }), 
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
-    )
+    );
   }
 });

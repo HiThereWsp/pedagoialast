@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
@@ -21,7 +22,8 @@ serve(async (req) => {
     recipient === 'director' ? 'la direction de l\'établissement' :
     recipient === 'inspector' ? 'l\'inspection académique' : 'un(e) collègue'}.
     Le message doit être professionnel, respectueux et adapté au destinataire.
-    Utilise les formules de politesse appropriées en fonction du destinataire.`
+    Utilise les formules de politesse appropriées en fonction du destinataire.
+    Important : Sois concis et va directement à l'essentiel. La réponse ne doit pas dépasser 250-300 mots.`
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -36,6 +38,7 @@ serve(async (req) => {
           { role: 'user', content: `Sujet: ${topic}\nContexte additionnel: ${additionalContext}` }
         ],
         temperature: 0.7,
+        max_tokens: 500, // Limite le nombre de tokens pour obtenir des réponses plus concises
       }),
     })
 

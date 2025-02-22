@@ -245,30 +245,42 @@ export type Database = {
       }
       image_generation_usage: {
         Row: {
+          error_message: string | null
           generated_at: string | null
           generation_month: string | null
           id: string
           image_url: string | null
+          last_retry: string | null
           monthly_generation_count: number | null
           prompt: string
+          retry_count: number | null
+          status: string | null
           user_id: string
         }
         Insert: {
+          error_message?: string | null
           generated_at?: string | null
           generation_month?: string | null
           id?: string
           image_url?: string | null
+          last_retry?: string | null
           monthly_generation_count?: number | null
           prompt: string
+          retry_count?: number | null
+          status?: string | null
           user_id: string
         }
         Update: {
+          error_message?: string | null
           generated_at?: string | null
           generation_month?: string | null
           id?: string
           image_url?: string | null
+          last_retry?: string | null
           monthly_generation_count?: number | null
           prompt?: string
+          retry_count?: number | null
+          status?: string | null
           user_id?: string
         }
         Relationships: []
@@ -389,16 +401,53 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_correspondences: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          recipient_type: string
+          title: string
+          tone: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          recipient_type: string
+          title: string
+          tone?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          recipient_type?: string
+          title?: string
+          tone?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       saved_exercises: {
         Row: {
           class_level: string | null
           content: string
           created_at: string
           difficulty_level: string | null
+          exercise_category: string | null
           exercise_type: string | null
           id: string
+          learning_style: string | null
           source_lesson_plan_id: string | null
           source_type: string | null
+          specific_needs: string | null
+          student_profile: string | null
           subject: string | null
           title: string
           updated_at: string
@@ -409,10 +458,14 @@ export type Database = {
           content: string
           created_at?: string
           difficulty_level?: string | null
+          exercise_category?: string | null
           exercise_type?: string | null
           id?: string
+          learning_style?: string | null
           source_lesson_plan_id?: string | null
           source_type?: string | null
+          specific_needs?: string | null
+          student_profile?: string | null
           subject?: string | null
           title: string
           updated_at?: string
@@ -423,10 +476,14 @@ export type Database = {
           content?: string
           created_at?: string
           difficulty_level?: string | null
+          exercise_category?: string | null
           exercise_type?: string | null
           id?: string
+          learning_style?: string | null
           source_lesson_plan_id?: string | null
           source_type?: string | null
+          specific_needs?: string | null
+          student_profile?: string | null
           subject?: string | null
           title?: string
           updated_at?: string
@@ -640,6 +697,7 @@ export type Database = {
       user_profiles: {
         Row: {
           created_at: string
+          email_verified: boolean | null
           id: number
           user_email: string | null
           user_id: string | null
@@ -647,6 +705,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email_verified?: boolean | null
           id?: number
           user_email?: string | null
           user_id?: string | null
@@ -654,6 +713,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email_verified?: boolean | null
           id?: number
           user_email?: string | null
           user_id?: string | null
@@ -871,12 +931,6 @@ export type Database = {
             }
             Returns: unknown
           }
-      check_saved_content_limit: {
-        Args: {
-          user_id_param: string
-        }
-        Returns: boolean
-      }
       generate_report: {
         Args: Record<PropertyKey, never>
         Returns: string

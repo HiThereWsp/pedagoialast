@@ -1,105 +1,175 @@
-
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveExerciseParams, ExtractedExercise, SavedContent } from "@/types/saved-content"
 
 export const exercisesService = {
   async save(params: SaveExerciseParams) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Non authentifié')
-    
-    console.log('Saving exercise with params:', params)
-    
-    const { error } = await supabase
-      .from('saved_exercises')
-      .insert([{
-        ...params,
-        user_id: user.id,
-        type: 'exercise' as const,
-        source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
-      }])
+    console.log('🔵 Début de la sauvegarde exercice:', {
+      ...params,
+      content: params.content.substring(0, 100) + '...' // Log partiel du contenu
+    });
 
-    if (error) {
-      console.error('Error saving exercise:', error)
-      throw error
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('❌ Erreur de sauvegarde: Utilisateur non authentifié');
+        throw new Error('Non authentifié')
+      }
+      
+      console.log('👤 Utilisateur authentifié:', user.id);
+      
+      const { data, error } = await supabase
+        .from('saved_exercises')
+        .insert([{
+          ...params,
+          user_id: user.id,
+          type: 'exercise' as const,
+          source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
+        }])
+        .select()
+
+      if (error) {
+        console.error('❌ Erreur Supabase lors de la sauvegarde:', {
+          code: error.code,
+          message: error.message,
+          details: error.details
+        });
+        throw error
+      }
+
+      console.log('✅ Exercice sauvegardé avec succès:', data);
+      return data
+    } catch (err) {
+      console.error('❌ Erreur inattendue lors de la sauvegarde:', err);
+      throw err
     }
   },
 
   async getAll(): Promise<SavedContent[]> {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Non authentifié')
-
-    console.log('Fetching exercises for user:', user.id)
+    console.log('🔵 Début récupération des exercices');
     
-    const { data, error } = await supabase
-      .from('saved_exercises')
-      .select('*, saved_lesson_plans!saved_exercises_source_lesson_plan_id_fkey(title)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('❌ Erreur de récupération: Utilisateur non authentifié');
+        throw new Error('Non authentifié')
+      }
 
-    if (error) {
-      console.error('Error fetching exercises:', error)
-      throw error
+      console.log('👤 Récupération pour utilisateur:', user.id);
+
+      const { data, error } = await supabase
+        .from('saved_exercises')
+        .select('*, saved_lesson_plans!saved_exercises_source_lesson_plan_id_fkey(title)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('❌ Erreur Supabase lors de la récupération:', {
+          code: error.code,
+          message: error.message,
+          details: error.details
+        });
+        throw error
+      }
+
+      const transformedData: SavedContent[] = data.map(exercise => ({
+        ...exercise,
+        type: 'exercise' as const,
+        source_type: exercise.source_type as 'direct' | 'from_lesson_plan'
+      }))
+
+      console.log('✅ Exercices récupérés:', transformedData.length, 'résultats');
+      return transformedData
+    } catch (err) {
+      console.error('❌ Erreur inattendue lors de la récupération:', err);
+      throw err
     }
-
-    const transformedData: SavedContent[] = data.map(exercise => ({
-      ...exercise,
-      type: 'exercise' as const,
-      source_type: exercise.source_type as 'direct' | 'from_lesson_plan'
-    }))
-    
-    console.log('Fetched exercises:', transformedData)
-    return transformedData
   },
 
   async delete(id: string) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Non authentifié')
-
-    console.log('Deleting exercise:', id)
+    console.log('🔵 Début suppression exercice:', id);
     
-    const { error } = await supabase
-      .from('saved_exercises')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', user.id)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('❌ Erreur de suppression: Utilisateur non authentifié');
+        throw new Error('Non authentifié')
+      }
 
-    if (error) {
-      console.error('Error deleting exercise:', error)
-      throw error
+      console.log('👤 Suppression pour utilisateur:', user.id);
+
+      const { error } = await supabase
+        .from('saved_exercises')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('❌ Erreur Supabase lors de la suppression:', {
+          code: error.code,
+          message: error.message,
+          details: error.details
+        });
+        throw error
+      }
+
+      console.log('✅ Exercice supprimé avec succès');
+    } catch (err) {
+      console.error('❌ Erreur inattendue lors de la suppression:', err);
+      throw err
     }
   },
 
   async extractFromLessonPlan(exercise: ExtractedExercise) {
-    console.log('Extracting exercise from lesson plan:', exercise)
-    return await this.save({
-      title: exercise.title,
-      content: exercise.content,
-      subject: exercise.subject,
-      class_level: exercise.class_level,
-      source_lesson_plan_id: exercise.lesson_plan_id,
-      source_type: 'from_lesson_plan'
-    })
+    console.log('🔵 Début extraction depuis le plan de cours:', exercise);
+    
+    try {
+      return await this.save({
+        title: exercise.title,
+        content: exercise.content,
+        subject: exercise.subject,
+        class_level: exercise.class_level,
+        source_lesson_plan_id: exercise.lesson_plan_id,
+        source_type: 'from_lesson_plan'
+      })
+    } catch (err) {
+      console.error('❌ Erreur lors de l\'extraction de l\'exercice:', err);
+      throw err
+    }
   },
 
   async getExercisesFromLessonPlan(lessonPlanId: string) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Non authentifié')
-
-    console.log('Fetching exercises for lesson plan:', lessonPlanId)
+    console.log('🔵 Début récupération des exercices du plan:', lessonPlanId);
     
-    const { data, error } = await supabase
-      .from('saved_exercises')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('source_lesson_plan_id', lessonPlanId)
-      .order('created_at', { ascending: false })
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        console.error('❌ Erreur de récupération: Utilisateur non authentifié');
+        throw new Error('Non authentifié')
+      }
 
-    if (error) {
-      console.error('Error fetching exercises from lesson plan:', error)
-      throw error
+      console.log('👤 Récupération pour utilisateur:', user.id);
+
+      const { data, error } = await supabase
+        .from('saved_exercises')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('source_lesson_plan_id', lessonPlanId)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('❌ Erreur Supabase lors de la récupération:', {
+          code: error.code,
+          message: error.message,
+          details: error.details
+        });
+        throw error
+      }
+
+      console.log('✅ Exercices récupérés du plan:', data?.length || 0, 'résultats');
+      return data
+    } catch (err) {
+      console.error('❌ Erreur inattendue lors de la récupération:', err);
+      throw err
     }
-    
-    console.log('Fetched exercises from lesson plan:', data)
-    return data
   }
 }

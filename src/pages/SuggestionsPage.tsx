@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Wand2, Sparkles } from 'lucide-react';
@@ -59,27 +60,27 @@ const SuggestionsPage = () => {
     });
 
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
+    <div className="min-h-screen bg-gray-50 px-4 py-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Hero CTA Section */}
-        <div className="bg-gradient-to-r from-[#FF9633]/10 to-[#FF9633]/5 rounded-2xl p-8 mb-8">
-          <div className="flex items-start gap-8">
-            <div className="flex-1 space-y-4">
-              <h1 className="text-3xl font-bold text-gray-800">
+        <div className="bg-gradient-to-r from-[#FF9633]/10 to-[#FF9633]/5 rounded-2xl p-4 md:p-8">
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+            <div className="flex-1 space-y-4 text-center md:text-left">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
                 Participez à l'évolution de PedagoIA
               </h1>
-              <p className="text-lg text-gray-600 leading-relaxed">
+              <p className="text-base md:text-lg text-gray-600 leading-relaxed">
                 Nous sommes à votre écoute ! Partagez vos suggestions pour enrichir notre plateforme éducative.
               </p>
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col md:flex-row items-center gap-4">
                 <Button 
                   onClick={() => setShowNewSuggestionForm(true)}
-                  className="bg-[#FF9633] text-white hover:bg-[#FF9633]/90 transition-all duration-200 shadow-lg rounded-xl px-6 py-3"
+                  className="w-full md:w-auto bg-[#FF9633] text-white hover:bg-[#FF9633]/90 transition-all duration-200 shadow-lg rounded-xl px-6 py-3"
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   Proposer une idée
                 </Button>
-                <div className="flex items-center gap-2 text-[#FF9633] bg-[#FF9633]/10 px-4 py-2 rounded-xl">
+                <div className="flex items-center gap-2 text-[#FF9633] bg-[#FF9633]/10 px-4 py-2 rounded-xl w-full md:w-auto justify-center">
                   <Sparkles className="w-5 h-5" />
                   <span className="font-medium">{suggestions.length} suggestions actives</span>
                 </div>
@@ -126,7 +127,7 @@ const SuggestionsPage = () => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {filteredSuggestions.map((suggestion) => (
             <SuggestionCard
               key={suggestion.id}

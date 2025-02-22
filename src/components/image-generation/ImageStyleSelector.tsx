@@ -1,6 +1,7 @@
+
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { ImageStyle } from "./types"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { ImageStyle } from "./types"
 import { Paintbrush, Wand2, Image } from "lucide-react"
 
 interface ImageStyleSelectorProps {
@@ -45,9 +46,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
           <div key={value} className="relative">
             <HoverCard>
               <HoverCardTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => onStyleChange(value)}
+                <label
                   className={`flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer
                     transition-all duration-200
                     ${selectedStyle === value 
@@ -61,7 +60,7 @@ export const ImageStyleSelector = ({ selectedStyle, onStyleChange }: ImageStyleS
                   />
                   <Icon className="w-4 h-4" />
                   <span>{label}</span>
-                </button>
+                </label>
               </HoverCardTrigger>
               <HoverCardContent>
                 <p className="text-sm text-muted-foreground">{description}</p>

@@ -1,13 +1,14 @@
+
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Mail, Copy } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { SEO } from "@/components/SEO"
-import { BackButton } from "@/components/settings/BackButton"
+import { Link } from "react-router-dom"
 
 export default function ContactPage() {
   const { toast } = useToast()
-  const email = "admin@pedagoia.fr"
+  const email = "bonjour@pedagoia.fr"
 
   const copyEmail = () => {
     navigator.clipboard.writeText(email)
@@ -34,7 +35,13 @@ export default function ContactPage() {
       />
       <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
-          <BackButton />
+          <Link to="/home" className="block mb-8">
+            <img 
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+              alt="PedagoIA Logo" 
+              className="w-[100px] h-[120px] object-contain mx-auto" 
+            />
+          </Link>
           <Card className="p-8">
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold tracking-tight text-primary mb-4">

@@ -32,7 +32,7 @@ export function Tiles({
   return (
     <div 
       className={cn(
-        "relative z-0 flex w-full h-full justify-center",
+        "relative z-0 flex w-full h-full justify-center pointer-events-none select-none",
         className
       )}
     >
@@ -47,13 +47,6 @@ export function Tiles({
         >
           {colsArray.map((_, j) => (
             <motion.div
-              whileHover={{
-                backgroundColor: `var(--tile)`,
-                transition: { duration: 0 }
-              }}
-              animate={{
-                transition: { duration: 2 }
-              }}
               key={`col-${j}`}
               className={cn(
                 tileSizes[tileSize],
@@ -67,4 +60,3 @@ export function Tiles({
     </div>
   )
 }
-

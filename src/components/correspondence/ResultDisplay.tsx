@@ -1,119 +1,91 @@
-import React, { useState } from 'react';
+
+import React, { useEffect } from 'react';
 import { Card } from "@/components/ui/card";
+import { Copy, CopyCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ThumbsDown, Heart, Copy } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
+import { useSavedContent } from "@/hooks/useSavedContent";
+import { FeedbackButtons } from "@/components/image-generation/FeedbackButtons";
 
 interface ResultDisplayProps {
   text: string;
+  recipientType?: string;
+  tone?: string;
 }
 
-export function ResultDisplay({ text }: ResultDisplayProps) {
+export function ResultDisplay({ text, recipientType, tone }: ResultDisplayProps) {
   const { toast } = useToast();
-  const [feedbackScore, setFeedbackScore] = useState<1 | -1 | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
+  const { saveCorrespondence } = useSavedContent();
+  const [isCopied, setIsCopied] = React.useState(false);
+  const [isSaving, setIsSaving] = React.useState(false);
 
-  const handleFeedback = async (type: 'like' | 'dislike') => {
-    const score = type === 'like' ? 1 : -1;
-    
-    try {
-      setFeedbackScore(score);
-      
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+  useEffect(() => {
+    const saveContent = async () => {
+      if (!text) return;
 
-      const { error } = await supabase
-        .from('chats')
-        .insert({
-          user_id: user.id,
-          message: text,
-          feedback_score: score,
-          message_type: 'correspondence'
+      try {
+        setIsSaving(true);
+        await saveCorrespondence({
+          title: `Correspondance ${recipientType || ''} ${new Date().toLocaleDateString()}`,
+          content: text,
+          recipient_type: recipientType || 'non spécifié',
+          tone: tone
         });
 
-      if (error) throw error;
+        toast({
+          title: "Succès",
+          description: "Votre correspondance a été sauvegardée automatiquement",
+        });
+      } catch (error) {
+        console.error('Error saving correspondence:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la sauvegarde automatique",
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    };
 
-      toast({
-        description: type === 'like' ? "Merci pour votre retour positif !" : "Merci pour votre retour",
-      });
-    } catch (err) {
-      console.error('Erreur lors de l\'enregistrement du feedback:', err);
-      setFeedbackScore(null);
-      toast({
-        variant: "destructive",
-        description: "Erreur lors de l'enregistrement de votre retour",
-      });
-    }
-  };
+    saveContent();
+  }, [text, recipientType, tone]);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(text);
       setIsCopied(true);
       toast({
-        description: "Texte copié dans le presse-papier",
-        duration: 2000,
+        description: "Contenu copié dans le presse-papier",
       });
       setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {
       toast({
         variant: "destructive",
-        description: "Erreur lors de la copie du texte",
+        description: "Erreur lors de la copie dans le presse-papier",
       });
     }
   };
 
-  if (!text) return null;
-
   return (
-    <Card className="relative overflow-hidden bg-white/90 backdrop-blur-md p-6 rounded-xl border-[#9b87f5]/20 shadow-lg hover:shadow-xl transition-all duration-300">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#9b87f5]/5 to-[#6E59A5]/5 pointer-events-none" />
-      
-      <div className="relative">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold bg-gradient-to-r from-[#9b87f5] to-[#6E59A5] bg-clip-text text-transparent">
-            Votre correspondance est prête
-          </h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleFeedback('like')}
-              className={cn(
-                "rounded-full p-2 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#9b87f5] transition-all duration-300 transform hover:scale-110",
-                feedbackScore === 1 && "text-[#9b87f5] bg-[#E5DEFF]"
-              )}
-              aria-label="J'aime"
-            >
-              <Heart className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => handleFeedback('dislike')}
-              className={cn(
-                "rounded-full p-2 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#6E59A5] transition-all duration-300 transform hover:scale-110",
-                feedbackScore === -1 && "text-[#6E59A5] bg-[#E5DEFF]"
-              )}
-              aria-label="Je n'aime pas"
-            >
-              <ThumbsDown className="h-5 w-5" />
-            </button>
-            <button
-              onClick={handleCopy}
-              className={cn(
-                "rounded-full p-2 text-gray-400 hover:bg-[#E5DEFF] hover:text-[#7E69AB] transition-all duration-300 transform hover:scale-110",
-                isCopied && "text-[#7E69AB] bg-[#E5DEFF]"
-              )}
-              aria-label="Copier le texte"
-            >
-              <Copy className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-        <div className="prose prose-sm max-w-none">
-          <div className="whitespace-pre-wrap bg-white/80 rounded-lg p-4 text-gray-700 leading-relaxed border border-[#9b87f5]/10 shadow-inner">
-            {text}
-          </div>
+    <Card className="p-6 mt-8">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Résultat</h3>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={handleCopy}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            {isCopied ? (
+              <CopyCheck className="w-4 h-4" />
+            ) : (
+              <Copy className="w-4 h-4" />
+            )}
+            <span>Copier</span>
+          </button>
+          <FeedbackButtons imageUrl="" />
         </div>
       </div>
+      <div className="whitespace-pre-wrap">{text}</div>
     </Card>
   );
 }

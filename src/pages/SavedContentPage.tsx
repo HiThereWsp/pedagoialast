@@ -1,41 +1,49 @@
+
 import { useEffect, useState } from "react";
 import { SEO } from "@/components/SEO";
-import { Card } from "@/components/ui/card";
-import { useSavedContent } from "@/hooks/useSavedContent";
-import { Loader2, AlertCircle } from "lucide-react";
-import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
-import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { HistoryCarousel } from "@/components/history/HistoryCarousel";
 import { type SavedContent } from "@/types/saved-content";
-import { Link } from "react-router-dom";
+import { SavedContentLoader } from "@/components/saved-content/SavedContentLoader";
+import { SavedContentError } from "@/components/saved-content/SavedContentError";
+import { SavedContentList } from "@/components/saved-content/SavedContentList";
+import { DeleteDialog } from "@/components/saved-content/DeleteDialog";
+import { ContentPreviewSheet } from "@/components/saved-content/ContentPreviewSheet";
+import { useSavedContentManagement } from "@/hooks/useSavedContentManagement";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 
-const carouselCategories = [
+const tabs = [
   {
-    title: "Mes séquences pédagogiques",
-    type: "Séquence",
-    emptyMessage: "Vous n'avez pas encore généré de séquence pédagogique. C'est le moment de laisser libre cours à votre créativité !"
+    id: 'sequences',
+    label: 'Mes séquences',
+    buttonText: 'Créer une nouvelle séquence',
+    path: '/lesson-plan'
   },
   {
-    title: "Mes exercices",
-    type: "Exercice",
-    emptyMessage: "Aucun exercice n'a encore été créé. Commencez à générer des exercices adaptés à vos besoins !"
+    id: 'exercises',
+    label: 'Mes exercices',
+    buttonText: 'Générer un nouvel exercice',
+    path: '/exercise'
   },
   {
-    title: "Mes images",
-    type: "Image",
-    emptyMessage: "Votre galerie d'images est vide pour le moment. Générez votre première illustration pédagogique !"
+    id: 'images',
+    label: 'Mes images',
+    buttonText: 'Générer une nouvelle image',
+    path: '/image-generation'
+  },
+  {
+    id: 'correspondence',
+    label: 'Mes correspondances',
+    buttonText: 'Générer une correspondance',
+    path: '/correspondence'
   }
-];
+] as const;
 
 export default function SavedContentPage() {
-  const [content, setContent] = useState<SavedContent[]>([])
-  const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null)
-  const [errors, setErrors] = useState<{
-    exercises?: string;
-    lessonPlans?: string;
-    delete?: string;
-  }>({})
+  const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null);
+  const [activeTab, setActiveTab] = useState<string>('sequences');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{
     isOpen: boolean;
     itemId: string;
@@ -46,217 +54,119 @@ export default function SavedContentPage() {
     itemType: ""
   });
 
-  const {
-    isLoadingExercises,
-    isLoadingLessonPlans,
-    getSavedExercises,
-    getSavedLessonPlans,
-    deleteSavedExercise,
-    deleteSavedLessonPlan
-  } = useSavedContent();
-  const {
-    toast
-  } = useToast();
+  const navigate = useNavigate();
 
-  const fetchContent = async () => {
-    try {
-      const exercises = await getSavedExercises();
-      setErrors(prev => ({
-        ...prev,
-        exercises: undefined
-      }));
-      const lessonPlans = await getSavedLessonPlans();
-      setErrors(prev => ({
-        ...prev,
-        lessonPlans: undefined
-      }));
-      const formattedExercises = exercises.map(ex => ({
-        ...ex,
-        type: 'Exercice',
-        description: ex.content.substring(0, 100) + '...'
-      }));
-      const formattedLessonPlans = lessonPlans.map(plan => ({
-        ...plan,
-        type: 'Séquence',
-        description: plan.content.substring(0, 100) + '...'
-      }));
-      setContent([...formattedExercises, ...formattedLessonPlans].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
-    } catch (err) {
-      console.error("Erreur lors du chargement des contenus:", err);
-      if (err instanceof Error) {
-        setErrors(prev => ({
-          ...prev,
-          exercises: "Une erreur est survenue lors du chargement de vos contenus"
-        }));
-      }
-    }
-  };
+  const {
+    content,
+    errors,
+    isLoading,
+    fetchContent,
+    handleDelete
+  } = useSavedContentManagement();
 
   useEffect(() => {
     fetchContent();
   }, []);
 
-  const handleDelete = async (id: string, type: string) => {
-    setErrors(prev => ({
-      ...prev,
-      delete: undefined
-    }));
-    try {
-      if (type === 'Exercice') {
-        await deleteSavedExercise(id);
-      } else {
-        await deleteSavedLessonPlan(id);
-      }
-      toast({
-        description: `${type} supprimé avec succès`
-      });
-      setDeleteDialog({
-        isOpen: false,
-        itemId: "",
-        itemType: ""
-      });
-      fetchContent();
-    } catch (err) {
-      setErrors(prev => ({
-        ...prev,
-        delete: `Erreur lors de la suppression du ${type.toLowerCase()}`
-      }));
-      console.error("Erreur lors de la suppression:", err);
+  const getCurrentTab = () => {
+    return tabs.find(tab => tab.id === activeTab);
+  };
+
+  const handleCreate = () => {
+    const currentTab = getCurrentTab();
+    if (currentTab) {
+      navigate(currentTab.path);
     }
   };
 
-  const transformToHistoryItems = (items: SavedContent[], type: string) => {
-    const colorMap = {
-      'Séquence': {
-        color: '#FF9EBC',
-        backgroundColor: '#FF9EBC20',
-        borderColor: '#FF9EBC4D'
-      },
-      'Exercice': {
-        color: '#22C55E',
-        backgroundColor: '#22C55E20',
-        borderColor: '#22C55E4D'
-      },
-      'Image': {
-        color: '#F2FCE2',
-        backgroundColor: '#F2FCE220',
-        borderColor: '#F2FCE24D'
-      }
-    };
-
-    return items
-      .filter(item => item.type === type.toLowerCase())
-      .map(item => ({
-        ...item,
-        type: type.toLowerCase() as any,
-        tags: [{
-          label: type,
-          ...colorMap[type as keyof typeof colorMap]
-        }]
-      }));
+  const handleDeleteRequest = (content: SavedContent) => {
+    setIsPreviewOpen(false);
+    setDeleteDialog({
+      isOpen: true,
+      itemId: content.id,
+      itemType: content.displayType || ""
+    });
   };
 
-  if (isLoadingExercises || isLoadingLessonPlans) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  if (isLoading) {
+    return <SavedContentLoader />;
   }
 
-  if (errors.exercises || errors.lessonPlans) {
+  if (errors.exercises || errors.lessonPlans || errors.correspondences) {
     return (
-      <Card className="p-6">
-        <div className="flex items-center gap-2 text-red-500">
-          <AlertCircle className="h-5 w-5" />
-          <p>{errors.exercises || errors.lessonPlans}</p>
-        </div>
-      </Card>
+      <SavedContentError 
+        error={errors.exercises || errors.lessonPlans || errors.correspondences || ""}
+      />
     );
   }
 
   return (
     <>
       <SEO 
-        title="Historique de mon contenu | PedagoIA"
+        title="Mes ressources | PedagoIA"
         description="Consultez l'historique de vos contenus générés sur PedagoIA - exercices, séquences et documents administratifs."
       />
       
-      <div className="container mx-auto py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center">
-            <Link to="/home" className="flex-shrink-0">
-              <img 
-                src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
-                alt="PedagoIA Logo" 
-                className="w-[100px] h-[120px] object-contain"
-              />
-            </Link>
-            <h1 className="text-3xl font-bold ml-4">Mes ressources pédagogiques générées</h1>
-          </div>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+            Mes ressources
+          </h1>
+          
+          <Button 
+            onClick={handleCreate}
+            className="bg-gradient-to-r from-[#FFDD00] via-[#FFA800] to-[#FF7A00] hover:opacity-90 text-white shadow-sm"
+          >
+            <Plus className="w-5 h-5 mr-2" />
+            <span className="hidden sm:inline">{getCurrentTab()?.buttonText}</span>
+            <span className="sm:hidden">Créer</span>
+          </Button>
         </div>
 
-        <div className="space-y-8">
-          {carouselCategories.map(category => {
-            const items = transformToHistoryItems(content, category.type);
-            
-            return (
-              <div key={category.type} className="space-y-4">
-                <h2 className="text-xl font-semibold">{category.title}</h2>
-                {items.length > 0 ? (
-                  <HistoryCarousel
-                    items={items}
-                    onItemSelect={(item) => {
-                      const selectedItem = content.find(c => c.id === item.id);
-                      if (selectedItem) {
-                        setSelectedContent(selectedItem);
-                        setDeleteDialog({
-                          isOpen: true,
-                          itemId: selectedItem.id,
-                          itemType: selectedItem.type
-                        });
-                      }
-                    }}
-                    selectedItemId={selectedContent?.id}
-                  />
-                ) : (
-                  <Card className="p-8 text-center text-muted-foreground bg-gray-50">
-                    <p>{category.emptyMessage}</p>
-                  </Card>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <Tabs 
+          defaultValue="sequences" 
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="mb-8"
+        >
+          <TabsList className="w-full justify-start border-b bg-transparent p-0">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-[#FFA800] data-[state=active]:border-b-2 data-[state=active]:border-[#FFA800] transition-colors rounded-none"
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
+        <SavedContentList
+          content={content}
+          onItemSelect={(item) => {
+            setSelectedContent(item);
+            setIsPreviewOpen(true);
+          }}
+          selectedItemId={selectedContent?.id}
+          activeTab={activeTab}
+        />
       </div>
 
-      <AlertDialog 
-        open={deleteDialog.isOpen} 
-        onOpenChange={(isOpen) => 
-          setDeleteDialog(prev => ({ ...prev, isOpen }))
-        }
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Êtes-vous sûr ?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Cette action ne peut pas être annulée. Cela supprimera définitivement votre {deleteDialog.itemType.toLowerCase()}.
-              {errors.delete && (
-                <p className="text-red-500 mt-2">{errors.delete}</p>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => handleDelete(deleteDialog.itemId, deleteDialog.itemType)}
-              className="bg-red-500 hover:bg-red-600"
-            >
-              Supprimer
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ContentPreviewSheet
+        content={selectedContent}
+        isOpen={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        onDelete={handleDeleteRequest}
+      />
+
+      <DeleteDialog 
+        isOpen={deleteDialog.isOpen}
+        onOpenChange={(isOpen) => setDeleteDialog(prev => ({ ...prev, isOpen }))}
+        onDelete={() => handleDelete(deleteDialog.itemId, content.find(item => item.id === deleteDialog.itemId)?.type || 'lesson-plan')}
+        itemType={deleteDialog.itemType}
+        error={errors.delete}
+      />
     </>
   );
 }
