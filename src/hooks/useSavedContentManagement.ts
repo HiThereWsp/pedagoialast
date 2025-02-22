@@ -47,7 +47,7 @@ export function useSavedContentManagement() {
         images: undefined
       }));
       
-      const formattedExercises: SavedContent[] = exercises.map(ex => ({
+      const formattedExercises: SavedContent[] = (exercises || []).map(ex => ({
         id: ex.id,
         title: ex.title,
         content: ex.content,
@@ -64,7 +64,7 @@ export function useSavedContentManagement() {
         }]
       }));
 
-      const formattedLessonPlans: SavedContent[] = lessonPlans.map(plan => ({
+      const formattedLessonPlans: SavedContent[] = (lessonPlans || []).map(plan => ({
         id: plan.id,
         title: plan.title,
         content: plan.content,
@@ -81,7 +81,7 @@ export function useSavedContentManagement() {
         }]
       }));
 
-      const formattedCorrespondences: SavedContent[] = correspondences.map(corr => ({
+      const formattedCorrespondences: SavedContent[] = (correspondences || []).map(corr => ({
         id: corr.id,
         title: corr.title,
         content: corr.content,
@@ -97,30 +97,35 @@ export function useSavedContentManagement() {
       }));
 
       // S'assurer que les images existent et ont les propriétés requises
-      const formattedImages: SavedContent[] = (images || [])
-        .filter((img): img is ImageGenerationUsage => img !== null && img.status === 'success')
-        .map(img => ({
-          id: img.id,
-          title: "Image générée",
-          content: img.image_url || '',
-          created_at: img.generated_at,
-          type: 'Image' as const,
-          displayType: 'Image générée',
-          tags: [{
-            label: 'Image',
-            color: '#F2FCE2',
-            backgroundColor: '#F2FCE220',
-            borderColor: '#F2FCE24D'
-          }]
-        }));
+      const validImages = (images || []).filter((img): img is ImageGenerationUsage => 
+        img !== null && 
+        typeof img === 'object' && 
+        'status' in img && 
+        img.status === 'success'
+      );
 
-      // Filtrer les contenus null avant de les combiner
+      const formattedImages: SavedContent[] = validImages.map(img => ({
+        id: img.id,
+        title: "Image générée",
+        content: img.image_url || '',
+        created_at: img.generated_at,
+        type: 'Image' as const,
+        displayType: 'Image générée',
+        tags: [{
+          label: 'Image',
+          color: '#F2FCE2',
+          backgroundColor: '#F2FCE220',
+          borderColor: '#F2FCE24D'
+        }]
+      }));
+
+      // Ne garder que les contenus valides
       const allContent = [
         ...formattedExercises, 
         ...formattedLessonPlans, 
         ...formattedCorrespondences,
         ...formattedImages
-      ].filter(content => content !== null);
+      ].filter(Boolean);
 
       setContent(allContent.sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
