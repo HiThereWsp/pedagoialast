@@ -10,6 +10,7 @@ export function useSavedContentManagement() {
     exercises?: string;
     lessonPlans?: string;
     correspondences?: string;
+    images?: string;
     delete?: string;
   }>({});
 
@@ -17,28 +18,32 @@ export function useSavedContentManagement() {
     isLoadingExercises,
     isLoadingLessonPlans,
     isLoadingCorrespondences,
+    isLoadingImages,
     getSavedExercises,
     getSavedLessonPlans,
     getSavedCorrespondences,
+    getSavedImages,
     deleteSavedExercise,
     deleteSavedLessonPlan,
-    deleteSavedCorrespondence
+    deleteSavedCorrespondence,
   } = useSavedContent();
   const { toast } = useToast();
 
   const fetchContent = async () => {
     try {
-      const [exercises, lessonPlans, correspondences] = await Promise.all([
+      const [exercises, lessonPlans, correspondences, images] = await Promise.all([
         getSavedExercises(),
         getSavedLessonPlans(),
-        getSavedCorrespondences()
+        getSavedCorrespondences(),
+        getSavedImages()
       ]);
 
       setErrors(prev => ({ 
         ...prev, 
         exercises: undefined,
         lessonPlans: undefined,
-        correspondences: undefined
+        correspondences: undefined,
+        images: undefined
       }));
       
       const formattedExercises: SavedContent[] = exercises.map(ex => ({
@@ -90,8 +95,27 @@ export function useSavedContentManagement() {
         }]
       }));
 
-      setContent([...formattedExercises, ...formattedLessonPlans, ...formattedCorrespondences]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+      const formattedImages: SavedContent[] = images.map(img => ({
+        id: img.id,
+        title: img.prompt,
+        content: img.image_url,
+        created_at: img.generated_at,
+        type: 'Image',
+        displayType: 'Image',
+        tags: [{
+          label: 'Image',
+          color: '#F2FCE2',
+          backgroundColor: '#F2FCE220',
+          borderColor: '#F2FCE24D'
+        }]
+      }));
+
+      setContent([
+        ...formattedExercises, 
+        ...formattedLessonPlans, 
+        ...formattedCorrespondences,
+        ...formattedImages
+      ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
     } catch (err) {
       console.error("Erreur lors du chargement des contenus:", err);
       if (err instanceof Error) {
@@ -144,7 +168,7 @@ export function useSavedContentManagement() {
   return {
     content,
     errors,
-    isLoading: isLoadingExercises || isLoadingLessonPlans || isLoadingCorrespondences,
+    isLoading: isLoadingExercises || isLoadingLessonPlans || isLoadingCorrespondences || isLoadingImages,
     fetchContent,
     handleDelete
   };
