@@ -89,6 +89,7 @@ export function useImageContent() {
   const getSavedImages = async () => {
     try {
       setIsLoading(true);
+      console.log('Début de la récupération des images...');
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Utilisateur non connecté');
@@ -102,13 +103,41 @@ export function useImageContent() {
 
       if (error) throw error;
 
-      return (images || []).map(img => ({
+      // Vérification et transformation des données
+      if (!images || !Array.isArray(images)) {
+        console.log('Aucune image trouvée ou format invalide');
+        return [];
+      }
+
+      console.log('Images récupérées:', images.length);
+
+      // Validation et transformation des données
+      const validImages = images.filter((img): img is ImageGenerationUsage => {
+        const isValid = img !== null &&
+          typeof img === 'object' &&
+          'id' in img &&
+          'prompt' in img &&
+          'image_url' in img &&
+          'generated_at' in img &&
+          'status' in img &&
+          img.status === 'success';
+
+        if (!isValid) {
+          console.log('Image invalide détectée:', img);
+        }
+
+        return isValid;
+      });
+
+      console.log('Images valides:', validImages.length);
+
+      return validImages.map(img => ({
         id: img.id,
-        title: img.prompt,
+        title: img.prompt || "Image générée",
         content: img.image_url || '',
         created_at: img.generated_at,
         type: 'Image' as const,
-        displayType: 'Image',
+        displayType: 'Image générée',
         tags: [{
           label: 'Image',
           color: '#F2FCE2',
@@ -136,3 +165,4 @@ export function useImageContent() {
     retryFailedImage
   };
 }
+
