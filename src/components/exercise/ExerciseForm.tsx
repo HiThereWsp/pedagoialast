@@ -1,15 +1,7 @@
 
-import React, { useState } from 'react';
-import { Card } from "@/components/ui/card";
-import ReactMarkdown from 'react-markdown';
-import { ThumbsDown, Heart, Copy, ArrowRightCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { useToolMetrics } from "@/hooks/useToolMetrics";
-import { useNavigate } from 'react-router-dom';
+import { LessonPlanSelect } from './form/LessonPlanSelect';
 
 interface ExerciseFormProps {
   formData: {
@@ -35,6 +27,11 @@ interface ExerciseFormProps {
 export const ExerciseForm = ({ formData, handleInputChange, handleSubmit, isLoading }: ExerciseFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      <LessonPlanSelect 
+        value={formData.selectedLessonPlan}
+        onChange={handleInputChange}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
