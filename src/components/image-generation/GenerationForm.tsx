@@ -31,7 +31,7 @@ export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => 
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <label htmlFor="prompt" className="text-sm font-medium">
-          Décrivez l'image que vous souhaitez générer
+          Décrivez l&apos;image que vous souhaitez générer
         </label>
         <Input
           id="prompt"
@@ -59,9 +59,9 @@ export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => 
             Génération en cours...
           </>
         ) : isClicked ? (
-          'Traitement...'
+          "Traitement..."
         ) : (
-          'Générer l'image'
+          "Générer l'image"
         )}
       </Button>
     </form>
