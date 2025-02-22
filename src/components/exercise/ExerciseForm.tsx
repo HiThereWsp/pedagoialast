@@ -9,7 +9,7 @@ import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { Wand2 } from "lucide-react";
 import type { ExerciseFormData } from "@/types/saved-content";
 
-interface ExerciseFormProps {
+export interface ExerciseFormProps {
   formData: ExerciseFormData;
   handleInputChange: (field: string, value: string) => void;
   handleSubmit: (e: React.FormEvent) => void;
