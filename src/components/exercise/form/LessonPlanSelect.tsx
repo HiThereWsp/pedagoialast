@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useQuery } from "@tanstack/react-query";
 import { lessonPlansService } from "@/services/lesson-plans";
 import ReactMarkdown from 'react-markdown';
+import { Label } from "@/components/ui/label";
 
 interface LessonPlanSelectProps {
   value: string;
@@ -39,20 +40,23 @@ export const LessonPlanSelect = ({ value, onChange }: LessonPlanSelectProps) => 
     
     if (newValue === "none") {
       setLastSelectedPlan(null);
+      // Réinitialiser les champs
+      onChange('subject', '');
+      onChange('classLevel', '');
     }
   };
 
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <Label htmlFor="lessonPlan" className="text-gray-700">
           Séquence pédagogique (optionnel)
-        </label>
+        </Label>
         <Select
           value={value || "none"}
           onValueChange={handlePlanChange}
         >
-          <SelectTrigger className="w-full">
+          <SelectTrigger id="lessonPlan" className="w-full transition-colors focus:border-pink-300">
             <SelectValue placeholder="Sélectionner une séquence..." />
           </SelectTrigger>
           <SelectContent>
@@ -67,7 +71,7 @@ export const LessonPlanSelect = ({ value, onChange }: LessonPlanSelectProps) => 
       </div>
 
       {value && value !== "none" && (
-        <Card className="p-4 bg-gray-50">
+        <Card className="p-4 bg-gray-50/80 backdrop-blur-sm">
           <div className="prose prose-sm max-w-none max-h-[200px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             <div className="select-text">
               <ReactMarkdown

@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { Wand2 } from "lucide-react";
 import type { ExerciseFormData } from "@/types/saved-content";
+import { LessonPlanSelect } from "./form/LessonPlanSelect";
 
 export interface ExerciseFormProps {
   formData: ExerciseFormData;
@@ -33,6 +33,11 @@ const ExerciseForm = ({ formData, handleInputChange, handleSubmit, isLoading }: 
       className="relative z-10 max-w-4xl mx-auto space-y-6 bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-lg border border-pink-100 hover:shadow-xl transition-all duration-300 ease-in-out"
     >
       <div className="space-y-6">
+        <LessonPlanSelect 
+          value={formData.selectedLessonPlan || ''} 
+          onChange={handleInputChange}
+        />
+
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="subject" className="text-gray-700">Matière</Label>
