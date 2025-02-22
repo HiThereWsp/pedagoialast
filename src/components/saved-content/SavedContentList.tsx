@@ -15,7 +15,6 @@ export const SavedContentList = ({
   selectedItemId,
   activeTab
 }: SavedContentListProps) => {
-  // Filtrer le contenu en fonction de l'onglet actif
   const filteredContent = content.filter(item => {
     switch (activeTab) {
       case 'sequences':
@@ -33,8 +32,8 @@ export const SavedContentList = ({
 
   if (filteredContent.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500">
+      <div className="text-center py-16">
+        <p className="text-gray-500 dark:text-gray-400">
           Aucun contenu disponible pour cette catégorie
         </p>
       </div>
@@ -42,7 +41,7 @@ export const SavedContentList = ({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
       {filteredContent.map((item) => (
         <ResourceCard
           key={item.id}

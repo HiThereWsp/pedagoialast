@@ -96,25 +96,28 @@ export default function SavedContentPage() {
         description="Consultez l'historique de vos contenus générés sur PedagoIA - exercices, séquences et documents administratifs."
       />
       
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-4">
-            <Link to="/home">
+          <div className="flex items-center gap-6">
+            <Link to="/home" className="shrink-0">
               <img 
                 src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                 alt="PedagoIA Logo" 
-                className="w-[60px] h-[70px] object-contain" 
+                className="w-[50px] h-[60px] object-contain" 
               />
             </Link>
-            <h1 className="text-4xl font-bold text-black">Mes ressources</h1>
+            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+              Mes ressources
+            </h1>
           </div>
           
           <Button 
             onClick={handleCreate}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
           >
             <Plus className="w-5 h-5 mr-2" />
-            {getCurrentTab()?.buttonText}
+            <span className="hidden sm:inline">{getCurrentTab()?.buttonText}</span>
+            <span className="sm:hidden">Créer</span>
           </Button>
         </div>
 
@@ -124,12 +127,12 @@ export default function SavedContentPage() {
           onValueChange={setActiveTab}
           className="mb-8"
         >
-          <TabsList className="w-full justify-start border-b">
+          <TabsList className="w-full justify-start border-b bg-transparent p-0">
             {tabs.map((tab) => (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
-                className="data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600"
+                className="py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-blue-600 data-[state=active]:border-b-2 data-[state=active]:border-blue-600 transition-colors rounded-none"
               >
                 {tab.label}
               </TabsTrigger>

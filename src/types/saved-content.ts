@@ -17,6 +17,20 @@ export interface SavedContent {
   }>
 }
 
+export interface ImageGenerationUsage {
+  id: string;
+  prompt: string;
+  image_url?: string | null;
+  user_id: string;
+  generated_at: string;
+  status: 'pending' | 'processing' | 'success' | 'error';
+  error_message?: string;
+  retry_count: number;
+  last_retry?: string;
+  monthly_generation_count?: number;
+  generation_month?: string;
+}
+
 export interface LessonPlanData {
   userId: string
   title: string
@@ -118,18 +132,4 @@ export interface DatabaseTypes {
       Update: Partial<DatabaseTypes['Tables']['saved_correspondences']['Insert']>
     }
   }
-}
-
-export interface ImageGenerationUsage {
-  id: string;
-  prompt: string;
-  image_url?: string | null;
-  user_id: string;
-  generated_at: string;
-  status: 'pending' | 'processing' | 'success' | 'error';
-  error_message?: string;
-  retry_count: number;
-  last_retry?: string;
-  monthly_generation_count?: number;
-  generation_month?: string;
 }
