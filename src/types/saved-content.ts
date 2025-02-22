@@ -1,3 +1,4 @@
+
 export interface SavedContent {
   id: string
   title: string
@@ -35,8 +36,8 @@ export interface ImageGenerationUsage {
   error_message?: string
   retry_count: number
   last_retry?: string
-  monthly_generation_count?: number
-  generation_month?: string
+  monthly_generation_count: number
+  generation_month: string
 }
 
 export interface ExerciseFormData {
@@ -52,7 +53,7 @@ export interface ExerciseFormData {
   studentProfile: string
   learningDifficulties: string
   selectedLessonPlan: string
-  challenges: string[]
+  challenges: string
 }
 
 export interface SaveExerciseParams {
