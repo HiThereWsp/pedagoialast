@@ -24,7 +24,8 @@ export const ContentPreviewSheet = ({
   const [activeTab, setActiveTab] = useState('student')
   const { toast } = useToast()
 
-  if (!content) return null
+  // Si content est null ou que le sheet n'est pas ouvert, ne rien afficher
+  if (!content || !isOpen) return null
 
   const handleCopy = async () => {
     try {
@@ -41,6 +42,9 @@ export const ContentPreviewSheet = ({
   }
 
   const renderContent = () => {
+    // Vérification de sécurité supplémentaire
+    if (!content) return null
+
     switch (content.type) {
       case 'Image':
         return (
@@ -89,6 +93,7 @@ export const ContentPreviewSheet = ({
           </div>
         )
       default:
+        console.warn('Type de contenu non reconnu:', content.type)
         return null
     }
   }
@@ -98,7 +103,7 @@ export const ContentPreviewSheet = ({
       <SheetContent className="sm:max-w-2xl w-full overflow-y-auto">
         <SheetHeader className="flex flex-row items-center justify-between">
           <SheetTitle className="text-xl font-bold">
-            {content.title}
+            {content.title || 'Sans titre'}
           </SheetTitle>
           <div className="flex items-center gap-2">
             <Button

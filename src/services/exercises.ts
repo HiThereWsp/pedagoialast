@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveExerciseParams, ExtractedExercise, SavedContent } from "@/types/saved-content"
 
@@ -71,11 +72,17 @@ export const exercisesService = {
         throw error
       }
 
-      const transformedData: SavedContent[] = data.map(exercise => ({
+      const transformedData: SavedContent[] = (data || []).map(exercise => ({
         ...exercise,
         type: 'exercise' as const,
-        source_type: exercise.source_type as 'direct' | 'from_lesson_plan'
-      }))
+        source_type: exercise.source_type as 'direct' | 'from_lesson_plan',
+        tags: [{
+          label: 'Exercice',
+          color: '#22C55E',
+          backgroundColor: '#22C55E20',
+          borderColor: '#22C55E4D'
+        }]
+      }));
 
       console.log('✅ Exercices récupérés:', transformedData.length, 'résultats');
       return transformedData
