@@ -24,7 +24,7 @@ export const ContentPreviewSheet = ({
   const [activeTab, setActiveTab] = useState('student')
   const { toast } = useToast()
 
-  // Si content est null ou que le sheet n'est pas ouvert, ne rien afficher
+  // Protection supplémentaire contre les valeurs null
   if (!content || !isOpen) return null
 
   const handleCopy = async () => {

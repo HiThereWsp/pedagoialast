@@ -16,6 +16,8 @@ export const SavedContentList = ({
   activeTab
 }: SavedContentListProps) => {
   const filteredContent = content.filter(item => {
+    if (!item) return false; // Protection supplémentaire contre les éléments null
+    
     switch (activeTab) {
       case 'sequences':
         return item.type === 'lesson-plan';
