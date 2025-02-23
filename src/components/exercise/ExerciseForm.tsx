@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,7 @@ export interface ExerciseFormProps {
   isLoading: boolean;
 }
 
-const ExerciseForm = ({ formData, handleInputChange, handleSubmit, isLoading }: ExerciseFormProps) => {
+const ExerciseForm: React.FC<ExerciseFormProps> = ({ formData, handleInputChange, handleSubmit, isLoading }) => {
   const formRef = useRef<HTMLFormElement>(null);
 
   // Scroll to form when mounting
@@ -169,4 +170,4 @@ const ExerciseForm = ({ formData, handleInputChange, handleSubmit, isLoading }: 
   );
 };
 
-export default ExerciseForm;
+export default ExerciseForm as React.FC<ExerciseFormProps>;
