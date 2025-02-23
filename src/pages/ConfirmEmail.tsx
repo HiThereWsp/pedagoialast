@@ -64,34 +64,34 @@ export default function ConfirmEmail() {
       }
 
       // Handle post-verification actions
-      if (auth.type === "signup") {
-        console.log("sending email!")
-        try {
-          const { data: emailData, error: emailError } = await supabase.functions.invoke(
-              "send-welcome-emails-after-signup",
-              {
-                body: {
-                  type: "welcome",
-                  email: session.user?.email,
-                },
-              }
-          );
-
-          if (emailError) {
-            if (emailError instanceof FunctionsHttpError) {
-              const errorMessage = await emailError.context.json();
-              console.error("Function error:", errorMessage);
-            } else if (emailError instanceof FunctionsRelayError) {
-              console.error("Relay error:", emailError.message);
-            } else if (emailError instanceof FunctionsFetchError) {
-              console.error("Fetch error:", emailError.message);
-            }
-            console.log("Welcome email data:", emailData);
-          }
-        } catch (emailErr) {
-          console.error("Email sending failed:", emailErr);
-        }
-      }
+      // if (auth.type === "signup") {
+      //   console.log("sending email!")
+      //   try {
+      //     const { data: emailData, error: emailError } = await supabase.functions.invoke(
+      //         "send-welcome-emails-after-signup",
+      //         {
+      //           body: {
+      //             type: "welcome",
+      //             email: session.user?.email,
+      //           },
+      //         }
+      //     );
+      //
+      //     if (emailError) {
+      //       if (emailError instanceof FunctionsHttpError) {
+      //         const errorMessage = await emailError.context.json();
+      //         console.error("Function error:", errorMessage);
+      //       } else if (emailError instanceof FunctionsRelayError) {
+      //         console.error("Relay error:", emailError.message);
+      //       } else if (emailError instanceof FunctionsFetchError) {
+      //         console.error("Fetch error:", emailError.message);
+      //       }
+      //       console.log("Welcome email data:", emailData);
+      //     }
+      //   } catch (emailErr) {
+      //     console.error("Email sending failed:", emailErr);
+      //   }
+      // }
 
       // Handle navigation
       switch (auth.type) {

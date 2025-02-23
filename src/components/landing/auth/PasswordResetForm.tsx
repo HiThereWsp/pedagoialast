@@ -19,6 +19,9 @@ export const PasswordResetForm = () => {
 
     try {
       await HandlePasswordReset(e)
+      if(formState.isSuccess) {
+        navigate('/home')
+      }
     } catch (error: any) {
       console.error("Signup error details:", error)
 
@@ -32,36 +35,28 @@ export const PasswordResetForm = () => {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4">
         {!formState.isSuccess ? <>
-            <AuthFormField
-                id="password"
-                label="Mot de passe"
-                type="password"
-                value={formState.password}
-                onChange={(value) => setField("password", value)}
-                placeholder="Votre mot de passe"
-            />
-            <AuthFormField
-                id="confirm-password"
-                label="Confirmer le Mot de passe"
-                type="password"
-                value={formState.confirmPassword}
-                onChange={(value) => setField("confirmPassword", value)}
-                placeholder="Votre mot de passe"
-            />
-            <Button type="submit" className="w-full" disabled={formState.isLoading}>
-                {formState.isLoading ? "Réinitialisation en cours..." : "Réinitialiser le mot de passe"}
-            </Button>
-
-        </>: <>
-            <Button className="w-full" disabled={false} onClick={() => navigate('/home')}>
-              Accueil
-            </Button>
-        </>}
-
-
-
-    </form>
+          <AuthFormField
+              id="password"
+              label="Mot de passe"
+              type="password"
+              value={formState.password}
+              onChange={(value) => setField("password", value)}
+              placeholder="Votre mot de passe"
+          />
+          <AuthFormField
+              id="confirm-password"
+              label="Confirmer le Mot de passe"
+              type="password"
+              value={formState.confirmPassword}
+              onChange={(value) => setField("confirmPassword", value)}
+              placeholder="Votre mot de passe"
+          />
+          <Button type="submit" className="w-full" disabled={formState.isLoading}>
+            {formState.isLoading ? "Réinitialisation en cours..." : "Réinitialiser le mot de passe"}
+          </Button>
+        </> : null}
+      </form>
   )
 }
