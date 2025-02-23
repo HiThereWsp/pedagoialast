@@ -1,8 +1,6 @@
-
 import { useState } from "react";
 import { SEO } from "@/components/SEO";
-import ExerciseForm from "@/components/exercise/ExerciseForm";
-import { ResultDisplay } from "@/components/exercise/ResultDisplay";
+import { ExerciseForm, ResultDisplay } from "@/components/exercise";
 import { useExerciseGeneration } from "@/hooks/useExerciseGeneration";
 import type { ExerciseFormData } from "@/types/saved-content";
 import { Link } from "react-router-dom";
