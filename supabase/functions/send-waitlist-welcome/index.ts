@@ -3,8 +3,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
-// Set the API key for Resend
-const RESEND_API_KEY = "re_cmS8JUA4_3CjcfARe8fpYZVtNuEt87mfp";
+// Set the API key for Brevo
+const BREVO_API_KEY = "your_brevo_api_key_here";
 
 // CORS headers
 const corsHeaders = {
@@ -19,6 +19,8 @@ serve(async (req) => {
   }
 
   try {
+    const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL');
+    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
     console.log("Received request");
 
     // Parse the request content type
@@ -32,24 +34,32 @@ serve(async (req) => {
     console.log("Processing welcome email for:", { email, firstName, teachingLevel });
 
     // Ensure the API key is set
-    if (!RESEND_API_KEY) {
-      throw new Error("Missing RESEND_API_KEY");
+    if (!BREVO_API_KEY) {
+      throw new Error("Missing BREVO_API_KEY");
     }
 
     console.log("Sending email...");
 
-    // Send the email using Resend API
-    const res = await fetch("https://api.resend.com/emails", {
+    // Send the email using Brevo API
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "api-key": BREVO_API_KEY,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "PedagoIA <me@umairmehmood.me>",
-        to: [email],
+        sender: {
+          "name": "pedagoia",
+          "email": BREVO_SENDER_EMAIL
+        },
+        to: [
+          {
+            email: email,
+            name: firstName,
+          },
+        ],
         subject: "Bienvenue sur la liste d'attente de PedagoIA !",
-        html: `
+        htmlContent: `
           <h1>Bonjour ${firstName} !</h1>
           <p>Merci de votre intérêt pour PedagoIA. Nous sommes ravis de vous compter parmi nos futurs utilisateurs.</p>
           <p>Nous avons bien noté que vous enseignez au niveau : ${teachingLevel}</p>
