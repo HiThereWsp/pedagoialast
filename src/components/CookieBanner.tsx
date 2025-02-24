@@ -4,34 +4,58 @@ import { Button } from "@/components/ui/button"
 import { Cookie } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Link } from "react-router-dom"
+import { initGA } from "@/integrations/google-analytics/client"
+
+interface CookiePreferences {
+  analytics: boolean;
+  marketing: boolean;
+}
 
 export const CookieBanner = () => {
   const [isVisible, setIsVisible] = useState(false)
+  const [preferences, setPreferences] = useState<CookiePreferences>({
+    analytics: false,
+    marketing: false
+  })
   const { toast } = useToast()
 
   useEffect(() => {
-    const hasAcceptedCookies = localStorage.getItem("cookiesAccepted")
-    if (!hasAcceptedCookies) {
+    const savedPreferences = localStorage.getItem("cookiePreferences")
+    if (!savedPreferences) {
       setIsVisible(true)
+    } else {
+      const parsedPreferences = JSON.parse(savedPreferences)
+      setPreferences(parsedPreferences)
+      // Initialiser GA si consentement analytics
+      if (parsedPreferences.analytics) {
+        initGA(true)
+      }
     }
   }, [])
 
-  const handleAccept = () => {
-    localStorage.setItem("cookiesAccepted", "true")
+  const savePreferences = (analytics: boolean, marketing: boolean) => {
+    const newPreferences = { analytics, marketing }
+    localStorage.setItem("cookiePreferences", JSON.stringify(newPreferences))
+    setPreferences(newPreferences)
     setIsVisible(false)
+
+    // Initialiser GA si consentement analytics
+    if (analytics) {
+      initGA(true)
+    }
+
     toast({
       title: "Préférences enregistrées",
-      description: "Merci d'avoir accepté nos cookies !",
+      description: "Vos préférences de cookies ont été sauvegardées.",
     })
   }
 
-  const handleRefuse = () => {
-    localStorage.setItem("cookiesAccepted", "false")
-    setIsVisible(false)
-    toast({
-      title: "Préférences enregistrées",
-      description: "Vos préférences ont été sauvegardées.",
-    })
+  const handleAcceptAll = () => {
+    savePreferences(true, true)
+  }
+
+  const handleAcceptEssential = () => {
+    savePreferences(false, false)
   }
 
   if (!isVisible) return null
@@ -47,10 +71,11 @@ export const CookieBanner = () => {
               </div>
               <div className="flex-1">
                 <p className="text-sm text-gray-600">
-                  Nous utilisons des cookies pour améliorer votre expérience.{" "}
+                  Ce site utilise des cookies pour améliorer votre expérience. Pour en savoir plus sur l'utilisation des cookies, veuillez consulter notre{" "}
                   <Link to="/privacy" className="text-primary hover:underline">
-                    En savoir plus
+                    politique de confidentialité
                   </Link>
+                  .
                 </p>
               </div>
             </div>
@@ -58,17 +83,17 @@ export const CookieBanner = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleRefuse}
+                onClick={handleAcceptEssential}
                 className="whitespace-nowrap"
               >
-                Refuser
+                Cookies essentiels uniquement
               </Button>
               <Button
                 size="sm"
-                onClick={handleAccept}
+                onClick={handleAcceptAll}
                 className="whitespace-nowrap"
               >
-                Accepter
+                Accepter tout
               </Button>
             </div>
           </div>
