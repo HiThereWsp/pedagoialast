@@ -3,6 +3,7 @@ import React, { useRef, useEffect } from 'react';
 import { LessonPlanForm } from './LessonPlanForm';
 import { ScrollCard } from '@/components/exercise/result/ScrollCard';
 import { useLessonPlanGeneration } from '@/hooks/useLessonPlanGeneration';
+import { LoadingIndicator } from '@/components/ui/loading-indicator';
 
 export function LessonPlanCreator() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -31,7 +32,19 @@ export function LessonPlanCreator() {
         />
       </div>
       
-      {formData.lessonPlan && (
+      {isLoading && (
+        <div className="flex justify-center py-10">
+          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 shadow-md">
+            <div className="text-center">
+              <LoadingIndicator />
+              <p className="mt-4 text-gray-600">Génération de votre séquence en cours...</p>
+              <p className="text-sm text-gray-500 mt-2">Cette opération peut prendre jusqu'à une minute.</p>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {formData.lessonPlan && !isLoading && (
         <div ref={scrollRef} className="max-w-6xl mx-auto mt-12">
           <ScrollCard 
             exercises={formData.lessonPlan}

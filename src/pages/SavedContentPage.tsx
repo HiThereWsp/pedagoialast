@@ -10,6 +10,7 @@ import { ContentPreviewSheet } from "@/components/saved-content/ContentPreviewSh
 import { useSavedContentManagement } from "@/hooks/useSavedContentManagement";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { BackButton } from "@/components/settings/BackButton";
 import { Plus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -108,6 +109,10 @@ export default function SavedContentPage() {
       />
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-4">
+          <BackButton />
+        </div>
+        
         <div className="flex items-center justify-between mb-12">
           <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
             Mes ressources
