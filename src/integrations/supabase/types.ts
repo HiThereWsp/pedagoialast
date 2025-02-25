@@ -383,6 +383,71 @@ export type Database = {
           },
         ]
       }
+      perplexica_conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      perplexica_messages: {
+        Row: {
+          content: string
+          conversation_id: string | null
+          created_at: string | null
+          id: string
+          role: string
+          search_results: Json | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          role: string
+          search_results?: Json | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          role?: string
+          search_results?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "perplexica_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "perplexica_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -449,6 +514,7 @@ export type Database = {
           specific_needs: string | null
           student_profile: string | null
           subject: string | null
+          subject_matter: string | null
           title: string
           updated_at: string
           user_id: string
@@ -467,6 +533,7 @@ export type Database = {
           specific_needs?: string | null
           student_profile?: string | null
           subject?: string | null
+          subject_matter?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -485,6 +552,7 @@ export type Database = {
           specific_needs?: string | null
           student_profile?: string | null
           subject?: string | null
+          subject_matter?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -507,6 +575,7 @@ export type Database = {
           created_at: string
           id: string
           subject: string | null
+          subject_matter: string | null
           title: string
           total_sessions: number | null
           updated_at: string
@@ -519,6 +588,7 @@ export type Database = {
           created_at?: string
           id?: string
           subject?: string | null
+          subject_matter?: string | null
           title: string
           total_sessions?: number | null
           updated_at?: string
@@ -531,6 +601,7 @@ export type Database = {
           created_at?: string
           id?: string
           subject?: string | null
+          subject_matter?: string | null
           title?: string
           total_sessions?: number | null
           updated_at?: string

@@ -1,15 +1,19 @@
+
 import { Navigate, Outlet, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/useAuth"
 
 export const ProtectedRoute = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { toast } = useToast()
   const location = useLocation()
+  const { user, loading: authLoading } = useAuth()
 
   useEffect(() => {
+    let mounted = true
+    
     const checkSession = async () => {
       try {
         setIsLoading(true)
@@ -18,53 +22,45 @@ export const ProtectedRoute = () => {
         
         if (error) {
           console.error("Session error:", error)
-          setIsAuthenticated(false)
-          toast({
-            variant: "destructive",
-            title: "Erreur de session",
-            description: "Veuillez vous reconnecter.",
-          })
-          return
+          if (mounted) {
+            toast({
+              variant: "destructive",
+              title: "Erreur de session",
+              description: "Veuillez vous reconnecter.",
+            })
+          }
         }
-
-        setIsAuthenticated(!!session)
       } catch (error) {
         console.error("Auth error:", error)
-        setIsAuthenticated(false)
-        toast({
-          variant: "destructive",
-          title: "Erreur d'authentification",
-          description: "Une erreur est survenue, veuillez vous reconnecter.",
-        })
+        if (mounted) {
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Une erreur est survenue, veuillez vous reconnecter.",
+          })
+        }
       } finally {
-        setIsLoading(false)
+        if (mounted) {
+          setIsLoading(false)
+        }
       }
     }
 
     checkSession()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event)
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || !session) {
-        setIsAuthenticated(false)
-      } else {
-        setIsAuthenticated(true)
-      }
-      setIsLoading(false)
-    })
-
     return () => {
-      subscription.unsubscribe()
+      mounted = false
     }
   }, [toast])
 
-  if (isLoading) {
+  // Utilise le statut d'authentification du hook useAuth
+  if (authLoading || isLoading) {
     return <div className="flex h-screen items-center justify-center">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
     </div>
   }
 
-  if (!isAuthenticated) {
+  if (!user) {
     return <Navigate to="/login" state={{ returnUrl: location.pathname }} replace />
   }
 

@@ -5,6 +5,42 @@ import type { Database } from './types';
 const SUPABASE_URL = 'https://jpelncawdaounkidvymu.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZWxuY2F3ZGFvdW5raWR2eW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4MzgxNTEsImV4cCI6MjA0ODQxNDE1MX0.tzGxd93BPGQa8w4BRb6AOujbIjvI-XEIgU7SlnlZZt4';
 
+// Fonction pour détecter le mode navigation privée
+const isPrivateMode = () => {
+  try {
+    // Tentative d'accès au localStorage - échoue souvent en mode privé
+    localStorage.setItem('test', '1');
+    localStorage.removeItem('test');
+    return false;
+  } catch (e) {
+    return true;
+  }
+};
+
+// Sélection du stockage approprié selon le contexte
+const getStorage = () => {
+  const privateMode = isPrivateMode();
+  console.log('Mode navigation privée détecté:', privateMode);
+  
+  if (privateMode) {
+    // En mode privé, utiliser le stockage en mémoire
+    return {
+      getItem: (key: string) => {
+        return null; // Toujours retourne null - force une nouvelle session
+      },
+      setItem: (key: string, value: string) => {
+        console.log('Stockage ignoré en mode privé');
+      },
+      removeItem: (key: string) => {
+        console.log('Suppression ignorée en mode privé');
+      }
+    };
+  }
+  
+  // En mode normal, utiliser localStorage
+  return typeof window !== 'undefined' ? window.localStorage : undefined;
+};
+
 export const supabase = createClient<Database>(
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
@@ -13,8 +49,9 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: true,
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      storageKey: 'supabase.auth.token'
+      storage: getStorage(),
+      storageKey: 'supabase.auth.token',
+      flowType: 'pkce', // Utiliser PKCE pour plus de sécurité
     }
   }
 );
