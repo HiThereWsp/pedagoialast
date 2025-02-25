@@ -514,6 +514,7 @@ export type Database = {
           specific_needs: string | null
           student_profile: string | null
           subject: string | null
+          subject_matter: string | null
           title: string
           updated_at: string
           user_id: string
@@ -532,6 +533,7 @@ export type Database = {
           specific_needs?: string | null
           student_profile?: string | null
           subject?: string | null
+          subject_matter?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -550,6 +552,7 @@ export type Database = {
           specific_needs?: string | null
           student_profile?: string | null
           subject?: string | null
+          subject_matter?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -572,6 +575,7 @@ export type Database = {
           created_at: string
           id: string
           subject: string | null
+          subject_matter: string | null
           title: string
           total_sessions: number | null
           updated_at: string
@@ -584,6 +588,7 @@ export type Database = {
           created_at?: string
           id?: string
           subject?: string | null
+          subject_matter?: string | null
           title: string
           total_sessions?: number | null
           updated_at?: string
@@ -596,6 +601,7 @@ export type Database = {
           created_at?: string
           id?: string
           subject?: string | null
+          subject_matter?: string | null
           title?: string
           total_sessions?: number | null
           updated_at?: string
