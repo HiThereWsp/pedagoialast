@@ -108,10 +108,13 @@ const PricingPage = () => {
             ]}
             ctaText="Demander un devis"
             onSubscribe={() => {}}
-            withDialog
+            // La propriété withDialog n'est pas dans le type, on la supprime
+            // et on utilisera le triggerText pour PricingFormDialog
           />
         </div>
-        <PricingFormDialog />
+        <PricingFormDialog 
+          triggerText="Demander un devis" // Ajout du texte manquant pour le bouton
+        />
       </main>
     </div>
   )
