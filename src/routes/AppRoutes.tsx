@@ -31,6 +31,9 @@ const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const OfflineChatPage = lazy(() => import('@/pages/OfflineChatPage'));
 const PricingPage = lazy(() => import('@/pages/PricingPage'));
 const WaitlistLanding = lazy(() => import('@/pages/WaitlistLanding'));
+const SubscriptionSuccessPage = lazy(() => import('@/pages/SubscriptionSuccessPage'));
+const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage'));
+const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
 
 // Composant de chargement pour Suspense
 const LoadingPage = () => (
@@ -71,6 +74,10 @@ function AppRoutes() {
         <Route path="/contact" element={<ProtectedRoute><ContactPage /></ProtectedRoute>} />
         <Route path="/offline-chat" element={<ProtectedRoute><OfflineChatPage /></ProtectedRoute>} />
         <Route path="/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
+        {/* Routes de suivi des conversions */}
+        <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
+        <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />
+        <Route path="/checkout-canceled" element={<CheckoutCanceledPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
