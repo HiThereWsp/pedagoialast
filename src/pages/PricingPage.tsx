@@ -104,4 +104,17 @@ const PricingPage = () => {
               "Tout ce qui est inclus dans le plan annuel et bien plus",
               "Créez des outils sur mesure",
               "Tableau de suivi pour la direction",
-              "Des outils adaptés à votre projet
+              "Des outils adaptés à votre projet d'établissement"
+            ]}
+            ctaText="Demander un devis"
+            onSubscribe={() => {}}
+            withDialog
+          />
+        </div>
+        <PricingFormDialog />
+      </main>
+    </div>
+  )
+}
+
+export default PricingPage
