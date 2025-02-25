@@ -35,11 +35,7 @@ export function LessonPlanCreator() {
       {isLoading && (
         <div className="flex justify-center py-10">
           <div className="bg-white/80 backdrop-blur-sm rounded-lg p-6 shadow-md">
-            <div className="text-center">
-              <LoadingIndicator />
-              <p className="mt-4 text-gray-600">Génération de votre séquence en cours...</p>
-              <p className="text-sm text-gray-500 mt-2">Cette opération peut prendre jusqu'à une minute.</p>
-            </div>
+            <LoadingIndicator />
           </div>
         </div>
       )}

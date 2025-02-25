@@ -1,3 +1,4 @@
+
 export interface SavedContent {
   id: string
   title: string
@@ -71,6 +72,7 @@ export interface SaveLessonPlanParams {
   title: string
   content: string
   subject?: string
+  subject_matter?: string  // Ajout du champ manquant
   class_level?: string
   total_sessions?: number
   additional_instructions?: string

@@ -4,7 +4,6 @@ import {
   PenTool,
   FileEdit,
   Image,
-  MessageSquare,
   BookOpen
 } from "lucide-react"
 import type { Action } from "@/types/actions"
@@ -34,11 +33,5 @@ export const actions: Action[] = [
     title: "Mes ressources",
     route: "/saved-content",
     icon: BookOpen,
-  },
-  {
-    title: "Chat",
-    route: "/chat",
-    icon: MessageSquare,
-    maintenanceLabel: "Bientôt disponible"
   }
 ]

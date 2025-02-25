@@ -1,14 +1,9 @@
 
 // Configuration de Google Analytics
-const GA_TRACKING_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || '';
+const GA_TRACKING_ID = 'qAS5OCTURaCmQ1IfJY2ScQ';
 
 // Initialisation de GA4 avec gestion du consentement
 export const initGA = (hasConsent: boolean = false) => {
-  if (!GA_TRACKING_ID) {
-    console.warn('Google Analytics Measurement ID non défini');
-    return;
-  }
-
   if (!hasConsent) {
     console.log('Consentement cookies non obtenu pour Google Analytics');
     return;
@@ -32,7 +27,7 @@ export const initGA = (hasConsent: boolean = false) => {
     cookie_domain: window.location.hostname,
     cookie_flags: 'SameSite=None;Secure',
     cookie_expires: 63072000,
-    send_page_view: false // Désactivé par défaut pour contrôle manuel
+    send_page_view: true
   });
 
   // Rendre gtag disponible globalement

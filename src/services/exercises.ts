@@ -1,24 +1,23 @@
-
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveExerciseParams, ExtractedExercise, SavedContent, ExerciseCategory } from "@/types/saved-content"
 import { isExerciseCategory } from "@/utils/type-guards"
 
+// Cache local avec TTL plus long pour réduire les requêtes
+let exercisesCache: SavedContent[] | null = null;
+let lastFetchTime: number = 0;
+const CACHE_TTL = 300000; // 5 minutes
+
+// Fonction utilitaire pour vérifier si le cache est valide
+const isCacheValid = () => {
+  return exercisesCache && (Date.now() - lastFetchTime < CACHE_TTL);
+};
+
 export const exercisesService = {
   async save(params: SaveExerciseParams) {
-    console.log('🔵 Début de la sauvegarde exercice:', {
-      ...params,
-      content: params.content.substring(0, 100) + '...'
-    });
-
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        console.error('❌ Erreur de sauvegarde: Utilisateur non authentifié');
-        throw new Error('Non authentifié')
-      }
+      if (!user) throw new Error('Non authentifié')
       
-      console.log('👤 Utilisateur authentifié:', user.id);
-
       const exercise_category: ExerciseCategory = isExerciseCategory(params.exercise_category) 
         ? params.exercise_category 
         : 'standard';
@@ -34,34 +33,24 @@ export const exercisesService = {
         }])
         .select()
 
-      if (error) {
-        console.error('❌ Erreur Supabase lors de la sauvegarde:', {
-          code: error.code,
-          message: error.message,
-          details: error.details
-        });
-        throw error
-      }
+      if (error) throw error
 
-      console.log('✅ Exercice sauvegardé avec succès:', data);
+      exercisesCache = null; // Invalider le cache après modification
       return data
     } catch (err) {
-      console.error('❌ Erreur inattendue lors de la sauvegarde:', err);
+      console.error('Erreur lors de la sauvegarde:', err);
       throw err
     }
   },
 
   async getAll(): Promise<SavedContent[]> {
-    console.log('🔵 Début récupération des exercices');
+    if (isCacheValid()) {
+      return exercisesCache!;
+    }
     
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        console.error('❌ Erreur de récupération: Utilisateur non authentifié');
-        throw new Error('Non authentifié')
-      }
-
-      console.log('👤 Récupération pour utilisateur:', user.id);
+      if (!user) throw new Error('Non authentifié')
 
       const { data, error } = await supabase
         .from('saved_exercises')
@@ -69,14 +58,7 @@ export const exercisesService = {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('❌ Erreur Supabase lors de la récupération:', {
-          code: error.code,
-          message: error.message,
-          details: error.details
-        });
-        throw error
-      }
+      if (error) throw error
 
       const transformedData: SavedContent[] = (data || []).map(exercise => ({
         ...exercise,
@@ -91,10 +73,12 @@ export const exercisesService = {
         }]
       }));
 
-      console.log('✅ Exercices récupérés:', transformedData.length, 'résultats');
+      exercisesCache = transformedData;
+      lastFetchTime = Date.now();
+
       return transformedData
     } catch (err) {
-      console.error('❌ Erreur inattendue lors de la récupération:', err);
+      console.error('Erreur lors de la récupération:', err);
       throw err
     }
   },
@@ -126,6 +110,9 @@ export const exercisesService = {
         throw error
       }
 
+      // Invalider le cache après une suppression
+      exercisesCache = null;
+      
       console.log('✅ Exercice supprimé avec succès');
     } catch (err) {
       console.error('❌ Erreur inattendue lors de la suppression:', err);

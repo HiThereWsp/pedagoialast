@@ -6,6 +6,7 @@ import { SuggestionCard } from '@/components/suggestions/SuggestionCard';
 import { NewSuggestionForm } from '@/components/suggestions/NewSuggestionForm';
 import { SuggestionFilters } from '@/components/suggestions/SuggestionFilters';
 import { initialSuggestions } from '@/data/suggestions';
+import { BackButton } from '@/components/settings/BackButton';
 
 const SuggestionsPage = () => {
   const [suggestions, setSuggestions] = useState(initialSuggestions);
@@ -62,6 +63,9 @@ const SuggestionsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* Bouton retour */}
+        <BackButton />
+        
         {/* Hero CTA Section */}
         <div className="bg-gradient-to-r from-[#FF9633]/10 to-[#FF9633]/5 rounded-2xl p-4 md:p-8">
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
