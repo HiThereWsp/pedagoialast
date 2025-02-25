@@ -3,6 +3,11 @@ import { supabase } from "@/integrations/supabase/client"
 import type { SaveExerciseParams, ExtractedExercise, SavedContent, ExerciseCategory } from "@/types/saved-content"
 import { isExerciseCategory } from "@/utils/type-guards"
 
+// Cache local pour éviter les appels redondants
+let exercisesCache: SavedContent[] | null = null;
+let lastFetchTime: number = 0;
+const CACHE_TTL = 60000; // 1 minute
+
 export const exercisesService = {
   async save(params: SaveExerciseParams) {
     console.log('🔵 Début de la sauvegarde exercice:', {
@@ -43,6 +48,9 @@ export const exercisesService = {
         throw error
       }
 
+      // Invalider le cache après une sauvegarde
+      exercisesCache = null;
+      
       console.log('✅ Exercice sauvegardé avec succès:', data);
       return data
     } catch (err) {
@@ -52,6 +60,13 @@ export const exercisesService = {
   },
 
   async getAll(): Promise<SavedContent[]> {
+    // Vérifier si nous avons des données en cache et si elles sont encore valides
+    const now = Date.now();
+    if (exercisesCache && (now - lastFetchTime < CACHE_TTL)) {
+      console.log('🔵 Utilisation du cache pour les exercices');
+      return exercisesCache;
+    }
+    
     console.log('🔵 Début récupération des exercices');
     
     try {
@@ -91,6 +106,10 @@ export const exercisesService = {
         }]
       }));
 
+      // Mettre à jour le cache
+      exercisesCache = transformedData;
+      lastFetchTime = now;
+
       console.log('✅ Exercices récupérés:', transformedData.length, 'résultats');
       return transformedData
     } catch (err) {
@@ -126,6 +145,9 @@ export const exercisesService = {
         throw error
       }
 
+      // Invalider le cache après une suppression
+      exercisesCache = null;
+      
       console.log('✅ Exercice supprimé avec succès');
     } catch (err) {
       console.error('❌ Erreur inattendue lors de la suppression:', err);

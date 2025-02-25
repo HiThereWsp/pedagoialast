@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
@@ -7,11 +8,12 @@ export const BackButton = () => {
   const location = useLocation()
   
   const handleBack = () => {
-    // Si on est sur une page légale (privacy ou terms), on retourne à la page legal
+    // Si on est sur une page spécifique, définir un comportement personnalisé
     if (location.pathname === '/privacy' || location.pathname === '/terms') {
       navigate('/legal')
     } else if (location.pathname === '/legal') {
-      // Si on est sur la page legal, on retourne à la page home
+      navigate('/home')
+    } else if (location.pathname === '/suggestions') {
       navigate('/home')
     } else {
       navigate('/home')

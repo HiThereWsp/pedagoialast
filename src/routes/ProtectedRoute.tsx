@@ -4,6 +4,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -17,21 +18,24 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   useEffect(() => {
     let mounted = true;
+    let timeoutId: NodeJS.Timeout;
     
     const checkSession = async () => {
       try {
-        setIsLoading(true);
-        
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Session error:", error);
-          if (mounted) {
-            toast({
-              variant: "destructive",
-              title: "Erreur de session",
-              description: "Veuillez vous reconnecter.",
-            });
+        if (!user && mounted) {
+          setIsLoading(true);
+          
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.error("Session error:", error);
+            if (mounted) {
+              toast({
+                variant: "destructive",
+                title: "Erreur de session",
+                description: "Veuillez vous reconnecter.",
+              });
+            }
           }
         }
       } catch (error) {
@@ -45,7 +49,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         }
       } finally {
         if (mounted) {
-          setIsLoading(false);
+          timeoutId = setTimeout(() => {
+            setIsLoading(false);
+          }, 300); // Petit délai pour éviter le clignotement
         }
       }
     };
@@ -54,14 +60,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
     return () => {
       mounted = false;
+      clearTimeout(timeoutId);
     };
-  }, [toast]);
+  }, [toast, user]);
 
   // Utilise le statut d'authentification du hook useAuth
   if (authLoading || isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <LoadingIndicator />
       </div>
     );
   }
