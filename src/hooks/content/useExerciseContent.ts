@@ -12,12 +12,24 @@ export function useExerciseContent() {
   const saveExercise = async (params: SaveExerciseParams) => {
     try {
       setIsLoading(true);
+      
+      // Ajout de logs détaillés pour déboguer
+      console.log("Tentative de sauvegarde d'exercice avec paramètres:", {
+        ...params,
+        content: params.content.length > 50 ? `${params.content.substring(0, 50)}...` : params.content
+      });
+      
       await exercisesService.save(params);
+      
       toast({
         title: "Exercice sauvegardé",
         description: "Votre exercice a été sauvegardé avec succès"
       });
+      
+      return true;
     } catch (error) {
+      console.error('Error saving exercise:', error);
+      
       if (error instanceof Error && error.message.includes('Limite de contenu')) {
         toast({
           variant: "destructive",
@@ -25,13 +37,14 @@ export function useExerciseContent() {
           description: "Vous avez atteint la limite de contenu sauvegardé"
         });
       } else {
-        console.error('Error saving exercise:', error);
         toast({
           variant: "destructive",
           title: "Erreur",
           description: "Une erreur est survenue lors de la sauvegarde"
         });
       }
+      
+      throw error;
     } finally {
       setIsLoading(false);
     }
