@@ -84,10 +84,20 @@ export function useLessonPlanGeneration() {
   }, []);
 
   const generateLessonPlan = useCallback(async () => {
+    // Validation des champs obligatoires
     if (!formData.classLevel || !formData.totalSessions || !formData.subject_matter) {
       toast({
         variant: "destructive",
-        description: "Veuillez remplir tous les champs obligatoires."
+        description: "Veuillez remplir tous les champs obligatoires de niveau et matière."
+      });
+      return;
+    }
+
+    // Ajout de la validation des objectifs d'apprentissage (champ subject)
+    if (!formData.subject || formData.subject.trim() === '') {
+      toast({
+        variant: "destructive",
+        description: "Veuillez définir les objectifs d'apprentissage de votre séquence."
       });
       return;
     }
@@ -108,6 +118,23 @@ export function useLessonPlanGeneration() {
       });
 
       if (functionError) throw functionError;
+
+      // Vérifier si nous avons une erreur spécifique renvoyée par la fonction
+      if (functionData.error) {
+        if (functionData.error === 'TIMEOUT_ERROR') {
+          toast({
+            variant: "destructive",
+            title: "Temps de génération dépassé",
+            description: "La génération est trop complexe. Essayez de réduire la complexité ou le nombre de séances."
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            description: functionData.message || "Une erreur est survenue lors de la génération."
+          });
+        }
+        return;
+      }
 
       const generationTime = Math.round(performance.now() - startTime);
       
@@ -143,7 +170,8 @@ export function useLessonPlanGeneration() {
       console.error('Error generating lesson plan:', error);
       toast({
         variant: "destructive",
-        description: "Une erreur est survenue lors de la génération de la séquence."
+        title: "Erreur de génération",
+        description: "Une erreur est survenue lors de la génération de la séquence. Veuillez réessayer."
       });
     } finally {
       setIsLoading(false);

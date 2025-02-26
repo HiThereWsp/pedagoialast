@@ -31,16 +31,16 @@ export function SubjectTab({ formData, handleInputChange }: SubjectTabProps) {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Sujet ou thème à enseigner <span className="text-red-500">*</span>
+          Objectifs d'apprentissage <span className="text-red-500">*</span>
         </label>
         <Textarea
-          placeholder="Par exemple : Les fractions, La Révolution française, Les intervalles en mathématiques..."
+          placeholder="Par exemple : Maîtriser les fractions, Comprendre les causes de la Révolution française..."
           value={formData.subject}
           onChange={(e) => handleInputChange("subject", e.target.value)}
           className="min-h-[100px] w-full border-gray-200 focus:border-gray-400 focus:ring-gray-400 transition-colors"
         />
         <p className="text-xs text-gray-500 mt-1">
-          Soyez spécifique pour éviter les confusions (ex: "Les intervalles en mathématiques" plutôt que "Les intervalles")
+          Définissez précisément ce que les élèves doivent apprendre durant cette séquence
         </p>
       </div>
     </div>
