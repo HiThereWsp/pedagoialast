@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SEO } from "@/components/SEO";
 import { ExerciseForm, ResultDisplay } from "@/components/exercise";
@@ -5,10 +6,13 @@ import { useExerciseGeneration } from "@/hooks/useExerciseGeneration";
 import type { ExerciseFormData } from "@/types/saved-content";
 import { Link } from "react-router-dom";
 import { Tiles } from "@/components/ui/tiles";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DifferentiateExerciseForm from "@/components/exercise/form/DifferentiateExerciseForm";
 
 export default function ExercisePage() {
   const { generateExercises, isLoading } = useExerciseGeneration();
   const [exercises, setExercises] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<"create" | "differentiate">("create");
   const [formData, setFormData] = useState<ExerciseFormData>({
     subject: "",
     classLevel: "",
@@ -34,10 +38,15 @@ export default function ExercisePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await generateExercises(formData);
+    const result = await generateExercises(formData, activeTab === "differentiate");
     if (result) {
       setExercises(result);
     }
+  };
+
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab as "create" | "differentiate");
+    setExercises(""); // Réinitialiser les exercices lors du changement d'onglet
   };
 
   return (
@@ -74,12 +83,36 @@ export default function ExercisePage() {
           </div>
 
           <div className="max-w-4xl mx-auto">
-            <ExerciseForm
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-            />
+            <Tabs 
+              defaultValue="create" 
+              value={activeTab}
+              onValueChange={handleTabChange}
+              className="mb-8"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="create">Créer</TabsTrigger>
+                <TabsTrigger value="differentiate">Différencier</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="create" className="mt-6">
+                <ExerciseForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                />
+              </TabsContent>
+              
+              <TabsContent value="differentiate" className="mt-6">
+                <DifferentiateExerciseForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                />
+              </TabsContent>
+            </Tabs>
+
             {exercises && <ResultDisplay exercises={exercises} />}
           </div>
         </div>
