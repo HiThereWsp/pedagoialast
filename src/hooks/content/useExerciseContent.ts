@@ -56,7 +56,6 @@ export function useExerciseContent() {
       const exercises = await exercisesService.getAll();
       return exercises.map(exercise => ({
         ...exercise,
-        type: 'exercise' as const,
         displayType: 'Exercice',
         tags: [
           {

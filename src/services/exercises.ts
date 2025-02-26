@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveExerciseParams, ExtractedExercise, SavedContent, ExerciseCategory } from "@/types/saved-content"
 import { isExerciseCategory } from "@/utils/type-guards"
@@ -29,12 +30,17 @@ export const exercisesService = {
       
       console.log('Sauvegarde avec catégorie:', exercise_category);
       
-      // Ajout de logs détaillés pour déboguer
+      // ⭐ MODIFICATION: Nous construisons le payload sans inclure le champ 'type'
+      // qui n'existe pas dans la table saved_exercises
       const payload = {
-        ...params,
+        title: params.title,
+        content: params.content,
+        subject: params.subject,
+        class_level: params.class_level,
+        exercise_type: params.exercise_type,
         user_id: user.id,
-        type: 'exercise',
         exercise_category,
+        source_lesson_plan_id: params.source_lesson_plan_id,
         source_type: params.source_lesson_plan_id ? 'from_lesson_plan' : 'direct'
       };
       
@@ -98,7 +104,7 @@ export const exercisesService = {
 
       const transformedData: SavedContent[] = (data || []).map(exercise => ({
         ...exercise,
-        type: 'exercise' as const,
+        type: 'exercise' as const, // Ajouté côté client uniquement, pas envoyé à la base
         exercise_category: isExerciseCategory(exercise.exercise_category) ? exercise.exercise_category : 'standard',
         source_type: exercise.source_type as 'direct' | 'from_lesson_plan',
         tags: [{
