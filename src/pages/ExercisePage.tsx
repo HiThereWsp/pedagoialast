@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { SEO } from "@/components/SEO";
 import { ExerciseForm, ResultDisplay } from "@/components/exercise";
@@ -50,7 +49,11 @@ export default function ExercisePage() {
     const cacheState = getExerciseCacheState();
     
     if (cacheState.formData) {
-      setFormData(cacheState.formData);
+      // S'assurer que tous les champs requis sont présents
+      setFormData({
+        ...defaultFormData,
+        ...cacheState.formData
+      });
     }
     
     if (cacheState.exerciseResult) {

@@ -1,30 +1,14 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useToolMetrics } from '@/hooks/useToolMetrics';
 import { useExerciseContent } from '@/hooks/content/useExerciseContent';
+import type { ExerciseFormData } from '@/types/saved-content';
 
 // Constantes pour le stockage local
 const EXERCISE_FORM_CACHE_KEY = 'pedagogia_exercise_form_data';
 const EXERCISE_RESULT_CACHE_KEY = 'pedagogia_exercise_result';
 const EXERCISE_TAB_CACHE_KEY = 'pedagogia_exercise_active_tab';
-
-export interface ExerciseFormData {
-  subject: string;
-  classLevel: string;
-  numberOfExercises: string;
-  questionsPerExercise: string;
-  objective: string;
-  exerciseType: string;
-  additionalInstructions: string;
-  specificNeeds: string;
-  originalExercise: string;
-  studentProfile: string;
-  learningDifficulties: string;
-  selectedLessonPlan?: string;
-  challenges: string;
-}
 
 export function useExerciseGeneration() {
   const { toast } = useToast();
@@ -55,7 +39,6 @@ export function useExerciseGeneration() {
     }
   }, []);
 
-  // Fonction pour sauvegarder l'exercice en base de données
   const saveExerciseToDatabase = useCallback(async (
     formData: ExerciseFormData,
     exerciseContent: string,
