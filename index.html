@@ -10,6 +10,26 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-MCGTC2K9');</script>
     <!-- End Google Tag Manager -->
+    
+    <!-- Meta Pixel Code -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    
+    // Initialisation des trois pixels Facebook
+    fbq('init', '934337045580399'); // Pixel SUBSCRIBE
+    fbq('init', '1372093063957131'); // Pixel SIGNUP
+    fbq('init', '3640356596263548'); // Pixel SUCCESS
+    fbq('track', 'PageView');
+    </script>
+    <!-- End Meta Pixel Code -->
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PedagoIA - Assistant pédagogique intelligent</title>
     <meta name="description" content="Assistant pédagogique intelligent pour les enseignants. Créez des contenus pédagogiques de qualité en quelques clics." />
@@ -45,12 +65,18 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     
-    <!-- Meta Pixel noscript -->
-    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1148646506861774&ev=PageView&noscript=1" /></noscript>
+    <!-- Meta Pixel noscript (multiple pixels) -->
+    <noscript>
+      <!-- Pixel SUBSCRIBE -->
+      <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=934337045580399&ev=PageView&noscript=1" />
+      <!-- Pixel SIGNUP -->
+      <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1372093063957131&ev=PageView&noscript=1" />
+      <!-- Pixel SUCCESS -->
+      <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3640356596263548&ev=PageView&noscript=1" />
+    </noscript>
     
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

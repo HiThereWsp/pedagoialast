@@ -3,24 +3,61 @@ import { PricingCard } from "@/components/pricing/PricingCard"
 import { PricingFormDialog } from "@/components/pricing/PricingFormDialog"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
+import { subscriptionEvents } from "@/integrations/posthog/events"
+import { facebookEvents } from "@/integrations/meta-pixel/client"
+import { SEO } from "@/components/SEO"
 
 const PricingPage = () => {
   useEffect(() => {
+    // Tracking PostHog
     pricingEvents.viewPricing()
+    
+    // Tracking Facebook
+    facebookEvents.viewPricing()
   }, [])
 
   const handleMonthlySubscription = () => {
+    // Tracking PostHog
     pricingEvents.selectPlan('premium')
+    subscriptionEvents.subscriptionStarted('monthly', 11.90)
+    
+    // Tracking Facebook - Prix: 11.90€
+    facebookEvents.initiateCheckout('monthly', 11.90)
+    
+    // URLs de redirection Stripe
+    const successUrl = `${window.location.origin}/subscription-success?type=monthly`
+    const cancelUrl = `${window.location.origin}/checkout-canceled?type=monthly`
+    const failedUrl = `${window.location.origin}/subscription-failed?type=monthly`
+    
+    // Redirect vers Stripe avec parametres de callback
+    // Note: Pour l'exemple, on utilise les URL directes, mais idéalement il faudrait 
+    // configurer ces URL dans Stripe et ajouter les paramètres via query params
     window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
   }
 
   const handleYearlySubscription = () => {
+    // Tracking PostHog
     pricingEvents.selectPlan('premium')
+    subscriptionEvents.subscriptionStarted('yearly', 9.00)
+    
+    // Tracking Facebook - Prix: 9.00€/mois (équivalent)
+    facebookEvents.initiateCheckout('yearly', 9.00)
+    
+    // URLs de redirection Stripe
+    const successUrl = `${window.location.origin}/subscription-success?type=yearly`
+    const cancelUrl = `${window.location.origin}/checkout-canceled?type=yearly`
+    const failedUrl = `${window.location.origin}/subscription-failed?type=yearly`
+    
+    // Redirect vers Stripe avec parametres de callback
     window.location.href = 'https://buy.stripe.com/fZe03i3u20fHdxe4gj'
   }
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="PedagoIA - Offres d'abonnement"
+        description="Choisissez l'offre qui vous convient pour bénéficier des outils pédagogiques IA qui vous feront gagner du temps."
+      />
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
@@ -70,26 +107,17 @@ const PricingPage = () => {
               "Tout ce qui est inclus dans le plan annuel et bien plus",
               "Créez des outils sur mesure",
               "Tableau de suivi pour la direction",
-              "Des outils adaptés à votre projet pédagogique",
-              "Un canal support dédié"
+              "Des outils adaptés à votre projet d'établissement"
             ]}
-            CustomCTA={<PricingFormDialog triggerText="Obtenir un tarif sur mesure" />}
+            ctaText="Demander un devis"
+            onSubscribe={() => {}}
+            // La propriété withDialog n'est pas dans le type, on la supprime
+            // et on utilisera le triggerText pour PricingFormDialog
           />
         </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto text-center">
-          <div>
-            <h3 className="font-semibold mb-2">Satisfaction garantie</h3>
-            <p className="text-muted-foreground">3 jours satisfait ou remboursé</p>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-2">Support client</h3>
-            <p className="text-muted-foreground">Un support client 24/7</p>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-2">Mises à jour régulières</h3>
-            <p className="text-muted-foreground">Chaque mois une nouvelle fonctionnalité</p>
-          </div>
-        </div>
+        <PricingFormDialog 
+          triggerText="Demander un devis" // Texte pour le bouton
+        />
       </main>
     </div>
   )
