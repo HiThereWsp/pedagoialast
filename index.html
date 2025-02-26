@@ -21,7 +21,11 @@
     t.src=v;s=b.getElementsByTagName(e)[0];
     s.parentNode.insertBefore(t,s)}(window, document,'script',
     'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '1148646506861774');
+    
+    // Initialisation des trois pixels Facebook
+    fbq('init', '934337045580399'); // Pixel SUBSCRIBE
+    fbq('init', '1372093063957131'); // Pixel SIGNUP
+    fbq('init', '3640356596263548'); // Pixel SUCCESS
     fbq('track', 'PageView');
     </script>
     <!-- End Meta Pixel Code -->
@@ -61,8 +65,15 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     
-    <!-- Meta Pixel noscript -->
-    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1148646506861774&ev=PageView&noscript=1" /></noscript>
+    <!-- Meta Pixel noscript (multiple pixels) -->
+    <noscript>
+      <!-- Pixel SUBSCRIBE -->
+      <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=934337045580399&ev=PageView&noscript=1" />
+      <!-- Pixel SIGNUP -->
+      <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1372093063957131&ev=PageView&noscript=1" />
+      <!-- Pixel SUCCESS -->
+      <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3640356596263548&ev=PageView&noscript=1" />
+    </noscript>
     
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
