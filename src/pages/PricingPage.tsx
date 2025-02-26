@@ -3,6 +3,7 @@ import { PricingCard } from "@/components/pricing/PricingCard"
 import { PricingFormDialog } from "@/components/pricing/PricingFormDialog"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
+import { subscriptionEvents } from "@/integrations/posthog/events"
 import { facebookEvents } from "@/integrations/meta-pixel/client"
 import { SEO } from "@/components/SEO"
 
@@ -18,6 +19,7 @@ const PricingPage = () => {
   const handleMonthlySubscription = () => {
     // Tracking PostHog
     pricingEvents.selectPlan('premium')
+    subscriptionEvents.subscriptionStarted('monthly', 11.90)
     
     // Tracking Facebook - Prix: 11.90€
     facebookEvents.initiateCheckout('monthly', 11.90)
@@ -36,6 +38,7 @@ const PricingPage = () => {
   const handleYearlySubscription = () => {
     // Tracking PostHog
     pricingEvents.selectPlan('premium')
+    subscriptionEvents.subscriptionStarted('yearly', 9.00)
     
     // Tracking Facebook - Prix: 9.00€/mois (équivalent)
     facebookEvents.initiateCheckout('yearly', 9.00)
@@ -113,7 +116,7 @@ const PricingPage = () => {
           />
         </div>
         <PricingFormDialog 
-          triggerText="Demander un devis" // Ajout du texte manquant pour le bouton
+          triggerText="Demander un devis" // Texte pour le bouton
         />
       </main>
     </div>

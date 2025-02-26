@@ -4,6 +4,7 @@ import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
+import { subscriptionEvents } from "@/integrations/posthog/events";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 
@@ -17,14 +18,10 @@ const SubscriptionSuccessPage = () => {
     monthly: {
       price: 11.90,
       yearlyValue: 142.80,
-      title: "Abonnement Mensuel",
-      description: "Votre abonnement mensuel à 11,90€ a été activé avec succès."
     },
     yearly: {
       price: 9.00,
       yearlyValue: 108.00,
-      title: "Abonnement Annuel",
-      description: "Votre abonnement annuel (9€/mois) a été activé avec succès."
     }
   };
   
@@ -38,6 +35,12 @@ const SubscriptionSuccessPage = () => {
       details.yearlyValue
     );
     
+    // Tracking PostHog
+    subscriptionEvents.subscriptionCompleted(
+      subscriptionType, 
+      details.price
+    );
+    
     // Afficher un toast de confirmation
     toast({
       title: "Abonnement réussi !",
@@ -49,7 +52,7 @@ const SubscriptionSuccessPage = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <SEO 
-        title="Abonnement réussi | PedagoIA"
+        title="Abonnement activé | PedagoIA"
         description="Votre abonnement a été activé avec succès. Accédez maintenant à toutes les fonctionnalités de PedagoIA."
       />
       
@@ -58,22 +61,16 @@ const SubscriptionSuccessPage = () => {
           <CheckCircle className="h-16 w-16 text-green-500" />
         </div>
         
-        <h1 className="text-2xl font-bold mb-2">{details.title} activé !</h1>
+        <h1 className="text-2xl font-bold mb-2">Abonnement activé</h1>
         
         <p className="text-gray-600 mb-6">
-          {details.description} Vous pouvez maintenant profiter de toutes les fonctionnalités premium de PedagoIA.
+          Bienvenue sur PedagoIA, l'application qui révolutionne l'enseignement !
         </p>
         
         <div className="space-y-4">
           <Button asChild className="w-full">
             <Link to="/home">
               Accéder à mon tableau de bord
-            </Link>
-          </Button>
-          
-          <Button asChild variant="outline" className="w-full">
-            <Link to="/discover">
-              Découvrir les fonctionnalités premium
             </Link>
           </Button>
         </div>

@@ -4,6 +4,7 @@ import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
+import { subscriptionEvents } from "@/integrations/posthog/events";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 
@@ -32,6 +33,12 @@ const SubscriptionFailedPage = () => {
     facebookEvents.subscriptionFailed(
       subscriptionType, 
       details.price,
+      errorType
+    );
+    
+    // Tracking PostHog
+    subscriptionEvents.subscriptionFailed(
+      subscriptionType,
       errorType
     );
     

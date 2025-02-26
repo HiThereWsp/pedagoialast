@@ -4,6 +4,7 @@ import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { XCircle } from "lucide-react";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
+import { subscriptionEvents } from "@/integrations/posthog/events";
 import { SEO } from "@/components/SEO";
 
 const CheckoutCanceledPage = () => {
@@ -25,6 +26,12 @@ const CheckoutCanceledPage = () => {
   useEffect(() => {
     // Envoyer l'événement d'abandon de paiement à Facebook
     facebookEvents.checkoutCanceled(subscriptionType);
+    
+    // Tracking PostHog
+    subscriptionEvents.subscriptionCanceled(
+      subscriptionType, 
+      "checkout_page"
+    );
   }, [subscriptionType]);
 
   return (
