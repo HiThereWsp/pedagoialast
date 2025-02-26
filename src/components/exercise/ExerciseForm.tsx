@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,7 @@ export interface ExerciseFormProps {
 
 const ExerciseForm: React.FC<ExerciseFormProps> = ({ formData, handleInputChange, handleSubmit, isLoading }) => {
   const formRef = useRef<HTMLFormElement>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   useEffect(() => {
     if (formRef.current) {
@@ -30,14 +31,11 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({ formData, handleInputChange
   const validateForm = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Réinitialiser l'erreur avant validation
+    setValidationError(null);
+    
     if (!formData.objective.trim()) {
-      const alert = document.createElement('div');
-      alert.innerHTML = `
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-          <span class="block sm:inline">L'objectif pédagogique est obligatoire</span>
-        </div>
-      `;
-      formRef.current?.insertBefore(alert, formRef.current.firstChild);
+      setValidationError("L'objectif pédagogique est obligatoire");
       return;
     }
 
@@ -50,6 +48,13 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({ formData, handleInputChange
       onSubmit={validateForm} 
       className="relative z-10 max-w-4xl mx-auto space-y-6 bg-white/95 backdrop-blur-sm p-8 rounded-xl shadow-lg border border-pink-100 hover:shadow-xl transition-all duration-300 ease-in-out"
     >
+      {validationError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>{validationError}</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-6">
         <LessonPlanSelect 
           value={formData.selectedLessonPlan || ''} 
@@ -142,4 +147,60 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({ formData, handleInputChange
             <Textarea
               id="objective"
               placeholder="Décrivez l'objectif pédagogique de ces exercices"
-              
+              value={formData.objective}
+              onChange={(e) => handleInputChange("objective", e.target.value)}
+              className="w-full min-h-[100px] transition-colors focus:border-pink-300"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="additionalInstructions" className="text-gray-700">
+              Instructions supplémentaires
+            </Label>
+            <Textarea
+              id="additionalInstructions"
+              placeholder="Instructions spécifiques pour les exercices"
+              value={formData.additionalInstructions}
+              onChange={(e) => handleInputChange("additionalInstructions", e.target.value)}
+              className="w-full transition-colors focus:border-pink-300"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="specificNeeds" className="text-gray-700">
+              Besoins spécifiques des élèves
+            </Label>
+            <Textarea
+              id="specificNeeds"
+              placeholder="Ex: Adaptation pour élèves dyslexiques"
+              value={formData.specificNeeds}
+              onChange={(e) => handleInputChange("specificNeeds", e.target.value)}
+              className="w-full transition-colors focus:border-pink-300"
+            />
+          </div>
+        </div>
+
+        <Button 
+          type="submit" 
+          className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 rounded-lg font-medium transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-lg flex items-center justify-center gap-2"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <LoadingIndicator />
+              <span>Génération en cours...</span>
+            </>
+          ) : (
+            <>
+              <Wand2 className="h-5 w-5" />
+              <span>Générer les exercices</span>
+            </>
+          )}
+        </Button>
+      </div>
+    </form>
+  );
+};
+
+export default ExerciseForm;
