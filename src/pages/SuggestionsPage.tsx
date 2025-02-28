@@ -11,8 +11,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
+interface Suggestion {
+  id: string;
+  title: string;
+  description: string;
+  votes: number;
+  status: string;
+  author: string;
+  created_at: string;
+}
+
 const SuggestionsPage = () => {
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [userVotes, setUserVotes] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('tous');
@@ -36,8 +46,9 @@ const SuggestionsPage = () => {
   const fetchSuggestions = async () => {
     try {
       setIsLoading(true);
+      // Utiliser 'from' avec le type any pour contourner les limitations de typage
       const { data, error } = await supabase
-        .from('suggestions')
+        .from('suggestions' as any)
         .select('*')
         .order('votes', { ascending: false });
 
@@ -47,7 +58,7 @@ const SuggestionsPage = () => {
       }
 
       if (data && data.length > 0) {
-        setSuggestions(data);
+        setSuggestions(data as Suggestion[]);
       } else {
         // Si aucune suggestion n'est trouvée, initialisons avec les données par défaut
         await initializeDefaultSuggestions();
@@ -63,8 +74,9 @@ const SuggestionsPage = () => {
     if (!user) return;
     
     try {
+      // Utiliser 'from' avec le type any pour contourner les limitations de typage
       const { data, error } = await supabase
-        .from('suggestion_votes')
+        .from('suggestion_votes' as any)
         .select('suggestion_id')
         .eq('user_id', user.id);
 
@@ -84,16 +96,17 @@ const SuggestionsPage = () => {
   const initializeDefaultSuggestions = async () => {
     try {
       for (const suggestion of initialSuggestions) {
-        await supabase.from('suggestions').insert(suggestion);
+        // Utiliser 'from' avec le type any pour contourner les limitations de typage
+        await supabase.from('suggestions' as any).insert(suggestion);
       }
       // Récupérer les suggestions après initialisation
       const { data } = await supabase
-        .from('suggestions')
+        .from('suggestions' as any)
         .select('*')
         .order('votes', { ascending: false });
       
       if (data) {
-        setSuggestions(data);
+        setSuggestions(data as Suggestion[]);
       }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation des suggestions:', error);
@@ -134,8 +147,9 @@ const SuggestionsPage = () => {
       }
       
       // Enregistrer le vote
+      // Utiliser 'from' avec le type any pour contourner les limitations de typage
       const { error: voteError } = await supabase
-        .from('suggestion_votes')
+        .from('suggestion_votes' as any)
         .insert({ user_id: user.id, suggestion_id: id });
         
       if (voteError) {
@@ -161,8 +175,9 @@ const SuggestionsPage = () => {
       }
       
       // Supprimer le vote
+      // Utiliser 'from' avec le type any pour contourner les limitations de typage
       const { error: voteError } = await supabase
-        .from('suggestion_votes')
+        .from('suggestion_votes' as any)
         .delete()
         .eq('user_id', user.id)
         .eq('suggestion_id', id);
@@ -181,10 +196,15 @@ const SuggestionsPage = () => {
       setUserVotes(userVotes.filter(v => v !== id));
     }
     
+    // Récupérer la suggestion actuelle
+    const suggestion = suggestions.find(s => s.id === id);
+    if (!suggestion) return;
+    
     // Mettre à jour le compteur de votes de la suggestion
+    // Utiliser 'from' avec le type any pour contourner les limitations de typage
     const { error: updateError } = await supabase
-      .from('suggestions')
-      .update({ votes: suggestions.find(s => s.id === id).votes + voteChange })
+      .from('suggestions' as any)
+      .update({ votes: suggestion.votes + voteChange })
       .eq('id', id);
       
     if (updateError) {
@@ -198,10 +218,10 @@ const SuggestionsPage = () => {
     }
     
     // Mettre à jour l'état local
-    setSuggestions(suggestions.map(suggestion =>
-      suggestion.id === id
-        ? { ...suggestion, votes: suggestion.votes + voteChange }
-        : suggestion
+    setSuggestions(suggestions.map(s =>
+      s.id === id
+        ? { ...s, votes: s.votes + voteChange }
+        : s
     ));
     
     toast({
@@ -232,8 +252,9 @@ const SuggestionsPage = () => {
         created_at: new Date().toISOString()
       };
 
+      // Utiliser 'from' avec le type any pour contourner les limitations de typage
       const { error } = await supabase
-        .from('suggestions')
+        .from('suggestions' as any)
         .insert(suggestion);
 
       if (error) {
