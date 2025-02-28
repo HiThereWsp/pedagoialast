@@ -136,16 +136,6 @@ const SuggestionsPage = () => {
         return;
       }
       
-      // Vérifier si l'utilisateur a atteint sa limite de votes
-      if (userVotes.length >= 3) {
-        toast({
-          title: "Limite de votes atteinte",
-          description: "Vous ne pouvez voter que pour 3 suggestions maximum.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
       // Enregistrer le vote
       // Utiliser 'from' avec le type any pour contourner les limitations de typage
       const { error: voteError } = await supabase
