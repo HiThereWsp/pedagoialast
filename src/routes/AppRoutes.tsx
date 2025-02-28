@@ -75,7 +75,7 @@ function AppRoutes() {
         <Route path="/correspondence" element={<ProtectedRoute><CorrespondencePage /></ProtectedRoute>} />
         <Route path="/contact" element={<ProtectedRoute><ContactPage /></ProtectedRoute>} />
         <Route path="/offline-chat" element={<ProtectedRoute><OfflineChatPage /></ProtectedRoute>} />
-        <Route path="/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
+        <Route path="/pricing" element={<PricingPage />} />
         {/* Routes de suivi des conversions */}
         <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
         <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />
