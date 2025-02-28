@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,35 +18,38 @@ export const SuggestionFilters = ({
   onStatusChange
 }: SuggestionFiltersProps) => {
   return (
-    <div className="flex gap-4 flex-col md:flex-row bg-white/90 backdrop-blur-md p-4 md:p-6 rounded-xl shadow-lg border border-[#FF9633]/10">
-      <div className="flex-1 relative">
+    <div className="bg-white p-4 rounded-lg shadow-sm space-y-4 md:space-y-0 md:flex md:items-center md:justify-between">
+      <div className="relative w-full md:w-2/3">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Rechercher une suggestion..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-10 border-2 focus:border-[#FF9633] transition-all duration-200 bg-white rounded-xl"
+          className="pl-10 border rounded-lg focus:ring-1 focus:ring-[#FF9633] focus:border-[#FF9633]"
         />
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 justify-end md:w-1/3">
         <Button
-          variant="outline"
+          variant="ghost"
           onClick={() => onStatusChange('tous')}
-          className={`rounded-xl ${selectedStatus === 'tous' ? 'bg-[#FF9633]/10 border-[#FF9633] text-[#FF9633]' : ''}`}
+          className={`rounded-lg ${selectedStatus === 'tous' ? 'bg-[#FF9633]/10 text-[#FF9633]' : 'text-gray-500'}`}
+          size="sm"
         >
           Toutes
         </Button>
         <Button
-          variant="outline"
+          variant="ghost"
           onClick={() => onStatusChange('créé')}
-          className={`rounded-xl ${selectedStatus === 'créé' ? 'bg-[#FF9633]/10 border-[#FF9633] text-[#FF9633]' : ''}`}
+          className={`rounded-lg ${selectedStatus === 'créé' ? 'bg-[#FF9633]/10 text-[#FF9633]' : 'text-gray-500'}`}
+          size="sm"
         >
           En cours
         </Button>
         <Button
-          variant="outline"
+          variant="ghost"
           onClick={() => onStatusChange('complété')}
-          className={`rounded-xl ${selectedStatus === 'complété' ? 'bg-[#FF9633]/10 border-[#FF9633] text-[#FF9633]' : ''}`}
+          className={`rounded-lg ${selectedStatus === 'complété' ? 'bg-[#FF9633]/10 text-[#FF9633]' : 'text-gray-500'}`}
+          size="sm"
         >
           Complétées
         </Button>
