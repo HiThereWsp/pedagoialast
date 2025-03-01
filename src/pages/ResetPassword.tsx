@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { SEO } from "@/components/SEO"
 import { useToast } from "@/hooks/use-toast"
 import { Link } from "react-router-dom"
-import { PasswordResetForm } from "@/components/landing/auth/PasswordResetForm.tsx";
+import { PasswordResetForm } from "@/components/landing/auth/PasswordResetForm";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Info } from "lucide-react";
@@ -25,39 +25,52 @@ export default function ResetPassword() {
       setIsLoading(true)
       
       try {
-        // Récupérer le type et le token des paramètres d'URL
+        // Récupérer tous les paramètres d'URL pour le debugging
+        const allParams = Object.fromEntries([...searchParams.entries()])
         const type = searchParams.get("type")
-        const token = searchParams.get("token_hash")
+        const token_hash = searchParams.get("token_hash")
         
         console.log("Vérification des paramètres de récupération:", { 
+          allParams,
           type, 
-          token: token ? "présent" : "absent",
+          token_hash: token_hash ? "présent" : "absent",
           url: window.location.href
         })
         
-        if (!token || type !== "recovery") {
+        if (!token_hash || type !== "recovery") {
           setTokenError(true)
           setErrorMessage("Le lien de réinitialisation est invalide ou incomplet. Vérifiez que vous avez utilisé le lien complet de l'email.")
-          console.error("Token ou type manquant/invalide:", { type, hasToken: !!token })
+          console.error("Token_hash ou type manquant/invalide:", { type, hasToken: !!token_hash })
           setIsLoading(false)
           return
         }
 
         // Vérifier le token de récupération avec Supabase
-        // Utiliser token_hash au lieu de token pour correspondre aux types attendus
+        // Utiliser token_hash pour correspondre aux types attendus
         const { data, error } = await supabase.auth.verifyOtp({
-          token_hash: token,
+          token_hash,
           type: "recovery"
         })
 
         if (error) {
           console.error("Erreur de vérification du token:", error)
           setTokenError(true)
-          setErrorMessage(error.message || "Le lien de réinitialisation est invalide ou a expiré. Veuillez demander un nouveau lien.")
+          
+          // Messages d'erreur plus spécifiques basés sur le type d'erreur
+          let errorMsg = "Le lien de réinitialisation est invalide ou a expiré. Veuillez demander un nouveau lien."
+          
+          if (error.message.includes("expired")) {
+            errorMsg = "Le lien de réinitialisation a expiré. Veuillez demander un nouveau lien."
+          } else if (error.message.includes("not found")) {
+            errorMsg = "Le token de réinitialisation n'a pas été trouvé. Veuillez demander un nouveau lien."
+          }
+          
+          setErrorMessage(errorMsg)
+          
           toast({
             variant: "destructive",
             title: "Erreur de vérification",
-            description: "Le lien de réinitialisation est invalide ou a expiré. Veuillez demander un nouveau lien.",
+            description: errorMsg,
             duration: 6000,
           })
         } else {

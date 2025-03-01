@@ -53,6 +53,7 @@ export const ForgotPasswordForm = () => {
           <AlertDescription className="text-blue-700">
             Un email a été envoyé à <strong>{formState.email}</strong> avec des instructions pour réinitialiser votre mot de passe.
             <p className="mt-2">Veuillez vérifier votre boîte de réception (et éventuellement vos spams) et suivre le lien pour réinitialiser votre mot de passe.</p>
+            <p className="mt-2 text-sm">Si vous ne recevez pas l'email dans les prochaines minutes, vérifiez que l'adresse email saisie est correcte, ou contactez le support technique.</p>
           </AlertDescription>
         </Alert>
       )}

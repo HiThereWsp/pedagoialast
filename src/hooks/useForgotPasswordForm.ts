@@ -22,7 +22,7 @@ export const useForgotPasswordForm = ({ onSuccess }: AuthFormProps = {}) => {
         isSuccess: false
     })
     const { toast } = useToast()
-    const navigate = useNavigate() // Pour la navigation
+    const navigate = useNavigate()
 
     const setField = (field: keyof ForgotPasswordFormState, value: any) => {
         setFormState(prev => ({ ...prev, [field]: value }))
@@ -54,7 +54,8 @@ export const useForgotPasswordForm = ({ onSuccess }: AuthFormProps = {}) => {
                 email: formState.email
             })
 
-            // Construction de l'URL complète de redirection
+            // Construction de l'URL complète de redirection avec le format correct
+            // Ne pas ajouter de paramètres ici - Supabase les ajoutera automatiquement
             const redirectUrl = `${window.location.origin}/reset-password`
             console.log("URL de redirection configurée:", redirectUrl)
 
@@ -76,8 +77,8 @@ export const useForgotPasswordForm = ({ onSuccess }: AuthFormProps = {}) => {
             // Mise à jour du message pour plus de clarté
             toast({
                 title: "Email envoyé",
-                description: "Un email de réinitialisation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception et suivre les instructions.",
-                duration: 6000, // Durée plus longue pour que l'utilisateur puisse lire
+                description: "Un email de réinitialisation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception et suivre les instructions. N'oubliez pas de vérifier vos spams si vous ne le trouvez pas.",
+                duration: 8000, // Durée plus longue pour que l'utilisateur puisse lire
             })
 
             // Mise à jour de l'état de succès
