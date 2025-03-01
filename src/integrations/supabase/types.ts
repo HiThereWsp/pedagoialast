@@ -645,6 +645,57 @@ export type Database = {
         }
         Relationships: []
       }
+      suggestion_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          suggestion_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          suggestion_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          suggestion_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      suggestions: {
+        Row: {
+          author: string
+          created_at: string | null
+          description: string
+          id: string
+          status: string
+          title: string
+          votes: number
+        }
+        Insert: {
+          author: string
+          created_at?: string | null
+          description: string
+          id: string
+          status?: string
+          title: string
+          votes?: number
+        }
+        Update: {
+          author?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          status?: string
+          title?: string
+          votes?: number
+        }
+        Relationships: []
+      }
       tool_metrics: {
         Row: {
           action_type: string

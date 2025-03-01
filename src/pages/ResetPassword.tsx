@@ -1,61 +1,74 @@
+
 import { useEffect, useState } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
-import { LoginForm } from "@/components/landing/LoginForm"
 import { Card, CardContent } from "@/components/ui/card"
 import { SEO } from "@/components/SEO"
 import { useToast } from "@/hooks/use-toast"
 import { Link } from "react-router-dom"
 import { PasswordResetForm } from "@/components/landing/auth/PasswordResetForm.tsx";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function ResetPassword() {
   const navigate = useNavigate()
-  const location = useLocation()
+  const [searchParams] = useSearchParams()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [tokenError, setTokenError] = useState(false)
+  const [tokenVerified, setTokenVerified] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("")
   
   useEffect(() => {
-    const verifyMagicLink = async () => {
-      const queryParams = new URLSearchParams(window.location.search);
-      const hashParams = new URLSearchParams(window.location.hash.slice(1));
-
-      const accessToken = hashParams.get("access_token");
-      const refreshToken = hashParams.get("refresh_token");
-      const error = hashParams.get("error");
-      const error_code = hashParams.get("error_code");
-      const errorDescription = hashParams.get("error_description");
-
-      if (accessToken && refreshToken) {
-        console.log("Access Token:", accessToken);
-        console.log("Refresh Token:", refreshToken);
-
-        try {
-          const { data: setSessionData, error: setSessionError } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-
-          if (setSessionError) {
-            console.error("Error setting session:", setSessionError.message);
-          } else {
-            setIsLoading(false)
-            console.log("Session set successfully:", setSessionData);
-          }
-        } catch (err) {
-          console.error("Unexpected error during session setting:", err);
+    const verifyResetToken = async () => {
+      setIsLoading(true)
+      
+      try {
+        // Récupérer le type et le token des paramètres d'URL
+        const type = searchParams.get("type")
+        const token = searchParams.get("token")
+        
+        console.log("Vérification du token de récupération:", { type, token: token ? "présent" : "absent" })
+        
+        if (!token || type !== "recovery") {
+          setTokenError(true)
+          setErrorMessage("Le lien de réinitialisation est invalide ou a expiré.")
+          console.error("Token ou type manquant:", { type, hasToken: !!token })
+          setIsLoading(false)
+          return
         }
-      } else if (error_code) {
-        setIsLoading(false)
-        setTokenError(true)
-        console.log("No access token or refresh token found in the URL.");
-      } else {
-        console.log("No access token or refresh token found in the URL.");
-      }
-    };
 
-    verifyMagicLink();
-  }, []);
+        // Vérifier le token de récupération avec Supabase
+        const { error } = await supabase.auth.verifyOtp({
+          token,
+          type: "recovery"
+        })
+
+        if (error) {
+          console.error("Erreur de vérification du token:", error)
+          setTokenError(true)
+          setErrorMessage(error.message || "Le lien de réinitialisation est invalide ou a expiré.")
+          toast({
+            variant: "destructive",
+            title: "Erreur de vérification",
+            description: "Le lien de réinitialisation est invalide ou a expiré. Veuillez réessayer.",
+          })
+        } else {
+          setTokenVerified(true)
+          console.log("Token de récupération vérifié avec succès")
+        }
+      } catch (err) {
+        console.error("Erreur inattendue lors de la vérification:", err)
+        setTokenError(true)
+        setErrorMessage("Une erreur inattendue s'est produite. Veuillez réessayer.")
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    verifyResetToken()
+  }, [searchParams, toast])
 
   if (isLoading) {
     return <div className="flex min-h-screen items-center justify-center">
@@ -65,7 +78,8 @@ export default function ResetPassword() {
           alt="PedagoIA Logo" 
           className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
         />
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+        <p className="mt-4 text-sm text-muted-foreground">Vérification de votre lien...</p>
       </div>
     </div>
   }
@@ -79,17 +93,45 @@ export default function ResetPassword() {
       <div className="flex min-h-screen flex-col items-center justify-between bg-background">
         <div className="w-full flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
           <Card className="w-full max-w-md">
-            <div className="text-center mb-6">
+            <div className="text-center mb-6 pt-6">
               <img 
                 src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                 alt="PedagoIA Logo" 
                 className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
               />
+              <h1 className="text-2xl font-bold">Réinitialisation du mot de passe</h1>
             </div>
-            <CardContent className="pt-6">
-              {!tokenError ? <PasswordResetForm /> : <>
-                <p>Token is missing or expired. Please try again.</p>
-              </>}
+            <CardContent className="pt-2 pb-6">
+              {tokenVerified ? (
+                <PasswordResetForm onSuccess={() => {
+                  toast({
+                    title: "Mot de passe mis à jour",
+                    description: "Votre mot de passe a été modifié avec succès.",
+                    variant: "default",
+                  })
+                  // Rediriger vers la page de connexion après 2 secondes
+                  setTimeout(() => navigate("/login"), 2000)
+                }} />
+              ) : tokenError ? (
+                <div className="space-y-4">
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Lien invalide</AlertTitle>
+                    <AlertDescription>
+                      {errorMessage || "Le lien de réinitialisation est invalide ou a expiré."}
+                    </AlertDescription>
+                  </Alert>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Veuillez demander un nouveau lien de réinitialisation.
+                  </p>
+                  <Button 
+                    onClick={() => navigate("/forgot-password")} 
+                    className="w-full mt-4"
+                  >
+                    Demander un nouveau lien
+                  </Button>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </div>

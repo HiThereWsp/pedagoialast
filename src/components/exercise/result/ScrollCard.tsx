@@ -1,10 +1,11 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Copy, ThumbsUp, ThumbsDown, Printer } from 'lucide-react';
 import { ProgressiveContent } from './ProgressiveContent';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ScrollCardProps {
   exercises: string | null;
@@ -27,12 +28,18 @@ export const ScrollCard = ({
 }: ScrollCardProps) => {
   const { toast } = useToast();
   const contentRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<'student' | 'correction'>(showCorrection ? 'correction' : 'student');
 
   useEffect(() => {
     if (contentRef.current) {
       contentRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [exercises]);
+
+  // Effet pour mettre à jour l'onglet actif lorsque showCorrection change
+  useEffect(() => {
+    setActiveTab(showCorrection ? 'correction' : 'student');
+  }, [showCorrection]);
 
   const splitContent = (content: string) => {
     if (!content) return { student: '', correction: '' };
@@ -84,6 +91,13 @@ export const ScrollCard = ({
     });
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // Déterminer le contenu à afficher en fonction des onglets
+  const contentToShow = activeTab === 'correction' ? correction : student;
+
   return (
     <div ref={contentRef} className={`w-full max-w-4xl mx-auto p-4 animate-fade-in ${className || ''}`}>
       {!hideActions && (
@@ -112,13 +126,34 @@ export const ScrollCard = ({
           >
             <Copy className="h-5 w-5" />
           </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handlePrint}
+            className="text-gray-600 hover:text-gray-800 print:hidden"
+          >
+            <Printer className="h-5 w-5" />
+          </Button>
         </div>
       )}
 
-      <Card className="w-full bg-white shadow-lg">
-        <CardContent className="h-[600px] md:h-[800px] lg:h-[900px] overflow-y-auto p-8">
+      {!disableInternalTabs && student && correction && (
+        <Tabs 
+          value={activeTab} 
+          onValueChange={(v) => setActiveTab(v as 'student' | 'correction')}
+          className="mb-4"
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="student" className="print:hidden">Fiche Élève</TabsTrigger>
+            <TabsTrigger value="correction" className="print:hidden">Correction</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      )}
+
+      <Card className="w-full bg-white shadow-lg print:shadow-none print:border-none">
+        <CardContent className="h-[600px] md:h-[800px] lg:h-[900px] overflow-y-auto p-8 print:h-auto print:overflow-visible">
           <ProgressiveContent
-            content={showCorrection ? correction : student}
+            content={contentToShow}
             className={`prose prose-sm max-w-none print:block ${customClass || ''}`}
           />
         </CardContent>

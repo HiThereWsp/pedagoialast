@@ -6,6 +6,7 @@ import LandingPage from '@/pages/Landing';
 import NotFound from '@/pages/NotFound';
 import ConfirmEmail from '@/pages/ConfirmEmail';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
+import Bienvenue from '@/pages/Bienvenue';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
@@ -50,6 +51,7 @@ function AppRoutes() {
     <Suspense fallback={<LoadingPage />}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/bienvenue" element={<Bienvenue />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/confirm-email" element={<ConfirmEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -73,7 +75,7 @@ function AppRoutes() {
         <Route path="/correspondence" element={<ProtectedRoute><CorrespondencePage /></ProtectedRoute>} />
         <Route path="/contact" element={<ProtectedRoute><ContactPage /></ProtectedRoute>} />
         <Route path="/offline-chat" element={<ProtectedRoute><OfflineChatPage /></ProtectedRoute>} />
-        <Route path="/pricing" element={<ProtectedRoute><PricingPage /></ProtectedRoute>} />
+        <Route path="/pricing" element={<PricingPage />} />
         {/* Routes de suivi des conversions */}
         <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
         <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />

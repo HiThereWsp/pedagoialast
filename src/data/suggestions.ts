@@ -1,3 +1,4 @@
+
 export const initialSuggestions = [
   {
     id: "report-1",
@@ -5,8 +6,8 @@ export const initialSuggestions = [
     description: "Générez rapidement des comptes-rendus détaillés pour les conseils de classe, les réunions pédagogiques ou les entretiens avec les parents.",
     votes: 0,
     status: 'créé',
-    author: "Thomas R.",
-    date: "2024-03-13"
+    author: "Thomas",
+    created_at: new Date().toISOString()
   },
   {
     id: "db-1",
@@ -14,8 +15,8 @@ export const initialSuggestions = [
     description: "Accédez à une base de données partagée de ressources pédagogiques, exercices et évaluations.",
     votes: 0,
     status: 'créé',
-    author: "David P.",
-    date: "2024-03-07"
+    author: "David",
+    created_at: new Date().toISOString()
   },
   {
     id: "pdf-1",
@@ -23,8 +24,8 @@ export const initialSuggestions = [
     description: "Analysez et interagissez avec vos documents PDF de manière intelligente pour en extraire les informations essentielles.",
     votes: 0,
     status: 'créé',
-    author: "Marie C.",
-    date: "2024-03-15"
+    author: "Marie",
+    created_at: new Date().toISOString()
   },
   {
     id: "youtube-1",
@@ -32,7 +33,7 @@ export const initialSuggestions = [
     description: "Convertissez automatiquement vos vidéos YouTube en texte pour faciliter la création de supports pédagogiques.",
     votes: 0,
     status: 'créé',
-    author: "Sophie L.",
-    date: "2024-03-14"
+    author: "Sophie",
+    created_at: new Date().toISOString()
   }
 ];

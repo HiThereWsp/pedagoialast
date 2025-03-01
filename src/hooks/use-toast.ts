@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -6,13 +7,23 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+// Modifier la durée par défaut à 5 secondes au lieu de 1000000ms
+const TOAST_REMOVE_DELAY = 5000
+
+// Définir des durées différentes selon le type de toast
+const TOAST_DURATIONS = {
+  default: 5000,
+  success: 3000,
+  destructive: 6000, // Plus longtemps pour les erreurs
+  info: 4000,
+}
 
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  duration?: number // Ajout du champ duration
 }
 
 const actionTypes = {
@@ -55,18 +66,20 @@ interface State {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
-const addToRemoveQueue = (toastId: string) => {
+// Fonction modifiée pour prendre en compte la durée personnalisée
+const addToRemoveQueue = (toastId: string, duration?: number) => {
   if (toastTimeouts.has(toastId)) {
     return
   }
 
+  // Utiliser la durée personnalisée ou celle par défaut
   const timeout = setTimeout(() => {
     toastTimeouts.delete(toastId)
     dispatch({
       type: "REMOVE_TOAST",
       toastId: toastId,
     })
-  }, TOAST_REMOVE_DELAY)
+  }, duration || TOAST_REMOVE_DELAY)
 
   toastTimeouts.set(toastId, timeout)
 }
@@ -90,13 +103,13 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
+      // Modifier pour passer la durée personnalisée à addToRemoveQueue
       if (toastId) {
-        addToRemoveQueue(toastId)
+        const toast = state.toasts.find(t => t.id === toastId)
+        addToRemoveQueue(toastId, toast?.duration)
       } else {
         state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id)
+          addToRemoveQueue(toast.id, toast.duration)
         })
       }
 
@@ -139,8 +152,11 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast({ variant = "default", ...props }: Toast) {
   const id = genId()
+
+  // Déterminer la durée à partir du variant ou utiliser celle spécifiée
+  const duration = props.duration || TOAST_DURATIONS[variant as keyof typeof TOAST_DURATIONS] || TOAST_REMOVE_DELAY
 
   const update = (props: ToasterToast) =>
     dispatch({
@@ -154,6 +170,8 @@ function toast({ ...props }: Toast) {
     toast: {
       ...props,
       id,
+      variant,
+      duration, // Ajouter la durée au toast
       open: true,
       onOpenChange: (open) => {
         if (!open) dismiss()
