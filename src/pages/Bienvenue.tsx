@@ -30,7 +30,7 @@ const Bienvenue = () => {
                 </span>
               </div>
               
-              <h1 className="text-4xl md:text-5xl font-bold mb-6 text-balance">
+              <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight">
                 L'assistant pédagogique intelligent
               </h1>
               
@@ -49,25 +49,21 @@ const Bienvenue = () => {
           </div>
         </section>
         
-        {/* Section Copilote */}
+        {/* Section Copilote - Modifiée selon l'image */}
         <section className="container mx-auto px-4 py-16 border-t border-gray-200">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white shadow-premium rounded-lg p-8 flex flex-col md:flex-row gap-8">
-              <div className="w-full md:w-1/2 bg-secondary/20 h-64 rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Image placeholder</p>
-              </div>
-              <div className="w-full md:w-1/2">
-                <h2 className="text-3xl font-bold mb-4">L'IA comme copilote</h2>
-                <p className="text-xl text-muted-foreground">
-                  Des outils conçus pour alléger drastiquement votre charge de travail
-                </p>
-              </div>
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-8">L'IA comme copilote</h2>
+            <p className="text-xl text-muted-foreground mb-12">
+              Des outils conçus pour alléger drastiquement votre charge de travail
+            </p>
+            <div className="w-full h-64 bg-secondary/20 rounded-lg flex items-center justify-center">
+              <p className="text-muted-foreground">Image placeholder</p>
             </div>
           </div>
         </section>
         
-        {/* Section Avant/Après */}
-        <section className="py-20 bg-[#F2FCE2]">
+        {/* Section Avant/Après - Fond modifié en blanc et carte verte */}
+        <section className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -96,7 +92,7 @@ const Bienvenue = () => {
                   </ul>
                 </div>
                 
-                <div className="bg-primary/10 p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300">
+                <div className="bg-[#F2FCE2] p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300">
                   <div className="flex items-center mb-6">
                     <span className="text-3xl mr-4">😎</span>
                     <h3 className="text-2xl font-semibold text-primary">Avec pedagogIA</h3>
@@ -129,21 +125,21 @@ const Bienvenue = () => {
           </div>
         </section>
 
-        {/* Section Témoignage Principal */}
+        {/* Section Témoignage Principal - Fond modifié en bleu clair */}
         <section className="container mx-auto px-4 py-16 border-t border-gray-200">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-foreground text-white p-8 rounded-lg shadow-premium">
+            <div className="bg-blue-50 p-8 rounded-lg shadow-premium">
               <div className="flex flex-col md:flex-row items-start gap-6">
                 <div className="flex-shrink-0">
-                  <div className="w-16 h-16 rounded-full bg-foreground/70 overflow-hidden">
-                    <div className="w-full h-full bg-foreground/60"></div>
+                  <div className="w-16 h-16 rounded-full bg-blue-100 overflow-hidden">
+                    <div className="w-full h-full bg-blue-200/60"></div>
                   </div>
                 </div>
                 <div>
-                  <blockquote className="text-xl md:text-2xl mb-4">
+                  <blockquote className="text-xl md:text-2xl mb-4 text-gray-800">
                     « Utiliser pedagoIA au cours de l'année c'est comme avoir un assistant expérimenté disponible partout même en classe ! »
                   </blockquote>
-                  <p className="text-white/70">
+                  <p className="text-gray-600">
                     - Melissa, maîtresse en CM2
                   </p>
                 </div>
@@ -152,10 +148,10 @@ const Bienvenue = () => {
           </div>
         </section>
         
-        {/* Section Comment Ça Marche */}
+        {/* Section Comment Ça Marche - Mise à jour avec des icônes */}
         <HowItWorksSection />
         
-        {/* Section Outils */}
+        {/* Sections restantes inchangées */}
         <section className="bg-foreground text-white py-16">
           <div className="container mx-auto px-4">
             <div className="flex justify-center mb-10 overflow-x-auto">

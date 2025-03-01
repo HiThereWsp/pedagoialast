@@ -14,10 +14,8 @@ export function Header() {
     user
   } = useAuth();
   
-  const links = [{
-    name: 'Accueil',
-    href: '/'
-  }];
+  // Suppression du tableau de liens avec "Accueil"
+  const links = [];
   
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -28,7 +26,7 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Desktop Navigation */}
+        {/* Desktop Navigation - liens retirés */}
         <nav className="hidden md:flex items-center gap-6">
           {links.map(link => (
             <Link
