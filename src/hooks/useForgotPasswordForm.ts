@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { useToast } from "./use-toast"
 import { supabase } from "@/integrations/supabase/client"
@@ -8,7 +9,6 @@ interface ForgotPasswordFormState {
     email: string,
     isLoading: boolean,
     isSuccess: boolean
-
 }
 
 interface AuthFormProps {
@@ -22,7 +22,7 @@ export const useForgotPasswordForm = ({ onSuccess }: AuthFormProps = {}) => {
         isSuccess: false
     })
     const { toast } = useToast()
-    const navigate = useNavigate() // To navigate to home
+    const navigate = useNavigate() // Pour la navigation
 
     const setField = (field: keyof ForgotPasswordFormState, value: any) => {
         setFormState(prev => ({ ...prev, [field]: value }))
@@ -43,34 +43,52 @@ export const useForgotPasswordForm = ({ onSuccess }: AuthFormProps = {}) => {
     const HandlePasswordReset = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        // Validate password
+        // Validate the email
         const errors = validateForgotPasswordForm(formState.email)
         if (handleValidationErrors(errors)) return
 
         setField("isLoading", true)
 
         try {
-            console.log("Starting to send forgot password request", {
+            console.log("Démarrage de la demande de réinitialisation pour:", {
                 email: formState.email
             })
 
+            // Construction de l'URL complète de redirection
+            const redirectUrl = `${window.location.origin}/reset-password`
+            console.log("URL de redirection configurée:", redirectUrl)
+
+            // Envoi de la demande de réinitialisation avec redirectTo
             const { data, error } = await supabase.auth.resetPasswordForEmail(
-                formState.email)
+                formState.email,
+                {
+                    redirectTo: redirectUrl
+                }
+            )
 
-            if (error) throw error
+            if (error) {
+                console.error("Erreur lors de la demande de réinitialisation:", error)
+                throw error
+            }
 
-            console.log("Password reset Email sent.", data)
+            console.log("Email de réinitialisation envoyé avec succès:", data)
 
+            // Mise à jour du message pour plus de clarté
             toast({
-                title: "Réinitialisation réussie",
-                description: "Votre mot de passe a été réinitialisé avec succès.",
+                title: "Email envoyé",
+                description: "Un email de réinitialisation a été envoyé à votre adresse. Veuillez vérifier votre boîte de réception et suivre les instructions.",
+                duration: 6000, // Durée plus longue pour que l'utilisateur puisse lire
             })
 
-            // Set the success state to true
+            // Mise à jour de l'état de succès
             setField("isSuccess", true)
-            onSuccess?.()
+            
+            // Appel du callback de succès si fourni
+            if (onSuccess) {
+                onSuccess()
+            }
         } catch (error: any) {
-            console.error("Password reset error:", error)
+            console.error("Erreur lors de la demande de réinitialisation:", error)
             toast({
                 variant: "destructive",
                 title: "Erreur",

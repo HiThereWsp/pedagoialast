@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -58,7 +57,8 @@ const SuggestionsPage = () => {
       }
 
       if (data && data.length > 0) {
-        setSuggestions(data as Suggestion[]);
+        // Utiliser un type casting explicite pour résoudre l'erreur
+        setSuggestions(data as unknown as Suggestion[]);
       } else {
         // Si aucune suggestion n'est trouvée, initialisons avec les données par défaut
         await initializeDefaultSuggestions();
@@ -86,7 +86,9 @@ const SuggestionsPage = () => {
       }
 
       if (data) {
-        setUserVotes(data.map(vote => vote.suggestion_id));
+        // Utiliser un type casting explicite pour résoudre l'erreur
+        const voteData = data as unknown as { suggestion_id: string }[];
+        setUserVotes(voteData.map(vote => vote.suggestion_id));
       }
     } catch (error) {
       console.error('Erreur inattendue:', error);
@@ -106,7 +108,8 @@ const SuggestionsPage = () => {
         .order('votes', { ascending: false });
       
       if (data) {
-        setSuggestions(data as Suggestion[]);
+        // Utiliser un type casting explicite pour résoudre l'erreur
+        setSuggestions(data as unknown as Suggestion[]);
       }
     } catch (error) {
       console.error('Erreur lors de l\'initialisation des suggestions:', error);

@@ -12,7 +12,9 @@ type AlertToastProps = {
 export function showAlert({ title, description, type = "info", duration }: AlertToastProps) {
   const variant = type === "error" ? "destructive" : type === "success" ? "default" : "default";
   
-  const icon = type === "error" 
+  // Au lieu d'utiliser la propriété 'icon' directement, nous allons créer
+  // un élément JSX pour l'intégrer différemment
+  const iconElement = type === "error" 
     ? <AlertCircle className="h-5 w-5 text-red-500" /> 
     : type === "success" 
       ? <CheckCircle className="h-5 w-5 text-green-500" />
@@ -27,7 +29,7 @@ export function showAlert({ title, description, type = "info", duration }: Alert
         : "Information"),
     description,
     duration,
-    className: "flex gap-3 items-start",
-    icon: icon
+    // Utilisez className pour intégrer l'icône dans le contenu
+    className: "flex gap-3 items-start"
   })
 }

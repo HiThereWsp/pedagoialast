@@ -34,6 +34,7 @@ export const usePasswordResetForm = ({ onSuccess }: AuthFormProps = {}) => {
                 variant: "destructive",
                 title: "Erreur de validation",
                 description: errors[0],
+                duration: 5000, // Plus de temps pour lire le message d'erreur
             })
             return true
         }
@@ -50,8 +51,8 @@ export const usePasswordResetForm = ({ onSuccess }: AuthFormProps = {}) => {
         setField("isLoading", true)
 
         try {
-            console.log("Démarrage du processus de réinitialisation avec:", {
-                password: formState.password ? "Mot de passe présent" : "Mot de passe manquant"
+            console.log("Démarrage du processus de mise à jour du mot de passe:", {
+                passwordLength: formState.password ? formState.password.length : 0
             })
 
             const { data, error } = await supabase.auth.updateUser({
@@ -59,15 +60,16 @@ export const usePasswordResetForm = ({ onSuccess }: AuthFormProps = {}) => {
             })
 
             if (error) {
-                console.error("Erreur de réinitialisation:", error)
+                console.error("Erreur lors de la mise à jour du mot de passe:", error)
                 throw error
             }
 
-            console.log("Réinitialisation réussie:", data)
+            console.log("Mot de passe mis à jour avec succès:", data)
 
             toast({
-                title: "Réinitialisation réussie",
-                description: "Votre mot de passe a été réinitialisé avec succès.",
+                title: "Mot de passe mis à jour",
+                description: "Votre mot de passe a été réinitialisé avec succès. Vous allez être redirigé vers la page de connexion.",
+                duration: 5000,
             })
 
             // Mettre à jour l'état de succès
@@ -83,8 +85,8 @@ export const usePasswordResetForm = ({ onSuccess }: AuthFormProps = {}) => {
                 variant: "destructive",
                 title: "Erreur",
                 description: getAuthErrorMessage(error),
+                duration: 5000,
             })
-            throw error; // Rejeter l'erreur pour que le composant puisse la gérer
         } finally {
             setField("isLoading", false)
         }
