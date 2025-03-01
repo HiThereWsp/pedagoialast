@@ -47,6 +47,13 @@ export function Tiles({
         >
           {colsArray.map((_, j) => (
             <motion.div
+              whileHover={{
+                backgroundColor: `var(--tile)`,
+                transition: { duration: 0 }
+              }}
+              animate={{
+                transition: { duration: 2 }
+              }}
               key={`col-${j}`}
               className={cn(
                 tileSizes[tileSize],

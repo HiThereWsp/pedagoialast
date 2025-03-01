@@ -3,20 +3,20 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { DynamicText } from "@/components/landing/DynamicText";
-import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
+import { Tiles } from "@/components/ui/tiles";
 
 export function HeroSectionBienvenue() {
   return (
-    <section className="relative py-16 md:py-24 overflow-hidden bg-white">
-      <AnimatedGridPattern 
-        numSquares={30}
-        maxOpacity={0.1}
-        duration={3}
-        repeatDelay={1}
-        className="[mask-image:radial-gradient(800px_circle_at_center,white,transparent)]"
-      />
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-white">
+      <div className="absolute inset-0 opacity-10">
+        <Tiles 
+          rows={50}
+          cols={8}
+          tileSize="md"
+        />
+      </div>
       
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-4 relative z-10 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-block animate-fade-in">
             <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 inline-flex items-center gap-1">
@@ -24,13 +24,17 @@ export function HeroSectionBienvenue() {
             </span>
           </div>
           
-          <h1 className="text-4xl md:text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight">
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-balance leading-tight tracking-tight">
             L'assistant pédagogique intelligent
           </h1>
           
-          <h2 className="text-2xl md:text-3xl mb-12">
+          <h2 className="text-2xl md:text-3xl mb-6">
             L'IA qui t'aide à <DynamicText /> en quelques clics
           </h2>
+          
+          <p className="text-lg md:text-xl text-muted-foreground mb-12">
+            Rejoignez plus de 500 enseignants qui gagnent 10h par semaine avec PedagoIA
+          </p>
           
           <Button 
             size="lg"
@@ -39,6 +43,10 @@ export function HeroSectionBienvenue() {
             J'essaie gratuitement
             <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
           </Button>
+          
+          <p className="mt-4 text-sm text-muted-foreground">
+            Nombre de places limité - Accès immédiat
+          </p>
         </div>
       </div>
     </section>
