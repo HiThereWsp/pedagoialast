@@ -3,12 +3,14 @@ import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Button } from '../ui/button'
 import { Dialog, DialogTrigger, DialogContent } from '../ui/dialog'
-import { X, Menu } from 'lucide-react'
+import { X, Menu, LogIn } from 'lucide-react'
 import { LoginForm } from './LoginForm'
+import { useAuth } from '@/hooks/useAuth'
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const location = useLocation()
+  const { user } = useAuth()
 
   const links = [
     { name: 'Accueil', href: '/' },
@@ -25,7 +27,7 @@ export function Header() {
             <img
               src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
               alt="PedagoIA Logo"
-              className="h-12 w-auto"
+              className="h-14 w-auto"
             />
             <span className="text-xl font-bold text-foreground hidden sm:block">PedagoIA</span>
           </Link>
@@ -49,16 +51,19 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="hidden md:flex">
-                Connexion
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <LoginForm />
-            </DialogContent>
-          </Dialog>
+          {!user && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="hidden md:flex gap-2">
+                  <LogIn className="h-4 w-4" />
+                  Se connecter
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <LoginForm />
+              </DialogContent>
+            </Dialog>
+          )}
           <Button asChild className="hidden md:flex">
             <Link to="/login">S'inscrire</Link>
           </Button>
@@ -82,7 +87,7 @@ export function Header() {
                   <img
                     src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
                     alt="PedagoIA Logo"
-                    className="h-12 w-auto"
+                    className="h-14 w-auto"
                   />
                   <span className="text-xl font-bold text-foreground">
                     PedagoIA
@@ -114,16 +119,19 @@ export function Header() {
                 </Link>
               ))}
               <div className="flex flex-col gap-2 mt-4">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      Connexion
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <LoginForm />
-                  </DialogContent>
-                </Dialog>
+                {!user && (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="w-full gap-2">
+                        <LogIn className="h-4 w-4" />
+                        Se connecter
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <LoginForm />
+                    </DialogContent>
+                  </Dialog>
+                )}
                 <Button asChild className="w-full">
                   <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
                     S'inscrire
