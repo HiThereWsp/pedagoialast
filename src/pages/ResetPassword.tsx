@@ -27,7 +27,7 @@ export default function ResetPassword() {
       try {
         // Récupérer le type et le token des paramètres d'URL
         const type = searchParams.get("type")
-        const token = searchParams.get("token")
+        const token = searchParams.get("token_hash")
         
         console.log("Vérification des paramètres de récupération:", { 
           type, 
@@ -44,8 +44,9 @@ export default function ResetPassword() {
         }
 
         // Vérifier le token de récupération avec Supabase
+        // Utiliser token_hash au lieu de token pour correspondre aux types attendus
         const { data, error } = await supabase.auth.verifyOtp({
-          token,
+          token_hash: token,
           type: "recovery"
         })
 
