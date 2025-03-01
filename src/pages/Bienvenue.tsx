@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { SEO } from "@/components/SEO";
 import { Header } from "@/components/landing/Header";
@@ -8,6 +9,7 @@ import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check, X } from "lucide-react";
+import { DynamicText } from "@/components/landing/DynamicText";
 
 const Bienvenue = () => {
   return (
@@ -34,7 +36,7 @@ const Bienvenue = () => {
               </h1>
               
               <h2 className="text-2xl md:text-3xl mb-12">
-                L'IA qui t'aide à <span className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text">planifier</span> en quelques clics
+                L'IA qui t'aide à <DynamicText /> en quelques clics
               </h2>
               
               <Button 

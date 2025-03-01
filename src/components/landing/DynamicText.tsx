@@ -3,9 +3,9 @@ import { useEffect, useState } from "react"
 
 const phrases = [
   "planifier",
-  "adapter vos cours",
-  "gagner du temps",
-  "différencier vos exercices"
+  "différencier",
+  "générer",
+  "évaluer"
 ]
 
 export const DynamicText = () => {
