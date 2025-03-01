@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { SEO } from "@/components/SEO";
 import { Header } from "@/components/landing/Header";
@@ -49,20 +48,27 @@ const Bienvenue = () => {
           </div>
         </section>
         
-        {/* Section Copilote - Modifiée selon l'image */}
+        {/* Section Copilote - Image avant le texte et texte rapproché */}
         <section className="container mx-auto px-4 py-16 border-t border-gray-200">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-8">L'IA comme copilote</h2>
-            <p className="text-xl text-muted-foreground mb-12">
-              Des outils conçus pour alléger drastiquement votre charge de travail
-            </p>
-            <div className="w-full h-64 bg-secondary/20 rounded-lg flex items-center justify-center">
-              <p className="text-muted-foreground">Image placeholder</p>
+          <div className="max-w-4xl mx-auto flex flex-col items-center">
+            {/* Image placée avant le texte */}
+            <div className="w-full mb-8 rounded-lg overflow-hidden">
+              <div className="w-full h-64 bg-secondary/20 rounded-lg flex items-center justify-center">
+                <p className="text-muted-foreground">Image placeholder</p>
+              </div>
+            </div>
+            
+            {/* Texte rapproché */}
+            <div className="text-center space-y-3">
+              <h2 className="text-3xl md:text-4xl font-bold">L'IA comme copilote</h2>
+              <p className="text-xl text-muted-foreground">
+                Des outils conçus pour alléger drastiquement votre charge de travail
+              </p>
             </div>
           </div>
         </section>
         
-        {/* Section Avant/Après - Fond modifié en blanc et carte verte */}
+        {/* Section Avant/Après */}
         <section className="py-20 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
@@ -125,7 +131,7 @@ const Bienvenue = () => {
           </div>
         </section>
 
-        {/* Section Témoignage Principal - Fond modifié en bleu clair */}
+        {/* Section Témoignage Principal */}
         <section className="container mx-auto px-4 py-16 border-t border-gray-200">
           <div className="max-w-4xl mx-auto">
             <div className="bg-blue-50 p-8 rounded-lg shadow-premium">
@@ -148,7 +154,7 @@ const Bienvenue = () => {
           </div>
         </section>
         
-        {/* Section Comment Ça Marche - Mise à jour avec des icônes */}
+        {/* Section Comment Ça Marche */}
         <HowItWorksSection />
         
         {/* Sections restantes inchangées */}
