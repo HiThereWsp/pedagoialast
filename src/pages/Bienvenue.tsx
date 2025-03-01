@@ -4,8 +4,31 @@ import { SEO } from "@/components/SEO";
 import { Header } from "@/components/landing/Header";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Check, Clock, BookOpen, Zap, UserPlus, Star } from "lucide-react";
+import { 
+  Check, 
+  X, 
+  ArrowRight, 
+  Clock, 
+  BookOpen, 
+  Zap, 
+  UserPlus, 
+  Star,
+  CheckCircle2
+} from "lucide-react";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
+import { FAQSection } from "@/components/landing/FAQSection";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { MetricsSection } from "@/components/landing/MetricsSection";
+import { ChallengesSection } from "@/components/landing/ChallengesSection";
+import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
 import { TestimonialsSection } from "@/components/landing/TestimonialsSection";
 
 const Bienvenue = () => {
@@ -19,37 +42,7 @@ const Bienvenue = () => {
       
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="py-20 md:py-28 bg-gradient-to-b from-background to-secondary/10">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-balance mb-6">
-                <span className="block mb-2">Pedago.ia</span>
-                <span className="text-3xl md:text-4xl lg:text-5xl bg-gradient-to-r from-primary via-primary/90 to-primary bg-clip-text text-transparent">
-                  L'IA au service des enseignants
-                </span>
-              </h1>
-              
-              <h2 className="text-2xl md:text-3xl font-bold mb-8 text-foreground/90">
-                Libérez du temps. <span className="underline decoration-dashed underline-offset-4">Enseignez pleinement</span>.
-              </h2>
-              
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-                L'enseignement est une vocation. Mais entre la paperasse, les corrections et la planification, 
-                il reste trop peu de place pour l'essentiel : transmettre, accompagner, inspirer. 
-                Pedago.ia vous aide à reprendre le contrôle sur votre temps.
-              </p>
-              
-              <Button 
-                size="lg"
-                className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group relative overflow-hidden"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 animate-shimmer -z-10" />
-                Commencer maintenant
-                <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </div>
-          </div>
-        </section>
+        <HeroSection />
         
         {/* Avant/Après Section */}
         <section className="py-20 md:py-28 bg-[#F2FCE2]">
@@ -182,6 +175,18 @@ const Bienvenue = () => {
             </div>
           </div>
         </section>
+        
+        {/* Section Métriques */}
+        <MetricsSection />
+        
+        {/* Section Challenges et Solutions */}
+        <ChallengesSection />
+        
+        {/* Section Comment Ça Marche */}
+        <HowItWorksSection />
+        
+        {/* Section FAQ */}
+        <FAQSection />
         
         {/* Section Témoignages */}
         <TestimonialsSection />

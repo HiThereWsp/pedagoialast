@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserPlus, Wand2, Gift } from 'lucide-react';
 
