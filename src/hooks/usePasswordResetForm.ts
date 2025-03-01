@@ -55,6 +55,7 @@ export const usePasswordResetForm = ({ onSuccess }: AuthFormProps = {}) => {
                 passwordLength: formState.password ? formState.password.length : 0
             })
 
+            // Tenter la mise à jour du mot de passe
             const { data, error } = await supabase.auth.updateUser({
                 password: formState.password
             })
@@ -81,10 +82,23 @@ export const usePasswordResetForm = ({ onSuccess }: AuthFormProps = {}) => {
             }
         } catch (error: any) {
             console.error("Erreur de réinitialisation:", error)
+            
+            // Message d'erreur personnalisé en fonction du type d'erreur
+            let errorMessage = getAuthErrorMessage(error)
+            
+            // Si l'erreur concerne une session expirée
+            if (error.message && (
+                error.message.includes("session expired") || 
+                error.message.includes("not authenticated") ||
+                error.message.includes("invalid token")
+            )) {
+                errorMessage = "La session de réinitialisation a expiré. Veuillez demander un nouveau lien de réinitialisation."
+            }
+            
             toast({
                 variant: "destructive",
                 title: "Erreur",
-                description: getAuthErrorMessage(error),
+                description: errorMessage,
                 duration: 5000,
             })
         } finally {

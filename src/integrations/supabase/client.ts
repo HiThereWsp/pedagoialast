@@ -62,13 +62,18 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (session) {
     console.log('Session active:', session.user?.email);
     console.log('Token de session:', session.access_token ? 'Présent' : 'Absent');
-    console.log('Expiration:', new Date(session.expires_at || 0).toLocaleString());
+    console.log('Expiration:', new Date(session.expires_at * 1000).toLocaleString());
+    console.log('ID session:', session.user?.id);
   } else {
     console.log('Aucune session active');
     if (event === 'SIGNED_OUT') {
       console.log('Déconnexion effectuée');
     } else if (event === 'TOKEN_REFRESHED') {
       console.log('Token rafraîchi');
+    } else if (event === 'USER_UPDATED') {
+      console.log('Informations utilisateur mises à jour');
+    } else if (event === 'PASSWORD_RECOVERY') {
+      console.log('Récupération de mot de passe initiée');
     }
   }
 });

@@ -1,9 +1,7 @@
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
 import { Card, CardContent } from "@/components/ui/card"
 import { SEO } from "@/components/SEO"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { ForgotPasswordForm } from "@/components/landing/auth/ForgotPassowrdForm";
 import { Button } from "@/components/ui/button"
 
