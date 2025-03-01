@@ -51,7 +51,7 @@ export const supabase = createClient<Database>(
       detectSessionInUrl: true,
       storage: getStorage(),
       storageKey: 'supabase.auth.token',
-      flowType: 'pkce', // Utiliser PKCE pour plus de sécurité
+      // flowType: 'pkce', // Utiliser PKCE pour plus de sécurité
     }
   }
 );
