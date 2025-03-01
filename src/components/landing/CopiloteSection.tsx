@@ -5,7 +5,7 @@ import { Tiles } from "@/components/ui/tiles";
 export function CopiloteSection() {
   return (
     <section className="relative py-16 bg-white border-t border-gray-200 overflow-hidden">
-      <div className="absolute inset-0 opacity-10">
+      <div className="absolute inset-0 opacity-20">
         <Tiles 
           rows={50}
           cols={8}

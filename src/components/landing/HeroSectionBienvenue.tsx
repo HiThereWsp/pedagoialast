@@ -8,7 +8,7 @@ import { Tiles } from "@/components/ui/tiles";
 export function HeroSectionBienvenue() {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-white">
-      <div className="absolute inset-0 opacity-10">
+      <div className="absolute inset-0 opacity-20">
         <Tiles 
           rows={50}
           cols={8}
@@ -45,7 +45,7 @@ export function HeroSectionBienvenue() {
           </Button>
           
           <p className="mt-4 text-sm text-muted-foreground">
-            Nombre de places limité - Accès immédiat
+            Tarif préférentiel pour les 1000 premiers enseignants.
           </p>
         </div>
       </div>
