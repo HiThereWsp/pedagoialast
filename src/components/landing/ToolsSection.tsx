@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Check, Clock } from "lucide-react";
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 
 export function ToolsSection() {
   const [activeTab, setActiveTab] = useState('evaluation');
@@ -161,9 +162,17 @@ export function ToolsSection() {
         </div>
       </div>
       
-      {/* Contenu de l'outil sélectionné - Fond bleu ciel */}
-      <div className="bg-blue-50 py-12">
-        <div className="container mx-auto px-4">
+      {/* Contenu de l'outil sélectionné - Fond avec AnimatedGridPattern */}
+      <div className="relative py-12 bg-blue-50 overflow-hidden">
+        <AnimatedGridPattern 
+          numSquares={30}
+          maxOpacity={0.1}
+          duration={3}
+          repeatDelay={1}
+          className="[mask-image:radial-gradient(800px_circle_at_center,white,transparent)]"
+        />
+        
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold mb-8">{activeFeature?.title}</h2>
             

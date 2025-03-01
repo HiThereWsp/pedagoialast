@@ -1,11 +1,20 @@
 
 import React from 'react';
 import { Check, X } from "lucide-react";
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern";
 
 export function ComparisonSection() {
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section className="py-20 bg-white relative overflow-hidden">
+      <AnimatedGridPattern 
+        numSquares={30}
+        maxOpacity={0.1}
+        duration={3}
+        repeatDelay={1}
+        className="[mask-image:radial-gradient(800px_circle_at_center,white,transparent)]"
+      />
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-red-100 p-8 rounded-xl shadow-premium hover:shadow-premium-lg transition-all duration-300">
