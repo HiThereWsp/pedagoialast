@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react"
 
 const phrases = [
+  "planifier",
   "adapter vos cours",
-  "préparer vos cours plus efficacement",
-  "différencier vos exercices",
-  "effectuer vos tâches administratives"
+  "gagner du temps",
+  "différencier vos exercices"
 ]
 
 export const DynamicText = () => {
@@ -20,7 +20,7 @@ export const DynamicText = () => {
   }, [])
 
   return (
-    <span className="block h-[2em] mb-12 bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text transition-all duration-500">
+    <span className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text">
       {phrases[currentIndex]}
     </span>
   )
