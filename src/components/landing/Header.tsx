@@ -23,11 +23,11 @@ export function Header() {
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
             <img
-              src="/favicon.svg"
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
               alt="PedagoIA Logo"
-              className="h-9 w-9"
+              className="h-12 w-auto"
             />
-            <span className="text-xl font-bold text-foreground">PedagoIA</span>
+            <span className="text-xl font-bold text-foreground hidden sm:block">PedagoIA</span>
           </Link>
         </div>
 
@@ -48,7 +48,7 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" className="hidden md:flex">
@@ -80,9 +80,9 @@ export function Header() {
               <div className="flex items-center gap-2">
                 <Link to="/" className="flex items-center gap-2">
                   <img
-                    src="/favicon.svg"
+                    src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
                     alt="PedagoIA Logo"
-                    className="h-9 w-9"
+                    className="h-12 w-auto"
                   />
                   <span className="text-xl font-bold text-foreground">
                     PedagoIA
