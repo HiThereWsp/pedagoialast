@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Détermine si la page actuelle est une page publique (landing, login, etc.)
   const isPublicPage = () => {
-    const publicPaths = ['/', '/login', '/signup', '/reset-password', '/contact', '/pricing']
+    const publicPaths = ['/', '/login', '/signup', '/reset-password', '/contact', '/pricing', '/forgot-password']
     return publicPaths.includes(location.pathname)
   }
 
