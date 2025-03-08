@@ -70,7 +70,7 @@ export const PricingCard = ({
             <span className="text-lg font-medium line-through text-muted-foreground">{originalPrice}</span>
           )}
           <span className="text-4xl font-bold">{price}</span>
-          {period && <span className="text-2xl text-muted-foreground">{period}</span>}
+          {period && <span className="text-lg text-muted-foreground">{period}</span>}
         </div>
         {yearlyPrice && (
           <p className="text-sm text-primary mt-2 text-center">
@@ -114,9 +114,9 @@ export const PricingCard = ({
             onClick={onSubscribe} 
             className={`w-full ${
               isPremium 
-                ? 'bg-gradient-to-r from-yellow-500 via-coral-500 to-pink-500 text-white hover:opacity-90 transition-opacity shadow-md hover:shadow-lg'
-                : 'bg-primary hover:bg-primary/90 text-primary-foreground transition-colors shadow-md hover:shadow-lg'
-            } text-lg py-6`}
+                ? 'bg-slate-900 text-white hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl' 
+                : 'bg-slate-900 hover:bg-slate-800 text-white transition-colors shadow-lg hover:shadow-xl'
+            } text-lg py-6 font-bold`}
             size="lg"
           >
             {ctaText}
