@@ -5,21 +5,21 @@ import { Card } from '../ui/card';
 
 const testimonials = [
   {
-    name: "Safia Douakh",
+    name: "Safia D.",
     role: "Maîtresse de CM2",
-    quote: "Avant, je passais des heures à corriger. Maintenant, PédagoIA me fait gagner du temps chaque jour. Je peux enfin me concentrer sur ce que j'aime pour mes élèves.",
+    quote: "Lorsque je crée mes séquences, j'ai souvent du mal à démarrer et à trouver des idées de contenu. Avec le générateur de séquences, je les obtiens en quelques secondes et je n'ai plus qu'à modifier quelques lignes selon les besoins de ma classe. C'est super utile au quotidien!",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&q=80",
   },
   {
-    name: "Denis Vasseur",
+    name: "Denis V.",
     role: "Prof des écoles",
-    quote: "Grâce à PédagoIA, j'ai pu créer des ressources adaptées aux besoins spécifiques de chacun de mes élèves. C'est un véritable game-changer pour la différenciation pédagogique !",
+    quote: "J'ai une classe de 23 élèves dont 6 avec des difficultés particulières. Avec PédagoIA, je génère d'abord des exercices pour l'ensemble de la classe, puis je les adapte aux spécificités de chacun de mes élèves en situation de fragilité. Tout cela en quelques clics, là où avant je passais mes soirées à tout refaire à la main !",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&q=80",
   },
   {
-    name: "Ange Marthély",
-    role: "Prof en 5ième et 6ième",
-    quote: "PédagoIA m'a permis de moderniser mes méthodes d'enseignement. Mes élèves sont plus engagés et mes cours sont plus interactifs. C'est une vraie révolution dans mon quotidien.",
+    name: "Ange M.",
+    role: "Prof d'anglais",
+    quote: "Le chat de recherche avancée est devenu mon allié pour dénicher des sujets d'actu pour mes cours d'anglais. En quelques minutes, je trouve des ressources parfaites pour mes élèves là où je passais des heures avant. Mes élèves adorent travailler sur des sujets d'actualités !",
     useAvatar: true,
   },
 ];
