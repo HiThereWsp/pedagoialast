@@ -10,14 +10,14 @@ export function TestimonialMainSection() {
             <div className="flex-shrink-0">
               <div className="w-16 h-16 rounded-full overflow-hidden">
                 <img 
-                  src="/lovable-uploads/f6698362-8087-475f-80ce-13d4553a0e99.png" 
+                  src="/lovable-uploads/90756d9e-4471-46f6-87b4-7bfeb3185c6a.png" 
                   alt="Photo de Melissa, maîtresse en CM2" 
                   className="w-full h-full object-cover"
                 />
               </div>
             </div>
             <div>
-              <blockquote className="text-xl md:text-2xl mb-4 text-gray-800">
+              <blockquote className="text-xl md:text-2xl mb-4 text-gray-800 text-balance">
                 « Utiliser pedagoIA au cours de l'année c'est comme avoir un assistant expérimenté disponible partout même en classe ! »
               </blockquote>
               <p className="text-gray-600">
