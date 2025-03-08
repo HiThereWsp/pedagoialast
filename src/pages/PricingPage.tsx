@@ -94,7 +94,7 @@ const PricingPage = () => {
             isPremium
             features={[
               "Bénéficier de tous les avantages du plan mensuel",
-              "Voter de nouveaux outils tous les mois",
+              "Voter en priorité pour les nouvelles fonctionnalités",
               "Recevoir les mises à jour en avant-première",
               "Accéder à la communauté privée d'enseignants 3.0"
             ]}

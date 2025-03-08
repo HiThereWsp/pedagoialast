@@ -114,10 +114,8 @@ export const PricingCard = ({
             onClick={onSubscribe} 
             className={`w-full ${
               isPremium 
-                ? 'bg-gradient-to-r from-yellow-500 via-coral-500 to-pink-500 text-white hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl font-bold'
-                : title === "Établissement scolaire"
-                  ? 'bg-slate-900 hover:bg-slate-800 text-white transition-colors shadow-lg hover:shadow-xl font-bold'
-                  : 'bg-slate-900 hover:bg-slate-800 text-white transition-colors shadow-lg hover:shadow-xl font-bold'
+                ? 'bg-gradient-to-r from-yellow-500 via-coral-500 to-pink-500 text-white hover:opacity-90 transition-opacity shadow-md hover:shadow-lg'
+                : 'bg-primary hover:bg-primary/90 text-primary-foreground transition-colors shadow-md hover:shadow-lg'
             } text-lg py-6`}
             size="lg"
           >
