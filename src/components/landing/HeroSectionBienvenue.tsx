@@ -19,9 +19,41 @@ export function HeroSectionBienvenue() {
       <div className="container mx-auto px-4 relative z-10 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-block animate-fade-in">
-            <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-8 inline-flex items-center gap-1">
-              Découvrez PedagoIA
-            </span>
+            <div className="flex items-center rounded-full border border-border bg-background p-1 shadow shadow-black/5 mb-8">
+              <div className="flex -space-x-1.5">
+                <img
+                  className="rounded-full ring-1 ring-background"
+                  src="https://originui.com/avatar-80-03.jpg"
+                  width={20}
+                  height={20}
+                  alt="Avatar 01"
+                />
+                <img
+                  className="rounded-full ring-1 ring-background"
+                  src="https://originui.com/avatar-80-04.jpg"
+                  width={20}
+                  height={20}
+                  alt="Avatar 02"
+                />
+                <img
+                  className="rounded-full ring-1 ring-background"
+                  src="https://originui.com/avatar-80-05.jpg"
+                  width={20}
+                  height={20}
+                  alt="Avatar 03"
+                />
+                <img
+                  className="rounded-full ring-1 ring-background"
+                  src="https://originui.com/avatar-80-06.jpg"
+                  width={20}
+                  height={20}
+                  alt="Avatar 04"
+                />
+              </div>
+              <p className="px-2 text-xs text-muted-foreground">
+                Utilisé par <strong className="font-medium text-foreground">60K+</strong> enseignants.
+              </p>
+            </div>
           </div>
           
           <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-balance leading-tight tracking-tight">
