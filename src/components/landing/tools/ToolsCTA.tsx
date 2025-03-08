@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Tiles } from "@/components/ui/tiles";
@@ -17,13 +18,15 @@ export function ToolsCTA() {
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <Button 
-            size="lg"
-            className="bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group"
-          >
-            Je découvre tous les outils
-            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
+          <Link to="/pricing">
+            <Button 
+              size="lg"
+              className="bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group"
+            >
+              Je découvre tous les outils
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
           
           <p className="mt-4 text-sm text-muted-foreground">
             Accès à tous les outils inclus dans votre abonnement

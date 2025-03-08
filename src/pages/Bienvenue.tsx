@@ -11,7 +11,7 @@ import { CopiloteSection } from "@/components/landing/CopiloteSection";
 import { ComparisonSection } from "@/components/landing/ComparisonSection";
 import { TestimonialMainSection } from "@/components/landing/TestimonialMainSection";
 import { ToolsSection } from "@/components/landing/ToolsSection";
-import { Tiles } from "@/components/ui/tiles";
+import { MetricsSection } from "@/components/landing/MetricsSection";
 
 const Bienvenue = () => {
   return (
@@ -37,6 +37,9 @@ const Bienvenue = () => {
         
         {/* Section Comment Ça Marche */}
         <HowItWorksSection />
+        
+        {/* Section Metrics */}
+        <MetricsSection />
         
         {/* Section Outils */}
         <ToolsSection />
