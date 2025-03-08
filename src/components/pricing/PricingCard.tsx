@@ -114,9 +114,9 @@ export const PricingCard = ({
             onClick={onSubscribe} 
             className={`w-full ${
               isPremium 
-                ? 'bg-slate-900 text-white hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl' 
-                : 'bg-slate-900 hover:bg-slate-800 text-white transition-colors shadow-lg hover:shadow-xl'
-            } text-lg py-6 font-bold`}
+                ? 'bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:shadow-[0_8px_20px_-3px_rgba(251,146,60,0.4)] transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(251,146,60,0.3)]' 
+                : 'bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-900 text-white transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(15,23,42,0.2)] hover:shadow-[0_8px_20px_-3px_rgba(15,23,42,0.3)]'
+            } text-lg py-6 font-semibold rounded-xl`}
             size="lg"
           >
             {ctaText}
@@ -126,3 +126,4 @@ export const PricingCard = ({
     </Card>
   );
 };
+
