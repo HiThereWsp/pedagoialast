@@ -1,30 +1,61 @@
 
-import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ResourceSkeleton } from "./ResourceSkeleton";
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
 
-export const SavedContentLoader = () => {
+interface SavedContentLoaderProps {
+  activeTab?: string;
+}
+
+export const SavedContentLoader = ({ activeTab = "sequences" }: SavedContentLoaderProps) => {
+  const getSkeletonType = () => {
+    switch (activeTab) {
+      case "sequences":
+        return "lesson-plan";
+      case "exercises":
+        return "exercise";
+      case "images":
+        return "image";
+      case "correspondence":
+        return "correspondence";
+      default:
+        return "lesson-plan";
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="h-10 w-24 bg-gray-200 animate-pulse rounded mb-8"></div>
-      
-      <div className="flex items-center justify-between mb-8">
-        <div className="h-10 w-48 bg-gray-200 animate-pulse rounded"></div>
-        <div className="h-10 w-32 bg-gray-200 animate-pulse rounded"></div>
+      <div className="mb-4">
+        <Skeleton className="h-10 w-24" />
       </div>
       
-      <div className="h-12 w-full bg-gray-200 animate-pulse rounded mb-8"></div>
+      <div className="flex items-center justify-between mb-8">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-10 w-32" />
+      </div>
+      
+      <div className="mb-8">
+        <div className="flex space-x-4">
+          {["sequences", "exercises", "images", "correspondence"].map((tab) => (
+            <Skeleton 
+              key={tab} 
+              className={`h-10 w-32 ${activeTab === tab ? 'bg-amber-100/50' : ''}`} 
+            />
+          ))}
+        </div>
+      </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
         {Array(6).fill(0).map((_, i) => (
-          <div key={i} className="h-64 bg-gray-200 animate-pulse rounded-lg"></div>
+          <ResourceSkeleton key={i} type={getSkeletonType()} />
         ))}
       </div>
       
       <div className="flex flex-col items-center justify-center mt-10 space-y-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="text-gray-600">Chargement de vos ressources...</span>
-        <p className="text-sm text-gray-500 max-w-md text-center">
-          Les données sont en cours de récupération. Veuillez patienter quelques instants...
-        </p>
+        <LoadingIndicator 
+          message="Chargement de vos ressources..." 
+          submessage="Les données sont en cours de récupération" 
+        />
       </div>
     </div>
   );

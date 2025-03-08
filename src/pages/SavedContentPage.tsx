@@ -90,10 +90,12 @@ export default function SavedContentPage() {
     });
   }, []);
 
-  const handleRefresh = useCallback(() => {
+  // Fix: Make this function return a Promise<void> to satisfy the TypeScript error
+  const handleRefresh = useCallback(async () => {
     if (!isRefreshing) {
-      fetchContent();
+      return fetchContent();
     }
+    return Promise.resolve();
   }, [fetchContent, isRefreshing]);
 
   // Nettoyer les ressources lors du démontage
@@ -113,7 +115,7 @@ export default function SavedContentPage() {
   }, [authReady, user]);
 
   if (isLoading && !isRefreshing) {
-    return <SavedContentLoader />;
+    return <SavedContentLoader activeTab={activeTab} />;
   }
 
   if (errors.exercises || errors.lessonPlans || errors.correspondences) {
