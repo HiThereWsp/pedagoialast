@@ -10,8 +10,9 @@ export function useImageContent() {
   const imageCache = useRef<ImageGenerationUsage[] | null>(null);
   const lastFetchTime = useRef<number>(0);
   const isFetchingImages = useRef(false);
+  const abortController = useRef<AbortController | null>(null);
   const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
-  const MAX_IMAGES = 50; // Limiter le nombre d'images pour éviter les problèmes de performance
+  const MAX_IMAGES = 50; // Limiter le nombre d'images
 
   const isCacheValid = useCallback(() => {
     return imageCache.current && (Date.now() - lastFetchTime.current < CACHE_TTL);
@@ -104,15 +105,23 @@ export function useImageContent() {
     }
   };
 
-  const getSavedImages = async () => {
+  const getSavedImages = async (forceRefresh = false): Promise<ImageGenerationUsage[]> => {
+    // Annuler toute requête précédente en cours
+    if (abortController.current) {
+      abortController.current.abort();
+    }
+    
+    // Créer un nouveau contrôleur d'annulation
+    abortController.current = new AbortController();
+    
     // Empêcher les appels concurrents
     if (isFetchingImages.current) {
       console.log('Récupération des images déjà en cours, ignorer cette demande');
       return imageCache.current || [];
     }
 
-    // Utiliser le cache si disponible et valide
-    if (isCacheValid()) {
+    // Utiliser le cache si disponible et valide et si on ne force pas le rafraîchissement
+    if (isCacheValid() && !forceRefresh) {
       console.log('Utilisation du cache pour les images');
       return imageCache.current || [];
     }
@@ -126,6 +135,14 @@ export function useImageContent() {
       if (!user) {
         console.log('Utilisateur non connecté');
         return [];
+      }
+
+      // Ajouter un délai pour éviter les requêtes trop rapprochées
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Vérifier si la requête a été annulée pendant le délai
+      if (abortController.current?.signal.aborted) {
+        throw new Error('Requête annulée');
       }
 
       const { data: images, error } = await supabase
@@ -145,6 +162,11 @@ export function useImageContent() {
 
       console.log('Images récupérées:', images.length);
       
+      // Vérifier si la requête a été annulée après l'appel à Supabase
+      if (abortController.current?.signal.aborted) {
+        throw new Error('Requête annulée après récupération');
+      }
+      
       // Filtrer les images valides (avec URL d'image)
       const validImages = images.filter(img => 
         img !== null && 
@@ -161,6 +183,11 @@ export function useImageContent() {
       
       return validImages as ImageGenerationUsage[];
     } catch (error) {
+      if ((error as Error).message.includes('annulée')) {
+        console.log('Requête annulée:', (error as Error).message);
+        return imageCache.current || [];
+      }
+      
       console.error('Error fetching images:', error);
       return [];
     } finally {
@@ -169,13 +196,28 @@ export function useImageContent() {
       setTimeout(() => {
         isFetchingImages.current = false;
       }, 2000);
+      
+      // Réinitialiser le contrôleur d'annulation
+      abortController.current = null;
     }
+  };
+
+  // Fonction pour nettoyer les ressources lors du démontage du composant
+  const cleanup = () => {
+    if (abortController.current) {
+      abortController.current.abort();
+      abortController.current = null;
+    }
+    
+    // Indiquer qu'aucune requête n'est en cours
+    isFetchingImages.current = false;
   };
 
   return {
     isLoading,
     saveImage,
     getSavedImages,
-    retryFailedImage
+    retryFailedImage,
+    cleanup
   };
 }

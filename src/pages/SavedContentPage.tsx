@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { SEO } from "@/components/SEO";
 import { type SavedContent } from "@/types/saved-content";
 import { SavedContentLoader } from "@/components/saved-content/SavedContentLoader";
@@ -55,7 +55,8 @@ export default function SavedContentPage() {
     itemId: "",
     itemType: ""
   });
-
+  
+  const isMounted = useRef(true);
   const navigate = useNavigate();
   const { authReady, user } = useAuth();
 
@@ -65,7 +66,8 @@ export default function SavedContentPage() {
     isLoading,
     isRefreshing,
     fetchContent,
-    handleDelete
+    handleDelete,
+    cleanup
   } = useSavedContentManagement();
 
   const getCurrentTab = useCallback(() => {
@@ -94,14 +96,21 @@ export default function SavedContentPage() {
     }
   }, [fetchContent, isRefreshing]);
 
-  // Une seule tentative de chargement à l'initialisation du composant
+  // Nettoyer les ressources lors du démontage
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+      cleanup?.();
+    };
+  }, [cleanup]);
+
+  // Journalisation de l'état d'authentification
   useEffect(() => {
     console.log("SavedContentPage monté - l'état d'authentification:", { 
       authReady, 
       user: user ? "connecté" : "non connecté" 
     });
-    // Le chargement est géré par le hook useSavedContentManagement
-  }, []);
+  }, [authReady, user]);
 
   if (isLoading && !isRefreshing) {
     return <SavedContentLoader />;
@@ -135,7 +144,7 @@ export default function SavedContentPage() {
         </div>
         
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight text-balance">
             Mes ressources
           </h1>
           

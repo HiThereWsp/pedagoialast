@@ -29,8 +29,17 @@ export function useSavedContent() {
   const {
     isLoading: isLoadingImages,
     saveImage,
-    getSavedImages
+    getSavedImages,
+    retryFailedImage,
+    cleanup: cleanupImageContent
   } = useImageContent();
+
+  // Fonction de nettoyage globale
+  const cleanup = () => {
+    if (cleanupImageContent) {
+      cleanupImageContent();
+    }
+  };
 
   return {
     isLoadingExercises,
@@ -47,6 +56,8 @@ export function useSavedContent() {
     getSavedImages,
     deleteSavedExercise,
     deleteSavedLessonPlan,
-    deleteSavedCorrespondence
+    deleteSavedCorrespondence,
+    retryFailedImage,
+    cleanup
   };
 }

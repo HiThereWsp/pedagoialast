@@ -78,8 +78,8 @@ export interface SaveLessonPlanParams {
   additional_instructions?: string
 }
 
-// Utiliser un string pour plus de flexibilité avec les valeurs de la base de données
-export type ImageStatus = string;
+// Définir les statuts d'image comme une union de strings pour plus de flexibilité
+export type ImageStatus = 'success' | 'pending' | 'failed' | 'processing' | string;
 
 // Interface de base pour la validation des images
 export interface BaseImageValidation {
