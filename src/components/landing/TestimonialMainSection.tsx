@@ -10,10 +10,6 @@ export function TestimonialMainSection() {
           <div className="flex flex-col md:flex-row items-start gap-6">
             <div className="flex-shrink-0">
               <Avatar className="w-16 h-16 md:w-20 md:h-20 border-2 border-white shadow-sm">
-                <AvatarImage 
-                  src="/lovable-uploads/90756d9e-4471-46f6-87b4-7bfeb3185c6a.png" 
-                  alt="Photo de Melissa, maîtresse en CM2" 
-                />
                 <AvatarFallback className="bg-primary text-primary-foreground font-extrabold">
                   M
                 </AvatarFallback>
