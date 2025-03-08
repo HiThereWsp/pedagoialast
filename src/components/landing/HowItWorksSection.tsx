@@ -6,19 +6,19 @@ const steps = [
   {
     number: 1,
     title: "Je m'inscris",
-    description: "En bénéficiant d'un essai totalement gratuit et je peux changer à tout moment.",
+    description: "En bénéficiant d'un essai gratuit de 3 jours avec garantie satisfait ou remboursé, sans engagement.",
     icon: UserPlus
   },
   {
     number: 2,
     title: "Je génère mes contenus",
-    description: "En sauvegardant le tout automatiquement et peux voter pour de nouvelles fonctionnalités.",
+    description: "En quelques clics, je crée des ressources pédagogiques adaptées à mes besoins et je peux voter pour de nouvelles fonctionnalités.",
     icon: FileText
   },
   {
     number: 3,
     title: "J'améliore mon quotidien",
-    description: "Je profite chaque mois de nouveaux outils pour gagner du temps.",
+    description: "Je profite chaque mois de nouveaux outils pour gagner du temps, avec sauvegarde automatique de tous mes contenus.",
     icon: Sparkles
   }
 ];
