@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -20,7 +21,7 @@ export function HeroSectionBienvenue() {
                 <img className="rounded-full ring-1 ring-background" src="https://originui.com/avatar-80-06.jpg" width={20} height={20} alt="Avatar 04" />
               </div>
               <p className="px-2 text-xs text-muted-foreground">
-                Utilisé par <strong className="font-medium text-foreground">+100</strong> enseignants.
+                Utilisé par <strong className="font-medium text-foreground">+500</strong> enseignants.
               </p>
             </div>
           </div>
