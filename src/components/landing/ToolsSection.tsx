@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, Clock, Sparkles, Star, ArrowRight } from "lucide-react";
+import { Check, Clock, Sparkles, Star, ArrowRight, Lightbulb, Smile, PenTool } from "lucide-react";
 import { Tiles } from "@/components/ui/tiles";
 import { Button } from "@/components/ui/button";
 
@@ -98,9 +98,7 @@ export function ToolsSection() {
       id: 'redaction',
       title: 'Rédaction',
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
+        <PenTool className="h-6 w-6" />
       ),
       content: [
         "Rédigez facilement des messages clairs et professionnels aux parents d'élèves",
@@ -115,7 +113,7 @@ export function ToolsSection() {
     {
       id: 'nouveaux-outils',
       title: 'Réclamez vos outils',
-      icon: <Sparkles className="h-6 w-6" />,
+      icon: <Lightbulb className="h-6 w-6" />,
       content: [
         "Proposez les fonctionnalités dont vous avez besoin",
         "Votez pour les prochains outils à développer en priorité",
@@ -181,6 +179,8 @@ export function ToolsSection() {
                       {isMetric && index === activeFeature.content.length - 2 ? (
                         <Clock className="h-6 w-6 text-green-500" />
                       ) : isMetric && index === activeFeature.content.length - 1 ? (
+                        item.includes("Plaisir") ? <Smile className="h-6 w-6 text-green-500" /> : 
+                        item.includes("Maux") ? <Lightbulb className="h-6 w-6 text-green-500" /> : 
                         <Star className="h-6 w-6 text-green-500" />
                       ) : (
                         <Check className="h-6 w-6 text-green-500" />
