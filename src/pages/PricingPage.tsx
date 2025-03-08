@@ -1,6 +1,4 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard"
-import { PricingFormDialog } from "@/components/pricing/PricingFormDialog"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 import { subscriptionEvents } from "@/integrations/posthog/events"
@@ -109,13 +107,10 @@ const PricingPage = () => {
               "Tableau de suivi pour la direction",
               "Des outils adaptés à votre projet d'établissement"
             ]}
-            ctaText="Demander un devis"
+            ctaText="Prendre contact"
             onSubscribe={() => {}}
           />
         </div>
-        <PricingFormDialog 
-          triggerText="Demander un devis" // Texte pour le bouton
-        />
       </main>
     </div>
   )
