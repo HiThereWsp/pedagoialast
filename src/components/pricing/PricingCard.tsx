@@ -28,6 +28,7 @@ interface PricingCardProps {
   onSubscribe?: () => void
   ctaText?: string
   CustomCTA?: ReactNode
+  originalPrice?: string
 }
 
 export const PricingCard = ({
@@ -41,14 +42,15 @@ export const PricingCard = ({
   isPremium,
   onSubscribe,
   ctaText,
-  CustomCTA
+  CustomCTA,
+  originalPrice
 }: PricingCardProps) => {
   return (
     <Card className={`p-8 relative ${
       isPremium 
         ? 'border-2 border-primary/20 shadow-xl hover:shadow-2xl' 
         : 'hover:shadow-xl'
-    } transition-shadow duration-300 bg-white/80 backdrop-blur-sm`}>
+    } transition-shadow duration-300 bg-white/90 backdrop-blur-sm`}>
       {badge && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <Badge className={isPremium 
@@ -61,14 +63,17 @@ export const PricingCard = ({
         </div>
       )}
 
-      <div>
-        <h3 className="text-2xl font-bold mb-2">{title}</h3>
-        <div className="flex items-baseline gap-2">
+      <div className="text-center">
+        <h3 className="text-2xl font-bold mb-3">{title}</h3>
+        <div className="flex items-baseline justify-center gap-2 mb-2">
+          {originalPrice && (
+            <span className="text-lg font-medium line-through text-muted-foreground">{originalPrice}</span>
+          )}
           <span className="text-4xl font-bold">{price}</span>
-          {period && <span className="text-muted-foreground">{period}</span>}
+          {period && <span className="text-lg text-muted-foreground">{period}</span>}
         </div>
         {yearlyPrice && (
-          <p className="text-sm text-primary mt-2">
+          <p className="text-sm text-primary mt-2 text-center">
             Soit {yearlyPrice}
           </p>
         )}
@@ -78,7 +83,7 @@ export const PricingCard = ({
         <ul className="space-y-4">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-primary mt-0.5" />
+              <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
               <span className="text-muted-foreground">
                 {typeof feature === 'string' ? (
                   feature
@@ -101,7 +106,7 @@ export const PricingCard = ({
         </ul>
       </div>
 
-      <div className="mt-8">
+      <div className="mt-10">
         {CustomCTA ? (
           CustomCTA
         ) : (
@@ -109,9 +114,11 @@ export const PricingCard = ({
             onClick={onSubscribe} 
             className={`w-full ${
               isPremium 
-                ? 'bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:opacity-90 transition-opacity'
-                : 'bg-primary hover:bg-primary/90 text-primary-foreground transition-colors'
-            }`}
+                ? 'bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:shadow-[0_8px_20px_-3px_rgba(251,146,60,0.4)] transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(251,146,60,0.3)]' 
+                : 'bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-900 text-white transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(15,23,42,0.2)] hover:shadow-[0_8px_20px_-3px_rgba(15,23,42,0.3)]'
+            } text-sm py-7 px-5 font-medium tracking-wider rounded-xl letter-spacing-wide`}
+            size="lg"
+            style={{ paddingLeft: '20px', paddingRight: '20px' }}
           >
             {ctaText}
           </Button>
@@ -120,3 +127,4 @@ export const PricingCard = ({
     </Card>
   );
 };
+

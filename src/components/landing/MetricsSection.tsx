@@ -1,4 +1,6 @@
+
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Clock, Wand2, Users, BookOpen } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
@@ -63,13 +65,15 @@ export function MetricsSection() {
           </div>
           
           <div className="mt-8 sm:mt-12">
-            <Button 
-              size="lg"
-              className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 animate-shimmer -z-10" />
-              Je rejoins la liste d'attente
-            </Button>
+            <Link to="/pricing">
+              <Button 
+                size="lg"
+                className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group relative overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-white/20 to-primary/0 animate-shimmer -z-10" />
+                Je rejoins la liste d'attente
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
