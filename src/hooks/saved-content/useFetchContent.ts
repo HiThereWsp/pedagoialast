@@ -20,6 +20,7 @@ export function useFetchContent() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const cachedContentRef = useRef<SavedContent[]>([]);
   const pendingContentRef = useRef<SavedContent[] | null>(null);
+  const dataWasReceivedRef = useRef(false);
   
   const {
     isLoadingExercises,
@@ -36,16 +37,16 @@ export function useFetchContent() {
   const { toast } = useToast();
   const { user, authReady } = useAuth();
 
-  // Fonction améliorée qui n'annule que les requêtes non terminées
+  // Fonction améliorée qui n'annule que les requêtes non terminées et préserve les données partielles
   const cancelFetch = useCallback(() => {
     if (abortControllerRef.current) {
       console.log("🛑 Tentative d'annulation d'une requête en cours");
       
-      // Si des données partielles ont été récupérées, on les sauvegarde avant d'annuler
+      // CORRECTION CRITIQUE: Si des données partielles ont été récupérées, on les sauvegarde dans le cache AVANT d'annuler
       if (pendingContentRef.current && pendingContentRef.current.length > 0) {
-        console.log(`⚠️ Requête annulée mais ${pendingContentRef.current.length} éléments sauvegardés dans le cache`);
-        cachedContentRef.current = pendingContentRef.current;
-        pendingContentRef.current = null;
+        console.log(`⚠️ Sauvegarde des ${pendingContentRef.current.length} éléments dans le cache avant annulation`);
+        cachedContentRef.current = [...pendingContentRef.current];
+        dataWasReceivedRef.current = true;
       } else {
         console.log("🛑 Annulation d'une requête en cours (aucune donnée partielle)");
       }
@@ -54,7 +55,7 @@ export function useFetchContent() {
       abortControllerRef.current = null;
     }
     
-    // Réinitialiser l'état de chargement
+    // Réinitialiser l'état de chargement mais conserver le cache
     fetchInProgress.current = false;
   }, []);
 
@@ -62,7 +63,7 @@ export function useFetchContent() {
     const now = Date.now();
     const elapsed = now - lastRequestTime.current;
     
-    // Si moins de X secondes se sont écoulées depuis la dernière requête (réduit à 2 secondes)
+    // Si moins de X secondes se sont écoulées depuis la dernière requête
     if (elapsed < MIN_REQUEST_INTERVAL) {
       console.log(`⏱️ Requête trop rapide (${elapsed}ms depuis la dernière). Attendre ${MIN_REQUEST_INTERVAL}ms minimum.`);
       return true;
@@ -77,8 +78,14 @@ export function useFetchContent() {
       user: user ? "connecté" : "non connecté", 
       userID: user?.id,
       authReady, 
-      cacheSize: cachedContentRef.current.length
+      cacheSize: cachedContentRef.current.length,
+      dataWasReceived: dataWasReceivedRef.current
     });
+    
+    // Pour un rafraîchissement forcé, réinitialiser le référence de données reçues
+    if (forceRefresh) {
+      dataWasReceivedRef.current = false;
+    }
     
     // Si nous avons des données en cache et ce n'est pas un rafraîchissement forcé, retourner le cache
     if (cachedContentRef.current.length > 0 && !forceRefresh) {
@@ -109,7 +116,7 @@ export function useFetchContent() {
     requestCount.current += 1;
     const currentRequest = requestCount.current;
     
-    // Éviter les appels concurrents
+    // CORRECTION: Ne pas bloquer les requêtes forcées même si une requête est en cours
     if (fetchInProgress.current && !forceRefresh) {
       console.log(`🔄 [Requête ${currentRequest}] Récupération des données déjà en cours, utiliser cache disponible`);
       return cachedContentRef.current;
@@ -156,9 +163,10 @@ export function useFetchContent() {
           exercises = await getSavedExercises();
           console.log(`📚 [Requête ${currentRequest}] Exercices récupérés: ${exercises.length}`);
           
-          // Sauvegarder les résultats partiels
+          // CORRECTION CRITIQUE: Marquer que des données ont été reçues
           if (exercises.length > 0) {
-            pendingContentRef.current = exercises;
+            dataWasReceivedRef.current = true;
+            pendingContentRef.current = [...exercises];
           }
         }
       } catch (err) {
@@ -166,7 +174,7 @@ export function useFetchContent() {
         setErrors(prev => ({ ...prev, exercises: "Impossible de charger les exercices" }));
       }
       
-      // 2. Récupérer les plans de leçon - continuer même si la requête est annulée
+      // 2. Récupérer les plans de leçon
       try {
         if (!abortSignal.aborted) {
           console.log(`📝 [Requête ${currentRequest}] Récupération des séquences en cours...`);
@@ -175,6 +183,7 @@ export function useFetchContent() {
           
           // Mettre à jour les résultats partiels
           if (lessonPlans.length > 0 || exercises.length > 0) {
+            dataWasReceivedRef.current = true;
             pendingContentRef.current = [...exercises, ...lessonPlans];
           }
         }
@@ -183,7 +192,7 @@ export function useFetchContent() {
         setErrors(prev => ({ ...prev, lessonPlans: "Impossible de charger les séquences" }));
       }
       
-      // 3. Récupérer les correspondances - continuer même si la requête est annulée
+      // 3. Récupérer les correspondances
       try {
         if (!abortSignal.aborted) {
           console.log(`📧 [Requête ${currentRequest}] Récupération des correspondances en cours...`);
@@ -193,6 +202,7 @@ export function useFetchContent() {
           // Mettre à jour les résultats partiels
           const partialContent = [...exercises, ...lessonPlans, ...correspondences].filter(Boolean);
           if (partialContent.length > 0) {
+            dataWasReceivedRef.current = true;
             pendingContentRef.current = partialContent;
           }
         }
@@ -201,7 +211,7 @@ export function useFetchContent() {
         setErrors(prev => ({ ...prev, correspondences: "Impossible de charger les correspondances" }));
       }
       
-      // 4. Récupérer les images - continuer même si la requête est annulée
+      // 4. Récupérer les images
       try {
         if (!abortSignal.aborted) {
           console.log(`🖼️ [Requête ${currentRequest}] Récupération des images en cours...`);
@@ -224,13 +234,17 @@ export function useFetchContent() {
               borderColor: '#F2FCE24D'
             }]
           }));
+
+          if (images.length > 0) {
+            dataWasReceivedRef.current = true;
+          }
         }
       } catch (err) {
         console.error(`❌ [Requête ${currentRequest}] Erreur lors de la récupération des images:`, err);
         setErrors(prev => ({ ...prev, images: "Impossible de charger les images" }));
       }
       
-      // Vérifier si la requête a été annulée, mais quand même utiliser les données partielles
+      // CORRECTION CRITIQUE: Même si la requête est annulée, utiliser les données partielles
       if (abortSignal.aborted) {
         console.log(`🛑 [Requête ${currentRequest}] Requête annulée avant finalisation`);
         const partialContent = pendingContentRef.current;
@@ -243,7 +257,7 @@ export function useFetchContent() {
           );
           
           // Mettre à jour le cache avec les données partielles
-          cachedContentRef.current = sortedPartialContent;
+          cachedContentRef.current = [...sortedPartialContent];
           pendingContentRef.current = null;
           
           return sortedPartialContent;
@@ -283,11 +297,10 @@ export function useFetchContent() {
       
       console.log(`✅ [Requête ${currentRequest}] Récupération terminée avec ${sortedContent.length} éléments`);
       
-      // CORRECTION: Ne mettre à jour le cache que si nous avons de nouvelles données 
-      // ou si le cache était vide, même si la nouvelle requête n'a rien retourné
-      if (sortedContent.length > 0 || cachedContentRef.current.length === 0) {
+      // CORRECTION CRITIQUE: Si on a reçu des données, mettre à jour le cache même si sortedContent est vide
+      if (sortedContent.length > 0 || dataWasReceivedRef.current) {
         console.log(`✅ [Requête ${currentRequest}] Mise à jour du cache avec ${sortedContent.length} éléments`);
-        cachedContentRef.current = sortedContent;
+        cachedContentRef.current = [...sortedContent];
         pendingContentRef.current = null;
       } else {
         console.log(`⚠️ [Requête ${currentRequest}] Résultat vide mais cache existant préservé`);
@@ -306,7 +319,7 @@ export function useFetchContent() {
         // Utiliser les données partielles si disponibles
         if (pendingContentRef.current && pendingContentRef.current.length > 0) {
           console.log(`🔆 [Requête ${currentRequest}] Utilisation des données partielles malgré erreur: ${pendingContentRef.current.length} éléments`);
-          cachedContentRef.current = pendingContentRef.current;
+          cachedContentRef.current = [...pendingContentRef.current];
           pendingContentRef.current = null;
         }
         return cachedContentRef.current;
@@ -347,7 +360,7 @@ export function useFetchContent() {
       // Délai avant de permettre une nouvelle requête pour éviter les avalanches de requêtes
       setTimeout(() => {
         fetchInProgress.current = false;
-      }, 1000); // Délai réduit pour les tests
+      }, 800); // Délai réduit pour permettre des requêtes plus fréquentes
     }
   }, [
     getSavedExercises, 
@@ -366,6 +379,7 @@ export function useFetchContent() {
     console.log("🧹 Invalidation manuelle du cache");
     cachedContentRef.current = [];
     pendingContentRef.current = null;
+    dataWasReceivedRef.current = false;
   }, []);
 
   const isLoading = isLoadingInitial || isLoadingExercises || isLoadingLessonPlans || isLoadingCorrespondences || isLoadingImages;

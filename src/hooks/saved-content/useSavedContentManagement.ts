@@ -13,6 +13,7 @@ export function useSavedContentManagement() {
   const initialFetchDone = useRef(false);
   const errorRetryCount = useRef(0);
   const refreshAttempts = useRef(0);
+  const lastContentUpdate = useRef<number>(0);
   
   const { user, authReady } = useAuth();
   
@@ -44,13 +45,19 @@ export function useSavedContentManagement() {
         fetchTimeoutRef.current = null;
       }
       
-      // Annuler les requêtes en cours mais sans perdre les données
-      cancelFetch();
+      // CORRECTION: Ne pas annuler les requêtes en cours si des données ont été reçues
+      // Cela permet de préserver le cache même si le composant est démonté temporairement
+      if (!hasLoadedData.current) {
+        console.log("🛑 Annulation des requêtes en cours (aucune donnée reçue)");
+        cancelFetch();
+      } else {
+        console.log("✅ Préservation du cache lors du démontage (données déjà reçues)");
+      }
       
       // Nettoyer les ressources des hooks dépendants
       cleanupImageContent?.();
     };
-  }, [cancelFetch, cleanupImageContent]);
+  }, [cancelFetch, cleanupImageContent, hasLoadedData]);
 
   // Chargement initial des données après l'authentification
   useEffect(() => {
@@ -76,8 +83,9 @@ export function useSavedContentManagement() {
         if (!didUnmount.current) {
           console.log(`📊 Chargement initial terminé: ${initialContent.length} éléments`);
           
-          // AMÉLIORATION: Toujours mettre à jour le state, même si le contenu est vide
+          // CORRECTION CRITIQUE: Toujours mettre à jour le state, même si le contenu est vide
           setContent(initialContent);
+          lastContentUpdate.current = Date.now();
           
           // Si pas de contenu au premier chargement, on réessaye une fois après un délai
           if (initialContent.length === 0 && errorRetryCount.current < 2) {
@@ -96,11 +104,12 @@ export function useSavedContentManagement() {
                 if (!didUnmount.current) {
                   console.log(`✅ Rechargement réussi: ${retryContent.length} éléments`);
                   setContent(retryContent);
+                  lastContentUpdate.current = Date.now();
                 }
               } catch (error) {
                 console.error("❌ Échec du rechargement automatique:", error);
               }
-            }, REQUEST_COOLDOWN * 2);
+            }, REQUEST_COOLDOWN * 1.5); // Délai réduit pour permettre un chargement plus rapide
           }
         }
       } catch (error) {
@@ -111,13 +120,16 @@ export function useSavedContentManagement() {
     // Utiliser un délai pour éviter les requêtes trop rapprochées
     if (authReady && user && !initialFetchDone.current) {
       console.log("⏱️ Configuration du délai pour le chargement initial");
-      fetchTimeoutRef.current = setTimeout(loadInitialContent, REQUEST_COOLDOWN);
+      fetchTimeoutRef.current = setTimeout(loadInitialContent, REQUEST_COOLDOWN / 2); // Délai réduit
     }
   }, [authReady, user, fetchContent, hasLoadedData, invalidateCache]);
 
   // Fonction pour récupérer les données avec un rafraîchissement forcé
   const refreshContent = useCallback(async (): Promise<SavedContent[]> => {
     if (didUnmount.current) return [];
+    
+    const now = Date.now();
+    const timeSinceLastUpdate = now - lastContentUpdate.current;
     
     try {
       console.log("🔄 Rafraîchissement forcé du contenu...");
@@ -130,12 +142,20 @@ export function useSavedContentManagement() {
         invalidateCache();
       }
       
+      // AJOUT: Si la dernière mise à jour est trop récente et que nous avons déjà du contenu,
+      // retourner le contenu actuel sans faire de requête
+      if (timeSinceLastUpdate < 1000 && content.length > 0) {
+        console.log(`⏱️ Dernière mise à jour trop récente (${timeSinceLastUpdate}ms), contenu existant retourné`);
+        return content;
+      }
+      
       const newContent = await fetchContent({ forceRefresh: true });
       
       if (!didUnmount.current) {
         console.log(`✅ Rafraîchissement réussi: ${newContent.length} éléments`);
-        // AMÉLIORATION: Toujours mettre à jour le state, même si le contenu est vide
+        // CORRECTION CRITIQUE: Toujours mettre à jour le state, même si le contenu est vide
         setContent(newContent);
+        lastContentUpdate.current = now;
         
         // Réinitialiser le compteur de tentatives après un succès
         if (newContent.length > 0) {
@@ -146,9 +166,9 @@ export function useSavedContentManagement() {
       return newContent;
     } catch (error) {
       console.error("❌ Erreur lors du rafraîchissement du contenu:", error);
-      return [];
+      return content; // Retourner le contenu actuel en cas d'erreur
     }
-  }, [fetchContent, invalidateCache]);
+  }, [fetchContent, invalidateCache, content]);
 
   // Gestionnaire de suppression avec mise à jour de l'état local
   const handleContentDelete = useCallback(async (id: string, type: SavedContent['type']): Promise<void> => {
@@ -163,6 +183,7 @@ export function useSavedContentManagement() {
     if (success && !didUnmount.current) {
       console.log("✅ Suppression réussie, mise à jour du state local");
       setContent(prev => prev.filter(item => item.id !== id));
+      lastContentUpdate.current = Date.now();
       
       // Après une suppression réussie, on invalide le cache pour s'assurer de la cohérence
       invalidateCache();

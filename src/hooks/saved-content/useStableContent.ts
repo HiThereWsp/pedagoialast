@@ -13,6 +13,7 @@ export function useStableContent() {
   const previousContentRef = useRef<SavedContent[]>([]);
   const contentUpdateCount = useRef<number>(0);
   const pendingUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const forcedUpdate = useRef<boolean>(false);
 
   // Fonction pour mettre à jour le contenu de manière stable
   const updateContent = useCallback((newContent: SavedContent[]) => {
@@ -27,15 +28,45 @@ export function useStableContent() {
       nouveauxElements: newContent.length,
       elementsExistants: stableContent.length,
       estChargementInitial: isInitialLoad.current,
-      miseAJourCount: contentUpdateCount.current
+      miseAJourCount: contentUpdateCount.current,
+      forcedUpdate: forcedUpdate.current
     });
+    
+    // Forcer la mise à jour si demandé explicitement
+    if (forcedUpdate.current) {
+      console.log("🔥 Mise à jour forcée du contenu stable");
+      contentUpdateCount.current += 1;
+      setStableContent(newContent);
+      previousContentRef.current = [...newContent];
+      contentTimestamp.current = Date.now();
+      isInitialLoad.current = false;
+      forcedUpdate.current = false;
+      return;
+    }
+    
+    // Si le nouveau contenu a des éléments, le mettre à jour immédiatement
+    if (newContent.length > 0) {
+      const hasChanges = hasContentChanged(previousContentRef.current, newContent);
+      
+      if (hasChanges || isInitialLoad.current) {
+        console.log(`✅ Mise à jour du contenu stable avec ${newContent.length} éléments`);
+        contentUpdateCount.current += 1;
+        setStableContent(newContent);
+        previousContentRef.current = [...newContent];
+        contentTimestamp.current = Date.now();
+        isInitialLoad.current = false;
+      } else {
+        console.log("ℹ️ Contenu inchangé, pas de mise à jour");
+      }
+      return;
+    }
     
     // AMÉLIORATION: Si le nouveau contenu est vide et que nous avons déjà du contenu, ne pas écraser 
     // le contenu existant immédiatement, attendre un peu pour voir si d'autres mises à jour arrivent
     if (newContent.length === 0 && !isInitialLoad.current && stableContent.length > 0) {
       console.log("⏱️ Contenu vide reçu mais contenu existant préservé temporairement");
       
-      // Attendre 3 secondes avant de considérer que le contenu est vraiment vide
+      // Attendre seulement 2 secondes avant de considérer que le contenu est vraiment vide (réduit de 3s à 2s)
       pendingUpdateTimer.current = setTimeout(() => {
         // Vérifier une dernière fois si l'état est toujours le même
         console.log("⏱️ Délai d'attente écoulé pour la validation du contenu vide");
@@ -47,12 +78,12 @@ export function useStableContent() {
           console.log("✅ Mise à jour du contenu stable avec contenu vide après délai");
           contentUpdateCount.current += 1;
           setStableContent(newContent);
-          previousContentRef.current = newContent;
+          previousContentRef.current = [...newContent];
           contentTimestamp.current = Date.now();
         } else {
           console.log("⚠️ Ignoré la mise à jour avec un tableau vide après délai");
         }
-      }, 3000);
+      }, 2000);
       
       return;
     }
@@ -62,10 +93,10 @@ export function useStableContent() {
     // Cas de figure où on applique la mise à jour immédiatement:
     // - C'est le chargement initial (pour avoir des données au départ)
     // - Ou si le contenu n'est pas vide
-    // - Ou si au moins 2 secondes se sont écoulées depuis la dernière mise à jour
+    // - Ou si au moins 1.5 secondes se sont écoulées depuis la dernière mise à jour (réduit de 2s à 1.5s)
     if (isInitialLoad.current || 
         newContent.length > 0 || 
-        currentTime - contentTimestamp.current > 2000) {
+        currentTime - contentTimestamp.current > 1500) {
       
       // Comparer les identifiants pour éviter les mises à jour inutiles
       const hasChanges = hasContentChanged(previousContentRef.current, newContent);
@@ -74,7 +105,7 @@ export function useStableContent() {
         console.log(`✅ Mise à jour du contenu stable (${newContent.length} éléments)`);
         contentUpdateCount.current += 1;
         setStableContent(newContent);
-        previousContentRef.current = newContent;
+        previousContentRef.current = [...newContent];
         contentTimestamp.current = currentTime;
         isInitialLoad.current = false;
       } else {
@@ -165,6 +196,7 @@ export function useStableContent() {
   const forceRefresh = useCallback(() => {
     console.log("🔄 Forçage de la mise à jour du contenu stable");
     isInitialLoad.current = true;
+    forcedUpdate.current = true;
   }, []);
 
   return { 

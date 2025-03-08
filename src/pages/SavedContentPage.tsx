@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { SEO } from "@/components/SEO";
 import { type SavedContent } from "@/types/saved-content";
@@ -46,9 +47,12 @@ export default function SavedContentPage() {
     invalidateCache
   } = useSavedContentManagement();
 
-  // Update stable content when content changes
+  // CORRECTION CRITIQUE: Mettre à jour le contenu stable seulement lorsque le contenu change
+  // ET qu'il n'est pas vide, pour éviter de perdre les données déjà chargées
   useEffect(() => {
     console.log(`📊 SavedContentPage: Analyse de la mise à jour du contenu: ${content.length} éléments`);
+    
+    // Toujours mettre à jour le contenu stable avec les nouvelles données
     updateContent(content);
   }, [content, updateContent]);
 
@@ -108,7 +112,7 @@ export default function SavedContentPage() {
                 });
               }
             });
-          }, 2000);
+          }, 1500); // Délai réduit pour un rechargement plus rapide
         }
       }).catch(err => {
         console.error("❌ SavedContentPage: Erreur lors du chargement initial:", err);
@@ -122,11 +126,9 @@ export default function SavedContentPage() {
       try {
         console.log("🔄 SavedContentPage: Lancement du rafraîchissement...");
         
-        // Invalider le cache pour forcer une requête fraîche si on a déjà échoué
-        if (stableContent.length === 0) {
-          console.log("🧹 SavedContentPage: Invalidation du cache avant rafraîchissement");
-          invalidateCache();
-        }
+        // Toujours invalider le cache pour forcer une requête fraîche lors d'un rafraîchissement manuel
+        console.log("🧹 SavedContentPage: Invalidation du cache avant rafraîchissement manuel");
+        invalidateCache();
         
         // Forcer le rafraîchissement du contenu stable
         forceRefresh();
@@ -156,7 +158,16 @@ export default function SavedContentPage() {
 
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
-  }, []);
+    
+    // AJOUT: Refraîchir les données lors du changement d'onglet
+    if (stableContent.length === 0 && !isLoading && !isRefreshing) {
+      console.log(`🔄 Onglet changé vers ${tab}, rafraîchissement des données...`);
+      // Déclencher un rafraîchissement sans toast si on n'a pas de contenu
+      fetchContent().catch(err => {
+        console.error("❌ Erreur lors du rafraîchissement après changement d'onglet:", err);
+      });
+    }
+  }, [stableContent.length, isLoading, isRefreshing, fetchContent]);
 
   const handlePreviewOpenChange = useCallback((open: boolean) => {
     setIsPreviewOpen(open);

@@ -15,8 +15,10 @@ export const RefreshIndicator: React.FC<RefreshIndicatorProps> = React.memo(({
 }) => {
   // Afficher un message différent selon le temps d'attente
   const getWaitMessage = () => {
-    if (waitTime > 3) {
+    if (waitTime > 5) {
       return "Cette opération prend plus de temps que prévu...";
+    } else if (waitTime > 3) {
+      return "Patientez encore quelques instants...";
     }
     return "Patientez quelques instants...";
   };
@@ -27,8 +29,8 @@ export const RefreshIndicator: React.FC<RefreshIndicatorProps> = React.memo(({
         <RefreshCw 
           className={`h-10 w-10 animate-spin ${isError ? 'text-red-500' : 'text-[#FFA800]'} mb-4`} 
         />
-        <p className={`font-medium ${isError ? 'text-red-500' : 'text-gray-500'}`}>{message}</p>
-        <p className="text-sm text-gray-400 mt-2">{getWaitMessage()}</p>
+        <p className={`font-medium ${isError ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>{message}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{getWaitMessage()}</p>
       </div>
     </div>
   );
