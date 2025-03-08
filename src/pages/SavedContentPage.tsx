@@ -12,6 +12,7 @@ import { useSavedContentManagement } from "@/hooks/saved-content/useSavedContent
 import { useStableContent } from "@/hooks/saved-content/useStableContent";
 import { SavedContentHeader } from "@/components/saved-content/SavedContentHeader";
 import { SavedContentTabs } from "@/components/saved-content/SavedContentTabs";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SavedContentPage() {
   const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null);
@@ -28,6 +29,7 @@ export default function SavedContentPage() {
   });
   
   const didInitialFetch = useRef(false);
+  const { toast } = useToast();
 
   // Use stable content hook to prevent unnecessary rerenders
   const { stableContent, updateContent } = useStableContent();
@@ -45,6 +47,7 @@ export default function SavedContentPage() {
   // Update stable content when content changes
   useEffect(() => {
     if (content && content.length > 0) {
+      console.log(`Mise à jour du contenu stable avec ${content.length} éléments`);
       updateContent(content);
     }
   }, [content, updateContent]);
@@ -54,18 +57,34 @@ export default function SavedContentPage() {
     if (!didInitialFetch.current) {
       console.log("Chargement initial des données...");
       didInitialFetch.current = true;
-      fetchContent().catch(err => {
+      
+      fetchContent().then(data => {
+        console.log(`Chargement initial terminé: ${data.length} éléments chargés`);
+        if (data.length === 0) {
+          toast({
+            description: "Aucun contenu trouvé. Créez votre premier contenu !",
+          });
+        }
+      }).catch(err => {
         console.error("Erreur lors du chargement initial:", err);
       });
     }
-  }, [fetchContent]);
+  }, [fetchContent, toast]);
 
   // Async handleRefresh - fixes TypeScript error
   const handleRefresh = useCallback(async (): Promise<void> => {
     if (!isRefreshing) {
       try {
+        console.log("Lancement du rafraîchissement...");
         const refreshedContent = await fetchContent();
         console.log(`Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
+        
+        if (refreshedContent.length === 0) {
+          toast({
+            description: "Aucun contenu trouvé. Essayez de créer du nouveau contenu !",
+          });
+        }
+        
         return Promise.resolve();
       } catch (error) {
         console.error("Erreur lors du rafraîchissement:", error);
@@ -73,7 +92,7 @@ export default function SavedContentPage() {
       }
     }
     return Promise.resolve();
-  }, [fetchContent, isRefreshing]);
+  }, [fetchContent, isRefreshing, toast]);
 
   const handleItemSelect = useCallback((item: SavedContent) => {
     setSelectedContent(item);
@@ -127,6 +146,14 @@ export default function SavedContentPage() {
     return errors.exercises || errors.lessonPlans || errors.correspondences || "";
   }, [errors.exercises, errors.lessonPlans, errors.correspondences]);
 
+  console.log("État de la page:", { 
+    isLoading, 
+    isRefreshing, 
+    hasError, 
+    contentCount: stableContent.length,
+    activeTab
+  });
+
   // Show loading only during initial load
   if (isLoading && !isRefreshing && stableContent.length === 0) {
     return <SavedContentLoader activeTab={activeTab} />;
@@ -162,6 +189,15 @@ export default function SavedContentPage() {
 
         {isRefreshing ? (
           <RefreshIndicator />
+        ) : stableContent.length === 0 ? (
+          <div className="text-center py-16">
+            <p className="text-gray-500 dark:text-gray-400 text-lg">
+              Aucun contenu disponible. Créez votre premier contenu !
+            </p>
+            <p className="text-gray-400 dark:text-gray-500 mt-2">
+              Utilisez les outils de création pour générer des exercices, séquences ou documents.
+            </p>
+          </div>
         ) : (
           <SavedContentList
             content={stableContent}

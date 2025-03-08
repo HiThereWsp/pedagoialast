@@ -49,6 +49,33 @@ export function useSavedContentManagement() {
     };
   }, [cancelFetch, cleanupImageContent]);
 
+  // Chargement initial des données après l'authentification
+  useEffect(() => {
+    const loadInitialContent = async () => {
+      if (!authReady || !user || initialFetchDone.current || hasLoadedData.current) {
+        return;
+      }
+      
+      console.log("Authentification prête et utilisateur connecté, chargement initial des données");
+      initialFetchDone.current = true;
+      
+      try {
+        const initialContent = await fetchContent();
+        if (!didUnmount.current && initialContent.length > 0) {
+          console.log(`Chargement initial terminé: ${initialContent.length} éléments`);
+          setContent(initialContent);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement initial:", error);
+      }
+    };
+    
+    // Utiliser un délai pour éviter les requêtes trop rapprochées
+    if (authReady && user && !initialFetchDone.current) {
+      fetchTimeoutRef.current = setTimeout(loadInitialContent, REQUEST_COOLDOWN);
+    }
+  }, [authReady, user, fetchContent, hasLoadedData]);
+
   // Fonction pour récupérer les données avec un rafraîchissement forcé
   const refreshContent = useCallback(async (): Promise<SavedContent[]> => {
     if (didUnmount.current) return [];
@@ -59,6 +86,7 @@ export function useSavedContentManagement() {
       
       if (!didUnmount.current) {
         if (newContent.length > 0) {
+          console.log(`Rafraîchissement réussi: ${newContent.length} éléments`);
           setContent(newContent);
         } else {
           console.log("Aucun nouveau contenu reçu lors du rafraîchissement");
@@ -71,31 +99,6 @@ export function useSavedContentManagement() {
       return [];
     }
   }, [fetchContent]);
-
-  // Charge le contenu une fois l'authentification terminée
-  useEffect(() => {
-    // Éviter les appels multiples avec le même état d'authentification
-    if (authReady && user && !initialFetchDone.current && !hasLoadedData.current) {
-      console.log("Auth ready et utilisateur connecté, chargement des données...");
-      initialFetchDone.current = true;
-      
-      // Utiliser un délai pour éviter les requêtes trop rapprochées
-      fetchTimeoutRef.current = setTimeout(async () => {
-        try {
-          if (didUnmount.current) return;
-          
-          const initialContent = await fetchContent();
-          
-          if (!didUnmount.current && initialContent.length > 0) {
-            console.log(`Chargement initial terminé: ${initialContent.length} éléments chargés`);
-            setContent(initialContent);
-          }
-        } catch (error) {
-          console.error("Erreur lors du chargement initial:", error);
-        }
-      }, REQUEST_COOLDOWN);
-    }
-  }, [authReady, user, fetchContent, hasLoadedData]);
 
   // Gestionnaire de suppression avec mise à jour de l'état local
   const handleContentDelete = useCallback(async (id: string, type: SavedContent['type']): Promise<void> => {

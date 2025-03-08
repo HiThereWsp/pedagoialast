@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type { SavedContent } from "@/types/saved-content";
 
 /**
@@ -10,9 +10,10 @@ export function useStableContent() {
   const [stableContent, setStableContent] = useState<SavedContent[]>([]);
   const contentTimestamp = useRef<number>(0);
   const isInitialLoad = useRef(true);
+  const previousContentRef = useRef<SavedContent[]>([]);
 
   // Fonction pour mettre à jour le contenu de manière stable
-  const updateContent = (newContent: SavedContent[]) => {
+  const updateContent = useCallback((newContent: SavedContent[]) => {
     // Si le contenu est vide et que ce n'est pas le chargement initial, 
     // on ne met pas à jour pour éviter les flashs
     if (newContent.length === 0 && !isInitialLoad.current && stableContent.length > 0) {
@@ -31,11 +32,12 @@ export function useStableContent() {
         currentTime - contentTimestamp.current > 2000) {
       
       // Comparer les identifiants pour éviter les mises à jour inutiles
-      const hasChanges = hasContentChanged(stableContent, newContent);
+      const hasChanges = hasContentChanged(previousContentRef.current, newContent);
       
       if (hasChanges || isInitialLoad.current) {
         console.log(`Mise à jour du contenu stable (${newContent.length} éléments)`);
         setStableContent(newContent);
+        previousContentRef.current = newContent;
         contentTimestamp.current = currentTime;
         isInitialLoad.current = false;
       } else {
@@ -44,7 +46,7 @@ export function useStableContent() {
     } else {
       console.log("Délai minimum non respecté, mise à jour ignorée");
     }
-  };
+  }, [stableContent.length]);
 
   // Vérifie si le contenu a changé en comparant les IDs
   const hasContentChanged = (oldContent: SavedContent[], newContent: SavedContent[]): boolean => {
