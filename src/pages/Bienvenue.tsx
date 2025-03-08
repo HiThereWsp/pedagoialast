@@ -10,7 +10,6 @@ import { HeroSectionBienvenue } from "@/components/landing/HeroSectionBienvenue"
 import { CopiloteSection } from "@/components/landing/CopiloteSection";
 import { ComparisonSection } from "@/components/landing/ComparisonSection";
 import { TestimonialMainSection } from "@/components/landing/TestimonialMainSection";
-import { SecondaryTestimonialSection } from "@/components/landing/SecondaryTestimonialSection";
 import { ToolsSection } from "@/components/landing/ToolsSection";
 import { Tiles } from "@/components/ui/tiles";
 
@@ -35,9 +34,6 @@ const Bienvenue = () => {
 
         {/* Section Témoignage Principal */}
         <TestimonialMainSection />
-        
-        {/* Section Témoignage Secondaire avec nouveau composant */}
-        <SecondaryTestimonialSection />
         
         {/* Section Comment Ça Marche */}
         <HowItWorksSection />
