@@ -19,9 +19,12 @@ export const SavedContentLoader = () => {
         ))}
       </div>
       
-      <div className="flex items-center justify-center mt-10">
+      <div className="flex flex-col items-center justify-center mt-10 space-y-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-3 text-gray-600">Chargement de vos ressources...</span>
+        <span className="text-gray-600">Chargement de vos ressources...</span>
+        <p className="text-sm text-gray-500 max-w-md text-center">
+          Les données sont en cours de récupération. Si le chargement persiste, vous pouvez actualiser la page.
+        </p>
       </div>
     </div>
   );

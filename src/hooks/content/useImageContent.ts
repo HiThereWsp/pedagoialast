@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useRef } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import type { ImageGenerationUsage } from "@/types/saved-content";
@@ -7,6 +8,13 @@ import { isImageGenerationUsage } from "@/utils/type-guards";
 export function useImageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const imageCache = useRef<ImageGenerationUsage[] | null>(null);
+  const lastFetchTime = useRef<number>(0);
+  const CACHE_TTL = 60000; // 1 minute cache
+
+  const isCacheValid = () => {
+    return imageCache.current && (Date.now() - lastFetchTime.current < CACHE_TTL);
+  };
 
   const saveImage = async (params: {
     prompt: string;
@@ -38,6 +46,9 @@ export function useImageContent() {
       if (!isImageGenerationUsage(record)) {
         throw new Error('Invalid image data returned from database');
       }
+
+      // Invalider le cache après ajout d'une nouvelle image
+      imageCache.current = null;
 
       if (params.image_url) {
         toast({
@@ -81,6 +92,9 @@ export function useImageContent() {
 
       if (updateError) return false;
 
+      // Invalider le cache après modification
+      imageCache.current = null;
+
       await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
     } catch (error) {
@@ -91,6 +105,12 @@ export function useImageContent() {
 
   const getSavedImages = async () => {
     try {
+      // Utiliser le cache si disponible et valide
+      if (isCacheValid()) {
+        console.log('Utilisation du cache pour les images');
+        return imageCache.current;
+      }
+
       setIsLoading(true);
       console.log('Début de la récupération des images...');
 
@@ -102,7 +122,8 @@ export function useImageContent() {
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'success')
-        .order('generated_at', { ascending: false });
+        .order('generated_at', { ascending: false })
+        .limit(100); // Limiter le nombre d'images pour éviter les problèmes de performance
 
       if (error) throw error;
 
@@ -114,8 +135,12 @@ export function useImageContent() {
       console.log('Images récupérées:', images.length);
 
       const validImages = images.filter(isImageGenerationUsage);
-
       console.log('Images valides:', validImages.length);
+      
+      // Mettre à jour le cache
+      imageCache.current = validImages;
+      lastFetchTime.current = Date.now();
+      
       return validImages;
     } catch (error) {
       console.error('Error fetching images:', error);

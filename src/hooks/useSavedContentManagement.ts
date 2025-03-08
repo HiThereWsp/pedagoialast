@@ -17,8 +17,11 @@ export function useSavedContentManagement() {
   const [isLoadingInitial, setIsLoadingInitial] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const fetchInProgress = useRef(false);
+  const hasLoadedData = useRef(false);
   const retryCount = useRef(0);
+  const requestCount = useRef(0);
   const MAX_RETRIES = 3;
+  const fetchTimeoutRef = useRef<number | null>(null);
 
   const {
     isLoadingExercises,
@@ -37,15 +40,32 @@ export function useSavedContentManagement() {
   const { toast } = useToast();
   const { user, authReady } = useAuth();
 
+  // Fonction pour nettoyer les timeouts à la démonter du composant
+  const cleanupTimeouts = () => {
+    if (fetchTimeoutRef.current) {
+      window.clearTimeout(fetchTimeoutRef.current);
+      fetchTimeoutRef.current = null;
+    }
+  };
+
   const fetchContent = useCallback(async (forceRefresh = false) => {
-    // Éviter les appels concurrents
+    // Incrémenter le compteur de requêtes pour le débogage
+    requestCount.current += 1;
+    const currentRequest = requestCount.current;
+    
+    // Éviter les appels concurrents ou inutiles
     if (fetchInProgress.current && !forceRefresh) {
-      console.log("Récupération des données déjà en cours, ignorer cette demande");
+      console.log(`[Requête ${currentRequest}] Récupération des données déjà en cours, ignorer cette demande`);
+      return;
+    }
+
+    if (hasLoadedData.current && !forceRefresh) {
+      console.log(`[Requête ${currentRequest}] Données déjà chargées, utilisation du cache`);
       return;
     }
 
     if (!user && authReady) {
-      console.log("Aucun utilisateur connecté, abandon du chargement des données");
+      console.log(`[Requête ${currentRequest}] Aucun utilisateur connecté, abandon du chargement des données`);
       setIsLoadingInitial(false);
       return;
     }
@@ -55,39 +75,69 @@ export function useSavedContentManagement() {
       
       if (forceRefresh) {
         setIsRefreshing(true);
+        console.log(`[Requête ${currentRequest}] Rafraîchissement forcé des données`);
+      } else {
+        console.log(`[Requête ${currentRequest}] Début de la récupération des contenus sauvegardés...`);
+      }
+      
+      // Récupérer séquentiellement pour réduire la charge
+      const exercises = await getSavedExercises().catch(err => {
+        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des exercices:`, err);
+        setErrors(prev => ({ ...prev, exercises: "Impossible de charger les exercices" }));
+        return [];
+      });
+      
+      // Vérifier si le composant est toujours monté et la requête actuelle
+      if (currentRequest !== requestCount.current) {
+        console.log(`[Requête ${currentRequest}] Requête abandonnée car plus récente disponible`);
+        return;
+      }
+      
+      const lessonPlans = await getSavedLessonPlans().catch(err => {
+        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des plans de leçon:`, err);
+        setErrors(prev => ({ ...prev, lessonPlans: "Impossible de charger les séquences" }));
+        return [];
+      });
+      
+      if (currentRequest !== requestCount.current) return;
+      
+      const correspondences = await getSavedCorrespondences().catch(err => {
+        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des correspondances:`, err);
+        setErrors(prev => ({ ...prev, correspondences: "Impossible de charger les correspondances" }));
+        return [];
+      });
+      
+      if (currentRequest !== requestCount.current) return;
+      
+      // Limiter le chargement des images pour éviter la boucle infinie
+      let images = [];
+      try {
+        // Utiliser un timeout pour éviter de bloquer l'UI
+        const imagePromise = getSavedImages();
+        const timeoutPromise = new Promise((_, reject) => {
+          fetchTimeoutRef.current = window.setTimeout(() => {
+            reject(new Error("Délai d'attente dépassé pour les images"));
+          }, 5000); // 5 secondes de timeout
+        });
+        
+        images = await Promise.race([imagePromise, timeoutPromise]) as any[];
+        
+        cleanupTimeouts();
+      } catch (err) {
+        cleanupTimeouts();
+        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des images:`, err);
+        setErrors(prev => ({ ...prev, images: "Impossible de charger les images" }));
+        images = [];
       }
 
-      console.log("Début de la récupération des contenus sauvegardés...");
-      
-      const [exercises, lessonPlans, correspondences, images] = await Promise.all([
-        getSavedExercises().catch(err => {
-          console.error("Erreur lors de la récupération des exercices:", err);
-          setErrors(prev => ({ ...prev, exercises: "Impossible de charger les exercices" }));
-          return [];
-        }),
-        getSavedLessonPlans().catch(err => {
-          console.error("Erreur lors de la récupération des plans de leçon:", err);
-          setErrors(prev => ({ ...prev, lessonPlans: "Impossible de charger les séquences" }));
-          return [];
-        }),
-        getSavedCorrespondences().catch(err => {
-          console.error("Erreur lors de la récupération des correspondances:", err);
-          setErrors(prev => ({ ...prev, correspondences: "Impossible de charger les correspondances" }));
-          return [];
-        }),
-        getSavedImages().catch(err => {
-          console.error("Erreur lors de la récupération des images:", err);
-          setErrors(prev => ({ ...prev, images: "Impossible de charger les images" }));
-          return [];
-        })
-      ]);
-
-      console.log("Données récupérées:", {
+      console.log(`[Requête ${currentRequest}] Données récupérées:`, {
         exercises: exercises?.length || 0,
         lessonPlans: lessonPlans?.length || 0,
         correspondences: correspondences?.length || 0,
         images: images?.length || 0
       });
+
+      if (currentRequest !== requestCount.current) return;
 
       setErrors(prev => ({ 
         ...prev, 
@@ -146,13 +196,19 @@ export function useSavedContentManagement() {
         }]
       }));
 
-      const validImages = (images || []).filter((img) => 
-        img !== null && 
-        typeof img === 'object' && 
-        'status' in img && 
-        img.status === 'success' &&
-        'image_url' in img
-      );
+      // Traitement optimisé des images pour éviter les boucles
+      const MAX_IMAGES = 50; // Limiter le nombre d'images pour éviter les problèmes de performance
+      const validImages = (images || [])
+        .filter(img => 
+          img !== null && 
+          typeof img === 'object' && 
+          'status' in img && 
+          img.status === 'success' &&
+          'image_url' in img
+        )
+        .slice(0, MAX_IMAGES); // Limiter le nombre d'images
+
+      console.log(`[Requête ${currentRequest}] Images valides: ${validImages.length} sur ${images?.length || 0}`);
 
       const formattedImages: SavedContent[] = validImages.map(img => ({
         id: img.id,
@@ -180,21 +236,22 @@ export function useSavedContentManagement() {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ));
 
-      // Réinitialiser le compteur de tentatives en cas de succès
+      // Marquer le chargement comme terminé
+      hasLoadedData.current = true;
       retryCount.current = 0;
 
     } catch (err) {
-      console.error("Erreur lors du chargement des contenus:", err);
+      console.error(`[Requête ${currentRequest}] Erreur lors du chargement des contenus:`, err);
       
-      // Gestion des tentatives
+      // Gestion des tentatives avec délai progressif
       if (retryCount.current < MAX_RETRIES) {
         retryCount.current += 1;
-        console.log(`Nouvelle tentative ${retryCount.current}/${MAX_RETRIES} dans 1 seconde...`);
+        const delay = Math.min(1000 * retryCount.current, 5000); // Délai progressif, max 5 secondes
+        console.log(`[Requête ${currentRequest}] Nouvelle tentative ${retryCount.current}/${MAX_RETRIES} dans ${delay/1000}s...`);
         
-        // Attendre un peu avant de réessayer
-        setTimeout(() => {
+        fetchTimeoutRef.current = window.setTimeout(() => {
           fetchContent(true);
-        }, 1000);
+        }, delay);
         
         return;
       }
@@ -218,13 +275,20 @@ export function useSavedContentManagement() {
     }
   }, [getSavedExercises, getSavedLessonPlans, getSavedCorrespondences, getSavedImages, toast, user, authReady]);
 
+  // Nettoyer les timeouts lors du démontage du composant
+  useEffect(() => {
+    return () => {
+      cleanupTimeouts();
+    };
+  }, []);
+
   // Charger le contenu une fois l'authentification terminée
   useEffect(() => {
-    if (authReady) {
-      console.log("Auth ready, chargement des données...");
+    if (authReady && user && !hasLoadedData.current) {
+      console.log("Auth ready et utilisateur connecté, chargement des données...");
       fetchContent();
     }
-  }, [authReady, fetchContent]);
+  }, [authReady, user, fetchContent]);
 
   const handleDelete = async (id: string, type: SavedContent['type']) => {
     if (!id || !type) {
@@ -261,6 +325,7 @@ export function useSavedContentManagement() {
       }
       
       // Mettre à jour le contenu après la suppression
+      hasLoadedData.current = false; // Force refresh
       await fetchContent(true);
     } catch (err) {
       const typeLabel = {
@@ -283,7 +348,10 @@ export function useSavedContentManagement() {
     errors,
     isLoading: isLoadingInitial || isLoadingExercises || isLoadingLessonPlans || isLoadingCorrespondences || isLoadingImages,
     isRefreshing,
-    fetchContent: () => fetchContent(true), // Force refresh when called manually
+    fetchContent: () => {
+      hasLoadedData.current = false; // Invalider le cache lors d'un rafraîchissement manuel
+      return fetchContent(true);
+    },
     handleDelete
   };
 }

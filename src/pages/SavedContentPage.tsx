@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { SEO } from "@/components/SEO";
 import { type SavedContent } from "@/types/saved-content";
 import { SavedContentLoader } from "@/components/saved-content/SavedContentLoader";
@@ -57,7 +57,7 @@ export default function SavedContentPage() {
   });
 
   const navigate = useNavigate();
-  const { authReady } = useAuth();
+  const { authReady, user } = useAuth();
 
   const {
     content,
@@ -68,29 +68,38 @@ export default function SavedContentPage() {
     handleDelete
   } = useSavedContentManagement();
 
-  const getCurrentTab = () => {
+  const getCurrentTab = useCallback(() => {
     return tabs.find(tab => tab.id === activeTab);
-  };
+  }, [activeTab]);
 
-  const handleCreate = () => {
+  const handleCreate = useCallback(() => {
     const currentTab = getCurrentTab();
     if (currentTab) {
       navigate(currentTab.path);
     }
-  };
+  }, [getCurrentTab, navigate]);
 
-  const handleDeleteRequest = (content: SavedContent) => {
+  const handleDeleteRequest = useCallback((content: SavedContent) => {
     setIsPreviewOpen(false);
     setDeleteDialog({
       isOpen: true,
       itemId: content.id,
       itemType: content.displayType || ""
     });
-  };
+  }, []);
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     fetchContent();
-  };
+  }, [fetchContent]);
+
+  // Une seule tentative de chargement à l'initialisation du composant
+  useEffect(() => {
+    // Le chargement est déjà géré dans le hook useSavedContentManagement
+    console.log("SavedContentPage monté - l'état d'authentification:", { 
+      authReady, 
+      user: user ? "connecté" : "non connecté" 
+    });
+  }, [authReady, user]);
 
   if (isLoading && !isRefreshing) {
     return <SavedContentLoader />;
@@ -105,14 +114,8 @@ export default function SavedContentPage() {
         
         <SavedContentError 
           error={errors.exercises || errors.lessonPlans || errors.correspondences || ""}
+          onRetry={handleRefresh}
         />
-        
-        <div className="mt-6 flex justify-center">
-          <Button onClick={handleRefresh} className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Réessayer
-          </Button>
-        </div>
       </div>
     );
   }
