@@ -23,7 +23,7 @@ export const SavedContentLoader = () => {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="text-gray-600">Chargement de vos ressources...</span>
         <p className="text-sm text-gray-500 max-w-md text-center">
-          Les données sont en cours de récupération. Si le chargement persiste, vous pouvez actualiser la page.
+          Les données sont en cours de récupération. Veuillez patienter quelques instants...
         </p>
       </div>
     </div>

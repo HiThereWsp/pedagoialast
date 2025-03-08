@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
@@ -12,6 +12,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const location = useLocation();
   const { user, loading, authReady } = useAuth();
   const [showLoadingTimeout, setShowLoadingTimeout] = useState(false);
+  const initialLoadComplete = useRef(false);
 
   // Afficher le loading seulement si ça prend plus de 500ms, pour éviter un flash
   useEffect(() => {
@@ -32,10 +33,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       authReady,
       path: location.pathname
     });
+    
+    if (authReady) {
+      initialLoadComplete.current = true;
+    }
   }, [user, loading, authReady, location.pathname]);
 
   // État de chargement initial, on affiche un indicateur de chargement après un délai
-  if (loading || !authReady) {
+  if ((loading || !authReady) && !initialLoadComplete.current) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">

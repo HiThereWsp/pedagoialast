@@ -89,17 +89,19 @@ export default function SavedContentPage() {
   }, []);
 
   const handleRefresh = useCallback(() => {
-    fetchContent();
-  }, [fetchContent]);
+    if (!isRefreshing) {
+      fetchContent();
+    }
+  }, [fetchContent, isRefreshing]);
 
   // Une seule tentative de chargement à l'initialisation du composant
   useEffect(() => {
-    // Le chargement est déjà géré dans le hook useSavedContentManagement
     console.log("SavedContentPage monté - l'état d'authentification:", { 
       authReady, 
       user: user ? "connecté" : "non connecté" 
     });
-  }, [authReady, user]);
+    // Le chargement est géré par le hook useSavedContentManagement
+  }, []);
 
   if (isLoading && !isRefreshing) {
     return <SavedContentLoader />;
@@ -208,7 +210,13 @@ export default function SavedContentPage() {
       <DeleteDialog 
         isOpen={deleteDialog.isOpen}
         onOpenChange={(isOpen) => setDeleteDialog(prev => ({ ...prev, isOpen }))}
-        onDelete={() => handleDelete(deleteDialog.itemId, content.find(item => item.id === deleteDialog.itemId)?.type || 'lesson-plan')}
+        onDelete={() => {
+          const item = content.find(item => item.id === deleteDialog.itemId);
+          if (item) {
+            handleDelete(deleteDialog.itemId, item.type);
+            setDeleteDialog(prev => ({ ...prev, isOpen: false }));
+          }
+        }}
         itemType={deleteDialog.itemType}
         error={errors.delete}
       />

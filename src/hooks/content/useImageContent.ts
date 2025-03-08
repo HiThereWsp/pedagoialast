@@ -1,20 +1,21 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import type { ImageGenerationUsage } from "@/types/saved-content";
-import { isImageGenerationUsage } from "@/utils/type-guards";
 
 export function useImageContent() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const imageCache = useRef<ImageGenerationUsage[] | null>(null);
   const lastFetchTime = useRef<number>(0);
-  const CACHE_TTL = 60000; // 1 minute cache
+  const isFetchingImages = useRef(false);
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+  const MAX_IMAGES = 50; // Limiter le nombre d'images pour éviter les problèmes de performance
 
-  const isCacheValid = () => {
+  const isCacheValid = useCallback(() => {
     return imageCache.current && (Date.now() - lastFetchTime.current < CACHE_TTL);
-  };
+  }, []);
 
   const saveImage = async (params: {
     prompt: string;
@@ -43,7 +44,8 @@ export function useImageContent() {
 
       if (error) throw error;
 
-      if (!isImageGenerationUsage(record)) {
+      // Vérification simple que l'objet retourné est valide
+      if (!record || typeof record !== 'object' || !('id' in record)) {
         throw new Error('Invalid image data returned from database');
       }
 
@@ -56,7 +58,7 @@ export function useImageContent() {
         });
       }
 
-      return record;
+      return record as ImageGenerationUsage;
     } catch (error) {
       console.error('Error saving image:', error);
       toast({
@@ -84,7 +86,7 @@ export function useImageContent() {
       const { error: updateError } = await supabase
         .from('image_generation_usage')
         .update({
-          status: 'processing' as const,
+          status: 'processing',
           retry_count: currentRetryCount + 1,
           last_retry: new Date().toISOString()
         })
@@ -95,7 +97,6 @@ export function useImageContent() {
       // Invalider le cache après modification
       imageCache.current = null;
 
-      await new Promise(resolve => setTimeout(resolve, 1000));
       return true;
     } catch (error) {
       console.error('Error retrying image:', error);
@@ -104,18 +105,28 @@ export function useImageContent() {
   };
 
   const getSavedImages = async () => {
-    try {
-      // Utiliser le cache si disponible et valide
-      if (isCacheValid()) {
-        console.log('Utilisation du cache pour les images');
-        return imageCache.current;
-      }
+    // Empêcher les appels concurrents
+    if (isFetchingImages.current) {
+      console.log('Récupération des images déjà en cours, ignorer cette demande');
+      return imageCache.current || [];
+    }
 
+    // Utiliser le cache si disponible et valide
+    if (isCacheValid()) {
+      console.log('Utilisation du cache pour les images');
+      return imageCache.current || [];
+    }
+
+    try {
+      isFetchingImages.current = true;
       setIsLoading(true);
       console.log('Début de la récupération des images...');
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Utilisateur non connecté');
+      if (!user) {
+        console.log('Utilisateur non connecté');
+        return [];
+      }
 
       const { data: images, error } = await supabase
         .from('image_generation_usage')
@@ -123,7 +134,7 @@ export function useImageContent() {
         .eq('user_id', user.id)
         .eq('status', 'success')
         .order('generated_at', { ascending: false })
-        .limit(100); // Limiter le nombre d'images pour éviter les problèmes de performance
+        .limit(MAX_IMAGES);
 
       if (error) throw error;
 
@@ -133,25 +144,31 @@ export function useImageContent() {
       }
 
       console.log('Images récupérées:', images.length);
-
-      const validImages = images.filter(isImageGenerationUsage);
+      
+      // Filtrer les images valides (avec URL d'image)
+      const validImages = images.filter(img => 
+        img !== null && 
+        typeof img === 'object' && 
+        'image_url' in img && 
+        img.image_url
+      );
+      
       console.log('Images valides:', validImages.length);
       
       // Mettre à jour le cache
-      imageCache.current = validImages;
+      imageCache.current = validImages as ImageGenerationUsage[];
       lastFetchTime.current = Date.now();
       
-      return validImages;
+      return validImages as ImageGenerationUsage[];
     } catch (error) {
       console.error('Error fetching images:', error);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors du chargement des images"
-      });
       return [];
     } finally {
       setIsLoading(false);
+      // Délai avant de permettre une nouvelle requête pour éviter les avalanches de requêtes
+      setTimeout(() => {
+        isFetchingImages.current = false;
+      }, 2000);
     }
   };
 

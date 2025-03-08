@@ -20,8 +20,8 @@ export function useSavedContentManagement() {
   const hasLoadedData = useRef(false);
   const retryCount = useRef(0);
   const requestCount = useRef(0);
+  const didUnmount = useRef(false);
   const MAX_RETRIES = 3;
-  const fetchTimeoutRef = useRef<number | null>(null);
 
   const {
     isLoadingExercises,
@@ -41,12 +41,11 @@ export function useSavedContentManagement() {
   const { user, authReady } = useAuth();
 
   // Fonction pour nettoyer les timeouts à la démonter du composant
-  const cleanupTimeouts = () => {
-    if (fetchTimeoutRef.current) {
-      window.clearTimeout(fetchTimeoutRef.current);
-      fetchTimeoutRef.current = null;
-    }
-  };
+  useEffect(() => {
+    return () => {
+      didUnmount.current = true;
+    };
+  }, []);
 
   const fetchContent = useCallback(async (forceRefresh = false) => {
     // Incrémenter le compteur de requêtes pour le débogage
@@ -80,54 +79,37 @@ export function useSavedContentManagement() {
         console.log(`[Requête ${currentRequest}] Début de la récupération des contenus sauvegardés...`);
       }
       
-      // Récupérer séquentiellement pour réduire la charge
-      const exercises = await getSavedExercises().catch(err => {
-        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des exercices:`, err);
-        setErrors(prev => ({ ...prev, exercises: "Impossible de charger les exercices" }));
-        return [];
-      });
+      // Récupérer les données en parallèle pour plus d'efficacité
+      const [exercises, lessonPlans, correspondences, images] = await Promise.all([
+        getSavedExercises().catch(err => {
+          console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des exercices:`, err);
+          setErrors(prev => ({ ...prev, exercises: "Impossible de charger les exercices" }));
+          return [];
+        }),
+        
+        getSavedLessonPlans().catch(err => {
+          console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des plans de leçon:`, err);
+          setErrors(prev => ({ ...prev, lessonPlans: "Impossible de charger les séquences" }));
+          return [];
+        }),
+        
+        getSavedCorrespondences().catch(err => {
+          console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des correspondances:`, err);
+          setErrors(prev => ({ ...prev, correspondences: "Impossible de charger les correspondances" }));
+          return [];
+        }),
+        
+        getSavedImages().catch(err => {
+          console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des images:`, err);
+          setErrors(prev => ({ ...prev, images: "Impossible de charger les images" }));
+          return [];
+        })
+      ]);
       
-      // Vérifier si le composant est toujours monté et la requête actuelle
-      if (currentRequest !== requestCount.current) {
-        console.log(`[Requête ${currentRequest}] Requête abandonnée car plus récente disponible`);
+      // Vérifier si le composant est toujours monté
+      if (didUnmount.current) {
+        console.log(`[Requête ${currentRequest}] Composant démonté, abandon du traitement des données`);
         return;
-      }
-      
-      const lessonPlans = await getSavedLessonPlans().catch(err => {
-        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des plans de leçon:`, err);
-        setErrors(prev => ({ ...prev, lessonPlans: "Impossible de charger les séquences" }));
-        return [];
-      });
-      
-      if (currentRequest !== requestCount.current) return;
-      
-      const correspondences = await getSavedCorrespondences().catch(err => {
-        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des correspondances:`, err);
-        setErrors(prev => ({ ...prev, correspondences: "Impossible de charger les correspondances" }));
-        return [];
-      });
-      
-      if (currentRequest !== requestCount.current) return;
-      
-      // Limiter le chargement des images pour éviter la boucle infinie
-      let images = [];
-      try {
-        // Utiliser un timeout pour éviter de bloquer l'UI
-        const imagePromise = getSavedImages();
-        const timeoutPromise = new Promise((_, reject) => {
-          fetchTimeoutRef.current = window.setTimeout(() => {
-            reject(new Error("Délai d'attente dépassé pour les images"));
-          }, 5000); // 5 secondes de timeout
-        });
-        
-        images = await Promise.race([imagePromise, timeoutPromise]) as any[];
-        
-        cleanupTimeouts();
-      } catch (err) {
-        cleanupTimeouts();
-        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des images:`, err);
-        setErrors(prev => ({ ...prev, images: "Impossible de charger les images" }));
-        images = [];
       }
 
       console.log(`[Requête ${currentRequest}] Données récupérées:`, {
@@ -136,8 +118,6 @@ export function useSavedContentManagement() {
         correspondences: correspondences?.length || 0,
         images: images?.length || 0
       });
-
-      if (currentRequest !== requestCount.current) return;
 
       setErrors(prev => ({ 
         ...prev, 
@@ -196,21 +176,8 @@ export function useSavedContentManagement() {
         }]
       }));
 
-      // Traitement optimisé des images pour éviter les boucles
-      const MAX_IMAGES = 50; // Limiter le nombre d'images pour éviter les problèmes de performance
-      const validImages = (images || [])
-        .filter(img => 
-          img !== null && 
-          typeof img === 'object' && 
-          'status' in img && 
-          img.status === 'success' &&
-          'image_url' in img
-        )
-        .slice(0, MAX_IMAGES); // Limiter le nombre d'images
-
-      console.log(`[Requête ${currentRequest}] Images valides: ${validImages.length} sur ${images?.length || 0}`);
-
-      const formattedImages: SavedContent[] = validImages.map(img => ({
+      // Traitement optimisé des images
+      const formattedImages: SavedContent[] = (images || []).slice(0, 50).map(img => ({
         id: img.id,
         title: "Image générée",
         content: img.image_url || '',
@@ -232,6 +199,8 @@ export function useSavedContentManagement() {
         ...formattedImages
       ].filter(Boolean);
 
+      if (didUnmount.current) return;
+
       setContent(allContent.sort((a, b) => 
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ));
@@ -243,14 +212,18 @@ export function useSavedContentManagement() {
     } catch (err) {
       console.error(`[Requête ${currentRequest}] Erreur lors du chargement des contenus:`, err);
       
+      if (didUnmount.current) return;
+
       // Gestion des tentatives avec délai progressif
-      if (retryCount.current < MAX_RETRIES) {
+      if (retryCount.current < MAX_RETRIES && forceRefresh) {
         retryCount.current += 1;
         const delay = Math.min(1000 * retryCount.current, 5000); // Délai progressif, max 5 secondes
         console.log(`[Requête ${currentRequest}] Nouvelle tentative ${retryCount.current}/${MAX_RETRIES} dans ${delay/1000}s...`);
         
-        fetchTimeoutRef.current = window.setTimeout(() => {
-          fetchContent(true);
+        setTimeout(() => {
+          if (!didUnmount.current) {
+            fetchContent(true);
+          }
         }, delay);
         
         return;
@@ -269,22 +242,21 @@ export function useSavedContentManagement() {
         });
       }
     } finally {
-      fetchInProgress.current = false;
-      setIsLoadingInitial(false);
-      setIsRefreshing(false);
+      if (!didUnmount.current) {
+        setIsLoadingInitial(false);
+        setIsRefreshing(false);
+      }
+      
+      // Délai avant de permettre une nouvelle requête pour éviter les avalanches de requêtes
+      setTimeout(() => {
+        fetchInProgress.current = false;
+      }, 1000);
     }
   }, [getSavedExercises, getSavedLessonPlans, getSavedCorrespondences, getSavedImages, toast, user, authReady]);
 
-  // Nettoyer les timeouts lors du démontage du composant
-  useEffect(() => {
-    return () => {
-      cleanupTimeouts();
-    };
-  }, []);
-
   // Charger le contenu une fois l'authentification terminée
   useEffect(() => {
-    if (authReady && user && !hasLoadedData.current) {
+    if (authReady && user && !hasLoadedData.current && !fetchInProgress.current) {
       console.log("Auth ready et utilisateur connecté, chargement des données...");
       fetchContent();
     }
@@ -316,17 +288,20 @@ export function useSavedContentManagement() {
           toast({ description: "Correspondance supprimée avec succès" });
           break;
         case 'Image':
-          // Note: La suppression d'image n'est pas encore implémentée dans l'API
-          toast({ description: "Image supprimée avec succès" });
+          // Supprimer du state sans appel serveur pour l'instant
+          setContent(prev => prev.filter(item => item.id !== id));
+          toast({ description: "Image supprimée du cache local" });
           break;
         default:
           console.error("Type de contenu non reconnu:", type);
           return;
       }
       
-      // Mettre à jour le contenu après la suppression
-      hasLoadedData.current = false; // Force refresh
-      await fetchContent(true);
+      // Mettre à jour le contenu après la suppression seulement si ce n'est pas une image
+      if (type !== 'Image') {
+        setContent(prev => prev.filter(item => item.id !== id));
+      }
+      
     } catch (err) {
       const typeLabel = {
         'exercise': "l'exercice",
@@ -349,8 +324,10 @@ export function useSavedContentManagement() {
     isLoading: isLoadingInitial || isLoadingExercises || isLoadingLessonPlans || isLoadingCorrespondences || isLoadingImages,
     isRefreshing,
     fetchContent: () => {
-      hasLoadedData.current = false; // Invalider le cache lors d'un rafraîchissement manuel
-      return fetchContent(true);
+      if (!fetchInProgress.current) {
+        hasLoadedData.current = false; // Invalider le cache lors d'un rafraîchissement manuel
+        return fetchContent(true);
+      }
     },
     handleDelete
   };

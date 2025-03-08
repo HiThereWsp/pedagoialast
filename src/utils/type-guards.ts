@@ -15,7 +15,7 @@ export function isBaseImageValidation(data: unknown): data is BaseImageValidatio
     (img.image_url === null || typeof img.image_url === 'string') &&
     typeof img.user_id === 'string' &&
     typeof img.generated_at === 'string' &&
-    ['pending', 'processing', 'success', 'error'].includes(img.status) &&
+    typeof img.status === 'string' && // Permettre n'importe quel string
     typeof img.retry_count === 'number' &&
     typeof img.monthly_generation_count === 'number' &&
     typeof img.generation_month === 'string'
