@@ -1,15 +1,18 @@
 
+import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Book, FileText, Image, Mail } from "lucide-react";
 
-type SkeletonType = "exercise" | "lesson-plan" | "image" | "correspondence";
+export type SkeletonType = "exercise" | "lesson-plan" | "image" | "correspondence";
 
 interface ResourceSkeletonProps {
   type?: SkeletonType;
 }
 
-export const ResourceSkeleton = ({ type = "lesson-plan" }: ResourceSkeletonProps) => {
+export const ResourceSkeleton: React.FC<ResourceSkeletonProps> = ({ 
+  type = "lesson-plan" 
+}) => {
   const renderIcon = () => {
     switch (type) {
       case "exercise":

@@ -1,14 +1,18 @@
 
+import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ResourceSkeleton } from "./ResourceSkeleton";
+import { ResourceSkeleton, type SkeletonType } from "./ResourceSkeleton";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
+import { BackButton } from "@/components/settings/BackButton";
 
 interface SavedContentLoaderProps {
   activeTab?: string;
 }
 
-export const SavedContentLoader = ({ activeTab = "sequences" }: SavedContentLoaderProps) => {
-  const getSkeletonType = () => {
+export const SavedContentLoader: React.FC<SavedContentLoaderProps> = ({ 
+  activeTab = "sequences" 
+}) => {
+  const getSkeletonType = (): SkeletonType => {
     switch (activeTab) {
       case "sequences":
         return "lesson-plan";
@@ -26,7 +30,7 @@ export const SavedContentLoader = ({ activeTab = "sequences" }: SavedContentLoad
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-4">
-        <Skeleton className="h-10 w-24" />
+        <BackButton />
       </div>
       
       <div className="flex items-center justify-between mb-8">
