@@ -1,5 +1,5 @@
 
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/settings/BackButton";
 import { Plus, RefreshCw } from "lucide-react";
@@ -39,23 +39,26 @@ interface SavedContentHeaderProps {
   isRefreshing: boolean;
 }
 
-export const SavedContentHeader: React.FC<SavedContentHeaderProps> = ({ 
+export const SavedContentHeader: React.FC<SavedContentHeaderProps> = React.memo(({ 
   activeTab, 
   onRefresh,
   isRefreshing 
 }) => {
   const navigate = useNavigate();
 
-  const getCurrentTab = useCallback(() => {
-    return savedContentTabs.find(tab => tab.id === activeTab);
+  const currentTab = useMemo(() => {
+    return savedContentTabs.find(tab => tab.id === activeTab) || savedContentTabs[0];
   }, [activeTab]);
 
   const handleCreate = useCallback(() => {
-    const currentTab = getCurrentTab();
-    if (currentTab) {
-      navigate(currentTab.path);
+    navigate(currentTab.path);
+  }, [navigate, currentTab]);
+
+  const handleRefresh = useCallback(async () => {
+    if (!isRefreshing) {
+      await onRefresh();
     }
-  }, [getCurrentTab, navigate]);
+  }, [onRefresh, isRefreshing]);
 
   return (
     <>
@@ -70,7 +73,7 @@ export const SavedContentHeader: React.FC<SavedContentHeaderProps> = ({
         
         <div className="flex items-center gap-2">
           <Button
-            onClick={onRefresh}
+            onClick={handleRefresh}
             variant="outline"
             size="icon"
             className="rounded-full"
@@ -84,11 +87,13 @@ export const SavedContentHeader: React.FC<SavedContentHeaderProps> = ({
             className="bg-gradient-to-r from-[#FFDD00] via-[#FFA800] to-[#FF7A00] hover:opacity-90 text-white shadow-sm"
           >
             <Plus className="w-5 h-5 mr-2" />
-            <span className="hidden sm:inline">{getCurrentTab()?.buttonText}</span>
+            <span className="hidden sm:inline">{currentTab.buttonText}</span>
             <span className="sm:hidden">Créer</span>
           </Button>
         </div>
       </div>
     </>
   );
-};
+});
+
+SavedContentHeader.displayName = "SavedContentHeader";

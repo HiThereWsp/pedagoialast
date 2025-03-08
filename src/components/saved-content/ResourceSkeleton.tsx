@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import { Book, FileText, Image, Mail } from "lucide-react";
@@ -10,10 +10,10 @@ interface ResourceSkeletonProps {
   type?: SkeletonType;
 }
 
-export const ResourceSkeleton: React.FC<ResourceSkeletonProps> = ({ 
+export const ResourceSkeleton: React.FC<ResourceSkeletonProps> = React.memo(({ 
   type = "lesson-plan" 
 }) => {
-  const renderIcon = () => {
+  const icon = useMemo(() => {
     switch (type) {
       case "exercise":
         return <FileText className="h-8 w-8 text-gray-300" />;
@@ -24,19 +24,19 @@ export const ResourceSkeleton: React.FC<ResourceSkeletonProps> = ({
       case "correspondence":
         return <Mail className="h-8 w-8 text-gray-300" />;
     }
-  };
+  }, [type]);
 
   return (
     <Card className="overflow-hidden bg-white dark:bg-gray-900">
       {type === "image" ? (
         <div className="aspect-square bg-gray-200 animate-pulse flex items-center justify-center">
-          {renderIcon()}
+          {icon}
         </div>
       ) : (
         <div className="p-6">
           <div className="flex items-start space-x-4">
             <div className="hidden sm:flex items-center justify-center rounded-full w-10 h-10 bg-gray-100">
-              {renderIcon()}
+              {icon}
             </div>
             <div className="flex-1 space-y-4">
               <Skeleton className="h-4 w-3/4" />
@@ -57,4 +57,6 @@ export const ResourceSkeleton: React.FC<ResourceSkeletonProps> = ({
       )}
     </Card>
   );
-};
+});
+
+ResourceSkeleton.displayName = "ResourceSkeleton";

@@ -1,4 +1,5 @@
 
+import React, { useMemo, useCallback } from "react";
 import { type SavedContent } from "@/types/saved-content";
 import { ResourceCard } from "./ResourceCard";
 
@@ -9,13 +10,13 @@ interface SavedContentListProps {
   activeTab: string;
 }
 
-export const SavedContentList = ({ 
+export const SavedContentList = React.memo(({ 
   content, 
   onItemSelect, 
   selectedItemId,
   activeTab
 }: SavedContentListProps) => {
-  const filteredContent = content.filter(item => {
+  const filteredContent = useMemo(() => content.filter(item => {
     if (!item) return false; // Protection supplémentaire contre les éléments null
     
     switch (activeTab) {
@@ -30,7 +31,11 @@ export const SavedContentList = ({
       default:
         return true;
     }
-  });
+  }), [content, activeTab]);
+
+  const handleItemSelect = useCallback((item: SavedContent) => {
+    onItemSelect(item);
+  }, [onItemSelect]);
 
   if (filteredContent.length === 0) {
     return (
@@ -48,9 +53,12 @@ export const SavedContentList = ({
         <ResourceCard
           key={item.id}
           resource={item}
-          onSelect={onItemSelect}
+          onSelect={handleItemSelect}
+          isSelected={item.id === selectedItemId}
         />
       ))}
     </div>
   );
-};
+});
+
+SavedContentList.displayName = "SavedContentList";

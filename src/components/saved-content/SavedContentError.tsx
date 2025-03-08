@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useCallback } from "react";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,16 @@ interface SavedContentErrorProps {
   onRetry?: () => Promise<void>;
 }
 
-export const SavedContentError: React.FC<SavedContentErrorProps> = ({ 
+export const SavedContentError: React.FC<SavedContentErrorProps> = React.memo(({ 
   error, 
   onRetry 
 }) => {
+  const handleRetry = useCallback(async () => {
+    if (onRetry) {
+      await onRetry();
+    }
+  }, [onRetry]);
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-4">
@@ -35,7 +41,7 @@ export const SavedContentError: React.FC<SavedContentErrorProps> = ({
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={onRetry}
+              onClick={handleRetry}
               className="mt-2 border-red-300 text-red-600 hover:bg-red-100 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/30"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -46,4 +52,6 @@ export const SavedContentError: React.FC<SavedContentErrorProps> = ({
       </Card>
     </div>
   );
-};
+});
+
+SavedContentError.displayName = "SavedContentError";

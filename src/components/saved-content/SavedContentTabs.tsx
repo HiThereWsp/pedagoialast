@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useCallback } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { savedContentTabs } from "./SavedContentHeader";
 
@@ -8,14 +8,18 @@ interface SavedContentTabsProps {
   onTabChange: (tab: string) => void;
 }
 
-export const SavedContentTabs: React.FC<SavedContentTabsProps> = ({ 
+export const SavedContentTabs: React.FC<SavedContentTabsProps> = React.memo(({ 
   activeTab, 
   onTabChange 
 }) => {
+  const handleValueChange = useCallback((value: string) => {
+    onTabChange(value);
+  }, [onTabChange]);
+
   return (
     <Tabs 
       value={activeTab}
-      onValueChange={onTabChange}
+      onValueChange={handleValueChange}
       className="mb-8"
     >
       <TabsList className="w-full justify-start border-b bg-transparent p-0">
@@ -31,4 +35,6 @@ export const SavedContentTabs: React.FC<SavedContentTabsProps> = ({
       </TabsList>
     </Tabs>
   );
-};
+});
+
+SavedContentTabs.displayName = "SavedContentTabs";

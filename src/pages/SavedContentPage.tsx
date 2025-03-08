@@ -1,5 +1,5 @@
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { SEO } from "@/components/SEO";
 import { type SavedContent } from "@/types/saved-content";
 import { SavedContentLoader } from "@/components/saved-content/SavedContentLoader";
@@ -75,6 +75,19 @@ export default function SavedContentPage() {
     return Promise.resolve();
   }, [fetchContent, isRefreshing]);
 
+  const handleItemSelect = useCallback((item: SavedContent) => {
+    setSelectedContent(item);
+    setIsPreviewOpen(true);
+  }, []);
+
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab);
+  }, []);
+
+  const handlePreviewOpenChange = useCallback((open: boolean) => {
+    setIsPreviewOpen(open);
+  }, []);
+
   const handleDeleteRequest = useCallback((content: SavedContent) => {
     setIsPreviewOpen(false);
     setDeleteDialog({
@@ -84,6 +97,18 @@ export default function SavedContentPage() {
     });
   }, []);
 
+  const handleDeleteDialogChange = useCallback((isOpen: boolean) => {
+    setDeleteDialog(prev => ({ ...prev, isOpen }));
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    const item = stableContent.find(item => item.id === deleteDialog.itemId);
+    if (item) {
+      await handleDelete(deleteDialog.itemId, item.type);
+      setDeleteDialog(prev => ({ ...prev, isOpen: false }));
+    }
+  }, [deleteDialog.itemId, stableContent, handleDelete]);
+
   // Cleanup resources only on unmount
   useEffect(() => {
     return () => {
@@ -92,15 +117,25 @@ export default function SavedContentPage() {
     };
   }, [cleanup]);
 
+  // Determine if we should show an error state
+  const hasError = useMemo(() => {
+    return !!(errors.exercises || errors.lessonPlans || errors.correspondences);
+  }, [errors.exercises, errors.lessonPlans, errors.correspondences]);
+
+  // Combine error messages
+  const errorMessage = useMemo(() => {
+    return errors.exercises || errors.lessonPlans || errors.correspondences || "";
+  }, [errors.exercises, errors.lessonPlans, errors.correspondences]);
+
   // Show loading only during initial load
   if (isLoading && !isRefreshing && stableContent.length === 0) {
     return <SavedContentLoader activeTab={activeTab} />;
   }
 
-  if (errors.exercises || errors.lessonPlans || errors.correspondences) {
+  if (hasError) {
     return (
       <SavedContentError 
-        error={errors.exercises || errors.lessonPlans || errors.correspondences || ""}
+        error={errorMessage}
         onRetry={handleRefresh}
       />
     );
@@ -122,7 +157,7 @@ export default function SavedContentPage() {
         
         <SavedContentTabs 
           activeTab={activeTab}
-          onTabChange={setActiveTab}
+          onTabChange={handleTabChange}
         />
 
         {isRefreshing ? (
@@ -130,10 +165,7 @@ export default function SavedContentPage() {
         ) : (
           <SavedContentList
             content={stableContent}
-            onItemSelect={(item) => {
-              setSelectedContent(item);
-              setIsPreviewOpen(true);
-            }}
+            onItemSelect={handleItemSelect}
             selectedItemId={selectedContent?.id}
             activeTab={activeTab}
           />
@@ -143,20 +175,14 @@ export default function SavedContentPage() {
       <ContentPreviewSheet
         content={selectedContent}
         isOpen={isPreviewOpen}
-        onOpenChange={setIsPreviewOpen}
+        onOpenChange={handlePreviewOpenChange}
         onDelete={handleDeleteRequest}
       />
 
       <DeleteDialog 
         isOpen={deleteDialog.isOpen}
-        onOpenChange={(isOpen) => setDeleteDialog(prev => ({ ...prev, isOpen }))}
-        onDelete={async () => {
-          const item = stableContent.find(item => item.id === deleteDialog.itemId);
-          if (item) {
-            await handleDelete(deleteDialog.itemId, item.type);
-            setDeleteDialog(prev => ({ ...prev, isOpen: false }));
-          }
-        }}
+        onOpenChange={handleDeleteDialogChange}
+        onDelete={handleConfirmDelete}
         itemType={deleteDialog.itemType}
         error={errors.delete}
       />

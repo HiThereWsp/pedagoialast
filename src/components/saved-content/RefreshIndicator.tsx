@@ -6,7 +6,7 @@ interface RefreshIndicatorProps {
   message?: string;
 }
 
-export const RefreshIndicator: React.FC<RefreshIndicatorProps> = ({ 
+export const RefreshIndicator: React.FC<RefreshIndicatorProps> = React.memo(({ 
   message = "Actualisation des données..." 
 }) => {
   return (
@@ -17,4 +17,6 @@ export const RefreshIndicator: React.FC<RefreshIndicatorProps> = ({
       </div>
     </div>
   );
-};
+});
+
+RefreshIndicator.displayName = "RefreshIndicator";

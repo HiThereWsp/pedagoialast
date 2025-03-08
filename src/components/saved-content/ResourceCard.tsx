@@ -1,17 +1,31 @@
 
+import React, { useCallback } from "react";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import type { SavedContent } from "@/types/saved-content";
+import { cn } from "@/lib/utils";
 
 interface ResourceCardProps {
   resource: SavedContent;
   onSelect: (item: SavedContent) => void;
+  isSelected?: boolean;
 }
 
-export const ResourceCard = ({ resource, onSelect }: ResourceCardProps) => {
+export const ResourceCard = React.memo(({ 
+  resource, 
+  onSelect,
+  isSelected = false
+}: ResourceCardProps) => {
+  const handleClick = useCallback(() => {
+    onSelect(resource);
+  }, [onSelect, resource]);
+
   return (
     <Card 
-      onClick={() => onSelect(resource)}
-      className="group cursor-pointer transition-all duration-300 hover:shadow-lg relative overflow-hidden hover:border-[#FFA800] bg-white dark:bg-gray-900"
+      onClick={handleClick}
+      className={cn(
+        "group cursor-pointer transition-all duration-300 hover:shadow-lg relative overflow-hidden hover:border-[#FFA800] bg-white dark:bg-gray-900",
+        isSelected && "border-[#FFA800] ring-2 ring-[#FFA800]/20"
+      )}
     >
       {resource.type === 'Image' ? (
         <div className="aspect-square">
@@ -61,4 +75,6 @@ export const ResourceCard = ({ resource, onSelect }: ResourceCardProps) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+ResourceCard.displayName = "ResourceCard";

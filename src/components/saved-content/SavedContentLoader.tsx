@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ResourceSkeleton, type SkeletonType } from "./ResourceSkeleton";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
@@ -9,10 +9,10 @@ interface SavedContentLoaderProps {
   activeTab?: string;
 }
 
-export const SavedContentLoader: React.FC<SavedContentLoaderProps> = ({ 
+export const SavedContentLoader: React.FC<SavedContentLoaderProps> = React.memo(({ 
   activeTab = "sequences" 
 }) => {
-  const getSkeletonType = (): SkeletonType => {
+  const skeletonType = useMemo((): SkeletonType => {
     switch (activeTab) {
       case "sequences":
         return "lesson-plan";
@@ -25,7 +25,7 @@ export const SavedContentLoader: React.FC<SavedContentLoaderProps> = ({
       default:
         return "lesson-plan";
     }
-  };
+  }, [activeTab]);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -51,7 +51,7 @@ export const SavedContentLoader: React.FC<SavedContentLoaderProps> = ({
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
         {Array(6).fill(0).map((_, i) => (
-          <ResourceSkeleton key={i} type={getSkeletonType()} />
+          <ResourceSkeleton key={i} type={skeletonType} />
         ))}
       </div>
       
@@ -63,4 +63,6 @@ export const SavedContentLoader: React.FC<SavedContentLoaderProps> = ({
       </div>
     </div>
   );
-};
+});
+
+SavedContentLoader.displayName = "SavedContentLoader";
