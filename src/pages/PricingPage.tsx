@@ -5,7 +5,7 @@ import { pricingEvents } from "@/integrations/posthog/events"
 import { subscriptionEvents } from "@/integrations/posthog/events"
 import { facebookEvents } from "@/integrations/meta-pixel/client"
 import { SEO } from "@/components/SEO"
-import { Shield, Clock, CreditCard } from "lucide-react"
+import { Shield, Clock, RefreshCw } from "lucide-react"
 
 const PricingPage = () => {
   useEffect(() => {
@@ -131,11 +131,11 @@ const PricingPage = () => {
             <p className="text-sm text-muted-foreground">Plus de 14h par semaine grâce à nos outils IA</p>
           </div>
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-md">
-            <div className="mx-auto w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-5">
-              <CreditCard className="w-7 h-7 text-amber-500" />
+            <div className="mx-auto w-14 h-14 bg-indigo-50 rounded-full flex items-center justify-center mb-5">
+              <RefreshCw className="w-7 h-7 text-indigo-500" />
             </div>
-            <h3 className="font-bold text-lg mb-3">Annulation facile</h3>
-            <p className="text-sm text-muted-foreground">Résiliez à tout moment sans frais cachés</p>
+            <h3 className="font-bold text-lg mb-3">Mises à jour régulières</h3>
+            <p className="text-sm text-muted-foreground">Bénéficiez des dernières innovations pédagogiques en IA</p>
           </div>
         </div>
       </main>
