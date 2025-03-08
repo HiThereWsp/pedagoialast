@@ -8,8 +8,12 @@ export function TestimonialMainSection() {
         <div className="bg-blue-50 p-8 rounded-lg shadow-premium">
           <div className="flex flex-col md:flex-row items-start gap-6">
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-full bg-blue-100 overflow-hidden">
-                <div className="w-full h-full bg-blue-200/60"></div>
+              <div className="w-16 h-16 rounded-full overflow-hidden">
+                <img 
+                  src="/lovable-uploads/f6698362-8087-475f-80ce-13d4553a0e99.png" 
+                  alt="Photo de Melissa, maîtresse en CM2" 
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
             <div>
