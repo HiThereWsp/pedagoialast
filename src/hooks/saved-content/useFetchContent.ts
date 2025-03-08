@@ -16,7 +16,9 @@ export function useFetchContent() {
   const hasLoadedData = useRef(false);
   const retryCount = useRef(0);
   const requestCount = useRef(0);
+  const lastRequestTime = useRef(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const MIN_REQUEST_INTERVAL = 5000; // 5 secondes minimum entre les requêtes
   
   const {
     isLoadingExercises,
@@ -43,9 +45,28 @@ export function useFetchContent() {
     fetchInProgress.current = false;
   }, []);
 
+  const shouldThrottleRequest = useCallback(() => {
+    const now = Date.now();
+    const elapsed = now - lastRequestTime.current;
+    
+    // Si moins de X secondes se sont écoulées depuis la dernière requête
+    if (elapsed < MIN_REQUEST_INTERVAL) {
+      console.log(`Requête trop rapide (${elapsed}ms depuis la dernière). Attendre ${MIN_REQUEST_INTERVAL}ms minimum.`);
+      return true;
+    }
+    
+    return false;
+  }, []);
+
   const fetchContent = useCallback(async ({ forceRefresh = false, signal }: FetchConfig = {}): Promise<SavedContent[]> => {
     // Annuler toute requête en cours
     cancelFetch();
+    
+    // Limiter la fréquence des requêtes
+    if (!forceRefresh && shouldThrottleRequest()) {
+      console.log("Requête limitée en fréquence");
+      return [];
+    }
     
     // Créer un nouveau contrôleur d'annulation
     abortControllerRef.current = new AbortController();
@@ -74,6 +95,7 @@ export function useFetchContent() {
 
     try {
       fetchInProgress.current = true;
+      lastRequestTime.current = Date.now();
       
       if (forceRefresh) {
         setIsRefreshing(true);
@@ -231,7 +253,7 @@ export function useFetchContent() {
       // Délai avant de permettre une nouvelle requête pour éviter les avalanches de requêtes
       setTimeout(() => {
         fetchInProgress.current = false;
-      }, RETRY_DELAY_BASE);
+      }, MAX_RETRY_DELAY);
     }
   }, [
     getSavedExercises, 
@@ -241,7 +263,8 @@ export function useFetchContent() {
     toast, 
     user, 
     authReady, 
-    cancelFetch
+    cancelFetch,
+    shouldThrottleRequest
   ]);
 
   const isLoading = isLoadingInitial || isLoadingExercises || isLoadingLessonPlans || isLoadingCorrespondences || isLoadingImages;

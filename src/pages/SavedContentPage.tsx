@@ -8,6 +8,7 @@ import { SavedContentList } from "@/components/saved-content/SavedContentList";
 import { DeleteDialog } from "@/components/saved-content/DeleteDialog";
 import { ContentPreviewSheet } from "@/components/saved-content/ContentPreviewSheet";
 import { useSavedContentManagement } from "@/hooks/useSavedContentManagement";
+import { useStableContent } from "@/hooks/saved-content/useStableContent";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/settings/BackButton";
@@ -56,9 +57,12 @@ export default function SavedContentPage() {
     itemType: ""
   });
   
-  const isMounted = useRef(true);
+  const didInitialFetch = useRef(false);
   const navigate = useNavigate();
   const { authReady, user } = useAuth();
+
+  // Utilisation du hook de stabilisation
+  const { stableContent, updateContent } = useStableContent();
 
   const {
     content,
@@ -69,6 +73,24 @@ export default function SavedContentPage() {
     handleDelete,
     cleanup
   } = useSavedContentManagement();
+
+  // Mettre à jour le contenu stable lorsque le contenu change
+  useEffect(() => {
+    if (content && content.length > 0) {
+      updateContent(content);
+    }
+  }, [content, updateContent]);
+
+  // Charger les données une seule fois après l'authentification
+  useEffect(() => {
+    if (authReady && user && !didInitialFetch.current) {
+      console.log("Chargement initial des données...");
+      didInitialFetch.current = true;
+      fetchContent().catch(err => {
+        console.error("Erreur lors du chargement initial:", err);
+      });
+    }
+  }, [authReady, user, fetchContent]);
 
   const getCurrentTab = useCallback(() => {
     return tabs.find(tab => tab.id === activeTab);
@@ -90,31 +112,30 @@ export default function SavedContentPage() {
     });
   }, []);
 
-  // Fix: Ensure this function PROPERLY returns a Promise<void>
+  // Version asynchrone de handleRefresh
   const handleRefresh = useCallback(async (): Promise<void> => {
     if (!isRefreshing) {
-      return fetchContent();
+      try {
+        const refreshedContent = await fetchContent();
+        console.log(`Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
+      } catch (error) {
+        console.error("Erreur lors du rafraîchissement:", error);
+      }
+      return Promise.resolve();
     }
     return Promise.resolve();
   }, [fetchContent, isRefreshing]);
 
-  // Nettoyer les ressources lors du démontage
+  // Nettoyer les ressources uniquement lors du démontage
   useEffect(() => {
     return () => {
-      isMounted.current = false;
+      console.log("Nettoyage lors du démontage de SavedContentPage");
       cleanup?.();
     };
   }, [cleanup]);
 
-  // Journalisation de l'état d'authentification
-  useEffect(() => {
-    console.log("SavedContentPage monté - l'état d'authentification:", { 
-      authReady, 
-      user: user ? "connecté" : "non connecté" 
-    });
-  }, [authReady, user]);
-
-  if (isLoading && !isRefreshing) {
+  // Afficher le chargement seulement lors du chargement initial
+  if (isLoading && !isRefreshing && stableContent.length === 0) {
     return <SavedContentLoader activeTab={activeTab} />;
   }
 
@@ -200,7 +221,7 @@ export default function SavedContentPage() {
           </div>
         ) : (
           <SavedContentList
-            content={content}
+            content={stableContent}
             onItemSelect={(item) => {
               setSelectedContent(item);
               setIsPreviewOpen(true);
@@ -222,7 +243,7 @@ export default function SavedContentPage() {
         isOpen={deleteDialog.isOpen}
         onOpenChange={(isOpen) => setDeleteDialog(prev => ({ ...prev, isOpen }))}
         onDelete={() => {
-          const item = content.find(item => item.id === deleteDialog.itemId);
+          const item = stableContent.find(item => item.id === deleteDialog.itemId);
           if (item) {
             handleDelete(deleteDialog.itemId, item.type);
             setDeleteDialog(prev => ({ ...prev, isOpen: false }));
