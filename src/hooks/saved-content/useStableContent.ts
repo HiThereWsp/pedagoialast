@@ -12,9 +12,16 @@ export function useStableContent() {
   const isInitialLoad = useRef(true);
   const previousContentRef = useRef<SavedContent[]>([]);
   const contentUpdateCount = useRef<number>(0);
+  const pendingUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Fonction pour mettre à jour le contenu de manière stable
   const updateContent = useCallback((newContent: SavedContent[]) => {
+    // Nettoyer tout timer en attente
+    if (pendingUpdateTimer.current) {
+      clearTimeout(pendingUpdateTimer.current);
+      pendingUpdateTimer.current = null;
+    }
+    
     // Log détaillé de l'opération de mise à jour
     console.log("📊 useStableContent.updateContent: Tentative de mise à jour du contenu stable", {
       nouveauxElements: newContent.length,
@@ -23,16 +30,36 @@ export function useStableContent() {
       miseAJourCount: contentUpdateCount.current
     });
     
-    // CORRECTION: Si le contenu est vide et que ce n'est pas le chargement initial, 
-    // on ne met pas à jour pour éviter les flashs, sauf si on n'a pas encore de contenu
+    // AMÉLIORATION: Si le nouveau contenu est vide et que nous avons déjà du contenu, ne pas écraser 
+    // le contenu existant immédiatement, attendre un peu pour voir si d'autres mises à jour arrivent
     if (newContent.length === 0 && !isInitialLoad.current && stableContent.length > 0) {
-      console.log("⚠️ Ignoré la mise à jour avec un tableau vide pour éviter les flashs");
+      console.log("⏱️ Contenu vide reçu mais contenu existant préservé temporairement");
+      
+      // Attendre 3 secondes avant de considérer que le contenu est vraiment vide
+      pendingUpdateTimer.current = setTimeout(() => {
+        // Vérifier une dernière fois si l'état est toujours le même
+        console.log("⏱️ Délai d'attente écoulé pour la validation du contenu vide");
+        
+        // Vérifier si on a reçu une mise à jour entre temps
+        const hasChanges = hasContentChanged(previousContentRef.current, newContent);
+        
+        if (hasChanges) {
+          console.log("✅ Mise à jour du contenu stable avec contenu vide après délai");
+          contentUpdateCount.current += 1;
+          setStableContent(newContent);
+          previousContentRef.current = newContent;
+          contentTimestamp.current = Date.now();
+        } else {
+          console.log("⚠️ Ignoré la mise à jour avec un tableau vide après délai");
+        }
+      }, 3000);
+      
       return;
     }
 
     const currentTime = Date.now();
     
-    // N'appliquer la mise à jour que si:
+    // Cas de figure où on applique la mise à jour immédiatement:
     // - C'est le chargement initial (pour avoir des données au départ)
     // - Ou si le contenu n'est pas vide
     // - Ou si au moins 2 secondes se sont écoulées depuis la dernière mise à jour
@@ -58,8 +85,29 @@ export function useStableContent() {
     }
   }, [stableContent.length]);
 
-  // Vérifie si le contenu a changé en comparant les IDs
+  // Nettoyer les ressources lors du démontage
+  useEffect(() => {
+    return () => {
+      if (pendingUpdateTimer.current) {
+        clearTimeout(pendingUpdateTimer.current);
+        pendingUpdateTimer.current = null;
+      }
+    };
+  }, []);
+
+  // Vérifie si le contenu a changé en comparant les IDs et autres propriétés
   const hasContentChanged = (oldContent: SavedContent[], newContent: SavedContent[]): boolean => {
+    // Si l'un des tableaux est vide et l'autre non, il y a un changement
+    if (!oldContent.length && newContent.length) {
+      console.log("🔄 Changement détecté: ancien contenu vide, nouveau contenu présent");
+      return true;
+    }
+    
+    if (oldContent.length && !newContent.length) {
+      console.log("🔄 Changement détecté: ancien contenu présent, nouveau contenu vide");
+      return true;
+    }
+    
     if (oldContent.length !== newContent.length) {
       console.log("🔄 Changement détecté: nombre d'éléments différent");
       return true;
@@ -99,8 +147,29 @@ export function useStableContent() {
       }
     }
     
+    // AMÉLIORATION: Vérifier les dates de mise à jour pour détecter les modifications
+    for (let i = 0; i < oldContent.length; i++) {
+      const oldItem = oldContent[i];
+      const newItem = newContent.find(item => item.id === oldItem.id);
+      
+      if (newItem && oldItem.updated_at !== newItem.updated_at) {
+        console.log(`🔄 Changement détecté: élément ${oldItem.id} modifié`);
+        return true;
+      }
+    }
+    
     return false;
   };
 
-  return { stableContent, updateContent };
+  // Force le rafraîchissement du contenu
+  const forceRefresh = useCallback(() => {
+    console.log("🔄 Forçage de la mise à jour du contenu stable");
+    isInitialLoad.current = true;
+  }, []);
+
+  return { 
+    stableContent, 
+    updateContent,
+    forceRefresh
+  };
 }

@@ -28,10 +28,12 @@ export default function SavedContentPage() {
   });
   
   const didInitialFetch = useRef(false);
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const waitTimeRef = useRef(0);
   const { toast } = useToast();
 
   // Use stable content hook to prevent unnecessary rerenders
-  const { stableContent, updateContent } = useStableContent();
+  const { stableContent, updateContent, forceRefresh } = useStableContent();
 
   const {
     content,
@@ -40,16 +42,41 @@ export default function SavedContentPage() {
     isRefreshing,
     fetchContent,
     handleDelete,
-    cleanup
+    cleanup,
+    invalidateCache
   } = useSavedContentManagement();
 
   // Update stable content when content changes
   useEffect(() => {
-    if (content && content.length > 0) {
-      console.log(`📊 SavedContentPage: Mise à jour du contenu stable avec ${content.length} éléments`);
-      updateContent(content);
-    }
+    console.log(`📊 SavedContentPage: Analyse de la mise à jour du contenu: ${content.length} éléments`);
+    updateContent(content);
   }, [content, updateContent]);
+
+  // Mettre en place un timer pour incrémenter le temps d'attente
+  useEffect(() => {
+    if (isRefreshing || isLoading) {
+      // Réinitialiser le compteur au début du chargement
+      waitTimeRef.current = 0;
+      
+      // Incrémenter le temps d'attente toutes les secondes
+      loadingTimeoutRef.current = setInterval(() => {
+        waitTimeRef.current += 1;
+      }, 1000);
+    } else {
+      // Arrêter le timer quand le chargement est terminé
+      if (loadingTimeoutRef.current) {
+        clearInterval(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
+      }
+    }
+    
+    return () => {
+      if (loadingTimeoutRef.current) {
+        clearInterval(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
+      }
+    };
+  }, [isRefreshing, isLoading]);
 
   // Load data once after authentication
   useEffect(() => {
@@ -57,15 +84,25 @@ export default function SavedContentPage() {
       console.log("📥 SavedContentPage: Chargement initial des données...");
       didInitialFetch.current = true;
       
+      // Forcer le rafraîchissement du contenu stable
+      forceRefresh();
+      
       fetchContent().then(data => {
         console.log(`✅ SavedContentPage: Chargement initial terminé: ${data.length} éléments chargés`);
+        
         if (data.length === 0) {
           // Si aucun contenu n'est trouvé au premier chargement, on tente un rechargement forcé
           console.log("🔄 SavedContentPage: Aucun contenu trouvé, tentative de rechargement forcé");
+          
+          // Invalider le cache pour forcer une requête fraîche
+          invalidateCache();
+          
           setTimeout(() => {
             fetchContent().then(refreshedData => {
               console.log(`📊 SavedContentPage: Rechargement forcé terminé: ${refreshedData.length} éléments`);
+              
               if (refreshedData.length === 0) {
+                // Un double rechargement n'a rien donné, on notifie l'utilisateur
                 toast({
                   description: "Aucun contenu trouvé. Créez votre premier contenu !",
                 });
@@ -77,13 +114,23 @@ export default function SavedContentPage() {
         console.error("❌ SavedContentPage: Erreur lors du chargement initial:", err);
       });
     }
-  }, [fetchContent, toast]);
+  }, [fetchContent, toast, forceRefresh, invalidateCache]);
 
   // Async handleRefresh - fixes TypeScript error
   const handleRefresh = useCallback(async (): Promise<void> => {
     if (!isRefreshing) {
       try {
         console.log("🔄 SavedContentPage: Lancement du rafraîchissement...");
+        
+        // Invalider le cache pour forcer une requête fraîche si on a déjà échoué
+        if (stableContent.length === 0) {
+          console.log("🧹 SavedContentPage: Invalidation du cache avant rafraîchissement");
+          invalidateCache();
+        }
+        
+        // Forcer le rafraîchissement du contenu stable
+        forceRefresh();
+        
         const refreshedContent = await fetchContent();
         console.log(`✅ SavedContentPage: Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
         
@@ -100,7 +147,7 @@ export default function SavedContentPage() {
       }
     }
     return Promise.resolve();
-  }, [fetchContent, isRefreshing, toast, stableContent.length]);
+  }, [fetchContent, isRefreshing, toast, stableContent.length, invalidateCache, forceRefresh]);
 
   const handleItemSelect = useCallback((item: SavedContent) => {
     setSelectedContent(item);
@@ -140,6 +187,12 @@ export default function SavedContentPage() {
   useEffect(() => {
     return () => {
       console.log("🧹 SavedContentPage: Nettoyage lors du démontage");
+      
+      if (loadingTimeoutRef.current) {
+        clearInterval(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
+      }
+      
       cleanup?.();
     };
   }, [cleanup]);
@@ -196,7 +249,7 @@ export default function SavedContentPage() {
         />
 
         {isRefreshing ? (
-          <RefreshIndicator />
+          <RefreshIndicator waitTime={waitTimeRef.current} />
         ) : stableContent.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-balance font-bold text-gray-700 dark:text-gray-300 mb-2 tracking-tight">

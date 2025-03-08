@@ -12,12 +12,14 @@ export function useSavedContentManagement() {
   const fetchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialFetchDone = useRef(false);
   const errorRetryCount = useRef(0);
+  const refreshAttempts = useRef(0);
   
   const { user, authReady } = useAuth();
   
   const {
     fetchContent,
     cancelFetch,
+    invalidateCache,
     errors: fetchErrors,
     isLoading,
     isRefreshing,
@@ -42,7 +44,7 @@ export function useSavedContentManagement() {
         fetchTimeoutRef.current = null;
       }
       
-      // Annuler les requêtes en cours
+      // Annuler les requêtes en cours mais sans perdre les données
       cancelFetch();
       
       // Nettoyer les ressources des hooks dépendants
@@ -68,34 +70,37 @@ export function useSavedContentManagement() {
       
       try {
         console.log("📥 Début du chargement initial...");
-        const initialContent = await fetchContent();
+        // Forcer le rafraîchissement au chargement initial pour s'assurer d'avoir les données fraîches
+        const initialContent = await fetchContent({ forceRefresh: true });
         
         if (!didUnmount.current) {
           console.log(`📊 Chargement initial terminé: ${initialContent.length} éléments`);
-          if (initialContent.length > 0) {
-            console.log("✅ Mise à jour du state avec les données initiales");
-            setContent(initialContent);
-          } else {
-            console.log("⚠️ Aucun contenu reçu lors du chargement initial");
-            // Si pas de contenu au premier chargement, on réessaye une fois
-            if (errorRetryCount.current === 0) {
-              errorRetryCount.current++;
-              console.log("🔄 Tentative de rechargement automatique...");
-              // Attendre un peu plus longtemps avant de réessayer
-              fetchTimeoutRef.current = setTimeout(() => {
-                console.log("🔄 Exécution du rechargement automatique");
-                fetchContent({ forceRefresh: true })
-                  .then(retryContent => {
-                    if (!didUnmount.current && retryContent.length > 0) {
-                      console.log(`✅ Rechargement réussi: ${retryContent.length} éléments`);
-                      setContent(retryContent);
-                    }
-                  })
-                  .catch(error => {
-                    console.error("❌ Échec du rechargement automatique:", error);
-                  });
-              }, REQUEST_COOLDOWN * 2);
-            }
+          
+          // AMÉLIORATION: Toujours mettre à jour le state, même si le contenu est vide
+          setContent(initialContent);
+          
+          // Si pas de contenu au premier chargement, on réessaye une fois après un délai
+          if (initialContent.length === 0 && errorRetryCount.current < 2) {
+            errorRetryCount.current++;
+            console.log(`🔄 Tentative de rechargement automatique (${errorRetryCount.current}/2)...`);
+            
+            // Attendre un peu plus longtemps avant de réessayer
+            fetchTimeoutRef.current = setTimeout(async () => {
+              console.log("🔄 Exécution du rechargement automatique");
+              try {
+                // Invalider le cache pour forcer une requête fraîche
+                invalidateCache();
+                
+                const retryContent = await fetchContent({ forceRefresh: true });
+                
+                if (!didUnmount.current) {
+                  console.log(`✅ Rechargement réussi: ${retryContent.length} éléments`);
+                  setContent(retryContent);
+                }
+              } catch (error) {
+                console.error("❌ Échec du rechargement automatique:", error);
+              }
+            }, REQUEST_COOLDOWN * 2);
           }
         }
       } catch (error) {
@@ -108,7 +113,7 @@ export function useSavedContentManagement() {
       console.log("⏱️ Configuration du délai pour le chargement initial");
       fetchTimeoutRef.current = setTimeout(loadInitialContent, REQUEST_COOLDOWN);
     }
-  }, [authReady, user, fetchContent, hasLoadedData]);
+  }, [authReady, user, fetchContent, hasLoadedData, invalidateCache]);
 
   // Fonction pour récupérer les données avec un rafraîchissement forcé
   const refreshContent = useCallback(async (): Promise<SavedContent[]> => {
@@ -116,14 +121,25 @@ export function useSavedContentManagement() {
     
     try {
       console.log("🔄 Rafraîchissement forcé du contenu...");
+      // Augmenter le compteur de tentatives
+      refreshAttempts.current += 1;
+      
+      // Si plusieurs tentatives échouent, invalider le cache pour forcer une requête fraîche
+      if (refreshAttempts.current > 1) {
+        console.log(`🧹 Invalidation du cache après ${refreshAttempts.current} tentatives`);
+        invalidateCache();
+      }
+      
       const newContent = await fetchContent({ forceRefresh: true });
       
       if (!didUnmount.current) {
+        console.log(`✅ Rafraîchissement réussi: ${newContent.length} éléments`);
+        // AMÉLIORATION: Toujours mettre à jour le state, même si le contenu est vide
+        setContent(newContent);
+        
+        // Réinitialiser le compteur de tentatives après un succès
         if (newContent.length > 0) {
-          console.log(`✅ Rafraîchissement réussi: ${newContent.length} éléments`);
-          setContent(newContent);
-        } else {
-          console.log("⚠️ Aucun nouveau contenu reçu lors du rafraîchissement");
+          refreshAttempts.current = 0;
         }
       }
       
@@ -132,7 +148,7 @@ export function useSavedContentManagement() {
       console.error("❌ Erreur lors du rafraîchissement du contenu:", error);
       return [];
     }
-  }, [fetchContent]);
+  }, [fetchContent, invalidateCache]);
 
   // Gestionnaire de suppression avec mise à jour de l'état local
   const handleContentDelete = useCallback(async (id: string, type: SavedContent['type']): Promise<void> => {
@@ -147,8 +163,11 @@ export function useSavedContentManagement() {
     if (success && !didUnmount.current) {
       console.log("✅ Suppression réussie, mise à jour du state local");
       setContent(prev => prev.filter(item => item.id !== id));
+      
+      // Après une suppression réussie, on invalide le cache pour s'assurer de la cohérence
+      invalidateCache();
     }
-  }, [handleDelete]);
+  }, [handleDelete, invalidateCache]);
 
   // Combiner les erreurs des différents hooks
   const errors = {
@@ -163,6 +182,7 @@ export function useSavedContentManagement() {
     isRefreshing,
     fetchContent: refreshContent,
     handleDelete: handleContentDelete,
-    cleanup: cancelFetch
+    cleanup: cancelFetch,
+    invalidateCache
   };
 }
