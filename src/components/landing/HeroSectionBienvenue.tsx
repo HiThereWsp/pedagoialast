@@ -31,7 +31,7 @@ export function HeroSectionBienvenue() {
           </h1>
           
           <h2 className="text-2xl md:text-3xl mb-6">
-            L'IA qui t'aide à <DynamicText /> en quelques clics
+            Des outils IA conçus pour <DynamicText /> en quelques clics
           </h2>
           
           <p className="text-lg md:text-xl text-muted-foreground mb-12">

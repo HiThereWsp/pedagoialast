@@ -5,7 +5,9 @@ const phrases = [
   "planifier",
   "différencier",
   "générer",
-  "évaluer"
+  "évaluer",
+  "communiquer",
+  "gagner du temps"
 ]
 
 export const DynamicText = () => {
