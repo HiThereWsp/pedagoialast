@@ -1,8 +1,6 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 
@@ -11,61 +9,37 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const location = useLocation();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading, authReady } = useAuth();
 
+  // Journalisation améliorée pour le débogage
   useEffect(() => {
-    let mounted = true;
-    
-    const checkSession = async () => {
-      if (!user) {
-        try {
-          setIsLoading(true);
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
-          if (error && mounted) {
-            toast({
-              variant: "destructive",
-              title: "Erreur de session",
-              description: "Veuillez vous reconnecter.",
-            });
-          }
-        } catch (error) {
-          if (mounted) {
-            toast({
-              variant: "destructive",
-              title: "Erreur d'authentification",
-              description: "Une erreur est survenue, veuillez vous reconnecter.",
-            });
-          }
-        } finally {
-          if (mounted) {
-            setIsLoading(false);
-          }
-        }
-      }
-    };
+    console.log("ProtectedRoute - État d'authentification:", { 
+      user: user ? "connecté" : "non connecté", 
+      loading, 
+      authReady,
+      path: location.pathname
+    });
+  }, [user, loading, authReady, location.pathname]);
 
-    checkSession();
-
-    return () => {
-      mounted = false;
-    };
-  }, [toast, user]);
-
-  if (authLoading || isLoading) {
+  // État de chargement initial, on affiche un indicateur de chargement
+  if (loading || !authReady) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <LoadingIndicator />
+        <div className="flex flex-col items-center gap-4">
+          <LoadingIndicator />
+          <p className="text-sm text-gray-500">Vérification de l'authentification...</p>
+        </div>
       </div>
     );
   }
 
-  if (!user) {
+  // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, rediriger vers la page de connexion
+  if (!user && authReady) {
+    console.log("Utilisateur non authentifié, redirection vers /login");
     return <Navigate to="/login" state={{ returnUrl: location.pathname }} replace />;
   }
 
+  // Si l'utilisateur est authentifié, afficher le contenu protégé
   return <>{children}</>;
 };

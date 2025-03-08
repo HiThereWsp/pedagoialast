@@ -1,8 +1,9 @@
-import { useState } from "react";
+
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSavedContent } from "@/hooks/useSavedContent";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { SavedContent } from "@/types/saved-content";
-import type { ImageGenerationUsage } from "@/types/saved-content";
 
 export function useSavedContentManagement() {
   const [content, setContent] = useState<SavedContent[]>([]);
@@ -13,6 +14,11 @@ export function useSavedContentManagement() {
     images?: string;
     delete?: string;
   }>({});
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const fetchInProgress = useRef(false);
+  const retryCount = useRef(0);
+  const MAX_RETRIES = 3;
 
   const {
     isLoadingExercises,
@@ -27,16 +33,61 @@ export function useSavedContentManagement() {
     deleteSavedLessonPlan,
     deleteSavedCorrespondence,
   } = useSavedContent();
+  
   const { toast } = useToast();
+  const { user, authReady } = useAuth();
 
-  const fetchContent = async () => {
+  const fetchContent = useCallback(async (forceRefresh = false) => {
+    // Éviter les appels concurrents
+    if (fetchInProgress.current && !forceRefresh) {
+      console.log("Récupération des données déjà en cours, ignorer cette demande");
+      return;
+    }
+
+    if (!user && authReady) {
+      console.log("Aucun utilisateur connecté, abandon du chargement des données");
+      setIsLoadingInitial(false);
+      return;
+    }
+
     try {
+      fetchInProgress.current = true;
+      
+      if (forceRefresh) {
+        setIsRefreshing(true);
+      }
+
+      console.log("Début de la récupération des contenus sauvegardés...");
+      
       const [exercises, lessonPlans, correspondences, images] = await Promise.all([
-        getSavedExercises(),
-        getSavedLessonPlans(),
-        getSavedCorrespondences(),
-        getSavedImages()
+        getSavedExercises().catch(err => {
+          console.error("Erreur lors de la récupération des exercices:", err);
+          setErrors(prev => ({ ...prev, exercises: "Impossible de charger les exercices" }));
+          return [];
+        }),
+        getSavedLessonPlans().catch(err => {
+          console.error("Erreur lors de la récupération des plans de leçon:", err);
+          setErrors(prev => ({ ...prev, lessonPlans: "Impossible de charger les séquences" }));
+          return [];
+        }),
+        getSavedCorrespondences().catch(err => {
+          console.error("Erreur lors de la récupération des correspondances:", err);
+          setErrors(prev => ({ ...prev, correspondences: "Impossible de charger les correspondances" }));
+          return [];
+        }),
+        getSavedImages().catch(err => {
+          console.error("Erreur lors de la récupération des images:", err);
+          setErrors(prev => ({ ...prev, images: "Impossible de charger les images" }));
+          return [];
+        })
       ]);
+
+      console.log("Données récupérées:", {
+        exercises: exercises?.length || 0,
+        lessonPlans: lessonPlans?.length || 0,
+        correspondences: correspondences?.length || 0,
+        images: images?.length || 0
+      });
 
       setErrors(prev => ({ 
         ...prev, 
@@ -129,16 +180,51 @@ export function useSavedContentManagement() {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       ));
 
+      // Réinitialiser le compteur de tentatives en cas de succès
+      retryCount.current = 0;
+
     } catch (err) {
       console.error("Erreur lors du chargement des contenus:", err);
+      
+      // Gestion des tentatives
+      if (retryCount.current < MAX_RETRIES) {
+        retryCount.current += 1;
+        console.log(`Nouvelle tentative ${retryCount.current}/${MAX_RETRIES} dans 1 seconde...`);
+        
+        // Attendre un peu avant de réessayer
+        setTimeout(() => {
+          fetchContent(true);
+        }, 1000);
+        
+        return;
+      }
+      
       if (err instanceof Error) {
         setErrors(prev => ({
           ...prev,
           images: "Une erreur est survenue lors du chargement de vos contenus"
         }));
+        
+        toast({
+          variant: "destructive",
+          title: "Erreur de chargement",
+          description: "Impossible de charger vos contenus. Veuillez réessayer ultérieurement."
+        });
       }
+    } finally {
+      fetchInProgress.current = false;
+      setIsLoadingInitial(false);
+      setIsRefreshing(false);
     }
-  };
+  }, [getSavedExercises, getSavedLessonPlans, getSavedCorrespondences, getSavedImages, toast, user, authReady]);
+
+  // Charger le contenu une fois l'authentification terminée
+  useEffect(() => {
+    if (authReady) {
+      console.log("Auth ready, chargement des données...");
+      fetchContent();
+    }
+  }, [authReady, fetchContent]);
 
   const handleDelete = async (id: string, type: SavedContent['type']) => {
     if (!id || !type) {
@@ -174,7 +260,8 @@ export function useSavedContentManagement() {
           return;
       }
       
-      await fetchContent();
+      // Mettre à jour le contenu après la suppression
+      await fetchContent(true);
     } catch (err) {
       const typeLabel = {
         'exercise': "l'exercice",
@@ -194,8 +281,9 @@ export function useSavedContentManagement() {
   return {
     content,
     errors,
-    isLoading: isLoadingExercises || isLoadingLessonPlans || isLoadingCorrespondences || isLoadingImages,
-    fetchContent,
+    isLoading: isLoadingInitial || isLoadingExercises || isLoadingLessonPlans || isLoadingCorrespondences || isLoadingImages,
+    isRefreshing,
+    fetchContent: () => fetchContent(true), // Force refresh when called manually
     handleDelete
   };
 }

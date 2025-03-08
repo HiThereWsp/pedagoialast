@@ -11,8 +11,9 @@ import { useSavedContentManagement } from "@/hooks/useSavedContentManagement";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/settings/BackButton";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const tabs = [
   {
@@ -56,18 +57,16 @@ export default function SavedContentPage() {
   });
 
   const navigate = useNavigate();
+  const { authReady } = useAuth();
 
   const {
     content,
     errors,
     isLoading,
+    isRefreshing,
     fetchContent,
     handleDelete
   } = useSavedContentManagement();
-
-  useEffect(() => {
-    fetchContent();
-  }, []);
 
   const getCurrentTab = () => {
     return tabs.find(tab => tab.id === activeTab);
@@ -89,15 +88,32 @@ export default function SavedContentPage() {
     });
   };
 
-  if (isLoading) {
+  const handleRefresh = () => {
+    fetchContent();
+  };
+
+  if (isLoading && !isRefreshing) {
     return <SavedContentLoader />;
   }
 
   if (errors.exercises || errors.lessonPlans || errors.correspondences) {
     return (
-      <SavedContentError 
-        error={errors.exercises || errors.lessonPlans || errors.correspondences || ""}
-      />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-4">
+          <BackButton />
+        </div>
+        
+        <SavedContentError 
+          error={errors.exercises || errors.lessonPlans || errors.correspondences || ""}
+        />
+        
+        <div className="mt-6 flex justify-center">
+          <Button onClick={handleRefresh} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Réessayer
+          </Button>
+        </div>
+      </div>
     );
   }
 
@@ -113,19 +129,31 @@ export default function SavedContentPage() {
           <BackButton />
         </div>
         
-        <div className="flex items-center justify-between mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
             Mes ressources
           </h1>
           
-          <Button 
-            onClick={handleCreate}
-            className="bg-gradient-to-r from-[#FFDD00] via-[#FFA800] to-[#FF7A00] hover:opacity-90 text-white shadow-sm"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            <span className="hidden sm:inline">{getCurrentTab()?.buttonText}</span>
-            <span className="sm:hidden">Créer</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              size="icon"
+              className="rounded-full"
+              disabled={isRefreshing}
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </Button>
+            
+            <Button 
+              onClick={handleCreate}
+              className="bg-gradient-to-r from-[#FFDD00] via-[#FFA800] to-[#FF7A00] hover:opacity-90 text-white shadow-sm"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              <span className="hidden sm:inline">{getCurrentTab()?.buttonText}</span>
+              <span className="sm:hidden">Créer</span>
+            </Button>
+          </div>
         </div>
 
         <Tabs 
@@ -147,15 +175,24 @@ export default function SavedContentPage() {
           </TabsList>
         </Tabs>
 
-        <SavedContentList
-          content={content}
-          onItemSelect={(item) => {
-            setSelectedContent(item);
-            setIsPreviewOpen(true);
-          }}
-          selectedItemId={selectedContent?.id}
-          activeTab={activeTab}
-        />
+        {isRefreshing ? (
+          <div className="flex items-center justify-center py-10">
+            <div className="flex flex-col items-center">
+              <RefreshCw className="h-10 w-10 animate-spin text-[#FFA800] mb-4" />
+              <p className="text-gray-500">Actualisation des données...</p>
+            </div>
+          </div>
+        ) : (
+          <SavedContentList
+            content={content}
+            onItemSelect={(item) => {
+              setSelectedContent(item);
+              setIsPreviewOpen(true);
+            }}
+            selectedItemId={selectedContent?.id}
+            activeTab={activeTab}
+          />
+        )}
       </div>
 
       <ContentPreviewSheet
