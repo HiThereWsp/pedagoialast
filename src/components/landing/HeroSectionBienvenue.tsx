@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -6,7 +5,7 @@ import { DynamicText } from "@/components/landing/DynamicText";
 import { Tiles } from "@/components/ui/tiles";
 export function HeroSectionBienvenue() {
   return <section className="relative min-h-screen flex items-center overflow-hidden bg-white">
-      <div className="absolute inset-0 opacity-20">
+      <div className="absolute inset-0 opacity-25">
         <Tiles rows={50} cols={8} tileSize="md" />
       </div>
       
