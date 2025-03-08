@@ -28,6 +28,7 @@ interface PricingCardProps {
   onSubscribe?: () => void
   ctaText?: string
   CustomCTA?: ReactNode
+  originalPrice?: string
 }
 
 export const PricingCard = ({
@@ -41,7 +42,8 @@ export const PricingCard = ({
   isPremium,
   onSubscribe,
   ctaText,
-  CustomCTA
+  CustomCTA,
+  originalPrice
 }: PricingCardProps) => {
   return (
     <Card className={`p-8 relative ${
@@ -64,8 +66,11 @@ export const PricingCard = ({
       <div>
         <h3 className="text-2xl font-bold mb-2">{title}</h3>
         <div className="flex items-baseline gap-2">
+          {originalPrice && (
+            <span className="text-lg font-medium line-through text-muted-foreground">{originalPrice}</span>
+          )}
           <span className="text-4xl font-bold">{price}</span>
-          {period && <span className="text-muted-foreground">{period}</span>}
+          {period && <span className="text-lg text-muted-foreground">{period}</span>}
         </div>
         {yearlyPrice && (
           <p className="text-sm text-primary mt-2">

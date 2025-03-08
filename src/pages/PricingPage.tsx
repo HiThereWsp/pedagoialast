@@ -82,14 +82,14 @@ const PricingPage = () => {
               "Utilisation illimitée de tous les outils",
               "+14h économisées /semaine"
             ]}
-            ctaText="Découvrir l'assistant maintenant"
+            ctaText="Démarrer l'essai gratuit"
             onSubscribe={handleMonthlySubscription}
           />
           <PricingCard
             title="Plan annuel"
-            price="9€"
-            period="/mois"
-            badge="3 mois gratuits offerts"
+            price="94,20€"
+            originalPrice="142,80€"
+            badge="4 mois offerts"
             isPremium
             features={[
               "Tous les avantages du plan mensuel",
@@ -97,7 +97,7 @@ const PricingPage = () => {
               "Recevez les mises à jour à l'avance",
               "Accès à la communauté privée d'enseignants 3.0"
             ]}
-            ctaText="Profiter de l'offre spéciale"
+            ctaText="Démarrer l'essai gratuit"
             onSubscribe={handleYearlySubscription}
           />
           <PricingCard
@@ -111,8 +111,6 @@ const PricingPage = () => {
             ]}
             ctaText="Demander un devis"
             onSubscribe={() => {}}
-            // La propriété withDialog n'est pas dans le type, on la supprime
-            // et on utilisera le triggerText pour PricingFormDialog
           />
         </div>
         <PricingFormDialog 
