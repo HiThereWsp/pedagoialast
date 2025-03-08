@@ -1,9 +1,11 @@
+
 import React from 'react';
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
 export function TestimonialMainSection() {
   return <section className="container mx-auto px-4 py-16 border-t border-gray-200">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-blue-50 p-8 rounded-lg shadow-premium hover:shadow-premium-lg transition-all duration-300">
+        <div className="bg-search-light p-8 rounded-lg shadow-premium hover:shadow-premium-lg transition-all duration-300 border border-purple-100">
           <div className="flex flex-col md:flex-row items-start gap-6">
             
             <div>
