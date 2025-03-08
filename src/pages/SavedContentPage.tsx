@@ -90,8 +90,8 @@ export default function SavedContentPage() {
     });
   }, []);
 
-  // Fix: Ensure this function returns a Promise<void>
-  const handleRefresh = useCallback((): Promise<void> => {
+  // Fix: Ensure this function PROPERLY returns a Promise<void>
+  const handleRefresh = useCallback(async (): Promise<void> => {
     if (!isRefreshing) {
       return fetchContent();
     }
