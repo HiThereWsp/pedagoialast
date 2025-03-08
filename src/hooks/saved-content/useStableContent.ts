@@ -11,13 +11,22 @@ export function useStableContent() {
   const contentTimestamp = useRef<number>(0);
   const isInitialLoad = useRef(true);
   const previousContentRef = useRef<SavedContent[]>([]);
+  const contentUpdateCount = useRef<number>(0);
 
   // Fonction pour mettre à jour le contenu de manière stable
   const updateContent = useCallback((newContent: SavedContent[]) => {
-    // Si le contenu est vide et que ce n'est pas le chargement initial, 
-    // on ne met pas à jour pour éviter les flashs
+    // Log détaillé de l'opération de mise à jour
+    console.log("📊 useStableContent.updateContent: Tentative de mise à jour du contenu stable", {
+      nouveauxElements: newContent.length,
+      elementsExistants: stableContent.length,
+      estChargementInitial: isInitialLoad.current,
+      miseAJourCount: contentUpdateCount.current
+    });
+    
+    // CORRECTION: Si le contenu est vide et que ce n'est pas le chargement initial, 
+    // on ne met pas à jour pour éviter les flashs, sauf si on n'a pas encore de contenu
     if (newContent.length === 0 && !isInitialLoad.current && stableContent.length > 0) {
-      console.log("Ignoré la mise à jour avec un tableau vide pour éviter les flashs");
+      console.log("⚠️ Ignoré la mise à jour avec un tableau vide pour éviter les flashs");
       return;
     }
 
@@ -35,22 +44,40 @@ export function useStableContent() {
       const hasChanges = hasContentChanged(previousContentRef.current, newContent);
       
       if (hasChanges || isInitialLoad.current) {
-        console.log(`Mise à jour du contenu stable (${newContent.length} éléments)`);
+        console.log(`✅ Mise à jour du contenu stable (${newContent.length} éléments)`);
+        contentUpdateCount.current += 1;
         setStableContent(newContent);
         previousContentRef.current = newContent;
         contentTimestamp.current = currentTime;
         isInitialLoad.current = false;
       } else {
-        console.log("Contenu inchangé, pas de mise à jour");
+        console.log("ℹ️ Contenu inchangé, pas de mise à jour");
       }
     } else {
-      console.log("Délai minimum non respecté, mise à jour ignorée");
+      console.log("⏱️ Délai minimum non respecté, mise à jour ignorée");
     }
   }, [stableContent.length]);
 
   // Vérifie si le contenu a changé en comparant les IDs
   const hasContentChanged = (oldContent: SavedContent[], newContent: SavedContent[]): boolean => {
-    if (oldContent.length !== newContent.length) return true;
+    if (oldContent.length !== newContent.length) {
+      console.log("🔄 Changement détecté: nombre d'éléments différent");
+      return true;
+    }
+    
+    // AMÉLIORATION: Vérifier aussi le nombre d'éléments par type pour une détection plus précise
+    const countByType = (content: SavedContent[], type: string) => 
+      content.filter(item => item.type === type).length;
+    
+    const types = ['lesson-plan', 'exercise', 'Image', 'correspondence'];
+    for (const type of types) {
+      const oldCount = countByType(oldContent, type);
+      const newCount = countByType(newContent, type);
+      if (oldCount !== newCount) {
+        console.log(`🔄 Changement détecté: nombre d'éléments de type ${type} différent (${oldCount} → ${newCount})`);
+        return true;
+      }
+    }
     
     // Créer des ensembles d'IDs pour une comparaison rapide
     const oldIds = new Set(oldContent.map(item => item.id));
@@ -58,12 +85,18 @@ export function useStableContent() {
     
     // Vérifier si tous les IDs du nouveau contenu sont dans l'ancien
     for (const id of newIds) {
-      if (!oldIds.has(id)) return true;
+      if (!oldIds.has(id)) {
+        console.log(`🔄 Changement détecté: nouvel élément ${id}`);
+        return true;
+      }
     }
     
     // Vérifier si tous les IDs de l'ancien contenu sont dans le nouveau
     for (const id of oldIds) {
-      if (!newIds.has(id)) return true;
+      if (!newIds.has(id)) {
+        console.log(`🔄 Changement détecté: élément supprimé ${id}`);
+        return true;
+      }
     }
     
     return false;

@@ -38,7 +38,7 @@ export function useFetchContent() {
 
   const cancelFetch = useCallback(() => {
     if (abortControllerRef.current) {
-      console.log("Annulation d'une requête en cours");
+      console.log("🛑 Annulation d'une requête en cours");
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
@@ -53,7 +53,7 @@ export function useFetchContent() {
     
     // Si moins de X secondes se sont écoulées depuis la dernière requête
     if (elapsed < MIN_REQUEST_INTERVAL) {
-      console.log(`Requête trop rapide (${elapsed}ms depuis la dernière). Attendre ${MIN_REQUEST_INTERVAL}ms minimum.`);
+      console.log(`⏱️ Requête trop rapide (${elapsed}ms depuis la dernière). Attendre ${MIN_REQUEST_INTERVAL}ms minimum.`);
       return true;
     }
     
@@ -61,30 +61,39 @@ export function useFetchContent() {
   }, []);
 
   const fetchContent = useCallback(async ({ forceRefresh = false, signal }: FetchConfig = {}): Promise<SavedContent[]> => {
+    // 📋 DEBUG: Vérification de l'état d'authentification
+    console.log("📋 DEBUG: État d'authentification avant fetchContent", { 
+      user: user ? "connecté" : "non connecté", 
+      userID: user?.id,
+      authReady, 
+      cacheSize: cachedContentRef.current.length
+    });
+    
     // Si nous avons des données en cache et ce n'est pas un rafraîchissement forcé, retourner le cache
     if (cachedContentRef.current.length > 0 && !forceRefresh) {
-      console.log(`Utilisation du cache: ${cachedContentRef.current.length} éléments`);
+      console.log(`🔄 Utilisation du cache: ${cachedContentRef.current.length} éléments`);
       return cachedContentRef.current;
     }
     
     // Si l'utilisateur n'est pas authentifié ou le processus d'authentification n'est pas terminé
     if (!user && authReady) {
-      console.log("Aucun utilisateur connecté, abandon du chargement");
+      console.log("❌ Aucun utilisateur connecté, abandon du chargement");
       setIsLoadingInitial(false);
       return [];
     }
     
-    // Annuler toute requête en cours avant d'en démarrer une nouvelle
-    cancelFetch();
-    
     // Limiter la fréquence des requêtes
     if (!forceRefresh && shouldThrottleRequest()) {
-      console.log("Requête limitée en fréquence, utilisation du cache disponible");
+      console.log("⏱️ Requête limitée en fréquence, utilisation du cache disponible");
+      // CORRECTION: Retourner le cache même s'il est vide pour éviter de perdre des données
       return cachedContentRef.current;
     }
     
     // Créer un nouveau contrôleur d'annulation
-    abortControllerRef.current = new AbortController();
+    // CORRECTION: Ne pas annuler les requêtes précédentes pour éviter les problèmes concurrents
+    if (!abortControllerRef.current) {
+      abortControllerRef.current = new AbortController();
+    }
     const abortSignal = signal || abortControllerRef.current.signal;
     
     // Incrémenter le compteur de requêtes pour le débogage
@@ -93,7 +102,7 @@ export function useFetchContent() {
     
     // Éviter les appels concurrents
     if (fetchInProgress.current && !forceRefresh) {
-      console.log(`[Requête ${currentRequest}] Récupération des données déjà en cours, utiliser cache disponible`);
+      console.log(`🔄 [Requête ${currentRequest}] Récupération des données déjà en cours, utiliser cache disponible`);
       return cachedContentRef.current;
     }
 
@@ -103,17 +112,22 @@ export function useFetchContent() {
       
       if (forceRefresh) {
         setIsRefreshing(true);
-        console.log(`[Requête ${currentRequest}] Rafraîchissement forcé des données`);
+        console.log(`🔄 [Requête ${currentRequest}] Rafraîchissement forcé des données`);
       } else {
-        console.log(`[Requête ${currentRequest}] Début de la récupération des contenus sauvegardés...`);
+        console.log(`🔄 [Requête ${currentRequest}] Début de la récupération des contenus sauvegardés...`);
       }
       
-      // Ajouter un délai pour éviter les requêtes trop rapprochées
-      await new Promise(resolve => setTimeout(resolve, FETCH_INITIAL_DELAY));
+      // AJOUT: Vérification supplémentaire du statut utilisateur
+      if (!user) {
+        console.log("❌ [Requête ${currentRequest}] Utilisateur non disponible après délai, abandon");
+        return cachedContentRef.current;
+      }
+      
+      console.log(`👤 [Requête ${currentRequest}] Utilisateur authentifié: ${user.id}`);
       
       // Vérifier si la requête n'a pas été annulée
       if (abortSignal.aborted) {
-        console.log(`[Requête ${currentRequest}] Requête annulée, abandon`);
+        console.log(`🛑 [Requête ${currentRequest}] Requête annulée, abandon`);
         return cachedContentRef.current;
       }
       
@@ -126,42 +140,46 @@ export function useFetchContent() {
       // 1. Récupérer les exercices
       try {
         if (!abortSignal.aborted) {
+          console.log(`📚 [Requête ${currentRequest}] Récupération des exercices en cours...`);
           exercises = await getSavedExercises();
-          console.log(`Exercices récupérés: ${exercises.length}`);
+          console.log(`📚 [Requête ${currentRequest}] Exercices récupérés: ${exercises.length}`);
         }
       } catch (err) {
-        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des exercices:`, err);
+        console.error(`❌ [Requête ${currentRequest}] Erreur lors de la récupération des exercices:`, err);
         setErrors(prev => ({ ...prev, exercises: "Impossible de charger les exercices" }));
       }
       
       // 2. Récupérer les plans de leçon
       try {
         if (!abortSignal.aborted) {
+          console.log(`📝 [Requête ${currentRequest}] Récupération des séquences en cours...`);
           lessonPlans = await getSavedLessonPlans();
-          console.log(`Plans de leçon récupérés: ${lessonPlans.length}`);
+          console.log(`📝 [Requête ${currentRequest}] Séquences récupérées: ${lessonPlans.length}`);
         }
       } catch (err) {
-        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des plans de leçon:`, err);
+        console.error(`❌ [Requête ${currentRequest}] Erreur lors de la récupération des séquences:`, err);
         setErrors(prev => ({ ...prev, lessonPlans: "Impossible de charger les séquences" }));
       }
       
       // 3. Récupérer les correspondances
       try {
         if (!abortSignal.aborted) {
+          console.log(`📧 [Requête ${currentRequest}] Récupération des correspondances en cours...`);
           correspondences = await getSavedCorrespondences();
-          console.log(`Correspondances récupérées: ${correspondences.length}`);
+          console.log(`📧 [Requête ${currentRequest}] Correspondances récupérées: ${correspondences.length}`);
         }
       } catch (err) {
-        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des correspondances:`, err);
+        console.error(`❌ [Requête ${currentRequest}] Erreur lors de la récupération des correspondances:`, err);
         setErrors(prev => ({ ...prev, correspondences: "Impossible de charger les correspondances" }));
       }
       
       // 4. Récupérer les images
       try {
         if (!abortSignal.aborted) {
+          console.log(`🖼️ [Requête ${currentRequest}] Récupération des images en cours...`);
           // Passer forceRefresh pour garantir des données fraîches si nécessaire
           const imageData = await getSavedImages(forceRefresh);
-          console.log(`Images récupérées: ${imageData.length}`);
+          console.log(`🖼️ [Requête ${currentRequest}] Images récupérées: ${imageData.length}`);
           
           // Transformer les données d'image en format SavedContent
           images = imageData.map(img => ({
@@ -180,17 +198,17 @@ export function useFetchContent() {
           }));
         }
       } catch (err) {
-        console.error(`[Requête ${currentRequest}] Erreur lors de la récupération des images:`, err);
+        console.error(`❌ [Requête ${currentRequest}] Erreur lors de la récupération des images:`, err);
         setErrors(prev => ({ ...prev, images: "Impossible de charger les images" }));
       }
       
       // Vérifier si la requête a été annulée
       if (abortSignal.aborted) {
-        console.log(`[Requête ${currentRequest}] Requête annulée, utilisation du cache`);
+        console.log(`🛑 [Requête ${currentRequest}] Requête annulée, utilisation du cache`);
         return cachedContentRef.current;
       }
 
-      console.log(`[Requête ${currentRequest}] Données récupérées:`, {
+      console.log(`📊 [Requête ${currentRequest}] Données récupérées:`, {
         exercises: exercises?.length || 0,
         lessonPlans: lessonPlans?.length || 0,
         correspondences: correspondences?.length || 0,
@@ -224,9 +242,12 @@ export function useFetchContent() {
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
       
-      // Mettre à jour le cache avec les nouvelles données
+      // CORRECTION: Ne mettre à jour le cache que si nous avons de nouvelles données
       if (sortedContent.length > 0) {
+        console.log(`✅ [Requête ${currentRequest}] Mise à jour du cache avec ${sortedContent.length} éléments`);
         cachedContentRef.current = sortedContent;
+      } else {
+        console.log(`⚠️ [Requête ${currentRequest}] Résultat vide, conservation du cache existant`);
       }
 
       // Marquer le chargement comme terminé
@@ -236,7 +257,7 @@ export function useFetchContent() {
       return sortedContent;
 
     } catch (err) {
-      console.error(`[Requête ${currentRequest}] Erreur lors du chargement des contenus:`, err);
+      console.error(`❌ [Requête ${currentRequest}] Erreur lors du chargement des contenus:`, err);
       
       if (abortSignal.aborted) {
         return cachedContentRef.current;
@@ -246,7 +267,7 @@ export function useFetchContent() {
       if (retryCount.current < MAX_RETRIES && forceRefresh) {
         retryCount.current += 1;
         const delay = Math.min(RETRY_DELAY_BASE * retryCount.current, MAX_RETRY_DELAY);
-        console.log(`[Requête ${currentRequest}] Nouvelle tentative ${retryCount.current}/${MAX_RETRIES} dans ${delay/1000}s...`);
+        console.log(`🔄 [Requête ${currentRequest}] Nouvelle tentative ${retryCount.current}/${MAX_RETRIES} dans ${delay/1000}s...`);
         
         await new Promise(r => setTimeout(r, delay));
         
@@ -268,6 +289,7 @@ export function useFetchContent() {
         });
       }
       
+      // CORRECTION: Toujours retourner le cache même en cas d'erreur
       return cachedContentRef.current;
     } finally {
       setIsLoadingInitial(false);

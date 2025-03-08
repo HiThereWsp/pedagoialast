@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { SEO } from "@/components/SEO";
 import { type SavedContent } from "@/types/saved-content";
@@ -47,7 +46,7 @@ export default function SavedContentPage() {
   // Update stable content when content changes
   useEffect(() => {
     if (content && content.length > 0) {
-      console.log(`Mise à jour du contenu stable avec ${content.length} éléments`);
+      console.log(`📊 SavedContentPage: Mise à jour du contenu stable avec ${content.length} éléments`);
       updateContent(content);
     }
   }, [content, updateContent]);
@@ -55,18 +54,27 @@ export default function SavedContentPage() {
   // Load data once after authentication
   useEffect(() => {
     if (!didInitialFetch.current) {
-      console.log("Chargement initial des données...");
+      console.log("📥 SavedContentPage: Chargement initial des données...");
       didInitialFetch.current = true;
       
       fetchContent().then(data => {
-        console.log(`Chargement initial terminé: ${data.length} éléments chargés`);
+        console.log(`✅ SavedContentPage: Chargement initial terminé: ${data.length} éléments chargés`);
         if (data.length === 0) {
-          toast({
-            description: "Aucun contenu trouvé. Créez votre premier contenu !",
-          });
+          // Si aucun contenu n'est trouvé au premier chargement, on tente un rechargement forcé
+          console.log("🔄 SavedContentPage: Aucun contenu trouvé, tentative de rechargement forcé");
+          setTimeout(() => {
+            fetchContent().then(refreshedData => {
+              console.log(`📊 SavedContentPage: Rechargement forcé terminé: ${refreshedData.length} éléments`);
+              if (refreshedData.length === 0) {
+                toast({
+                  description: "Aucun contenu trouvé. Créez votre premier contenu !",
+                });
+              }
+            });
+          }, 2000);
         }
       }).catch(err => {
-        console.error("Erreur lors du chargement initial:", err);
+        console.error("❌ SavedContentPage: Erreur lors du chargement initial:", err);
       });
     }
   }, [fetchContent, toast]);
@@ -75,11 +83,11 @@ export default function SavedContentPage() {
   const handleRefresh = useCallback(async (): Promise<void> => {
     if (!isRefreshing) {
       try {
-        console.log("Lancement du rafraîchissement...");
+        console.log("🔄 SavedContentPage: Lancement du rafraîchissement...");
         const refreshedContent = await fetchContent();
-        console.log(`Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
+        console.log(`✅ SavedContentPage: Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
         
-        if (refreshedContent.length === 0) {
+        if (refreshedContent.length === 0 && stableContent.length === 0) {
           toast({
             description: "Aucun contenu trouvé. Essayez de créer du nouveau contenu !",
           });
@@ -87,12 +95,12 @@ export default function SavedContentPage() {
         
         return Promise.resolve();
       } catch (error) {
-        console.error("Erreur lors du rafraîchissement:", error);
+        console.error("❌ SavedContentPage: Erreur lors du rafraîchissement:", error);
         return Promise.reject(error);
       }
     }
     return Promise.resolve();
-  }, [fetchContent, isRefreshing, toast]);
+  }, [fetchContent, isRefreshing, toast, stableContent.length]);
 
   const handleItemSelect = useCallback((item: SavedContent) => {
     setSelectedContent(item);
@@ -131,7 +139,7 @@ export default function SavedContentPage() {
   // Cleanup resources only on unmount
   useEffect(() => {
     return () => {
-      console.log("Nettoyage lors du démontage de SavedContentPage");
+      console.log("🧹 SavedContentPage: Nettoyage lors du démontage");
       cleanup?.();
     };
   }, [cleanup]);
@@ -146,7 +154,7 @@ export default function SavedContentPage() {
     return errors.exercises || errors.lessonPlans || errors.correspondences || "";
   }, [errors.exercises, errors.lessonPlans, errors.correspondences]);
 
-  console.log("État de la page:", { 
+  console.log("📊 SavedContentPage: État de la page:", { 
     isLoading, 
     isRefreshing, 
     hasError, 
@@ -191,10 +199,13 @@ export default function SavedContentPage() {
           <RefreshIndicator />
         ) : stableContent.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-500 dark:text-gray-400 text-lg">
-              Aucun contenu disponible. Créez votre premier contenu !
+            <p className="text-xl text-balance font-bold text-gray-700 dark:text-gray-300 mb-2 tracking-tight">
+              Aucun contenu disponible
             </p>
-            <p className="text-gray-400 dark:text-gray-500 mt-2">
+            <p className="text-gray-500 dark:text-gray-400 text-lg mb-6">
+              Créez votre premier contenu dès maintenant !
+            </p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm">
               Utilisez les outils de création pour générer des exercices, séquences ou documents.
             </p>
           </div>
