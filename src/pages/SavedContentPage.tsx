@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback, useRef } from "react";
 import { SEO } from "@/components/SEO";
 import { type SavedContent } from "@/types/saved-content";
@@ -90,8 +89,8 @@ export default function SavedContentPage() {
     });
   }, []);
 
-  // Fix: Make this function return a Promise<void> to satisfy the TypeScript error
-  const handleRefresh = useCallback(async () => {
+  // Fixed: This function now properly returns a Promise<void>
+  const handleRefresh = useCallback(async (): Promise<void> => {
     if (!isRefreshing) {
       return fetchContent();
     }
