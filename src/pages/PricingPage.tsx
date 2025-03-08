@@ -59,19 +59,19 @@ const PricingPage = () => {
         title="PedagoIA - Offres d'abonnement"
         description="Choisissez l'offre qui vous convient pour bénéficier des outils pédagogiques IA qui vous feront gagner du temps."
       />
-      <main className="container mx-auto px-4 py-16 relative z-10">
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">
+      <main className="container mx-auto px-4 py-20 relative z-10">
+        <div className="max-w-3xl mx-auto text-center mb-16">
+          <h1 className="text-5xl font-extrabold mb-4 leading-tight tracking-tight text-balance">
             La magie de l'IA
           </h1>
-          <p className="text-3xl bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent font-semibold mb-6">
+          <p className="text-3xl bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent font-semibold mb-8">
             au service de l'enseignement
           </p>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl text-muted-foreground max-w-lg mx-auto">
             Choisissez le plan qui vous convient le mieux
           </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
+        <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
           <PricingCard
             title="Plan mensuel"
             price="11,90€"
@@ -94,7 +94,7 @@ const PricingPage = () => {
             isPremium
             features={[
               "Bénéficier de tous les avantages du plan mensuel",
-              "Voter de nouveaux outils tous les mois",
+              "Votez de nouveaux outils tous les mois",
               "Recevoir les mises à jour en avant-première",
               "Accéder à la communauté privée d'enseignants 3.0"
             ]}
@@ -115,26 +115,26 @@ const PricingPage = () => {
           />
         </div>
 
-        <div className="max-w-4xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md">
-            <div className="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-              <Shield className="w-6 h-6 text-blue-500" />
+        <div className="max-w-4xl mx-auto mt-20 grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-md">
+            <div className="mx-auto w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mb-5">
+              <Shield className="w-7 h-7 text-blue-500" />
             </div>
-            <h3 className="font-bold mb-2">Essai gratuit de 3 jours</h3>
+            <h3 className="font-bold text-lg mb-3">Essai gratuit de 3 jours</h3>
             <p className="text-sm text-muted-foreground">Testez toutes les fonctionnalités sans engagement</p>
           </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md">
-            <div className="mx-auto w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-4">
-              <Clock className="w-6 h-6 text-green-500" />
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-md">
+            <div className="mx-auto w-14 h-14 bg-green-50 rounded-full flex items-center justify-center mb-5">
+              <Clock className="w-7 h-7 text-green-500" />
             </div>
-            <h3 className="font-bold mb-2">Économisez du temps</h3>
+            <h3 className="font-bold text-lg mb-3">Économisez du temps</h3>
             <p className="text-sm text-muted-foreground">Plus de 14h par semaine grâce à nos outils IA</p>
           </div>
-          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md">
-            <div className="mx-auto w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-4">
-              <CreditCard className="w-6 h-6 text-amber-500" />
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-8 shadow-md">
+            <div className="mx-auto w-14 h-14 bg-amber-50 rounded-full flex items-center justify-center mb-5">
+              <CreditCard className="w-7 h-7 text-amber-500" />
             </div>
-            <h3 className="font-bold mb-2">Annulation facile</h3>
+            <h3 className="font-bold text-lg mb-3">Annulation facile</h3>
             <p className="text-sm text-muted-foreground">Résiliez à tout moment sans frais cachés</p>
           </div>
         </div>
