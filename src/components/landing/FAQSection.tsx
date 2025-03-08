@@ -10,11 +10,11 @@ import {
 const faqs = [
   {
     question: "Comment PedagoIA s'intègre-t-il à mes outils existants ?",
-    answer: "PedagoIA est conçu pour fonctionner en complément de vos outils actuels. Notre plateforme s'adapte à votre flux de travail existant et peut être utilisée parallèlement à vos autres ressources pédagogiques."
+    answer: "pedagoIA est conçu pour fonctionner en complément de vos outils actuels. Les ressources pédagogiques générées sont importables dans vos outils de traitement de texte habituels."
   },
   {
     question: "Est-il conforme aux programmes de l'Éducation Nationale ?",
-    answer: "Oui, absolument. Tous nos outils sont développés en conformité avec les programmes officiels de l'Éducation Nationale et sont régulièrement mis à jour pour refléter les changements curriculaires."
+    answer: "Les outils sont conçus pour répondre au mieux aux exigences de l'éducation nationale. Cependant, il est toujours recommandé de vérifier les contenus générés par l'IA."
   },
   {
     question: "Ai-je besoin de compétences techniques pour utiliser PedagoIA ?",
