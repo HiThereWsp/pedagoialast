@@ -21,6 +21,7 @@ export interface ExerciseFormProps {
 const ExerciseForm: React.FC<ExerciseFormProps> = ({ formData, handleInputChange, handleSubmit, isLoading }) => {
   const formRef = useRef<HTMLFormElement>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [isFormChanged, setIsFormChanged] = useState<boolean>(false);
 
   useEffect(() => {
     if (formRef.current) {
@@ -28,17 +29,36 @@ const ExerciseForm: React.FC<ExerciseFormProps> = ({ formData, handleInputChange
     }
   }, []);
 
+  // Suivre les changements de formulaire
+  useEffect(() => {
+    setIsFormChanged(true);
+  }, [formData]);
+
   const validateForm = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Réinitialiser l'erreur avant validation
     setValidationError(null);
     
+    if (!formData.subject.trim()) {
+      setValidationError("La matière est obligatoire");
+      return;
+    }
+    
+    if (!formData.classLevel.trim()) {
+      setValidationError("Le niveau de classe est obligatoire");
+      return;
+    }
+    
     if (!formData.objective.trim()) {
       setValidationError("L'objectif pédagogique est obligatoire");
       return;
     }
 
+    // Réinitialiser l'indicateur de changement
+    setIsFormChanged(false);
+    
+    // Soumettre le formulaire
     handleSubmit(e);
   };
 

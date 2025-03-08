@@ -10,6 +10,7 @@ import type { ExerciseFormData } from '@/types/saved-content';
 const EXERCISE_FORM_CACHE_KEY = 'pedagogia_exercise_form_data';
 const EXERCISE_RESULT_CACHE_KEY = 'pedagogia_exercise_result';
 const EXERCISE_TAB_CACHE_KEY = 'pedagogia_exercise_active_tab';
+const EXERCISE_CACHE_TIMESTAMP = 'pedagogia_exercise_cache_timestamp';
 
 export function useExerciseGeneration() {
   const { toast } = useToast();
@@ -23,6 +24,8 @@ export function useExerciseGeneration() {
   const saveToCache = useCallback((key: string, data: any) => {
     try {
       sessionStorage.setItem(key, JSON.stringify(data));
+      // Mise à jour du timestamp pour le suivi de fraîcheur du cache
+      sessionStorage.setItem(EXERCISE_CACHE_TIMESTAMP, Date.now().toString());
     } catch (error) {
       console.warn('Erreur lors de la sauvegarde dans le cache:', error);
       // En cas d'erreur (ex: mode navigation privée), on continue silencieusement
@@ -37,6 +40,18 @@ export function useExerciseGeneration() {
     } catch (error) {
       console.warn('Erreur lors de la récupération depuis le cache:', error);
       return null;
+    }
+  }, []);
+
+  // Fonction pour vider le cache avant génération
+  const clearExerciseCache = useCallback(() => {
+    console.log('Nettoyage du cache des exercices...');
+    try {
+      sessionStorage.removeItem(EXERCISE_FORM_CACHE_KEY);
+      sessionStorage.removeItem(EXERCISE_RESULT_CACHE_KEY);
+      // On garde l'onglet actif pour l'expérience utilisateur
+    } catch (error) {
+      console.warn('Erreur lors du nettoyage du cache:', error);
     }
   }, []);
 
@@ -97,13 +112,22 @@ export function useExerciseGeneration() {
       return null;
     }
 
+    // Nettoyage du cache AVANT la génération pour éviter la persistance
+    clearExerciseCache();
+    
     setIsLoading(true);
     const startTime = performance.now();
 
     try {
-      // Sauvegarder le formulaire dans le cache avant génération
+      // Sauvegarder UNIQUEMENT le formulaire et l'onglet actif dans le cache
       saveToCache(EXERCISE_FORM_CACHE_KEY, formData);
       saveToCache(EXERCISE_TAB_CACHE_KEY, isDifferentiation ? 'differentiate' : 'create');
+      
+      console.log('Génération d\'exercice avec les données:', {
+        sujet: formData.subject,
+        niveau: formData.classLevel,
+        differentiation: isDifferentiation
+      });
       
       const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-exercises', {
         body: {
@@ -117,8 +141,10 @@ export function useExerciseGeneration() {
       const generationTime = Math.round(performance.now() - startTime);
       await logToolUsage('exercise', 'generate', functionData?.exercises?.length || 0, generationTime);
 
-      // Sauvegarder le résultat de la génération dans le cache
+      // Sauvegarder le résultat de la génération dans le cache 
+      // SEULEMENT après une génération réussie
       if (functionData?.exercises) {
+        console.log('Exercice généré avec succès, mise en cache du résultat');
         saveToCache(EXERCISE_RESULT_CACHE_KEY, functionData.exercises);
         
         // Sauvegarde en base de données avec gestion des erreurs
@@ -137,27 +163,29 @@ export function useExerciseGeneration() {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, logToolUsage, saveToCache, saveExerciseToDatabase]);
+  }, [toast, logToolUsage, saveToCache, saveExerciseToDatabase, clearExerciseCache]);
 
-  // Fonction pour récupérer l'état du cache
+  // Fonction pour récupérer l'état du cache avec validation
   const getExerciseCacheState = useCallback(() => {
+    // Récupération du timestamp pour vérifier la fraîcheur
+    const cacheTimestamp = sessionStorage.getItem(EXERCISE_CACHE_TIMESTAMP);
+    const isRecentCache = cacheTimestamp && (Date.now() - Number(cacheTimestamp) < 3600000); // 1 heure max
+    
+    if (!isRecentCache) {
+      console.log('Cache trop ancien ou inexistant, retour de valeurs fraîches');
+      return {
+        formData: null,
+        exerciseResult: null,
+        activeTab: getFromCache(EXERCISE_TAB_CACHE_KEY) as 'create' | 'differentiate' | null
+      };
+    }
+    
     return {
       formData: getFromCache(EXERCISE_FORM_CACHE_KEY) as ExerciseFormData | null,
       exerciseResult: getFromCache(EXERCISE_RESULT_CACHE_KEY) as string | null,
       activeTab: getFromCache(EXERCISE_TAB_CACHE_KEY) as 'create' | 'differentiate' | null
     };
   }, [getFromCache]);
-
-  // Fonction pour vider le cache
-  const clearExerciseCache = useCallback(() => {
-    try {
-      sessionStorage.removeItem(EXERCISE_FORM_CACHE_KEY);
-      sessionStorage.removeItem(EXERCISE_RESULT_CACHE_KEY);
-      sessionStorage.removeItem(EXERCISE_TAB_CACHE_KEY);
-    } catch (error) {
-      console.warn('Erreur lors du nettoyage du cache:', error);
-    }
-  }, []);
 
   // Fonction pour ré-essayer la sauvegarde manuellement
   const retrySaveExercise = useCallback(async (formData: ExerciseFormData, exerciseContent: string, isDifferentiation: boolean) => {

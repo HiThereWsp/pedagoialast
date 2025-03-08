@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { SEO } from "@/components/SEO";
 import { ExerciseForm, ResultDisplay } from "@/components/exercise";
@@ -36,6 +37,7 @@ export default function ExercisePage() {
     isSaving,
     lastSaveError,
     getExerciseCacheState,
+    clearExerciseCache,
     retrySaveExercise
   } = useExerciseGeneration();
   
@@ -46,9 +48,11 @@ export default function ExercisePage() {
 
   // Charger les données du cache lors du premier rendu
   useEffect(() => {
+    console.log('Chargement initial des données du cache...');
     const cacheState = getExerciseCacheState();
     
     if (cacheState.formData) {
+      console.log('Données de formulaire trouvées dans le cache');
       // S'assurer que tous les champs requis sont présents
       setFormData({
         ...defaultFormData,
@@ -57,10 +61,12 @@ export default function ExercisePage() {
     }
     
     if (cacheState.exerciseResult) {
+      console.log('Résultat d\'exercice trouvé dans le cache');
       setExercises(cacheState.exerciseResult);
     }
     
     if (cacheState.activeTab) {
+      console.log('Onglet actif trouvé dans le cache:', cacheState.activeTab);
       setActiveTab(cacheState.activeTab);
     }
     
@@ -76,15 +82,52 @@ export default function ExercisePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Soumission du formulaire, génération d\'exercice...');
+    
+    // On garde le résultat actuel seulement si la génération échoue
+    const currentExercises = exercises;
+    
+    // Réinitialisation de l'état des exercices pour éviter la persistance visuelle
+    // Cela indique clairement à l'utilisateur qu'une nouvelle génération est en cours
+    setExercises("");
+    
     const result = await generateExercises(formData, activeTab === "differentiate");
+    
     if (result) {
+      console.log('Exercice généré avec succès, mise à jour de l\'affichage');
       setExercises(result);
+    } else {
+      // Si erreur, restaurer l'état précédent pour éviter une page vide
+      console.log('Échec de la génération, restauration de l\'état précédent');
+      setExercises(currentExercises);
     }
   };
 
   const handleTabChange = (tab: string) => {
+    if (tab === activeTab) return; // Éviter les changements inutiles
+    
+    console.log('Changement d\'onglet:', tab);
     setActiveTab(tab as "create" | "differentiate");
-    setExercises(""); // Réinitialiser les exercices lors du changement d'onglet
+    
+    // Effacer les exercices lors du changement d'onglet pour éviter la confusion
+    setExercises("");
+    
+    // Réinitialiser certains champs du formulaire spécifiques à chaque onglet
+    // tout en conservant les champs communs
+    if (tab === "create") {
+      setFormData(prev => ({
+        ...prev,
+        originalExercise: "",
+        studentProfile: "",
+        learningDifficulties: "",
+        challenges: ""
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        objective: ""
+      }));
+    }
   };
 
   // Fonction pour réessayer la sauvegarde
@@ -119,10 +162,10 @@ export default function ExercisePage() {
           </Link>
 
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-5xl font-extrabold mb-2 tracking-tight text-balance">
               Générateur d'exercices
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-xl text-muted-foreground max-w-lg mx-auto">
               Créez des exercices adaptés à vos besoins pédagogiques
             </p>
           </div>
