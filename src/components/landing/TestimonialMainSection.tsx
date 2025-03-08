@@ -8,16 +8,25 @@ export function TestimonialMainSection() {
         <div className="bg-blue-50 p-8 rounded-lg shadow-premium">
           <div className="flex flex-col md:flex-row items-start gap-6">
             <div className="flex-shrink-0">
-              <div className="w-16 h-16 rounded-full overflow-hidden">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-blue-100">
                 <img 
                   src="/lovable-uploads/90756d9e-4471-46f6-87b4-7bfeb3185c6a.png" 
                   alt="Photo de Melissa, maîtresse en CM2" 
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    // En cas d'erreur de chargement, on affiche un placeholder
+                    e.currentTarget.style.display = 'none';
+                    e.currentTarget.parentElement.classList.add('flex', 'items-center', 'justify-center');
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'text-blue-500 text-center text-lg font-bold';
+                    placeholder.innerText = 'M';
+                    e.currentTarget.parentElement.appendChild(placeholder);
+                  }}
                 />
               </div>
             </div>
             <div>
-              <blockquote className="text-xl md:text-2xl mb-4 text-gray-800 text-balance">
+              <blockquote className="text-xl md:text-2xl mb-4 text-gray-800 text-balance leading-tight tracking-tight font-bold">
                 « Utiliser pedagoIA au cours de l'année c'est comme avoir un assistant expérimenté disponible partout même en classe ! »
               </blockquote>
               <p className="text-gray-600">
