@@ -1,9 +1,11 @@
+
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 import { subscriptionEvents } from "@/integrations/posthog/events"
 import { facebookEvents } from "@/integrations/meta-pixel/client"
 import { SEO } from "@/components/SEO"
+import { Shield, Clock, CreditCard } from "lucide-react"
 
 const PricingPage = () => {
   useEffect(() => {
@@ -51,12 +53,13 @@ const PricingPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 bg-grid-black pointer-events-none"></div>
       <SEO 
         title="PedagoIA - Offres d'abonnement"
         description="Choisissez l'offre qui vous convient pour bénéficier des outils pédagogiques IA qui vous feront gagner du temps."
       />
-      <main className="container mx-auto px-4 py-16">
+      <main className="container mx-auto px-4 py-16 relative z-10">
         <div className="max-w-3xl mx-auto text-center mb-12">
           <h1 className="text-4xl font-bold mb-4">
             La magie de l'IA
@@ -74,11 +77,11 @@ const PricingPage = () => {
             price="11,90€"
             period="/mois"
             features={[
-              "Accès illimité à l'assistant pédagogique via le chat",
-              "Accéder à plus de 10 outils IA pédagogiques",
-              "Sauvegarde de tous vos supports de cours générés",
-              "Utilisation illimitée de tous les outils",
-              "+14h économisées /semaine"
+              "Accéder à l'assistant pédagogique via le chat sans limite",
+              "Utiliser plus de 10 outils IA pédagogiques",
+              "Sauvegarder tous vos supports de cours générés",
+              "Exploiter tous les outils sans limitation",
+              "Économiser plus de 14h par semaine grâce aux outils IA"
             ]}
             ctaText="Démarrer l'essai gratuit"
             onSubscribe={handleMonthlySubscription}
@@ -90,10 +93,10 @@ const PricingPage = () => {
             badge="4 mois offerts"
             isPremium
             features={[
-              "Tous les avantages du plan mensuel",
-              "Vote prioritaire pour de nouvelles fonctionnalités",
-              "Recevez les mises à jour à l'avance",
-              "Accès à la communauté privée d'enseignants 3.0"
+              "Bénéficier de tous les avantages du plan mensuel",
+              "Voter en priorité pour les nouvelles fonctionnalités",
+              "Recevoir les mises à jour en avant-première",
+              "Accéder à la communauté privée d'enseignants 3.0"
             ]}
             ctaText="Démarrer l'essai gratuit"
             onSubscribe={handleYearlySubscription}
@@ -102,14 +105,38 @@ const PricingPage = () => {
             title="Établissement scolaire"
             price="Sur mesure"
             features={[
-              "Tout ce qui est inclus dans le plan annuel et bien plus",
-              "Créez des outils sur mesure",
-              "Tableau de suivi pour la direction",
-              "Des outils adaptés à votre projet d'établissement"
+              "Bénéficier de tout ce qui est inclus dans le plan annuel",
+              "Créer des outils personnalisés pour votre établissement",
+              "Accéder au tableau de suivi pour la direction",
+              "Adapter les outils à votre projet d'établissement"
             ]}
             ctaText="Prendre contact"
             onSubscribe={() => {}}
           />
+        </div>
+
+        <div className="max-w-4xl mx-auto mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md">
+            <div className="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6 text-blue-500" />
+            </div>
+            <h3 className="font-bold mb-2">Essai gratuit de 3 jours</h3>
+            <p className="text-sm text-muted-foreground">Testez toutes les fonctionnalités sans engagement</p>
+          </div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md">
+            <div className="mx-auto w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-4">
+              <Clock className="w-6 h-6 text-green-500" />
+            </div>
+            <h3 className="font-bold mb-2">Économisez du temps</h3>
+            <p className="text-sm text-muted-foreground">Plus de 14h par semaine grâce à nos outils IA</p>
+          </div>
+          <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-md">
+            <div className="mx-auto w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center mb-4">
+              <CreditCard className="w-6 h-6 text-amber-500" />
+            </div>
+            <h3 className="font-bold mb-2">Annulation facile</h3>
+            <p className="text-sm text-muted-foreground">Résiliez à tout moment sans frais cachés</p>
+          </div>
         </div>
       </main>
     </div>
