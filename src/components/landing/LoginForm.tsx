@@ -9,6 +9,7 @@ import { AnimatedText } from "@/components/ui/animated-text";
 import { Facebook, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+
 export const LoginForm = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
@@ -65,10 +66,11 @@ export const LoginForm = () => {
       <div className="hidden md:flex flex-1 bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-400 items-center justify-center p-10 text-white">
         <div className="max-w-md">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-            Ensemble si
+            Bienvenue dans l'éducation de demain...
           </h2>
-          <AnimatedText phrases={animatedPhrases} className="text-3xl md:text-4xl font-semibold" typingSpeed={80} deletingSpeed={40} delayBetweenPhrases={1500} />
-          <p className="mt-8 text-white/80 text-center">L'assistant pédagogique qui élimine la surcharge de travail grâce à l'IA.</p>
+          <p className="text-3xl md:text-4xl font-semibold">
+            Ensemble simplifions votre quotidien.
+          </p>
         </div>
       </div>
     </div>;
