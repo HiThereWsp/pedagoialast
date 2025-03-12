@@ -105,7 +105,7 @@ export function useSavedContentPage() {
       console.log("🧹 Invalidation du cache avant rafraîchissement manuel");
       invalidateCache();
       
-      const refreshedContent = await fetchContent({ forceRefresh: true });
+      const refreshedContent = await fetchContent();
       console.log(`✅ Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
       
       return Promise.resolve();

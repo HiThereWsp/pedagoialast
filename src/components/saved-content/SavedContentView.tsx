@@ -17,7 +17,6 @@ export const SavedContentView: React.FC = () => {
     errors,
     isLoading,
     isRefreshing,
-    waitTimeRef,
     
     handleItemSelect,
     handleTabChange,
@@ -41,7 +40,6 @@ export const SavedContentView: React.FC = () => {
         errorMessage=""
         activeTab={activeTab}
         contentCount={0}
-        waitTime={0}
         onRefresh={handleRefresh}
         onTabChange={handleTabChange}
       >
@@ -59,7 +57,6 @@ export const SavedContentView: React.FC = () => {
         errorMessage={errorMessage}
         activeTab={activeTab}
         contentCount={stableContent.length}
-        waitTime={waitTimeRef.current}
         onRefresh={handleRefresh}
         onTabChange={handleTabChange}
       >
