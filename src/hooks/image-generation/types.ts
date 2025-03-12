@@ -1,13 +1,11 @@
 
-import { GenerationPrompt } from "@/components/image-generation/types";
-
-export interface UseImageGenerationResult {
-  isLoading: boolean;
-  generatedImageUrl: string | null;
-  generateImage: (generationPrompt: GenerationPrompt) => Promise<void>;
+export interface GenerationPrompt {
+  prompt: string;
+  style?: string;
 }
 
-export interface ContentScreeningResult {
-  isInappropriate: boolean;
-  reason?: string;
+export interface ImageStyle {
+  id: string;
+  name: string;
+  example: string;
 }

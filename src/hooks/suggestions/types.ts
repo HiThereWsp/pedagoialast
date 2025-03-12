@@ -42,3 +42,33 @@ export interface UseSuggestionsResult {
   filteredSuggestions: Suggestion[];
   refetchSuggestions: () => Promise<void>;
 }
+
+export interface SuggestionStateResult {
+  isLoading: boolean;
+  suggestions: Suggestion[];
+  setSuggestions: React.Dispatch<React.SetStateAction<Suggestion[]>>;
+  newSuggestion: NewSuggestionForm;
+  setNewSuggestion: React.Dispatch<React.SetStateAction<NewSuggestionForm>>;
+  showNewSuggestionForm: boolean;
+  setShowNewSuggestionForm: React.Dispatch<React.SetStateAction<boolean>>;
+  handleSuggestionChange: (field: 'title' | 'description', value: string) => void;
+  fetchSuggestions: () => Promise<void>;
+  handleAddSuggestion: () => Promise<void>;
+}
+
+export interface SuggestionVotingResult {
+  userVotes: string[];
+  setUserVotes: React.Dispatch<React.SetStateAction<string[]>>;
+  fetchUserVotes: () => Promise<void>;
+  handleVote: (id: string, increment: boolean) => Promise<void>;
+}
+
+export interface SuggestionFilteringResult {
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
+  selectedStatus: string;
+  setSelectedStatus: (status: string) => void;
+  sortBy: 'votes' | 'recent';
+  setSortBy: (sort: 'votes' | 'recent') => void;
+  filteredSuggestions: Suggestion[];
+}
