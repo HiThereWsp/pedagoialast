@@ -2,7 +2,9 @@
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ChevronUp, ChevronDown, Check } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SuggestionCardProps {
   id: string;
@@ -40,15 +42,15 @@ export const SuggestionCard = ({
   const getUpvoteButtonClass = () => {
     if (!isAuthenticated) return "text-gray-300 cursor-not-allowed opacity-50";
     if (isOwnSuggestion) return "text-gray-300 cursor-not-allowed opacity-50";
-    if (userVoteType === 'up') return "text-[#FF9633]";
-    return "text-gray-400 hover:text-[#FF9633]";
+    if (userVoteType === 'up') return "text-white bg-[#FF9633] hover:bg-[#FF9633]/90";
+    return "text-gray-400 hover:text-[#FF9633] hover:bg-[#FF9633]/10";
   };
 
   const getDownvoteButtonClass = () => {
     if (!isAuthenticated) return "text-gray-300 cursor-not-allowed opacity-50";
     if (isOwnSuggestion) return "text-gray-300 cursor-not-allowed opacity-50";
-    if (userVoteType === 'down') return "text-[#FF9633]";
-    return "text-gray-400 hover:text-[#FF9633]";
+    if (userVoteType === 'down') return "text-white bg-[#FF9633] hover:bg-[#FF9633]/90";
+    return "text-gray-400 hover:text-[#FF9633] hover:bg-[#FF9633]/10";
   };
 
   const getUpvoteButtonTitle = () => {
@@ -64,38 +66,80 @@ export const SuggestionCard = ({
     if (userVoteType === 'down') return "Cliquez pour retirer votre vote négatif";
     return "Voter négativement pour cette suggestion";
   };
+
+  const renderVoteIndicator = () => {
+    if (!isAuthenticated || !userVoteType) return null;
+    
+    return (
+      <Badge 
+        variant="outline" 
+        className={`absolute -left-2 -top-2 z-10 px-2 py-1 ${
+          userVoteType === 'up' 
+            ? 'bg-[#FF9633]/20 text-[#FF9633] border-[#FF9633]' 
+            : 'bg-gray-100 text-gray-600 border-gray-300'
+        }`}
+      >
+        <Check className="w-3 h-3 mr-1" />
+        {userVoteType === 'up' ? 'Voté pour' : 'Voté contre'}
+      </Badge>
+    );
+  };
   
   return (
-    <Card className={`p-4 bg-white shadow-sm rounded-lg transition-shadow hover:shadow-md ${
+    <Card className={`p-4 bg-white shadow-sm rounded-lg transition-shadow hover:shadow-md relative ${
       id.includes('eval') ? 'border-l-4 border-[#B784A7]' : 
       id.includes('comm') ? 'border-l-4 border-[#77D1F3]' : 
       id.includes('report') ? 'border-l-4 border-[#9FD984]' : 
       id.includes('agenda') ? 'border-l-4 border-[#FF9EBC]' : 
       'border-l-4 border-[#FFEE7D]'
     }`}>
+      {userVoteType && renderVoteIndicator()}
+      
       <div className="flex gap-4">
         <div className="flex flex-col items-center">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className={`p-1 rounded-full ${getUpvoteButtonClass()} ${canVote ? 'hover:bg-[#FF9633]/10' : ''}`} 
-            onClick={() => onVote(id, 'up')}
-            disabled={!canVote}
-            title={getUpvoteButtonTitle()}
-          >
-            <ChevronUp className="w-5 h-5" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={userVoteType === 'up' ? 'default' : 'ghost'}
+                  size="sm" 
+                  className={`p-1 rounded-full transition-all duration-200 ${getUpvoteButtonClass()}`} 
+                  onClick={() => onVote(id, 'up')}
+                  disabled={!canVote}
+                  aria-label={getUpvoteButtonTitle()}
+                  aria-pressed={userVoteType === 'up'}
+                >
+                  <ChevronUp className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>{getUpvoteButtonTitle()}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          
           <span className="font-bold text-lg text-[#FF9633]">{votes}</span>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className={`p-1 rounded-full ${getDownvoteButtonClass()} ${canVote ? 'hover:bg-[#FF9633]/10' : ''}`} 
-            onClick={() => onVote(id, 'down')}
-            disabled={!canVote}
-            title={getDownvoteButtonTitle()}
-          >
-            <ChevronDown className="w-5 h-5" />
-          </Button>
+          
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={userVoteType === 'down' ? 'default' : 'ghost'}
+                  size="sm" 
+                  className={`p-1 rounded-full transition-all duration-200 ${getDownvoteButtonClass()}`} 
+                  onClick={() => onVote(id, 'down')}
+                  disabled={!canVote}
+                  aria-label={getDownvoteButtonTitle()}
+                  aria-pressed={userVoteType === 'down'}
+                >
+                  <ChevronDown className="w-5 h-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>{getDownvoteButtonTitle()}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         
         <div className="flex-1">
@@ -113,6 +157,16 @@ export const SuggestionCard = ({
             {isOwnSuggestion && (
               <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
                 Votre suggestion
+              </span>
+            )}
+            {userVoteType && (
+              <span className={`ml-2 text-xs ${
+                userVoteType === 'up' 
+                  ? 'bg-[#FF9633]/10 text-[#FF9633]' 
+                  : 'bg-gray-100 text-gray-600'
+              } px-2 py-0.5 rounded-full inline-flex items-center`}>
+                <Check className="w-3 h-3 mr-1" />
+                {userVoteType === 'up' ? 'Vous avez voté pour' : 'Vous avez voté contre'}
               </span>
             )}
           </div>
