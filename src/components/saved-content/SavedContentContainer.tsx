@@ -1,8 +1,8 @@
+
 import React from "react";
 import { SEO } from "@/components/SEO";
 import { SavedContentLoader } from "./SavedContentLoader";
 import { SavedContentError } from "./SavedContentError";
-import { RefreshIndicator } from "./RefreshIndicator";
 import { SavedContentHeader } from "./SavedContentHeader";
 import { SavedContentTabs } from "./SavedContentTabs";
 
@@ -27,19 +27,14 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
   errorMessage,
   activeTab,
   contentCount,
-  waitTime,
   onRefresh,
   onTabChange,
   children
 }) => {
-  const getLoadingMessage = () => {
-    if (isRefreshing) return "Actualisation des données...";
-    return "Chargement en cours...";
-  };
-
-  if (isLoading && !isRefreshing && contentCount === 0) {
-    return <SavedContentLoader message={getLoadingMessage()} />;
-  }
+  // Simplifier la logique d'affichage en unifiant les états de chargement
+  const isInitialLoading = isLoading && contentCount === 0;
+  const showLoader = isInitialLoading || (isRefreshing && contentCount === 0);
+  const loadingMessage = "Chargement en cours...";
 
   if (hasError) {
     return (
@@ -69,8 +64,8 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
           onTabChange={onTabChange}
         />
 
-        {isRefreshing ? (
-          <SavedContentLoader message="Actualisation des données..." />
+        {showLoader ? (
+          <SavedContentLoader message={loadingMessage} />
         ) : contentCount === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-balance font-bold text-gray-700 dark:text-gray-300 mb-2 tracking-tight">

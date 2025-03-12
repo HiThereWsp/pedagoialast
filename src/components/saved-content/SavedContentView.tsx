@@ -1,10 +1,10 @@
+
 import React from "react";
 import { SavedContentContainer } from "./SavedContentContainer";
 import { SavedContentList } from "./SavedContentList";
 import { DeleteDialog } from "./DeleteDialog";
 import { ContentPreviewSheet } from "./ContentPreviewSheet";
 import { useSavedContentPage } from "@/hooks/saved-content/useSavedContentPage";
-import type { SavedContent } from "@/types/saved-content";
 import { SavedContentLoader } from "./SavedContentLoader";
 
 export const SavedContentView: React.FC = () => {

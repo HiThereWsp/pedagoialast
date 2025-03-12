@@ -11,8 +11,11 @@ export const SavedContentLoader: React.FC<SavedContentLoaderProps> = ({
 }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[300px] p-8">
-      <Loader2 className="h-8 w-8 text-primary animate-spin mb-4" />
-      <p className="text-lg text-muted-foreground animate-pulse">{message}</p>
+      <div className="relative">
+        <Loader2 className="h-12 w-12 text-primary animate-spin" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-full animate-pulse" />
+      </div>
+      <p className="text-lg font-medium text-muted-foreground mt-6">{message}</p>
     </div>
   );
 };
