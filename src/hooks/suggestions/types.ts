@@ -8,6 +8,7 @@ export interface Suggestion {
   votes: number;
   status: 'créé' | 'complété' | string;
   author: string;
+  author_id?: string;
   created_at: string;
 }
 
@@ -15,6 +16,7 @@ export interface SuggestionVote {
   id: string;
   user_id: string;
   suggestion_id: string;
+  vote_type: 'up' | 'down';
   created_at: string;
 }
 
@@ -26,7 +28,7 @@ export interface NewSuggestionForm {
 export interface UseSuggestionsResult {
   isLoading: boolean;
   suggestions: Suggestion[];
-  userVotes: string[];
+  userVotes: Record<string, 'up' | 'down'>;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   selectedStatus: string;
@@ -37,11 +39,13 @@ export interface UseSuggestionsResult {
   setShowNewSuggestionForm: (show: boolean) => void;
   newSuggestion: NewSuggestionForm;
   handleSuggestionChange: (field: 'title' | 'description', value: string) => void;
-  handleVote: (id: string, increment: boolean) => Promise<void>;
+  handleVote: (id: string, voteType: 'up' | 'down') => Promise<void>;
   handleAddSuggestion: () => Promise<void>;
   filteredSuggestions: Suggestion[];
   refetchSuggestions: () => Promise<void>;
   canVote: boolean;
+  isAuthenticated: boolean;
+  isOwnSuggestion: (suggestionId: string) => boolean;
 }
 
 export interface SuggestionStateResult {
@@ -58,11 +62,13 @@ export interface SuggestionStateResult {
 }
 
 export interface SuggestionVotingResult {
-  userVotes: string[];
-  setUserVotes: React.Dispatch<React.SetStateAction<string[]>>;
+  userVotes: Record<string, 'up' | 'down'>;
+  setUserVotes: React.Dispatch<React.SetStateAction<Record<string, 'up' | 'down'>>>;
   fetchUserVotes: () => Promise<void>;
-  handleVote: (id: string, increment: boolean) => Promise<void>;
+  handleVote: (id: string, voteType: 'up' | 'down') => Promise<void>;
   canVote: boolean;
+  isAuthenticated: boolean;
+  isOwnSuggestion: (suggestionId: string) => boolean;
 }
 
 export interface SuggestionFilteringResult {

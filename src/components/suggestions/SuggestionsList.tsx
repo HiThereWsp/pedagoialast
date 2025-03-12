@@ -5,10 +5,12 @@ import { Suggestion } from '@/hooks/suggestions/types';
 
 interface SuggestionsListProps {
   suggestions: Suggestion[];
-  userVotes: string[];
-  onVote: (id: string, increment: boolean) => Promise<void>;
+  userVotes: Record<string, 'up' | 'down'>;
+  onVote: (id: string, voteType: 'up' | 'down') => Promise<void>;
   isLoading: boolean;
   canVote: boolean;
+  isAuthenticated: boolean;
+  isOwnSuggestion: (suggestionId: string) => boolean;
 }
 
 export const SuggestionsList = ({ 
@@ -16,7 +18,9 @@ export const SuggestionsList = ({
   userVotes, 
   onVote, 
   isLoading,
-  canVote
+  canVote,
+  isAuthenticated,
+  isOwnSuggestion
 }: SuggestionsListProps) => {
   if (isLoading) {
     return (
@@ -41,8 +45,10 @@ export const SuggestionsList = ({
           key={suggestion.id}
           {...suggestion}
           onVote={onVote}
-          hasVoted={userVotes.includes(suggestion.id)}
-          canVote={canVote}
+          userVoteType={userVotes[suggestion.id]}
+          canVote={canVote && !isOwnSuggestion(suggestion.id)}
+          isAuthenticated={isAuthenticated}
+          isOwnSuggestion={isOwnSuggestion(suggestion.id)}
         />
       ))}
     </div>

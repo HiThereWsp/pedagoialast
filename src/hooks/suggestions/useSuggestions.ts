@@ -25,7 +25,9 @@ export const useSuggestions = (): UseSuggestionsResult => {
     userVotes,
     fetchUserVotes,
     handleVote,
-    canVote
+    canVote,
+    isAuthenticated,
+    isOwnSuggestion
   } = useSuggestionVoting(suggestions, setSuggestions);
 
   const {
@@ -40,8 +42,8 @@ export const useSuggestions = (): UseSuggestionsResult => {
 
   // Récupérer les suggestions et les votes au chargement
   useEffect(() => {
+    fetchSuggestions();
     if (user) {
-      fetchSuggestions();
       fetchUserVotes();
     }
   }, [user, fetchSuggestions, fetchUserVotes]);
@@ -64,6 +66,8 @@ export const useSuggestions = (): UseSuggestionsResult => {
     handleAddSuggestion,
     filteredSuggestions,
     refetchSuggestions: fetchSuggestions,
-    canVote
+    canVote,
+    isAuthenticated,
+    isOwnSuggestion
   };
 };

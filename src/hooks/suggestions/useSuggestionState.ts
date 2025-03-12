@@ -23,8 +23,6 @@ export const useSuggestionState = (): SuggestionStateResult => {
   const { toast } = useToast();
 
   const fetchSuggestions = useCallback(async () => {
-    if (!user) return;
-    
     try {
       setIsLoading(true);
       
@@ -59,7 +57,7 @@ export const useSuggestionState = (): SuggestionStateResult => {
     } finally {
       setIsLoading(false);
     }
-  }, [user, toast]);
+  }, [toast]);
 
   const initializeDefaultSuggestions = async () => {
     try {
@@ -101,6 +99,7 @@ export const useSuggestionState = (): SuggestionStateResult => {
         votes: 0,
         status: 'créé',
         author: user.email?.split('@')[0] || "Utilisateur",
+        author_id: user.id,
         created_at: new Date().toISOString()
       };
 

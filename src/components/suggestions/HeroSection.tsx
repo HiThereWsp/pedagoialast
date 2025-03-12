@@ -5,9 +5,10 @@ import { Plus } from 'lucide-react';
 
 interface HeroSectionProps {
   onNewSuggestion: () => void;
+  isAuthenticated: boolean;
 }
 
-export const HeroSection = ({ onNewSuggestion }: HeroSectionProps) => {
+export const HeroSection = ({ onNewSuggestion, isAuthenticated }: HeroSectionProps) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <div className="flex flex-col md:flex-row items-center gap-4">
@@ -23,10 +24,18 @@ export const HeroSection = ({ onNewSuggestion }: HeroSectionProps) => {
             <Button 
               onClick={onNewSuggestion}
               className="w-full md:w-auto bg-[#FF9633] text-white hover:bg-[#FF9633]/90 transition-all duration-200 shadow-sm rounded-lg"
+              disabled={!isAuthenticated}
+              title={isAuthenticated ? "Proposer une nouvelle idée" : "Vous devez être connecté pour proposer une idée"}
             >
               <Plus className="w-4 h-4 mr-2" />
               Proposer une idée
             </Button>
+            
+            {!isAuthenticated && (
+              <p className="text-sm text-amber-600">
+                Connectez-vous pour proposer et voter pour des idées.
+              </p>
+            )}
           </div>
         </div>
       </div>

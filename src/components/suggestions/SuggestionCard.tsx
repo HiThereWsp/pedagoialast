@@ -11,9 +11,11 @@ interface SuggestionCardProps {
   votes: number;
   status: string;
   author: string;
-  onVote: (id: string, increment: boolean) => void;
-  hasVoted: boolean;
+  onVote: (id: string, voteType: 'up' | 'down') => Promise<void>;
+  userVoteType?: 'up' | 'down';
   canVote: boolean;
+  isAuthenticated: boolean;
+  isOwnSuggestion: boolean;
 }
 
 export const SuggestionCard = ({
@@ -24,14 +26,44 @@ export const SuggestionCard = ({
   status,
   author,
   onVote,
-  hasVoted,
-  canVote
+  userVoteType,
+  canVote,
+  isAuthenticated,
+  isOwnSuggestion
 }: SuggestionCardProps) => {
   // Simplifier le prénom de l'auteur (si c'est une adresse email, prendre la partie avant @)
   const authorFirstName = author.includes('@') ? author.split('@')[0] : author;
   
   // Affichage du statut correct
   const displayStatus = status === 'créé' ? 'Demandée' : status === 'complété' ? 'Complétée' : status;
+  
+  const getUpvoteButtonClass = () => {
+    if (!isAuthenticated) return "text-gray-300 cursor-not-allowed opacity-50";
+    if (isOwnSuggestion) return "text-gray-300 cursor-not-allowed opacity-50";
+    if (userVoteType === 'up') return "text-[#FF9633]";
+    return "text-gray-400 hover:text-[#FF9633]";
+  };
+
+  const getDownvoteButtonClass = () => {
+    if (!isAuthenticated) return "text-gray-300 cursor-not-allowed opacity-50";
+    if (isOwnSuggestion) return "text-gray-300 cursor-not-allowed opacity-50";
+    if (userVoteType === 'down') return "text-[#FF9633]";
+    return "text-gray-400 hover:text-[#FF9633]";
+  };
+
+  const getUpvoteButtonTitle = () => {
+    if (!isAuthenticated) return "Vous devez être connecté pour voter";
+    if (isOwnSuggestion) return "Vous ne pouvez pas voter pour vos propres suggestions";
+    if (userVoteType === 'up') return "Cliquez pour retirer votre vote positif";
+    return "Voter positivement pour cette suggestion";
+  };
+
+  const getDownvoteButtonTitle = () => {
+    if (!isAuthenticated) return "Vous devez être connecté pour voter";
+    if (isOwnSuggestion) return "Vous ne pouvez pas voter pour vos propres suggestions";
+    if (userVoteType === 'down') return "Cliquez pour retirer votre vote négatif";
+    return "Voter négativement pour cette suggestion";
+  };
   
   return (
     <Card className={`p-4 bg-white shadow-sm rounded-lg transition-shadow hover:shadow-md ${
@@ -46,14 +78,10 @@ export const SuggestionCard = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`p-1 rounded-full ${
-              hasVoted ? 'text-[#FF9633]' : canVote ? 'text-gray-400 hover:text-[#FF9633]' : 'text-gray-300'
-            } ${!canVote && !hasVoted ? 'cursor-not-allowed opacity-50' : 'hover:bg-[#FF9633]/10'}`} 
-            onClick={() => onVote(id, true)}
-            disabled={hasVoted || !canVote}
-            title={hasVoted ? "Vous avez déjà voté pour cette suggestion" : 
-                   !canVote ? "Vous avez atteint la limite de 3 votes" : 
-                   "Voter pour cette suggestion"}
+            className={`p-1 rounded-full ${getUpvoteButtonClass()} ${canVote ? 'hover:bg-[#FF9633]/10' : ''}`} 
+            onClick={() => onVote(id, 'up')}
+            disabled={!canVote}
+            title={getUpvoteButtonTitle()}
           >
             <ChevronUp className="w-5 h-5" />
           </Button>
@@ -61,12 +89,10 @@ export const SuggestionCard = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className={`p-1 rounded-full ${
-              hasVoted ? 'text-gray-400 hover:text-[#FF9633]/80' : 'text-gray-300 cursor-not-allowed opacity-50'
-            } hover:bg-[#FF9633]/10`} 
-            onClick={() => onVote(id, false)}
-            disabled={!hasVoted}
-            title={!hasVoted ? "Vous n'avez pas voté pour cette suggestion" : "Retirer votre vote"}
+            className={`p-1 rounded-full ${getDownvoteButtonClass()} ${canVote ? 'hover:bg-[#FF9633]/10' : ''}`} 
+            onClick={() => onVote(id, 'down')}
+            disabled={!canVote}
+            title={getDownvoteButtonTitle()}
           >
             <ChevronDown className="w-5 h-5" />
           </Button>
@@ -84,6 +110,11 @@ export const SuggestionCard = ({
           <p className="text-gray-600 mb-3 leading-relaxed text-left">{description}</p>
           <div className="text-sm text-gray-400">
             <span>{authorFirstName}</span>
+            {isOwnSuggestion && (
+              <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                Votre suggestion
+              </span>
+            )}
           </div>
         </div>
       </div>

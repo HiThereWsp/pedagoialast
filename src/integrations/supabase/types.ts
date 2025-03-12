@@ -651,24 +651,28 @@ export type Database = {
           id: string
           suggestion_id: string
           user_id: string
+          vote_type: string
         }
         Insert: {
           created_at?: string | null
           id?: string
           suggestion_id: string
           user_id: string
+          vote_type?: string
         }
         Update: {
           created_at?: string | null
           id?: string
           suggestion_id?: string
           user_id?: string
+          vote_type?: string
         }
         Relationships: []
       }
       suggestions: {
         Row: {
           author: string
+          author_id: string | null
           created_at: string | null
           description: string
           id: string
@@ -678,6 +682,7 @@ export type Database = {
         }
         Insert: {
           author: string
+          author_id?: string | null
           created_at?: string | null
           description: string
           id: string
@@ -687,6 +692,7 @@ export type Database = {
         }
         Update: {
           author?: string
+          author_id?: string | null
           created_at?: string | null
           description?: string
           id?: string

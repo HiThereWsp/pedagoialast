@@ -25,7 +25,9 @@ const SuggestionsPage = () => {
     setSelectedStatus,
     sortBy,
     setSortBy,
-    canVote
+    canVote,
+    isAuthenticated,
+    isOwnSuggestion
   } = useSuggestions();
 
   return (
@@ -35,6 +37,7 @@ const SuggestionsPage = () => {
         
         <HeroSection 
           onNewSuggestion={() => setShowNewSuggestionForm(true)}
+          isAuthenticated={isAuthenticated}
         />
 
         <SuggestionFilters
@@ -64,6 +67,8 @@ const SuggestionsPage = () => {
           onVote={handleVote}
           isLoading={isLoading}
           canVote={canVote}
+          isAuthenticated={isAuthenticated}
+          isOwnSuggestion={isOwnSuggestion}
         />
       </div>
     </div>

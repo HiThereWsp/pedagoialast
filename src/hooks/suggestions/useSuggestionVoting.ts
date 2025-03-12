@@ -9,17 +9,21 @@ export const useSuggestionVoting = (
   suggestions: Suggestion[],
   setSuggestions: React.Dispatch<React.SetStateAction<Suggestion[]>>
 ): SuggestionVotingResult => {
-  const [userVotes, setUserVotes] = useState<string[]>([]);
+  const [userVotes, setUserVotes] = useState<Record<string, 'up' | 'down'>>({});
   const { user } = useAuth();
   const { toast } = useToast();
+  const isAuthenticated = !!user;
 
   const fetchUserVotes = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      setUserVotes({});
+      return;
+    }
     
     try {
       const { data, error } = await supabase
         .from('suggestion_votes')
-        .select('suggestion_id')
+        .select('suggestion_id, vote_type')
         .eq('user_id', user.id);
 
       if (error) {
@@ -28,7 +32,11 @@ export const useSuggestionVoting = (
       }
 
       if (data) {
-        setUserVotes(data.map(vote => vote.suggestion_id));
+        const votes: Record<string, 'up' | 'down'> = {};
+        data.forEach(vote => {
+          votes[vote.suggestion_id] = vote.vote_type as 'up' | 'down';
+        });
+        setUserVotes(votes);
       }
     } catch (error) {
       console.error('Erreur inattendue:', error);
@@ -39,83 +47,133 @@ export const useSuggestionVoting = (
     fetchUserVotes();
   }, [fetchUserVotes]);
 
-  const handleVote = async (id: string, increment: boolean) => {
-    // We no longer check for authentication
+  const isOwnSuggestion = useCallback((suggestionId: string) => {
+    if (!user) return false;
     
-    const voteChange = increment ? 1 : -1;
-    
-    // Enregistrer le vote sans vérifications
-    if (increment) {
-      const { error: voteError } = await supabase
-        .from('suggestion_votes')
-        .insert({ user_id: user?.id || 'anonymous', suggestion_id: id });
-        
-      if (voteError) {
-        console.error('Erreur lors de l\'ajout du vote:', voteError);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer votre vote.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Mettre à jour la liste des votes de l'utilisateur
-      setUserVotes([...userVotes, id]);
-    } else {
-      // Supprimer le vote sans vérifications
-      const { error: voteError } = await supabase
-        .from('suggestion_votes')
-        .delete()
-        .eq('suggestion_id', id);
-        
-      if (voteError) {
-        console.error('Erreur lors de la suppression du vote:', voteError);
-        toast({
-          title: "Erreur",
-          description: "Impossible de retirer votre vote.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Mettre à jour la liste des votes de l'utilisateur
-      setUserVotes(userVotes.filter(v => v !== id));
-    }
-    
-    // Récupérer la suggestion actuelle
-    const suggestion = suggestions.find(s => s.id === id);
-    if (!suggestion) return;
-    
-    // Mettre à jour le compteur de votes de la suggestion
-    const { error: updateError } = await supabase
-      .from('suggestions')
-      .update({ votes: suggestion.votes + voteChange })
-      .eq('id', id);
-      
-    if (updateError) {
-      console.error('Erreur lors de la mise à jour des votes:', updateError);
+    const suggestion = suggestions.find(s => s.id === suggestionId);
+    return suggestion?.author_id === user.id;
+  }, [user, suggestions]);
+
+  const handleVote = async (id: string, voteType: 'up' | 'down') => {
+    if (!user) {
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le compteur de votes.",
+        title: "Authentification requise",
+        description: "Vous devez être connecté pour voter.",
         variant: "destructive"
       });
       return;
     }
     
-    // Mettre à jour l'état local
-    setSuggestions(suggestions.map(s =>
-      s.id === id
-        ? { ...s, votes: s.votes + voteChange }
-        : s
-    ));
+    if (isOwnSuggestion(id)) {
+      toast({
+        title: "Action non autorisée",
+        description: "Vous ne pouvez pas voter pour vos propres suggestions.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    toast({
-      title: increment ? "Vote ajouté" : "Vote retiré",
-      description: increment 
-        ? "Votre vote a été ajouté avec succès." 
-        : "Votre vote a été retiré avec succès."
-    });
+    const currentVote = userVotes[id];
+    let voteChange = 0;
+    
+    try {
+      // Si l'utilisateur a déjà voté pour cette suggestion
+      if (currentVote) {
+        // Si c'est le même type de vote, supprimer le vote
+        if (currentVote === voteType) {
+          const { error } = await supabase
+            .from('suggestion_votes')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('suggestion_id', id);
+            
+          if (error) throw error;
+          
+          // Mettre à jour le compteur selon le type de vote retiré
+          voteChange = voteType === 'up' ? -1 : 1;
+          
+          // Mettre à jour l'état local des votes
+          const newUserVotes = { ...userVotes };
+          delete newUserVotes[id];
+          setUserVotes(newUserVotes);
+          
+          toast({
+            title: "Vote retiré",
+            description: "Votre vote a été retiré avec succès."
+          });
+        } 
+        // Si c'est un type de vote différent, mettre à jour le vote
+        else {
+          const { error } = await supabase
+            .from('suggestion_votes')
+            .update({ vote_type: voteType })
+            .eq('user_id', user.id)
+            .eq('suggestion_id', id);
+            
+          if (error) throw error;
+          
+          // Mettre à jour le compteur (changement double car on passe de +1 à -1 ou vice versa)
+          voteChange = voteType === 'up' ? 2 : -2;
+          
+          // Mettre à jour l'état local des votes
+          setUserVotes({ ...userVotes, [id]: voteType });
+          
+          toast({
+            title: "Vote modifié",
+            description: `Votre vote a été changé en vote ${voteType === 'up' ? 'positif' : 'négatif'}.`
+          });
+        }
+      } 
+      // Si l'utilisateur n'a pas encore voté pour cette suggestion
+      else {
+        const { error } = await supabase
+          .from('suggestion_votes')
+          .insert({ 
+            user_id: user.id, 
+            suggestion_id: id,
+            vote_type: voteType
+          });
+          
+        if (error) throw error;
+        
+        // Mettre à jour le compteur selon le type de vote
+        voteChange = voteType === 'up' ? 1 : -1;
+        
+        // Mettre à jour l'état local des votes
+        setUserVotes({ ...userVotes, [id]: voteType });
+        
+        toast({
+          title: "Vote ajouté",
+          description: `Votre vote ${voteType === 'up' ? 'positif' : 'négatif'} a été enregistré.`
+        });
+      }
+      
+      // Mettre à jour le compteur de votes de la suggestion
+      const suggestion = suggestions.find(s => s.id === id);
+      if (!suggestion) return;
+      
+      const { error: updateError } = await supabase
+        .from('suggestions')
+        .update({ votes: suggestion.votes + voteChange })
+        .eq('id', id);
+        
+      if (updateError) throw updateError;
+      
+      // Mettre à jour l'état local des suggestions
+      setSuggestions(suggestions.map(s =>
+        s.id === id
+          ? { ...s, votes: s.votes + voteChange }
+          : s
+      ));
+      
+    } catch (error: any) {
+      console.error('Erreur lors de la gestion du vote:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Une erreur est survenue lors du traitement de votre vote.",
+        variant: "destructive"
+      });
+    }
   };
 
   return {
@@ -123,6 +181,8 @@ export const useSuggestionVoting = (
     setUserVotes,
     fetchUserVotes,
     handleVote,
-    canVote: true // Toujours permettre le vote
+    canVote: isAuthenticated,
+    isAuthenticated,
+    isOwnSuggestion
   };
 };
