@@ -41,6 +41,7 @@ export interface UseSuggestionsResult {
   handleAddSuggestion: () => Promise<void>;
   filteredSuggestions: Suggestion[];
   refetchSuggestions: () => Promise<void>;
+  canVote: boolean;
 }
 
 export interface SuggestionStateResult {
@@ -61,6 +62,7 @@ export interface SuggestionVotingResult {
   setUserVotes: React.Dispatch<React.SetStateAction<string[]>>;
   fetchUserVotes: () => Promise<void>;
   handleVote: (id: string, increment: boolean) => Promise<void>;
+  canVote: boolean;
 }
 
 export interface SuggestionFilteringResult {

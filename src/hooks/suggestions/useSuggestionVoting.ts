@@ -58,6 +58,16 @@ export const useSuggestionVoting = (
         return;
       }
       
+      // Vérifier si l'utilisateur a atteint la limite de 3 votes
+      if (userVotes.length >= 3) {
+        toast({
+          title: "Limite de votes atteinte",
+          description: "Vous avez atteint la limite de 3 votes. Retirez un vote avant d'en ajouter un nouveau.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       // Enregistrer le vote
       const { error: voteError } = await supabase
         .from('suggestion_votes')
@@ -145,6 +155,7 @@ export const useSuggestionVoting = (
     userVotes,
     setUserVotes,
     fetchUserVotes,
-    handleVote
+    handleVote,
+    canVote: userVotes.length < 3
   };
 };

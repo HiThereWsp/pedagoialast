@@ -24,7 +24,8 @@ export const useSuggestions = (): UseSuggestionsResult => {
   const {
     userVotes,
     fetchUserVotes,
-    handleVote
+    handleVote,
+    canVote
   } = useSuggestionVoting(suggestions, setSuggestions);
 
   const {
@@ -62,6 +63,7 @@ export const useSuggestions = (): UseSuggestionsResult => {
     handleVote,
     handleAddSuggestion,
     filteredSuggestions,
-    refetchSuggestions: fetchSuggestions
+    refetchSuggestions: fetchSuggestions,
+    canVote
   };
 };

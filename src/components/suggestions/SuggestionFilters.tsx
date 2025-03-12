@@ -37,7 +37,7 @@ export const SuggestionFilters = ({
             className={`rounded-lg ${selectedStatus === 'créé' ? 'bg-[#FF9633]/10 text-[#FF9633]' : 'text-gray-500'}`}
             size="sm"
           >
-            En cours
+            Demandées
           </Button>
           <Button
             variant="ghost"

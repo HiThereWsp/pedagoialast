@@ -8,9 +8,16 @@ interface SuggestionsListProps {
   userVotes: string[];
   onVote: (id: string, increment: boolean) => Promise<void>;
   isLoading: boolean;
+  canVote: boolean;
 }
 
-export const SuggestionsList = ({ suggestions, userVotes, onVote, isLoading }: SuggestionsListProps) => {
+export const SuggestionsList = ({ 
+  suggestions, 
+  userVotes, 
+  onVote, 
+  isLoading,
+  canVote
+}: SuggestionsListProps) => {
   if (isLoading) {
     return (
       <div className="text-center py-10">
@@ -35,6 +42,7 @@ export const SuggestionsList = ({ suggestions, userVotes, onVote, isLoading }: S
           {...suggestion}
           onVote={onVote}
           hasVoted={userVotes.includes(suggestion.id)}
+          canVote={canVote && userVotes.length < 3}
         />
       ))}
     </div>
