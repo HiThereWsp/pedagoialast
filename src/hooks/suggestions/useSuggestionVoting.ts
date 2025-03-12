@@ -40,32 +40,15 @@ export const useSuggestionVoting = (
   }, [fetchUserVotes]);
 
   const handleVote = async (id: string, increment: boolean) => {
-    if (!user) {
-      toast({
-        title: "Authentification requise",
-        description: "Vous devez être connecté pour voter.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+    // We no longer check for authentication
+    
     const voteChange = increment ? 1 : -1;
     
-    // Si l'utilisateur essaie d'ajouter un vote
+    // Enregistrer le vote sans vérifications
     if (increment) {
-      // Vérifier si l'utilisateur a déjà voté pour cette suggestion
-      if (userVotes.includes(id)) {
-        toast({
-          title: "Vote déjà enregistré",
-          description: "Vous avez déjà voté pour cette suggestion."
-        });
-        return;
-      }
-      
-      // Enregistrer le vote
       const { error: voteError } = await supabase
         .from('suggestion_votes')
-        .insert({ user_id: user.id, suggestion_id: id });
+        .insert({ user_id: user?.id || 'anonymous', suggestion_id: id });
         
       if (voteError) {
         console.error('Erreur lors de l\'ajout du vote:', voteError);
@@ -80,20 +63,10 @@ export const useSuggestionVoting = (
       // Mettre à jour la liste des votes de l'utilisateur
       setUserVotes([...userVotes, id]);
     } else {
-      // Si l'utilisateur retire son vote
-      if (!userVotes.includes(id)) {
-        toast({
-          title: "Aucun vote à retirer",
-          description: "Vous n'avez pas voté pour cette suggestion."
-        });
-        return;
-      }
-      
-      // Supprimer le vote
+      // Supprimer le vote sans vérifications
       const { error: voteError } = await supabase
         .from('suggestion_votes')
         .delete()
-        .eq('user_id', user.id)
         .eq('suggestion_id', id);
         
       if (voteError) {
