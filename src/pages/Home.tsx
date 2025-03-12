@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
@@ -9,7 +8,6 @@ import { UserMenu } from "@/components/home/UserMenu"
 import { WelcomeMessage } from "@/components/home/WelcomeMessage"
 import { ActionButtons } from "@/components/home/ActionButtons"
 import { Footer } from "@/components/home/Footer"
-import { UpdateNotification } from "@/components/home/UpdateNotification"
 import { useToast } from "@/hooks/use-toast"
 import { SEO } from "@/components/SEO"
 import { Tiles } from "@/components/ui/tiles"
@@ -57,15 +55,11 @@ const Home = () => {
       }
     };
     
-    // Charger le profil uniquement si l'authentification est prête et qu'un utilisateur est connecté
     if (authReady) {
       if (user) {
         loadUserProfile();
-        
-        // Vérification de l'envoi d'email de bienvenue
         checkWelcomeEmail();
       } else {
-        // Rediriger vers login si pas d'utilisateur
         navigate('/login');
       }
     }
@@ -105,8 +99,6 @@ const Home = () => {
             handleEmailError(emailError);
           } else {
             console.log("Email de bienvenue envoyé avec succès");
-            
-            // Mise à jour du statut dans la base de données
             await supabase
               .from('user_profiles')
               .update({ welcome_email_sent: true })
@@ -157,7 +149,6 @@ const Home = () => {
           <WelcomeMessage firstName={firstName} />
           <ActionButtons />
           <Footer />
-          <UpdateNotification />
         </div>
       </div>
     </>
