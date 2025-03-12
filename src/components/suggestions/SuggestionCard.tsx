@@ -56,14 +56,14 @@ export const SuggestionCard = ({
   const getUpvoteButtonTitle = () => {
     if (!isAuthenticated) return "Vous devez être connecté pour voter";
     if (isOwnSuggestion) return "Vous ne pouvez pas voter pour vos propres suggestions";
-    if (userVoteType === 'up') return "Cliquez pour retirer votre vote positif";
+    if (userVoteType === 'up') return "Vous avez voté pour cette fonctionnalité";
     return "Voter positivement pour cette suggestion";
   };
 
   const getDownvoteButtonTitle = () => {
     if (!isAuthenticated) return "Vous devez être connecté pour voter";
     if (isOwnSuggestion) return "Vous ne pouvez pas voter pour vos propres suggestions";
-    if (userVoteType === 'down') return "Cliquez pour retirer votre vote négatif";
+    if (userVoteType === 'down') return "Vous avez voté contre cette fonctionnalité";
     return "Voter négativement pour cette suggestion";
   };
 
@@ -79,8 +79,7 @@ export const SuggestionCard = ({
             : 'bg-gray-100 text-gray-600 border-gray-300'
         }`}
       >
-        <Check className="w-3 h-3 mr-1" />
-        {userVoteType === 'up' ? 'Voté pour' : 'Voté contre'}
+        <Check className="w-3 h-3" />
       </Badge>
     );
   };
@@ -160,14 +159,23 @@ export const SuggestionCard = ({
               </span>
             )}
             {userVoteType && (
-              <span className={`ml-2 text-xs ${
-                userVoteType === 'up' 
-                  ? 'bg-[#FF9633]/10 text-[#FF9633]' 
-                  : 'bg-gray-100 text-gray-600'
-              } px-2 py-0.5 rounded-full inline-flex items-center`}>
-                <Check className="w-3 h-3 mr-1" />
-                {userVoteType === 'up' ? 'Vous avez voté pour' : 'Vous avez voté contre'}
-              </span>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className={`ml-2 text-xs ${
+                      userVoteType === 'up' 
+                        ? 'bg-[#FF9633]/10 text-[#FF9633]' 
+                        : 'bg-gray-100 text-gray-600'
+                    } px-2 py-0.5 rounded-full inline-flex items-center`}>
+                      <Check className="w-3 h-3 mr-1" />
+                      {userVoteType === 'up' ? 'Pour' : 'Contre'}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{userVoteType === 'up' ? 'Vous avez voté pour cette fonctionnalité' : 'Vous avez voté contre cette fonctionnalité'}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
         </div>

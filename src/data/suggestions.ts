@@ -1,6 +1,33 @@
 
 export const initialSuggestions = [
   {
+    id: "img-1",
+    title: "Générateur d'images",
+    description: "Créez des images personnalisées pour illustrer vos supports pédagogiques et vos documents de classe.",
+    votes: 45,
+    status: 'complété',
+    author: "Marie",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "exo-seq-1",
+    title: "Possibilité de créer des exercices à partir d'une séquence",
+    description: "Générez des exercices adaptés directement depuis vos séquences pédagogiques pour un alignement parfait avec votre progression.",
+    votes: 38,
+    status: 'complété',
+    author: "Thomas",
+    created_at: new Date().toISOString()
+  },
+  {
+    id: "save-1",
+    title: "Avoir un espace de sauvegarde de toutes les ressources générées",
+    description: "Centralisez et organisez toutes vos ressources créées avec PedagoIA dans un espace de stockage unique.",
+    votes: 52,
+    status: 'complété',
+    author: "Sophie",
+    created_at: new Date().toISOString()
+  },
+  {
     id: "report-1",
     title: "Assistant pour les comptes-rendus",
     description: "Générez rapidement des comptes-rendus détaillés pour les conseils de classe, les réunions pédagogiques ou les entretiens avec les parents.",
