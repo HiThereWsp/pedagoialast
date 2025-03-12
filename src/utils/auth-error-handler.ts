@@ -47,6 +47,11 @@ export const getAuthErrorMessage = (error: AuthError): string => {
     return "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception."
   }
   
+  // Détecter spécifiquement les erreurs liées aux utilisateurs existants
+  if (error.message && error.message.includes("User already registered")) {
+    return "Un compte existe déjà avec cet email. Veuillez vous connecter."
+  }
+  
   return "Une erreur est survenue. Veuillez réessayer."
 }
 
@@ -94,4 +99,19 @@ export const validateForgotPasswordForm = (email: string) => {
   }
 
   return errors
+}
+
+// Fonction pour déterminer si l'erreur indique que l'utilisateur existe déjà
+export const isUserExistsError = (error: AuthError): boolean => {
+  if (error instanceof AuthApiError) {
+    // Vérifier les codes et messages d'erreur spécifiques à Supabase pour les utilisateurs existants
+    return (
+      (error.status === 400 && error.message.includes("User already registered")) ||
+      (error.message.includes("already exists")) ||
+      (error.message.includes("already registered")) ||
+      (error.message.includes("already in use"))
+    );
+  }
+  
+  return false;
 }

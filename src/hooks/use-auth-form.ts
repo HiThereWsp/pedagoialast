@@ -76,7 +76,8 @@ export const useAuthForm = () => {
         firstName: firstName
       });
 
-      const { error } = await supabase.auth.signUp({
+      // Première vérification - exécuter une opération d'authentification légère pour voir si l'utilisateur existe
+      const { data: { user: existingUser }, error: checkError } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
         options: {
@@ -86,9 +87,15 @@ export const useAuthForm = () => {
         }
       })
 
-      if (error) {
-        console.error("Supabase signup error:", error);
-        throw error
+      // Si un utilisateur est retourné mais qu'il est déjà confirmé, cela indique probablement un compte existant
+      if (existingUser && existingUser.identities && existingUser.identities.length === 0) {
+        // Cela signifie que l'utilisateur existe déjà
+        throw new AuthError("User already registered", 400)
+      }
+
+      if (checkError) {
+        console.error("Supabase signup error:", checkError);
+        throw checkError
       }
 
       setSignUpSuccess(true)

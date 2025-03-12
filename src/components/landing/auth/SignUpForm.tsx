@@ -1,4 +1,5 @@
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -8,8 +9,9 @@ import { AuthFormField } from "./AuthFormField"
 import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
 import { useEffect } from "react"
-import { getAuthErrorMessage } from "@/utils/auth-error-handler"
+import { getAuthErrorMessage, isUserExistsError } from "@/utils/auth-error-handler"
 import { AuthError } from "@supabase/supabase-js"
+import { ExistingUserDialog } from "./ExistingUserDialog"
 
 interface SignUpFormProps {
   onToggleMode: () => void
@@ -18,6 +20,7 @@ interface SignUpFormProps {
 export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
   const { formState, setField, handleSignUp, signUpSuccess } = useAuthForm()
   const { toast } = useToast()
+  const [showExistingUserDialog, setShowExistingUserDialog] = useState(false)
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,6 +54,13 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
         error_type: error?.message || 'unknown'
       })
       
+      // Vérifier si l'erreur indique que l'utilisateur existe déjà
+      if (error instanceof AuthError && isUserExistsError(error)) {
+        // Ouvrir le dialogue pour informer l'utilisateur qu'il a déjà un compte
+        setShowExistingUserDialog(true)
+        return
+      }
+      
       let errorMessage = "Une erreur est survenue lors de l'inscription. Veuillez réessayer."
       
       if (error instanceof AuthError) {
@@ -77,62 +87,71 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
   return signUpSuccess ? (
     <p>Merci pour votre inscription ! Veuillez vérifier votre email ({formState.email}) pour le lien de confirmation.</p>
   ) : (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <AuthFormField
-        id="firstName"
-        label="Prénom"
-        value={formState.firstName || ""}
-        onChange={(value) => setField("firstName", value)}
-        placeholder="Votre prénom"
-      />
-      
-      <AuthFormField
-        id="email"
-        label="Email"
-        type="email"
-        value={formState.email}
-        onChange={(value) => setField("email", value)}
-        placeholder="Votre email"
-      />
-      
-      <AuthFormField
-        id="password"
-        label="Mot de passe"
-        type="password"
-        value={formState.password}
-        onChange={(value) => setField("password", value)}
-        placeholder="Votre mot de passe"
-      />
-
-      <div className="flex items-start space-x-2">
-        <Checkbox 
-          id="terms" 
-          checked={formState.acceptedTerms}
-          onCheckedChange={(checked) => setField("acceptedTerms", checked === true)}
-          className="mt-1"
+    <>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <AuthFormField
+          id="firstName"
+          label="Prénom"
+          value={formState.firstName || ""}
+          onChange={(value) => setField("firstName", value)}
+          placeholder="Votre prénom"
         />
-        <div className="grid gap-1.5 leading-none">
-          <Label
-            htmlFor="terms"
-            className="text-sm text-muted-foreground leading-relaxed"
-          >
-            J'accepte les <TermsDialog /> et la politique de confidentialité de Pedagoia
-          </Label>
+        
+        <AuthFormField
+          id="email"
+          label="Email"
+          type="email"
+          value={formState.email}
+          onChange={(value) => setField("email", value)}
+          placeholder="Votre email"
+        />
+        
+        <AuthFormField
+          id="password"
+          label="Mot de passe"
+          type="password"
+          value={formState.password}
+          onChange={(value) => setField("password", value)}
+          placeholder="Votre mot de passe"
+        />
+
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="terms" 
+            checked={formState.acceptedTerms}
+            onCheckedChange={(checked) => setField("acceptedTerms", checked === true)}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <Label
+              htmlFor="terms"
+              className="text-sm text-muted-foreground leading-relaxed"
+            >
+              J'accepte les <TermsDialog /> et la politique de confidentialité de Pedagoia
+            </Label>
+          </div>
         </div>
-      </div>
 
-      <Button type="submit" className="w-full" disabled={formState.isLoading}>
-        {formState.isLoading ? "Inscription en cours..." : "S'inscrire"}
-      </Button>
+        <Button type="submit" className="w-full" disabled={formState.isLoading}>
+          {formState.isLoading ? "Inscription en cours..." : "S'inscrire"}
+        </Button>
 
-      <Button 
-        type="button" 
-        variant="ghost" 
-        className="w-full"
-        onClick={onToggleMode}
-      >
-        Déjà inscrit ? Se connecter
-      </Button>
-    </form>
+        <Button 
+          type="button" 
+          variant="ghost" 
+          className="w-full"
+          onClick={onToggleMode}
+        >
+          Déjà inscrit ? Se connecter
+        </Button>
+      </form>
+
+      <ExistingUserDialog
+        email={formState.email}
+        open={showExistingUserDialog}
+        onOpenChange={setShowExistingUserDialog}
+        onToggleMode={onToggleMode}
+      />
+    </>
   )
 }
