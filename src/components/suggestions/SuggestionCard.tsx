@@ -66,21 +66,6 @@ export const SuggestionCard = ({
     if (userVoteType === 'down') return "Vous avez voté contre cette fonctionnalité";
     return "Voter négativement pour cette suggestion";
   };
-
-  const renderVoteIndicator = () => {
-    if (!isAuthenticated || !userVoteType) return null;
-    
-    return (
-      <Badge 
-        variant="outline" 
-        className={`absolute -left-2 -top-2 z-10 px-2 py-1 ${
-          userVoteType === 'up' 
-            ? 'bg-[#FF9633]/20 text-[#FF9633] border-[#FF9633]' 
-            : 'bg-gray-100 text-gray-600 border-gray-300'
-        }`}
-      />
-    );
-  };
   
   return (
     <Card className={`p-4 bg-white shadow-sm rounded-lg transition-shadow hover:shadow-md relative ${
@@ -90,8 +75,6 @@ export const SuggestionCard = ({
       id.includes('agenda') ? 'border-l-4 border-[#FF9EBC]' : 
       'border-l-4 border-[#FFEE7D]'
     }`}>
-      {userVoteType && renderVoteIndicator()}
-      
       <div className="flex gap-4">
         <div className="flex flex-col items-center">
           <TooltipProvider>
@@ -155,24 +138,6 @@ export const SuggestionCard = ({
               <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
                 Votre suggestion
               </span>
-            )}
-            {userVoteType && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className={`ml-2 text-xs ${
-                      userVoteType === 'up' 
-                        ? 'bg-[#FF9633]/10 text-[#FF9633]' 
-                        : 'bg-gray-100 text-gray-600'
-                    } px-2 py-0.5 rounded-full inline-flex items-center`}>
-                      {userVoteType === 'up' ? 'Pour' : 'Contre'}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{userVoteType === 'up' ? 'Vous avez voté pour cette fonctionnalité' : 'Vous avez voté contre cette fonctionnalité'}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
             )}
           </div>
         </div>
