@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronUp, ChevronDown, Check } from 'lucide-react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SuggestionCardProps {
@@ -78,9 +78,7 @@ export const SuggestionCard = ({
             ? 'bg-[#FF9633]/20 text-[#FF9633] border-[#FF9633]' 
             : 'bg-gray-100 text-gray-600 border-gray-300'
         }`}
-      >
-        <Check className="w-3 h-3" />
-      </Badge>
+      />
     );
   };
   
@@ -167,7 +165,6 @@ export const SuggestionCard = ({
                         ? 'bg-[#FF9633]/10 text-[#FF9633]' 
                         : 'bg-gray-100 text-gray-600'
                     } px-2 py-0.5 rounded-full inline-flex items-center`}>
-                      <Check className="w-3 h-3 mr-1" />
                       {userVoteType === 'up' ? 'Pour' : 'Contre'}
                     </span>
                   </TooltipTrigger>

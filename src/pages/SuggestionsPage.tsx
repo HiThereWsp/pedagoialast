@@ -19,8 +19,6 @@ const SuggestionsPage = () => {
     newSuggestion,
     showNewSuggestionForm,
     setShowNewSuggestionForm,
-    searchTerm,
-    setSearchTerm,
     selectedStatus,
     setSelectedStatus,
     sortBy,
@@ -41,9 +39,7 @@ const SuggestionsPage = () => {
         />
 
         <SuggestionFilters
-          searchTerm={searchTerm}
           selectedStatus={selectedStatus}
-          onSearchChange={setSearchTerm}
           onStatusChange={setSelectedStatus}
         />
 

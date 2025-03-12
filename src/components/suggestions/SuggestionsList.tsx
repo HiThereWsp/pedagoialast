@@ -4,7 +4,7 @@ import { SuggestionCard } from './SuggestionCard';
 import { Suggestion } from '@/hooks/suggestions/types';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
-import { Info, Check } from 'lucide-react';
+import { Info } from 'lucide-react';
 
 interface SuggestionsListProps {
   suggestions: Suggestion[];
@@ -63,15 +63,11 @@ export const SuggestionsList = ({
           
           <div className="flex items-center gap-3 text-sm">
             <div className="flex items-center">
-              <Badge variant="outline" className="bg-[#FF9633]/20 text-[#FF9633] border-[#FF9633]">
-                <Check className="w-3 h-3" />
-              </Badge>
+              <Badge variant="outline" className="bg-[#FF9633]/20 text-[#FF9633] border-[#FF9633]" />
               <span className="ml-2 text-gray-600">Vote positif</span>
             </div>
             <div className="flex items-center">
-              <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300">
-                <Check className="w-3 h-3" />
-              </Badge>
+              <Badge variant="outline" className="bg-gray-100 text-gray-600 border-gray-300" />
               <span className="ml-2 text-gray-600">Vote négatif</span>
             </div>
           </div>
