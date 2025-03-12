@@ -1,14 +1,10 @@
-
 import React from "react";
 import { SEO } from "@/components/SEO";
-import { SavedContentLoader } from "@/components/saved-content/SavedContentLoader";
-import { SavedContentError } from "@/components/saved-content/SavedContentError";
-import { SavedContentList } from "@/components/saved-content/SavedContentList";
-import { DeleteDialog } from "@/components/saved-content/DeleteDialog";
-import { ContentPreviewSheet } from "@/components/saved-content/ContentPreviewSheet";
-import { RefreshIndicator } from "@/components/saved-content/RefreshIndicator";
-import { SavedContentHeader } from "@/components/saved-content/SavedContentHeader";
-import { SavedContentTabs } from "@/components/saved-content/SavedContentTabs";
+import { SavedContentLoader } from "./SavedContentLoader";
+import { SavedContentError } from "./SavedContentError";
+import { RefreshIndicator } from "./RefreshIndicator";
+import { SavedContentHeader } from "./SavedContentHeader";
+import { SavedContentTabs } from "./SavedContentTabs";
 
 interface SavedContentContainerProps {
   isLoading: boolean;
@@ -36,16 +32,13 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
   onTabChange,
   children
 }) => {
-  console.log("📊 SavedContentContainer: État du conteneur:", { 
-    isLoading, 
-    isRefreshing, 
-    hasError, 
-    contentCount,
-    activeTab
-  });
+  const getLoadingMessage = () => {
+    if (isRefreshing) return "Actualisation des données...";
+    return "Chargement en cours...";
+  };
 
   if (isLoading && !isRefreshing && contentCount === 0) {
-    return <SavedContentLoader activeTab={activeTab} />;
+    return <SavedContentLoader message={getLoadingMessage()} />;
   }
 
   if (hasError) {
@@ -77,7 +70,7 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
         />
 
         {isRefreshing ? (
-          <RefreshIndicator waitTime={waitTime} />
+          <SavedContentLoader message="Actualisation des données..." />
         ) : contentCount === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-balance font-bold text-gray-700 dark:text-gray-300 mb-2 tracking-tight">
