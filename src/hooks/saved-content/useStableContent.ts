@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { SavedContent } from "@/types/saved-content";
+import { CONTENT_UPDATE_THROTTLE } from "./constants";
 
 /**
  * Hook pour stabiliser le contenu et éviter les rechargements intempestifs
@@ -15,8 +16,9 @@ export function useStableContent() {
   const pendingUpdateTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const forcedUpdate = useRef<boolean>(false);
   const contentHistory = useRef<SavedContent[][]>([]);  // Historique des mises à jour
+  const lastUpdateTime = useRef<number>(Date.now());
 
-  // Fonction pour mettre à jour le contenu de manière stable - OPTIMISÉE
+  // CORRECTION CRITIQUE: Fonction pour mettre à jour le contenu de manière stable
   const updateContent = useCallback((newContent: SavedContent[]) => {
     // Nettoyer tout timer en attente
     if (pendingUpdateTimer.current) {
@@ -41,10 +43,11 @@ export function useStableContent() {
       }
     }
     
-    // Forcer la mise à jour si demandé explicitement
+    // CORRECTION CRITIQUE: Appliquer systématiquement les mises à jour forcées
     if (forcedUpdate.current) {
       console.log("🔥 Mise à jour forcée du contenu stable");
       contentUpdateCount.current += 1;
+      // Utiliser directement setStableContent au lieu de setTimeout
       setStableContent(newContent);
       previousContentRef.current = [...newContent];
       contentTimestamp.current = Date.now();
@@ -53,81 +56,50 @@ export function useStableContent() {
       return;
     }
     
-    // Si le nouveau contenu a des éléments, le mettre à jour immédiatement
-    if (newContent.length > 0) {
-      const hasChanges = hasContentChanged(previousContentRef.current, newContent);
-      
-      if (hasChanges || isInitialLoad.current) {
-        console.log(`✅ Mise à jour du contenu stable avec ${newContent.length} éléments`);
-        contentUpdateCount.current += 1;
-        setStableContent(newContent);
-        previousContentRef.current = [...newContent];
-        contentTimestamp.current = Date.now();
-        isInitialLoad.current = false;
-      } else {
-        console.log("ℹ️ Contenu inchangé, pas de mise à jour");
-      }
+    // CORRECTION: Vérifier le throttling pour éviter des mises à jour trop fréquentes
+    const now = Date.now();
+    const timeSinceLastUpdate = now - lastUpdateTime.current;
+    
+    // Si le nouveau contenu a des éléments, et soit:
+    // - C'est le chargement initial
+    // - Ou il y a des changements de contenu
+    // - Ou le temps écoulé depuis la dernière mise à jour est suffisant
+    if (newContent.length > 0 && (
+        isInitialLoad.current || 
+        hasContentChanged(previousContentRef.current, newContent) ||
+        timeSinceLastUpdate > CONTENT_UPDATE_THROTTLE
+      )) {
+      console.log(`✅ Mise à jour du contenu stable avec ${newContent.length} éléments (temps écoulé: ${timeSinceLastUpdate}ms)`);
+      contentUpdateCount.current += 1;
+      // CORRECTION CRITIQUE: Utiliser directement setStableContent au lieu de setTimeout
+      setStableContent(newContent);
+      previousContentRef.current = [...newContent];
+      contentTimestamp.current = now;
+      lastUpdateTime.current = now;
+      isInitialLoad.current = false;
       return;
     }
     
-    // Si le nouveau contenu est vide et que nous avons déjà du contenu, ne pas écraser 
-    // le contenu existant immédiatement, attendre pour voir si d'autres mises à jour arrivent
+    // Si le nouveau contenu est vide et que nous avons déjà du contenu
     if (newContent.length === 0 && !isInitialLoad.current && stableContent.length > 0) {
-      console.log("⏱️ Contenu vide reçu mais contenu existant préservé temporairement");
+      console.log("⚠️ Contenu vide reçu mais contenu existant préservé");
       
-      // Réduire le délai d'attente à 1.5 secondes pour plus de réactivité
-      pendingUpdateTimer.current = setTimeout(() => {
-        console.log("⏱️ Délai d'attente écoulé pour la validation du contenu vide");
-        
-        // IMPORTANTE AMÉLIORATION: Ne jamais remplacer du contenu existant par un tableau vide
-        // sauf si nous sommes certains que c'est intentionnel (utilisateur a tout supprimé)
-        if (stableContent.length > 0 && contentHistory.current.length < 2) {
-          console.log("⚠️ Contenu vide ignoré car nous avons du contenu existant");
-          return;
-        }
-        
-        // Vérifier si on a reçu une mise à jour entre temps
-        const hasChanges = hasContentChanged(previousContentRef.current, newContent);
-        
-        if (hasChanges) {
-          console.log("✅ Mise à jour du contenu stable avec contenu vide après délai");
-          contentUpdateCount.current += 1;
-          setStableContent(newContent);
-          previousContentRef.current = [...newContent];
-          contentTimestamp.current = Date.now();
-        } else {
-          console.log("⚠️ Ignoré la mise à jour avec un tableau vide après délai");
-        }
-      }, 1500);  // Réduit de 2000ms à 1500ms
+      // CORRECTION: Ne pas utiliser de timer, vérifier immédiatement
+      // Vérifier si un des tableaux historiques récents contient des données
+      const hasRecentValidData = contentHistory.current.some(history => history.length > 0);
       
-      return;
-    }
-
-    const currentTime = Date.now();
-    
-    // Cas de figure où on applique la mise à jour immédiatement:
-    // - C'est le chargement initial (pour avoir des données au départ)
-    // - Ou si le contenu n'est pas vide
-    // - Ou si au moins 1 seconde s'est écoulée depuis la dernière mise à jour (réduit pour réactivité)
-    if (isInitialLoad.current || 
-        newContent.length > 0 || 
-        currentTime - contentTimestamp.current > 1000) {
-      
-      // Comparer les identifiants pour éviter les mises à jour inutiles
-      const hasChanges = hasContentChanged(previousContentRef.current, newContent);
-      
-      if (hasChanges || isInitialLoad.current) {
-        console.log(`✅ Mise à jour du contenu stable (${newContent.length} éléments)`);
-        contentUpdateCount.current += 1;
-        setStableContent(newContent);
-        previousContentRef.current = [...newContent];
-        contentTimestamp.current = currentTime;
-        isInitialLoad.current = false;
-      } else {
-        console.log("ℹ️ Contenu inchangé, pas de mise à jour");
+      if (hasRecentValidData) {
+        console.log("⚠️ Contenu vide ignoré car historique récent contient des données");
+        return;
       }
-    } else {
-      console.log("⏱️ Délai minimum non respecté, mise à jour ignorée");
+      
+      // Si vraiment aucune donnée récente, on peut mettre à jour avec le contenu vide
+      console.log("🔄 Mise à jour avec contenu vide (aucune donnée récente)");
+      contentUpdateCount.current += 1;
+      setStableContent(newContent);
+      previousContentRef.current = [...newContent];
+      contentTimestamp.current = now;
+      lastUpdateTime.current = now;
     }
   }, [stableContent.length]);
 
@@ -207,11 +179,13 @@ export function useStableContent() {
     return false;
   };
 
-  // Force le rafraîchissement du contenu
+  // Force le rafraîchissement du contenu et réinitialise le state
   const forceRefresh = useCallback(() => {
     console.log("🔄 Forçage de la mise à jour du contenu stable");
     isInitialLoad.current = true;
     forcedUpdate.current = true;
+    // CORRECTION CRITIQUE: on garantit que l'état forcé est immédiatement pris en compte
+    lastUpdateTime.current = 0; // Réinitialiser le temps de la dernière mise à jour
   }, []);
 
   return { 

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { SEO } from "@/components/SEO";
 import { type SavedContent } from "@/types/saved-content";
@@ -36,7 +35,7 @@ export default function SavedContentPage() {
   const { toast } = useToast();
   const { user, authReady } = useAuth();
 
-  // Use stable content hook to prevent unnecessary rerenders
+  // CORRECTION CRITIQUE: useStableContent - force update
   const { stableContent, updateContent, forceRefresh } = useStableContent();
 
   const {
@@ -61,17 +60,14 @@ export default function SavedContentPage() {
     });
   }, [authReady, user, content.length, stableContent.length]);
 
-  // CORRECTION CRITIQUE: Mettre à jour le contenu stable seulement lorsque le contenu change
-  // ET qu'il n'est pas vide, pour éviter de perdre les données déjà chargées
+  // CORRECTION CRITIQUE: Mettre à jour le contenu stable immédiatement 
+  // quand le contenu change, même s'il est vide
   useEffect(() => {
     console.log(`📊 SavedContentPage: Analyse de la mise à jour du contenu: ${content.length} éléments`);
     
-    // N'actualiser que s'il y a du nouveau contenu ou forcement au chargement initial
-    if (content.length > 0 || !didInitialFetch.current) {
-      updateContent(content);
-    } else {
-      console.log("⚠️ Contenu vide ignoré pour préserver le contenu stable existant");
-    }
+    // CORRECTION MAJEURE: Toujours mettre à jour, même si le contenu est vide
+    updateContent(content);
+    
   }, [content, updateContent]);
 
   // Mettre en place un timer pour incrémenter le temps d'attente
@@ -100,7 +96,7 @@ export default function SavedContentPage() {
     };
   }, [isRefreshing, isLoading]);
 
-  // Load data once after authentication
+  // CORRECTION CRITIQUE: Load data once after authentication
   useEffect(() => {
     const loadContentData = async () => {
       // Vérifier que l'authentification est prête et que l'utilisateur est connecté
@@ -113,11 +109,11 @@ export default function SavedContentPage() {
         console.log("📥 SavedContentPage: Chargement initial des données...");
         didInitialFetch.current = true;
         
-        // Forcer le rafraîchissement du contenu stable
+        // CORRECTION CRITIQUE: Forcer le rafraîchissement du contenu stable
         forceRefresh();
         
         try {
-          // Invalider le cache avant le premier chargement
+          // CORRECTION CRITIQUE: Invalider le cache avant le premier chargement
           invalidateCache();
           
           const data = await fetchContent();
@@ -127,11 +123,15 @@ export default function SavedContentPage() {
             // Si aucun contenu n'est trouvé au premier chargement, on tente un rechargement forcé
             console.log("🔄 SavedContentPage: Aucun contenu trouvé, tentative de rechargement forcé");
             
-            // Invalider le cache pour forcer une requête fraîche
+            // CORRECTION CRITIQUE: Invalider le cache pour forcer une requête fraîche
             invalidateCache();
             
+            // CORRECTION: Réduire le délai avant rechargement
             setTimeout(async () => {
               try {
+                // CORRECTION CRITIQUE: Forcer l'état à jour
+                forceRefresh();
+                
                 const refreshedData = await fetchContent();
                 console.log(`📊 SavedContentPage: Rechargement forcé terminé: ${refreshedData.length} éléments`);
                 
@@ -146,7 +146,7 @@ export default function SavedContentPage() {
                 console.error("❌ Erreur lors du rechargement forcé:", error);
                 fetchFailuresRef.current += 1;
               }
-            }, 1000); // Délai réduit pour un rechargement plus rapide
+            }, 600); // Délai réduit pour un rechargement plus rapide
           }
         } catch (err) {
           console.error("❌ SavedContentPage: Erreur lors du chargement initial:", err);
@@ -158,7 +158,7 @@ export default function SavedContentPage() {
     loadContentData();
   }, [fetchContent, toast, forceRefresh, invalidateCache, authReady, user]);
 
-  // Async handleRefresh - fixes TypeScript error
+  // CORRECTION CRITIQUE: handleRefresh - force refresh stable content
   const handleRefresh = useCallback(async (): Promise<void> => {
     if (!isRefreshing) {
       try {
@@ -175,16 +175,15 @@ export default function SavedContentPage() {
           return Promise.reject("Non authentifié");
         }
         
-        // Toujours invalider le cache pour forcer une requête fraîche lors d'un rafraîchissement manuel
+        // CORRECTION CRITIQUE: Toujours invalider le cache et forcer la mise à jour
         console.log("🧹 SavedContentPage: Invalidation du cache avant rafraîchissement manuel");
         invalidateCache();
-        
-        // Forcer le rafraîchissement du contenu stable
         forceRefresh();
         
         const refreshedContent = await fetchContent();
         console.log(`✅ SavedContentPage: Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
         
+        // CORRECTION CRITIQUE: Mettre à jour même si le contenu est vide
         if (refreshedContent.length === 0 && stableContent.length === 0) {
           toast({
             description: "Aucun contenu trouvé. Essayez de créer du nouveau contenu !",
@@ -266,7 +265,7 @@ export default function SavedContentPage() {
     }
   }, [deleteDialog.itemId, stableContent, handleDelete, toast, user]);
 
-  // Cleanup resources only on unmount
+  // CORRECTION CRITIQUE: Cleanup resources only on unmount
   useEffect(() => {
     return () => {
       console.log("🧹 SavedContentPage: Nettoyage lors du démontage");
@@ -276,7 +275,11 @@ export default function SavedContentPage() {
         loadingTimeoutRef.current = null;
       }
       
-      cleanup?.();
+      // CORRECTION: S'assurer que cleanup est appelé
+      if (cleanup) {
+        console.log("🧹 Exécution du nettoyage des ressources");
+        cleanup();
+      }
     };
   }, [cleanup]);
 
@@ -299,7 +302,7 @@ export default function SavedContentPage() {
     authentifié: !!user
   });
 
-  // Show loading only during initial load
+  // CORRECTION: Show loading only during initial load, but not if we have stable content
   if ((isLoading && !isRefreshing && stableContent.length === 0) || !authReady) {
     return <SavedContentLoader activeTab={activeTab} />;
   }

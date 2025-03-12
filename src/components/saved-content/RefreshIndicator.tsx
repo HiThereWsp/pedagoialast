@@ -31,9 +31,9 @@ export const RefreshIndicator: React.FC<RefreshIndicatorProps> = React.memo(({
         />
         <p className={`font-medium ${isError ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>{message}</p>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{getWaitMessage()}</p>
-        {waitTime > 8 && (
+        {waitTime > 6 && (
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-3 max-w-md text-center">
-            Si le chargement persiste, essayez de vous reconnecter ou vérifiez votre connexion internet.
+            Si le chargement persiste, essayez de rafraîchir la page ou de vous reconnecter.
           </p>
         )}
       </div>

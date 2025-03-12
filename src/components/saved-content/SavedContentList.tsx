@@ -16,6 +16,8 @@ export const SavedContentList = React.memo(({
   selectedItemId,
   activeTab
 }: SavedContentListProps) => {
+  console.log(`🔍 SavedContentList: Contenu reçu: ${content.length} éléments, onglet actif: ${activeTab}`);
+  
   const filteredContent = useMemo(() => content.filter(item => {
     if (!item) return false; // Protection supplémentaire contre les éléments null
     
@@ -32,6 +34,8 @@ export const SavedContentList = React.memo(({
         return true;
     }
   }), [content, activeTab]);
+
+  console.log(`📊 SavedContentList: Contenu filtré pour l'onglet ${activeTab}: ${filteredContent.length} éléments`);
 
   const handleItemSelect = useCallback((item: SavedContent) => {
     onItemSelect(item);
