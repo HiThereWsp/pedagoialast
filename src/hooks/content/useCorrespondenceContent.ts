@@ -55,12 +55,15 @@ export function useCorrespondenceContent() {
 
       if (error) throw error;
 
+      // Ajouter des logs pour vérifier les correspondances récupérées
+      console.log(`${correspondences?.length || 0} correspondances récupérées`);
+
       return correspondences.map(correspondence => ({
         id: correspondence.id,
         title: correspondence.title,
         content: correspondence.content,
         created_at: correspondence.created_at,
-        type: 'correspondence' as const,
+        type: 'correspondence' as const, // S'assurer que le type est défini correctement
         displayType: 'Correspondance',
         tags: [{
           label: 'Correspondance',

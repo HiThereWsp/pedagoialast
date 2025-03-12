@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { SavedContent } from "@/types/saved-content";
 import { CONTENT_UPDATE_THROTTLE } from "./constants";
@@ -34,6 +33,21 @@ export function useStableContent() {
       miseAJourCount: contentUpdateCount.current,
       forcedUpdate: forcedUpdate.current
     });
+    
+    // Vérifier si les éléments ont des types valides pour le débogage
+    if (newContent.length > 0) {
+      const typesStats = newContent.reduce((acc, item) => {
+        acc[item.type] = (acc[item.type] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      console.log("📋 Types des éléments reçus:", typesStats);
+      console.log("📋 Exemple d'élément:", { 
+        id: newContent[0].id,
+        title: newContent[0].title,
+        type: newContent[0].type 
+      });
+    }
     
     // IMPORTANT: Conserver un historique limité des mises à jour pour débogage
     if (newContent.length > 0) {

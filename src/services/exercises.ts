@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveExerciseParams, ExtractedExercise, SavedContent, ExerciseCategory } from "@/types/saved-content"
 import { isExerciseCategory } from "@/utils/type-guards"
@@ -104,7 +103,7 @@ export const exercisesService = {
 
       const transformedData: SavedContent[] = (data || []).map(exercise => ({
         ...exercise,
-        type: 'exercise' as const, // Ajouté côté client uniquement, pas envoyé à la base
+        type: 'exercise' as const, // CORRECTION CRITIQUE: s'assurer que type est bien défini
         exercise_category: isExerciseCategory(exercise.exercise_category) ? exercise.exercise_category : 'standard',
         source_type: exercise.source_type as 'direct' | 'from_lesson_plan',
         tags: [{
@@ -114,6 +113,16 @@ export const exercisesService = {
           borderColor: '#22C55E4D'
         }]
       }));
+
+      // Journaliser un exemple d'élément transformé pour débogage
+      if (transformedData.length > 0) {
+        console.log('Exemple d\'exercice transformé:', {
+          id: transformedData[0].id,
+          title: transformedData[0].title,
+          type: transformedData[0].type, // Vérifier que le type est défini
+          tags: transformedData[0].tags
+        });
+      }
 
       exercisesCache = transformedData;
       lastFetchTime = Date.now();
@@ -125,7 +134,6 @@ export const exercisesService = {
     }
   },
 
-  // Les autres méthodes restent inchangées
   async delete(id: string) {
     console.log('🔵 Début suppression exercice:', id);
     

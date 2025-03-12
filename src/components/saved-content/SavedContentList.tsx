@@ -18,8 +18,22 @@ export const SavedContentList = React.memo(({
 }: SavedContentListProps) => {
   console.log(`🔍 SavedContentList: Contenu reçu: ${content.length} éléments, onglet actif: ${activeTab}`);
   
+  // Vérifier la structure des données reçues pour le débogage
+  if (content.length > 0) {
+    console.log("📋 Exemple d'élément:", { 
+      id: content[0].id,
+      title: content[0].title,
+      type: content[0].type,
+      displayType: content[0].displayType,
+      tags: content[0].tags
+    });
+  }
+  
   const filteredContent = useMemo(() => content.filter(item => {
     if (!item) return false; // Protection supplémentaire contre les éléments null
+    
+    // Journaliser les types d'éléments pour débogage
+    console.log(`🔍 Item type check: ${item.id} - type=${item.type}`);
     
     switch (activeTab) {
       case 'sequences':
