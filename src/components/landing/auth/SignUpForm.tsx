@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -7,6 +8,7 @@ import { AuthFormField } from "./AuthFormField"
 import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
 import { useEffect } from "react"
+import { getAuthErrorMessage } from "@/utils/auth-error-handler"
 
 interface SignUpFormProps {
   onToggleMode: () => void
@@ -48,10 +50,17 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
         error_type: error?.message || 'unknown'
       })
       
+      let errorMessage = "Une erreur est survenue lors de l'inscription. Veuillez réessayer."
+      
+      if (error instanceof Error) {
+        errorMessage = getAuthErrorMessage(error)
+      }
+      
       toast({
         variant: "destructive",
         title: "Erreur lors de l'inscription",
-        description: error?.message || "Une erreur est survenue lors de l'inscription. Veuillez réessayer.",
+        description: errorMessage,
+        duration: 6000, // Show error message longer
       })
     }
   }

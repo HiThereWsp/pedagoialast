@@ -66,12 +66,17 @@ export const useAuthForm = () => {
         throw new Error("Email et mot de passe requis")
       }
 
+      // Make sure firstName is not an empty string when passing to metadata
+      const firstName = formState.firstName && formState.firstName.trim() !== "" 
+        ? formState.firstName.trim() 
+        : null;
+
       const { error } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
         options: {
           data: {
-            first_name: formState.firstName || null
+            first_name: firstName
           }
         }
       })
