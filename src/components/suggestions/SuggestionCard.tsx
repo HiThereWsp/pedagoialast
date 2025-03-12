@@ -47,8 +47,8 @@ export const SuggestionCard = ({
             variant="ghost" 
             size="sm" 
             className={`p-1 rounded-full ${
-              hasVoted ? 'text-[#FF9633]' : 'text-gray-400'
-            } hover:bg-[#FF9633]/10`} 
+              hasVoted ? 'text-[#FF9633]' : canVote ? 'text-gray-400 hover:text-[#FF9633]' : 'text-gray-300'
+            } ${!canVote && !hasVoted ? 'cursor-not-allowed opacity-50' : 'hover:bg-[#FF9633]/10'}`} 
             onClick={() => onVote(id, true)}
             disabled={hasVoted || !canVote}
             title={hasVoted ? "Vous avez déjà voté pour cette suggestion" : 
@@ -61,7 +61,9 @@ export const SuggestionCard = ({
           <Button 
             variant="ghost" 
             size="sm" 
-            className="p-1 rounded-full text-gray-400 hover:bg-[#FF9633]/10" 
+            className={`p-1 rounded-full ${
+              hasVoted ? 'text-gray-400 hover:text-[#FF9633]/80' : 'text-gray-300 cursor-not-allowed opacity-50'
+            } hover:bg-[#FF9633]/10`} 
             onClick={() => onVote(id, false)}
             disabled={!hasVoted}
             title={!hasVoted ? "Vous n'avez pas voté pour cette suggestion" : "Retirer votre vote"}

@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,12 +28,21 @@ export const useSuggestionVoting = (
       }
 
       if (data) {
-        setUserVotes(data.map(vote => vote.suggestion_id));
+        // Limiter à 3 votes maximum au cas où la base de données contient plus de votes
+        const votesList = data.map(vote => vote.suggestion_id);
+        if (votesList.length > 3) {
+          console.warn('L\'utilisateur a plus de 3 votes en base de données, limiter à 3');
+        }
+        setUserVotes(votesList);
       }
     } catch (error) {
       console.error('Erreur inattendue:', error);
     }
   }, [user]);
+
+  useEffect(() => {
+    fetchUserVotes();
+  }, [fetchUserVotes]);
 
   const handleVote = async (id: string, increment: boolean) => {
     if (!user) {

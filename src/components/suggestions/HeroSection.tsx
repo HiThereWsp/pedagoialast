@@ -31,7 +31,9 @@ export const HeroSection = ({ onNewSuggestion, remainingVotes }: HeroSectionProp
             </Button>
             
             <p className="text-sm font-medium text-gray-600">
-              Votes restants : <span className="text-[#FF9633]">{remainingVotes}/3</span>
+              Votes restants : <span className={`${remainingVotes === 0 ? 'text-red-500 font-bold' : 'text-[#FF9633]'}`}>
+                {remainingVotes}/3
+              </span>
             </p>
           </div>
         </div>

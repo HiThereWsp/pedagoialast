@@ -42,7 +42,7 @@ export const SuggestionsList = ({
           {...suggestion}
           onVote={onVote}
           hasVoted={userVotes.includes(suggestion.id)}
-          canVote={canVote && userVotes.length < 3}
+          canVote={canVote}
         />
       ))}
     </div>
