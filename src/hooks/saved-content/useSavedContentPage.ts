@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { SavedContent } from "@/types/saved-content";
 import { useSavedContentManagement } from "./useSavedContentManagement";
@@ -42,8 +41,13 @@ export function useSavedContentPage() {
 
   // Mettre à jour le contenu stable quand le contenu change
   useEffect(() => {
-    if (content.length > 0) {
-      console.log(`📊 Mise à jour du contenu stable: ${content.length} éléments`);
+    console.log("🔄 Effet de mise à jour du contenu:", {
+      contentLength: content.length,
+      stableContentLength: stableContent.length
+    });
+    
+    // Toujours mettre à jour le contenu stable s'il y a des données
+    if (content) {
       updateContent(content);
     }
   }, [content, updateContent]);
@@ -91,7 +95,7 @@ export function useSavedContentPage() {
     try {
       console.log("🔄 Lancement du rafraîchissement manuel...");
       
-      if (!user || !user.id) {
+      if (!user?.id) {
         console.error("❌ Utilisateur non authentifié lors du rafraîchissement");
         toast({
           variant: "destructive",
@@ -101,12 +105,12 @@ export function useSavedContentPage() {
         return Promise.reject("Non authentifié");
       }
       
-      // Invalidation du cache uniquement lors du rafraîchissement manuel
-      console.log("🧹 Invalidation du cache avant rafraîchissement manuel");
+      console.log("🧹 Forçage du rafraîchissement des données");
+      forceRefresh(); // Force le rafraîchissement du contenu stable
       invalidateCache();
       
       const refreshedContent = await fetchContent();
-      console.log(`✅ Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
+      console.log(`✅ Rafraîchissement terminé: ${refreshedContent.length} éléments`);
       
       return Promise.resolve();
     } catch (error) {
@@ -116,10 +120,9 @@ export function useSavedContentPage() {
         title: "Problème de connexion",
         description: "Impossible de rafraîchir vos contenus. Veuillez réessayer."
       });
-      
       return Promise.reject(error);
     }
-  }, [fetchContent, isRefreshing, toast, invalidateCache, user]);
+  }, [fetchContent, isRefreshing, toast, invalidateCache, user, forceRefresh]);
 
   // Gestionnaires d'événements simplifiés
   const handleItemSelect = useCallback((item: SavedContent) => {
