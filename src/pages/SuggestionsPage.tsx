@@ -1,292 +1,33 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { SuggestionCard } from '@/components/suggestions/SuggestionCard';
 import { NewSuggestionForm } from '@/components/suggestions/NewSuggestionForm';
 import { SuggestionFilters } from '@/components/suggestions/SuggestionFilters';
-import { initialSuggestions } from '@/data/suggestions';
 import { BackButton } from '@/components/settings/BackButton';
-import { supabase } from "@/integrations/supabase/client";
+import { useSuggestions } from '@/hooks/suggestions/useSuggestions';
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
-
-interface Suggestion {
-  id: string;
-  title: string;
-  description: string;
-  votes: number;
-  status: string;
-  author: string;
-  created_at: string;
-}
 
 const SuggestionsPage = () => {
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [userVotes, setUserVotes] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('tous');
-  const [sortBy, setSortBy] = useState('votes');
-  const [showNewSuggestionForm, setShowNewSuggestionForm] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [newSuggestion, setNewSuggestion] = useState({
-    title: '',
-    description: ''
-  });
   const { user } = useAuth();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    if (user) {
-      fetchSuggestions();
-      fetchUserVotes();
-    }
-  }, [user]);
-
-  const fetchSuggestions = async () => {
-    try {
-      setIsLoading(true);
-      // Utiliser 'from' avec le type any pour contourner les limitations de typage
-      const { data, error } = await supabase
-        .from('suggestions' as any)
-        .select('*')
-        .order('votes', { ascending: false });
-
-      if (error) {
-        console.error('Erreur lors de la récupération des suggestions:', error);
-        return;
-      }
-
-      if (data && data.length > 0) {
-        // Utiliser un type casting explicite pour résoudre l'erreur
-        setSuggestions(data as unknown as Suggestion[]);
-      } else {
-        // Si aucune suggestion n'est trouvée, initialisons avec les données par défaut
-        await initializeDefaultSuggestions();
-      }
-    } catch (error) {
-      console.error('Erreur inattendue:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchUserVotes = async () => {
-    if (!user) return;
-    
-    try {
-      // Utiliser 'from' avec le type any pour contourner les limitations de typage
-      const { data, error } = await supabase
-        .from('suggestion_votes' as any)
-        .select('suggestion_id')
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Erreur lors de la récupération des votes:', error);
-        return;
-      }
-
-      if (data) {
-        // Utiliser un type casting explicite pour résoudre l'erreur
-        const voteData = data as unknown as { suggestion_id: string }[];
-        setUserVotes(voteData.map(vote => vote.suggestion_id));
-      }
-    } catch (error) {
-      console.error('Erreur inattendue:', error);
-    }
-  };
-
-  const initializeDefaultSuggestions = async () => {
-    try {
-      for (const suggestion of initialSuggestions) {
-        // Utiliser 'from' avec le type any pour contourner les limitations de typage
-        await supabase.from('suggestions' as any).insert(suggestion);
-      }
-      // Récupérer les suggestions après initialisation
-      const { data } = await supabase
-        .from('suggestions' as any)
-        .select('*')
-        .order('votes', { ascending: false });
-      
-      if (data) {
-        // Utiliser un type casting explicite pour résoudre l'erreur
-        setSuggestions(data as unknown as Suggestion[]);
-      }
-    } catch (error) {
-      console.error('Erreur lors de l\'initialisation des suggestions:', error);
-    }
-  };
-
-  const handleVote = async (id: string, increment: boolean) => {
-    if (!user) {
-      toast({
-        title: "Authentification requise",
-        description: "Vous devez être connecté pour voter.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const voteChange = increment ? 1 : -1;
-    
-    // Si l'utilisateur essaie d'ajouter un vote
-    if (increment) {
-      // Vérifier si l'utilisateur a déjà voté pour cette suggestion
-      if (userVotes.includes(id)) {
-        toast({
-          title: "Vote déjà enregistré",
-          description: "Vous avez déjà voté pour cette suggestion."
-        });
-        return;
-      }
-      
-      // Enregistrer le vote
-      // Utiliser 'from' avec le type any pour contourner les limitations de typage
-      const { error: voteError } = await supabase
-        .from('suggestion_votes' as any)
-        .insert({ user_id: user.id, suggestion_id: id });
-        
-      if (voteError) {
-        console.error('Erreur lors de l\'ajout du vote:', voteError);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer votre vote.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Mettre à jour la liste des votes de l'utilisateur
-      setUserVotes([...userVotes, id]);
-    } else {
-      // Si l'utilisateur retire son vote
-      if (!userVotes.includes(id)) {
-        toast({
-          title: "Aucun vote à retirer",
-          description: "Vous n'avez pas voté pour cette suggestion."
-        });
-        return;
-      }
-      
-      // Supprimer le vote
-      // Utiliser 'from' avec le type any pour contourner les limitations de typage
-      const { error: voteError } = await supabase
-        .from('suggestion_votes' as any)
-        .delete()
-        .eq('user_id', user.id)
-        .eq('suggestion_id', id);
-        
-      if (voteError) {
-        console.error('Erreur lors de la suppression du vote:', voteError);
-        toast({
-          title: "Erreur",
-          description: "Impossible de retirer votre vote.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Mettre à jour la liste des votes de l'utilisateur
-      setUserVotes(userVotes.filter(v => v !== id));
-    }
-    
-    // Récupérer la suggestion actuelle
-    const suggestion = suggestions.find(s => s.id === id);
-    if (!suggestion) return;
-    
-    // Mettre à jour le compteur de votes de la suggestion
-    // Utiliser 'from' avec le type any pour contourner les limitations de typage
-    const { error: updateError } = await supabase
-      .from('suggestions' as any)
-      .update({ votes: suggestion.votes + voteChange })
-      .eq('id', id);
-      
-    if (updateError) {
-      console.error('Erreur lors de la mise à jour des votes:', updateError);
-      toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour le compteur de votes.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Mettre à jour l'état local
-    setSuggestions(suggestions.map(s =>
-      s.id === id
-        ? { ...s, votes: s.votes + voteChange }
-        : s
-    ));
-    
-    toast({
-      title: increment ? "Vote ajouté" : "Vote retiré",
-      description: increment 
-        ? "Votre vote a été ajouté avec succès." 
-        : "Votre vote a été retiré avec succès."
-    });
-  };
-
-  const handleAddSuggestion = async () => {
-    if (!user) {
-      toast({
-        title: "Authentification requise",
-        description: "Vous devez être connecté pour ajouter une suggestion.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (newSuggestion.title && newSuggestion.description) {
-      const suggestion = {
-        id: `suggestion-${Date.now()}`,
-        ...newSuggestion,
-        votes: 0,
-        status: 'créé',
-        author: user.email?.split('@')[0] || "Utilisateur",
-        created_at: new Date().toISOString()
-      };
-
-      // Utiliser 'from' avec le type any pour contourner les limitations de typage
-      const { error } = await supabase
-        .from('suggestions' as any)
-        .insert(suggestion);
-
-      if (error) {
-        console.error('Erreur lors de l\'ajout de la suggestion:', error);
-        toast({
-          title: "Erreur",
-          description: "Impossible d'ajouter votre suggestion.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setSuggestions([suggestion, ...suggestions]);
-      setNewSuggestion({ title: '', description: '' });
-      setShowNewSuggestionForm(false);
-      
-      toast({
-        title: "Suggestion ajoutée",
-        description: "Votre suggestion a été ajoutée avec succès."
-      });
-    }
-  };
-
-  const handleSuggestionChange = (field: 'title' | 'description', value: string) => {
-    setNewSuggestion(prev => ({ ...prev, [field]: value }));
-  };
-
-  const filteredSuggestions = suggestions
-    .filter(suggestion => 
-      suggestion.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      suggestion.description.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(suggestion => 
-      selectedStatus === 'tous' || suggestion.status === selectedStatus
-    )
-    .sort((a, b) => {
-      if (sortBy === 'votes') return b.votes - a.votes;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+  const {
+    isLoading,
+    handleVote,
+    handleAddSuggestion,
+    handleSuggestionChange,
+    filteredSuggestions,
+    userVotes,
+    newSuggestion,
+    showNewSuggestionForm,
+    setShowNewSuggestionForm,
+    searchTerm,
+    setSearchTerm,
+    selectedStatus,
+    setSelectedStatus,
+    sortBy,
+    setSortBy
+  } = useSuggestions();
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
