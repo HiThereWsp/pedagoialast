@@ -26,10 +26,10 @@ export const LoginForm = () => {
         {isSignUp ? "Essayez gratuitement" : "Connexion"}
       </h2>
         <FacebookLoginButton onClick={() => SocialLogin("facebook" as Provider)} >
-            {isSignUp ? <span>Signup with Facebook</span> : <span>Login with Facebook</span>}
+            {isSignUp ? <span>S'inscrire avec Facebook</span> : <span>Se connecter avec Facebook</span>}
         </FacebookLoginButton>
         <GoogleLoginButton style={{marginTop: 20}} onClick={() => SocialLogin("google" as Provider)}>
-            {isSignUp ? <span>Signup with Google</span> : <span>Login with Google</span>}
+            {isSignUp ? <span>S'inscrire avec Google</span> : <span>Se connecter avec Google</span>}
         </GoogleLoginButton>
       {isSignUp ? (
           <SignUpForm onToggleMode={() => setIsSignUp(false)} />

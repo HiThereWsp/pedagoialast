@@ -110,7 +110,7 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
         {formState.isLoading ? "Connexion en cours..." : "Se connecter"}
       </Button>
 
-      <div className="relative">
+      <div className="relative pb-6">
         <Button 
           type="button" 
           variant="outline"
@@ -119,10 +119,10 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
         >
           <Sparkle className="w-4 h-4 mr-2" />
           Pas encore de compte ? S'inscrire
-          <Badge className="absolute -top-2 -right-2 bg-[#8B5CF6] text-white">
-            Essayez gratuitement
-          </Badge>
         </Button>
+        <Badge className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 bg-[#F97316] text-white">
+          Essayez gratuitement
+        </Badge>
       </div>
 
       <Button
