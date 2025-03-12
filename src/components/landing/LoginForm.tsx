@@ -23,7 +23,7 @@ export const LoginForm = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold text-center">
-        {isSignUp ? "Inscription" : "Connexion"}
+        {isSignUp ? "Essayez gratuitement" : "Connexion"}
       </h2>
         <FacebookLoginButton onClick={() => SocialLogin("facebook" as Provider)} >
             {isSignUp ? <span>Signup with Facebook</span> : <span>Login with Facebook</span>}

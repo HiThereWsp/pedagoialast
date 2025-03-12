@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
 import { useNavigate } from "react-router-dom"
 import { AuthError } from "@supabase/supabase-js"
+import { Badge } from "@/components/ui/badge"
+import { Sparkle } from "lucide-react"
 
 interface SignInFormProps {
   onToggleMode: () => void
@@ -108,14 +110,20 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
         {formState.isLoading ? "Connexion en cours..." : "Se connecter"}
       </Button>
 
-      <Button 
-        type="button" 
-        variant="ghost" 
-        className="w-full"
-        onClick={onToggleMode}
-      >
-        Pas encore de compte ? S'inscrire
-      </Button>
+      <div className="relative">
+        <Button 
+          type="button" 
+          variant="outline"
+          className="w-full bg-primary/5 border-primary/20 text-primary hover:bg-primary/10 hover:border-primary/30 relative group"
+          onClick={onToggleMode}
+        >
+          <Sparkle className="w-4 h-4 mr-2" />
+          Pas encore de compte ? S'inscrire
+          <Badge className="absolute -top-2 -right-2 bg-[#8B5CF6] text-white">
+            Essayez gratuitement
+          </Badge>
+        </Button>
+      </div>
 
       <Button
         type="button"
