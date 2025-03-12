@@ -44,7 +44,6 @@ export const SavedContentView: React.FC = () => {
       waitTime={0}
       onRefresh={handleRefresh}
       onTabChange={handleTabChange}
-      children={null}
     >
       {null}
     </SavedContentContainer>;
