@@ -3,11 +3,17 @@ import { AuthError, AuthApiError } from "@supabase/supabase-js"
 
 export const getAuthErrorMessage = (error: AuthError): string => {
   console.log({error})
+  
+  // Si c'est une erreur liée à une session manquante, message spécifique
+  if (error.message === "Auth session missing!") {
+    return "Votre session a expiré. Veuillez vous reconnecter."
+  }
+  
   if (error instanceof AuthApiError) {
     switch (error.status) {
       case 400:
         if (error.message.includes("Email not confirmed")) {
-          return "Veuillez confirmer votre email avant de vous connecter."
+          return "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception."
         }
         if (error.message.includes("Invalid login credentials")) {
           return "Email ou mot de passe incorrect."
@@ -35,6 +41,12 @@ export const getAuthErrorMessage = (error: AuthError): string => {
         return "Une erreur est survenue. Veuillez réessayer."
     }
   }
+  
+  // Si l'erreur contient une référence à la confirmation d'email
+  if (error.message && error.message.toLowerCase().includes("email") && error.message.toLowerCase().includes("confirm")) {
+    return "Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte de réception."
+  }
+  
   return "Une erreur est survenue. Veuillez réessayer."
 }
 

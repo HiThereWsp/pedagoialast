@@ -62,7 +62,7 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (session) {
     console.log('Session active:', session.user?.email);
     console.log('Token de session:', session.access_token ? 'Présent' : 'Absent');
-    console.log('Expiration:', new Date(session.expires_at * 1000).toLocaleString());
+    console.log('Expiration:', session.expires_at ? new Date(session.expires_at * 1000).toLocaleString() : 'Non définie');
     console.log('ID session:', session.user?.id);
   } else {
     console.log('Aucune session active');

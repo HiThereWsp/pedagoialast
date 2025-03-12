@@ -26,9 +26,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         if (!initialLoadComplete.current) {
           setShowLoadingTimeout(true);
         }
-      }, 800); // Un peu plus long pour éviter les flashs sur connexions rapides
+      }, 1000); // Délai plus long pour éviter les flashs sur connexions rapides
     } else {
       setShowLoadingTimeout(false);
+      if (!initialLoadComplete.current && authReady) {
+        initialLoadComplete.current = true;
+      }
     }
 
     return () => {
@@ -58,8 +61,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoadingIndicator 
-          message={showLoadingTimeout ? "Vérification de l'authentification..." : undefined}
-          submessage={showLoadingTimeout ? "Cela prend plus de temps que prévu" : undefined}
+          message={showLoadingTimeout ? "Vérification de votre compte..." : undefined}
+          submessage={showLoadingTimeout ? "Cela peut prendre quelques instants" : undefined}
         />
       </div>
     );

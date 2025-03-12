@@ -8,7 +8,7 @@ import type { User } from "@supabase/supabase-js"
 type AuthContextType = {
   user: User | null
   loading: boolean
-  authReady: boolean  // Nouvel indicateur pour signaler que le processus d'auth est terminé
+  authReady: boolean  // Indicateur pour signaler que le processus d'auth est terminé
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -30,13 +30,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
   const [authReady, setAuthReady] = useState(false)
   const authCheckCompleted = useRef(false)
+  const firstLoadComplete = useRef(false)
   const { toast } = useToast()
   const location = useLocation()
 
   // Détermine si la page actuelle est une page publique (landing, login, etc.)
   const isPublicPage = () => {
-    const publicPaths = ['/', '/login', '/signup', '/reset-password', '/contact', '/pricing', '/forgot-password']
-    return publicPaths.includes(location.pathname)
+    const publicPaths = ['/', '/login', '/signup', '/reset-password', '/contact', '/pricing', '/forgot-password', '/confirm-email']
+    return publicPaths.includes(location.pathname) || location.pathname.startsWith('/confirm-email')
   }
 
   useEffect(() => {
@@ -57,14 +58,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error) {
-          console.error("Erreur lors de la vérification de l'utilisateur:", error)
-          // Sur les pages publiques, ne pas afficher de toast d'erreur
-          if (!isPublicPage() && mounted) {
-            toast({
-              title: "Erreur d'authentification",
-              description: "Une erreur est survenue lors de la vérification de votre session.",
-              variant: "destructive",
-            })
+          // Ignorer l'erreur "Auth session missing" sur les pages publiques
+          if (error.message !== "Auth session missing!" || !isPublicPage()) {
+            console.error("Erreur lors de la vérification de l'utilisateur:", error)
+            
+            // Sur les pages publiques, ne pas afficher de toast d'erreur
+            if (!isPublicPage() && mounted) {
+              toast({
+                title: "Erreur d'authentification",
+                description: "Une erreur est survenue lors de la vérification de votre session.",
+                variant: "destructive",
+              })
+            }
+          } else {
+            console.log("Session non trouvée (page publique) - comportement normal")
           }
         }
         
@@ -72,6 +79,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(user)
           authCheckCompleted.current = true
           setAuthReady(true)
+          firstLoadComplete.current = true
+          setLoading(false)
         }
       } catch (error) {
         console.error("Exception lors de la vérification de l'utilisateur:", error)
@@ -83,8 +92,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             variant: "destructive",
           })
         }
-      } finally {
+        
         if (mounted) {
+          setAuthReady(true)
+          firstLoadComplete.current = true
           setLoading(false)
         }
       }
@@ -110,6 +121,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 setUser(session?.user ?? null)
                 setLoading(false)
                 setAuthReady(true)
+                firstLoadComplete.current = true
               }
             }
           )
@@ -121,6 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (mounted) {
           setLoading(false)
           setAuthReady(true)
+          firstLoadComplete.current = true
         }
       }
     }
@@ -136,7 +149,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [toast, location.pathname])
 
   // Amélioration de la gestion du chargement pour éviter de bloquer l'UI sur les pages publiques
-  if (loading) {
+  if (loading && !firstLoadComplete.current) {
     // Sur les pages publiques, afficher le contenu même pendant le chargement
     if (isPublicPage()) {
       return (
