@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { SignUpForm } from "./auth/SignUpForm";
 import { SignInForm } from "./auth/SignInForm";
@@ -24,7 +25,13 @@ export const LoginForm = () => {
       }
     });
   };
-  const animatedPhrases = ["personnaliser", "différencier", "créer", "planifier", "évaluer", "enseigner", "apprendre", "progresser"];
+  
+  // Les deux phrases à alterner
+  const welcomePhrases = [
+    "Bienvenue dans l'éducation de demain...",
+    "Ensemble simplifions votre quotidien."
+  ];
+  
   return <div className="flex flex-col md:flex-row min-h-[500px] overflow-hidden rounded-xl shadow-lg">
       {/* Formulaire de gauche */}
       <div className="flex-1 bg-white p-8 md:p-10">
@@ -65,12 +72,13 @@ export const LoginForm = () => {
       {/* Partie de droite avec animation */}
       <div className="hidden md:flex flex-1 bg-gradient-to-br from-yellow-300 via-orange-400 to-pink-400 items-center justify-center p-10 text-white">
         <div className="max-w-md">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
-            Bienvenue dans l'éducation de demain...
-          </h2>
-          <p className="text-3xl md:text-4xl font-semibold">
-            Ensemble simplifions votre quotidien.
-          </p>
+          <AnimatedText 
+            phrases={welcomePhrases} 
+            className="text-4xl md:text-5xl font-bold mb-6 text-white" 
+            typingSpeed={100} 
+            deletingSpeed={50} 
+            delayBetweenPhrases={3000} 
+          />
         </div>
       </div>
     </div>;
