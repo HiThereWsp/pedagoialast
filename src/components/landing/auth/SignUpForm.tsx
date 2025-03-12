@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
 import { useEffect } from "react"
 import { getAuthErrorMessage } from "@/utils/auth-error-handler"
+import { AuthError } from "@supabase/supabase-js"
 
 interface SignUpFormProps {
   onToggleMode: () => void
@@ -52,7 +53,7 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
       
       let errorMessage = "Une erreur est survenue lors de l'inscription. Veuillez réessayer."
       
-      if (error instanceof Error) {
+      if (error instanceof AuthError) {
         errorMessage = getAuthErrorMessage(error)
       }
       
