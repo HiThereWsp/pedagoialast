@@ -51,14 +51,14 @@ export function Header() {
         {/* Actions de droite (login/dashboard) */}
         <div className="flex items-center gap-3">
           {user ? (
-            // Bouton Dashboard pour utilisateurs connectés
+            // Bouton Tableau de bord pour utilisateurs connectés
             <Button 
               variant="outline" 
               className="flex gap-2"
               onClick={handleDashboardClick}
             >
               <LayoutDashboard className="h-4 w-4" />
-              Dashboard
+              Tableau de bord
             </Button>
           ) : (
             // Dialog de connexion pour utilisateurs non connectés
@@ -113,7 +113,7 @@ export function Header() {
               ))}
               <div className="flex flex-col gap-2 mt-4">
                 {user ? (
-                  // Bouton Dashboard pour utilisateurs connectés (mobile)
+                  // Bouton Tableau de bord pour utilisateurs connectés (mobile)
                   <Button 
                     variant="outline" 
                     className="w-full gap-2 justify-center"
@@ -123,7 +123,7 @@ export function Header() {
                     }}
                   >
                     <LayoutDashboard className="h-4 w-4" />
-                    Dashboard
+                    Tableau de bord
                   </Button>
                 ) : (
                   // Dialog de connexion pour utilisateurs non connectés (mobile)
