@@ -38,7 +38,7 @@ export interface SaveExerciseParams {
   exercise_type?: string
   source_lesson_plan_id?: string
   exercise_category?: ExerciseCategory
-  source_type?: 'direct' | 'from_lesson_plan'  // Ajout du champ manquant
+  source_type?: 'direct' | 'from_lesson_plan'
 }
 
 // Interface pour les exercices extraits
@@ -72,14 +72,14 @@ export interface SaveLessonPlanParams {
   title: string
   content: string
   subject?: string
-  subject_matter?: string  // Ajout du champ manquant
+  subject_matter?: string
   class_level?: string
   total_sessions?: number
   additional_instructions?: string
 }
 
-// Types pour la gestion des images
-export type ImageStatus = 'pending' | 'processing' | 'success' | 'error';
+// Définir les statuts d'image comme une union de strings pour plus de flexibilité
+export type ImageStatus = 'success' | 'pending' | 'failed' | 'processing' | string;
 
 // Interface de base pour la validation des images
 export interface BaseImageValidation {

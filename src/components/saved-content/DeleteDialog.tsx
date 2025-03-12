@@ -1,4 +1,5 @@
 
+import React, { useCallback } from "react";
 import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 
 interface DeleteDialogProps {
@@ -9,13 +10,17 @@ interface DeleteDialogProps {
   error?: string;
 }
 
-export const DeleteDialog = ({ 
+export const DeleteDialog = React.memo(({ 
   isOpen, 
   onOpenChange, 
   onDelete, 
   itemType,
   error 
 }: DeleteDialogProps) => {
+  const handleDelete = useCallback(async () => {
+    await onDelete();
+  }, [onDelete]);
+
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -31,7 +36,7 @@ export const DeleteDialog = ({
         <AlertDialogFooter>
           <AlertDialogCancel>Annuler</AlertDialogCancel>
           <AlertDialogAction
-            onClick={onDelete}
+            onClick={handleDelete}
             className="bg-red-500 hover:bg-red-600"
           >
             Supprimer
@@ -40,4 +45,6 @@ export const DeleteDialog = ({
       </AlertDialogContent>
     </AlertDialog>
   );
-};
+});
+
+DeleteDialog.displayName = "DeleteDialog";

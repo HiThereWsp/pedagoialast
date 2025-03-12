@@ -1,49 +1,61 @@
 
-import { useState } from "react"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { Copy, Trash2 } from "lucide-react"
-import { ScrollCard } from "@/components/exercise/result/ScrollCard"
-import { useToast } from "@/hooks/use-toast"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { SavedContent } from "@/types/saved-content"
+import React, { useState, useCallback, useMemo } from "react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Copy, Trash2 } from "lucide-react";
+import { ScrollCard } from "@/components/exercise/result/ScrollCard";
+import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { SavedContent } from "@/types/saved-content";
 
 interface ContentPreviewSheetProps {
-  content: SavedContent | null
-  isOpen: boolean
-  onOpenChange: (open: boolean) => void
-  onDelete: (content: SavedContent) => void
+  content: SavedContent | null;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onDelete: (content: SavedContent) => void;
 }
 
-export const ContentPreviewSheet = ({
+export const ContentPreviewSheet = React.memo(({
   content,
   isOpen,
   onOpenChange,
   onDelete
 }: ContentPreviewSheetProps) => {
-  const [activeTab, setActiveTab] = useState('student')
-  const { toast } = useToast()
+  const [activeTab, setActiveTab] = useState('student');
+  const { toast } = useToast();
 
   // Protection supplémentaire contre les valeurs null
-  if (!content || !isOpen) return null
+  if (!content || !isOpen) return null;
 
-  const handleCopy = async () => {
+  const handleCopy = useCallback(async () => {
+    if (!content) return;
+    
     try {
-      await navigator.clipboard.writeText(content.content)
+      await navigator.clipboard.writeText(content.content);
       toast({
         description: "Contenu copié dans le presse-papier",
-      })
+      });
     } catch (error) {
       toast({
         variant: "destructive",
         description: "Erreur lors de la copie du contenu",
-      })
+      });
     }
-  }
+  }, [content, toast]);
 
-  const renderContent = () => {
+  const handleDelete = useCallback(() => {
+    if (content) {
+      onDelete(content);
+    }
+  }, [content, onDelete]);
+
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value);
+  }, []);
+
+  const renderContent = useMemo(() => {
     // Vérification de sécurité supplémentaire
-    if (!content) return null
+    if (!content) return null;
 
     switch (content.type) {
       case 'Image':
@@ -55,13 +67,13 @@ export const ContentPreviewSheet = ({
               className="w-full rounded-lg object-contain max-h-[80vh]"
             />
           </div>
-        )
+        );
       case 'exercise':
         return (
           <>
             <Tabs 
               value={activeTab} 
-              onValueChange={setActiveTab}
+              onValueChange={handleTabChange}
               className="mt-6"
             >
               <TabsList className="grid w-full grid-cols-2">
@@ -79,7 +91,7 @@ export const ContentPreviewSheet = ({
               />
             </div>
           </>
-        )
+        );
       case 'lesson-plan':
       case 'correspondence':
         return (
@@ -91,12 +103,12 @@ export const ContentPreviewSheet = ({
               hideActions={true}
             />
           </div>
-        )
+        );
       default:
-        console.warn('Type de contenu non reconnu:', content.type)
-        return null
+        console.warn('Type de contenu non reconnu:', content.type);
+        return null;
     }
-  }
+  }, [content, activeTab, handleTabChange]);
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -116,15 +128,17 @@ export const ContentPreviewSheet = ({
             <Button
               variant="destructive"
               size="icon"
-              onClick={() => onDelete(content)}
+              onClick={handleDelete}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </SheetHeader>
 
-        {renderContent()}
+        {renderContent}
       </SheetContent>
     </Sheet>
-  )
-}
+  );
+});
+
+ContentPreviewSheet.displayName = "ContentPreviewSheet";

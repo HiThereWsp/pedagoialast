@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ImageStyleSelector } from './ImageStyleSelector'
-import { ImageStyle, GenerationPrompt } from './types'
+import { GenerationPrompt } from './types'
 import { Loader2 } from 'lucide-react'
 
 interface GenerationFormProps {
@@ -13,7 +13,7 @@ interface GenerationFormProps {
 
 export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => {
   const [userPrompt, setUserPrompt] = useState('')
-  const [selectedStyle, setSelectedStyle] = useState<ImageStyle>('auto')
+  const [selectedStyle, setSelectedStyle] = useState<string>('auto')
   const [isClicked, setIsClicked] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,6 +21,7 @@ export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => 
     setIsClicked(true)
     await onSubmit({
       context: '',
+      prompt: userPrompt,
       user_prompt: userPrompt,
       style: selectedStyle
     })

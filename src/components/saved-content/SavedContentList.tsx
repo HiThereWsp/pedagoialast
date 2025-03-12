@@ -1,4 +1,5 @@
 
+import React, { useMemo, useCallback } from "react";
 import { type SavedContent } from "@/types/saved-content";
 import { ResourceCard } from "./ResourceCard";
 
@@ -9,14 +10,30 @@ interface SavedContentListProps {
   activeTab: string;
 }
 
-export const SavedContentList = ({ 
+export const SavedContentList = React.memo(({ 
   content, 
   onItemSelect, 
   selectedItemId,
   activeTab
 }: SavedContentListProps) => {
-  const filteredContent = content.filter(item => {
+  console.log(`🔍 SavedContentList: Contenu reçu: ${content.length} éléments, onglet actif: ${activeTab}`);
+  
+  // Vérifier la structure des données reçues pour le débogage
+  if (content.length > 0) {
+    console.log("📋 Exemple d'élément:", { 
+      id: content[0].id,
+      title: content[0].title,
+      type: content[0].type,
+      displayType: content[0].displayType,
+      tags: content[0].tags
+    });
+  }
+  
+  const filteredContent = useMemo(() => content.filter(item => {
     if (!item) return false; // Protection supplémentaire contre les éléments null
+    
+    // Journaliser les types d'éléments pour débogage
+    console.log(`🔍 Item type check: ${item.id} - type=${item.type}`);
     
     switch (activeTab) {
       case 'sequences':
@@ -30,7 +47,13 @@ export const SavedContentList = ({
       default:
         return true;
     }
-  });
+  }), [content, activeTab]);
+
+  console.log(`📊 SavedContentList: Contenu filtré pour l'onglet ${activeTab}: ${filteredContent.length} éléments`);
+
+  const handleItemSelect = useCallback((item: SavedContent) => {
+    onItemSelect(item);
+  }, [onItemSelect]);
 
   if (filteredContent.length === 0) {
     return (
@@ -48,9 +71,12 @@ export const SavedContentList = ({
         <ResourceCard
           key={item.id}
           resource={item}
-          onSelect={onItemSelect}
+          onSelect={handleItemSelect}
+          isSelected={item.id === selectedItemId}
         />
       ))}
     </div>
   );
-};
+});
+
+SavedContentList.displayName = "SavedContentList";

@@ -1,3 +1,4 @@
+
 import { Json } from './json';
 
 export interface ChatRow {
@@ -57,5 +58,12 @@ export interface WaitlistRow {
   email: string;
   first_name: string;
   teaching_level: string;
+  created_at: string;
+}
+
+export interface SuggestionVoteRow {
+  id: string;
+  user_id: string; // Can now be 'anonymous' or a user ID
+  suggestion_id: string;
   created_at: string;
 }
