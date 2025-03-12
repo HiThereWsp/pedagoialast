@@ -1,10 +1,14 @@
 
 import React from "react";
 import { SEO } from "@/components/SEO";
-import { SavedContentLoader } from "./SavedContentLoader";
-import { SavedContentError } from "./SavedContentError";
-import { SavedContentHeader } from "./SavedContentHeader";
-import { SavedContentTabs } from "./SavedContentTabs";
+import { SavedContentLoader } from "@/components/saved-content/SavedContentLoader";
+import { SavedContentError } from "@/components/saved-content/SavedContentError";
+import { SavedContentList } from "@/components/saved-content/SavedContentList";
+import { DeleteDialog } from "@/components/saved-content/DeleteDialog";
+import { ContentPreviewSheet } from "@/components/saved-content/ContentPreviewSheet";
+import { RefreshIndicator } from "@/components/saved-content/RefreshIndicator";
+import { SavedContentHeader } from "@/components/saved-content/SavedContentHeader";
+import { SavedContentTabs } from "@/components/saved-content/SavedContentTabs";
 
 interface SavedContentContainerProps {
   isLoading: boolean;
@@ -27,14 +31,22 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
   errorMessage,
   activeTab,
   contentCount,
+  waitTime,
   onRefresh,
   onTabChange,
   children
 }) => {
-  // Simplifier la logique d'affichage en unifiant les états de chargement
-  const isInitialLoading = isLoading && contentCount === 0;
-  const showLoader = isInitialLoading || (isRefreshing && contentCount === 0);
-  const loadingMessage = "Chargement en cours...";
+  console.log("📊 SavedContentContainer: État du conteneur:", { 
+    isLoading, 
+    isRefreshing, 
+    hasError, 
+    contentCount,
+    activeTab
+  });
+
+  if (isLoading && !isRefreshing && contentCount === 0) {
+    return <SavedContentLoader activeTab={activeTab} />;
+  }
 
   if (hasError) {
     return (
@@ -64,8 +76,8 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
           onTabChange={onTabChange}
         />
 
-        {showLoader ? (
-          <SavedContentLoader message={loadingMessage} />
+        {isRefreshing ? (
+          <RefreshIndicator waitTime={waitTime} />
         ) : contentCount === 0 ? (
           <div className="text-center py-16">
             <p className="text-xl text-balance font-bold text-gray-700 dark:text-gray-300 mb-2 tracking-tight">

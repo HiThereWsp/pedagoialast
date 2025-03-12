@@ -5,7 +5,7 @@ import { SavedContentList } from "./SavedContentList";
 import { DeleteDialog } from "./DeleteDialog";
 import { ContentPreviewSheet } from "./ContentPreviewSheet";
 import { useSavedContentPage } from "@/hooks/saved-content/useSavedContentPage";
-import { SavedContentLoader } from "./SavedContentLoader";
+import type { SavedContent } from "@/types/saved-content";
 
 export const SavedContentView: React.FC = () => {
   const {
@@ -17,6 +17,7 @@ export const SavedContentView: React.FC = () => {
     errors,
     isLoading,
     isRefreshing,
+    waitTimeRef,
     
     handleItemSelect,
     handleTabChange,
@@ -31,21 +32,22 @@ export const SavedContentView: React.FC = () => {
     authReady
   } = useSavedContentPage();
 
+  // Si l'authentification n'est pas prête, affiche le loader
   if (!authReady) {
-    return (
-      <SavedContentContainer 
-        isLoading={true}
-        isRefreshing={false}
-        hasError={false}
-        errorMessage=""
-        activeTab={activeTab}
-        contentCount={0}
-        onRefresh={handleRefresh}
-        onTabChange={handleTabChange}
-      >
-        <SavedContentLoader message="Préparation de votre espace..." />
-      </SavedContentContainer>
-    );
+    return <SavedContentContainer 
+      isLoading={true}
+      isRefreshing={false}
+      hasError={false}
+      errorMessage=""
+      activeTab={activeTab}
+      contentCount={0}
+      waitTime={0}
+      onRefresh={handleRefresh}
+      onTabChange={handleTabChange}
+      children={null}
+    >
+      {null}
+    </SavedContentContainer>;
   }
 
   return (
@@ -57,6 +59,7 @@ export const SavedContentView: React.FC = () => {
         errorMessage={errorMessage}
         activeTab={activeTab}
         contentCount={stableContent.length}
+        waitTime={waitTimeRef.current}
         onRefresh={handleRefresh}
         onTabChange={handleTabChange}
       >
