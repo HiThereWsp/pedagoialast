@@ -4,13 +4,14 @@ import { LoadingIndicator } from '@/components/ui/loading-indicator'
 import { GenerationForm } from './GenerationForm'
 import { GeneratedImage } from './GeneratedImage'
 import { useImageGeneration } from '@/hooks/useImageGeneration'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { ImageStyle, GenerationPrompt } from './types'
 import { useToast } from '@/hooks/use-toast'
 
 export const ImageGenerator = () => {
   const [selectedStyle, setSelectedStyle] = useState<ImageStyle>('auto')
   const [lastPrompt, setLastPrompt] = useState<GenerationPrompt | null>(null)
+  const operationInProgress = useRef(false)
   const { toast } = useToast()
   
   const { 
@@ -20,6 +21,14 @@ export const ImageGenerator = () => {
   } = useImageGeneration()
 
   const handleGenerateImage = async (prompt: GenerationPrompt) => {
+    // Éviter les opérations multiples
+    if (operationInProgress.current) {
+      toast({
+        description: "Une génération est déjà en cours, veuillez patienter"
+      })
+      return
+    }
+
     if (prompt.user_prompt.length < 3) {
       toast({
         variant: "destructive",
@@ -36,14 +45,30 @@ export const ImageGenerator = () => {
       return
     }
 
-    setSelectedStyle(prompt.style)
-    setLastPrompt(prompt)
-    generateImage(prompt)
+    try {
+      operationInProgress.current = true
+      setSelectedStyle(prompt.style)
+      setLastPrompt(prompt)
+      await generateImage(prompt)
+    } finally {
+      // Garantir que le drapeau est toujours réinitialisé
+      setTimeout(() => {
+        operationInProgress.current = false
+      }, 500)
+    }
   }
 
   const handleRegenerate = async () => {
-    if (!lastPrompt) return
-    generateImage(lastPrompt)
+    if (!lastPrompt || operationInProgress.current) return
+    
+    try {
+      operationInProgress.current = true
+      await generateImage(lastPrompt)
+    } finally {
+      setTimeout(() => {
+        operationInProgress.current = false
+      }, 500)
+    }
   }
 
   return (

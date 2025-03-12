@@ -1,5 +1,5 @@
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { supabase } from '@/integrations/supabase/client'
 import { useToast } from '@/hooks/use-toast'
 import { useToolMetrics } from '@/hooks/useToolMetrics'
@@ -12,8 +12,16 @@ export const useImageGeneration = () => {
   const { toast } = useToast()
   const { logToolUsage } = useToolMetrics()
   const { saveImage } = useImageContent()
+  const isGenerating = useRef(false)
 
   const generateImage = async (generationPrompt: GenerationPrompt) => {
+    // Empêcher les générations multiples simultanées
+    if (isGenerating.current) {
+      console.log('Génération déjà en cours, ignorée')
+      return
+    }
+    
+    isGenerating.current = true
     const startTime = Date.now()
     setIsLoading(true)
 
@@ -28,6 +36,7 @@ export const useImageGeneration = () => {
       }
 
       // Créer d'abord l'enregistrement dans la base de données
+      // Utiliser une sauvegarde silencieuse (sans affichage d'erreur) pour le statut "pending"
       await saveImage({
         prompt: generationPrompt.user_prompt
       })
@@ -43,15 +52,12 @@ export const useImageGeneration = () => {
 
       if (error) throw error
 
-      if (data.output) {
+      if (data?.output) {
         setGeneratedImageUrl(data.output)
         
-        // Mise à jour de l'enregistrement avec l'URL de l'image
-        await saveImage({
-          prompt: generationPrompt.user_prompt,
-          image_url: data.output
-        })
-
+        // La sauvegarde de l'URL est maintenant gérée par le composant GeneratedImage
+        // pour éviter les problèmes de timing avec l'authentification
+        
         await logToolUsage(
           'image_generation',
           'generate',
@@ -86,6 +92,10 @@ export const useImageGeneration = () => {
       })
     } finally {
       setIsLoading(false)
+      // Garantir que le drapeau de génération est réinitialisé, même en cas d'erreur
+      setTimeout(() => {
+        isGenerating.current = false
+      }, 500)
     }
   }
 

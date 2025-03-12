@@ -1,4 +1,3 @@
-
 import { useState, useRef, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +10,8 @@ export function useImageContent() {
   const lastFetchTime = useRef<number>(0);
   const isFetchingImages = useRef(false);
   const abortController = useRef<AbortController | null>(null);
-  const CACHE_TTL = 3 * 60 * 1000; // 3 minutes cache (réduit de 5 à 3 minutes)
+  const saveInProgress = useRef(false);
+  const CACHE_TTL = 3 * 60 * 1000; // 3 minutes cache
   const MAX_IMAGES = 50; // Limiter le nombre d'images
 
   const isCacheValid = useCallback(() => {
@@ -22,15 +22,26 @@ export function useImageContent() {
     prompt: string;
     image_url?: string;
   }): Promise<ImageGenerationUsage | null> => {
+    // Éviter les sauvegardes simultanées
+    if (saveInProgress.current) {
+      console.log('Sauvegarde déjà en cours, ignorée');
+      return null;
+    }
+    
+    saveInProgress.current = true;
+    
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      // Vérification de l'authentification avec gestion d'erreur silencieuse
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.warn('Erreur d'authentification silencieuse:', authError.message);
+        return null;
+      }
+      
       if (!user) {
-        toast({
-          variant: "destructive",
-          title: "Non authentifié",
-          description: "Veuillez vous connecter pour sauvegarder une image"
-        })
-        throw new Error('Non authentifié')
+        console.log('Utilisateur non authentifié, sauvegarde ignorée');
+        return null;
       }
       
       const newRecord: Omit<ImageGenerationUsage, 'id'> = {
@@ -52,11 +63,16 @@ export function useImageContent() {
 
       if (error) {
         console.error('Erreur lors de l\'insertion de l\'image:', error);
-        toast({
-          variant: "destructive",
-          title: "Erreur",
-          description: "Impossible de sauvegarder l'image"
-        });
+        
+        if (!params.image_url) {
+          // Seulement afficher un toast si ce n'est pas une sauvegarde silencieuse
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de sauvegarder l'image"
+          });
+        }
+        
         throw error;
       }
 
@@ -77,12 +93,22 @@ export function useImageContent() {
       return record as ImageGenerationUsage;
     } catch (err) {
       console.error('Erreur lors de la sauvegarde de l\'image:', err);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la sauvegarde"
-      });
+      
+      // Ne pas afficher de toast en cas d'erreur lors de la sauvegarde silencieuse
+      if (params.image_url) {
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Une erreur est survenue lors de la sauvegarde"
+        });
+      }
+      
       return null;
+    } finally {
+      // Réinitialiser le flag de sauvegarde
+      setTimeout(() => {
+        saveInProgress.current = false;
+      }, 500);
     }
   };
 
