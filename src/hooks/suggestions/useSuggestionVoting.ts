@@ -28,12 +28,7 @@ export const useSuggestionVoting = (
       }
 
       if (data) {
-        // Limiter à 3 votes maximum au cas où la base de données contient plus de votes
-        const votesList = data.map(vote => vote.suggestion_id);
-        if (votesList.length > 3) {
-          console.warn('L\'utilisateur a plus de 3 votes en base de données, limiter à 3');
-        }
-        setUserVotes(votesList);
+        setUserVotes(data.map(vote => vote.suggestion_id));
       }
     } catch (error) {
       console.error('Erreur inattendue:', error);
@@ -63,16 +58,6 @@ export const useSuggestionVoting = (
         toast({
           title: "Vote déjà enregistré",
           description: "Vous avez déjà voté pour cette suggestion."
-        });
-        return;
-      }
-      
-      // Vérifier si l'utilisateur a atteint la limite de 3 votes
-      if (userVotes.length >= 3) {
-        toast({
-          title: "Limite de votes atteinte",
-          description: "Vous avez atteint la limite de 3 votes. Retirez un vote avant d'en ajouter un nouveau.",
-          variant: "destructive"
         });
         return;
       }
@@ -165,6 +150,6 @@ export const useSuggestionVoting = (
     setUserVotes,
     fetchUserVotes,
     handleVote,
-    canVote: userVotes.length < 3
+    canVote: true // Toujours permettre le vote
   };
 };

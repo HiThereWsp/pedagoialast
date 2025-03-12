@@ -5,10 +5,9 @@ import { Plus } from 'lucide-react';
 
 interface HeroSectionProps {
   onNewSuggestion: () => void;
-  remainingVotes: number;
 }
 
-export const HeroSection = ({ onNewSuggestion, remainingVotes }: HeroSectionProps) => {
+export const HeroSection = ({ onNewSuggestion }: HeroSectionProps) => {
   return (
     <div className="bg-white rounded-xl p-6 shadow-sm">
       <div className="flex flex-col md:flex-row items-center gap-4">
@@ -17,8 +16,7 @@ export const HeroSection = ({ onNewSuggestion, remainingVotes }: HeroSectionProp
             Vos suggestions pour améliorer PedagoIA
           </h1>
           <p className="text-base text-gray-600">
-            Partagez vos idées pour enrichir notre plateforme éducative. 
-            <span className="font-medium"> Vous pouvez voter pour un maximum de 3 suggestions.</span>
+            Partagez vos idées pour enrichir notre plateforme éducative.
           </p>
           
           <div className="flex flex-col md:flex-row items-center gap-4">
@@ -29,12 +27,6 @@ export const HeroSection = ({ onNewSuggestion, remainingVotes }: HeroSectionProp
               <Plus className="w-4 h-4 mr-2" />
               Proposer une idée
             </Button>
-            
-            <p className="text-sm font-medium text-gray-600">
-              Votes restants : <span className={`${remainingVotes === 0 ? 'text-red-500 font-bold' : 'text-[#FF9633]'}`}>
-                {remainingVotes}/3
-              </span>
-            </p>
           </div>
         </div>
       </div>

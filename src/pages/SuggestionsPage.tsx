@@ -28,17 +28,13 @@ const SuggestionsPage = () => {
     canVote
   } = useSuggestions();
 
-  // Calculer le nombre de votes restants (max 3)
-  const remainingVotes = 3 - userVotes.length;
-
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-6">
       <div className="max-w-3xl mx-auto space-y-6">
         <BackButton />
         
         <HeroSection 
-          onNewSuggestion={() => setShowNewSuggestionForm(true)} 
-          remainingVotes={remainingVotes}
+          onNewSuggestion={() => setShowNewSuggestionForm(true)}
         />
 
         <SuggestionFilters
