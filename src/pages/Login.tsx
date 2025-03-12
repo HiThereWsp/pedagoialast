@@ -1,8 +1,8 @@
+
 import { useEffect, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { LoginForm } from "@/components/landing/LoginForm"
-import { Card, CardContent } from "@/components/ui/card"
 import { SEO } from "@/components/SEO"
 import { useToast } from "@/hooks/use-toast"
 import { Link } from "react-router-dom"
@@ -12,6 +12,7 @@ export default function Login() {
   const location = useLocation()
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(true)
+  
   useEffect(() => {
     const verifyMagicLink = async () => {
       // Get the current URL's query parameters
@@ -106,16 +107,20 @@ export default function Login() {
         description="Connectez-vous à votre compte PedagoIA pour accéder à votre assistant pédagogique personnel et optimiser votre enseignement."
       />
       <div className="flex min-h-screen flex-col items-center justify-between bg-background">
-        <div className="w-full flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-          <Card className="w-full max-w-md">
-            <CardContent className="pt-6">
-              <LoginForm />
-            </CardContent>
-          </Card>
+        <div className="w-full flex flex-col items-center p-4 py-8">
+          <div className="mb-6">
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" alt="PedagoIA Logo" className="h-16 w-auto" />
+            </Link>
+          </div>
+          
+          <div className="w-full max-w-4xl mx-auto">
+            <LoginForm />
+          </div>
         </div>
         
         <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center justify-between">
+          <div className="container flex flex-col md:flex-row h-14 items-center justify-between">
             <p className="text-sm text-muted-foreground">
               © 2024 PedagoIA. Tous droits réservés.
             </p>
@@ -125,6 +130,12 @@ export default function Login() {
               </Link>
               <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
                 Tarifs
+              </Link>
+              <Link to="/terms" className="text-sm text-muted-foreground hover:underline">
+                Conditions d'utilisation
+              </Link>
+              <Link to="/privacy" className="text-sm text-muted-foreground hover:underline">
+                Politique de confidentialité
               </Link>
             </div>
           </div>
