@@ -45,8 +45,7 @@ export function useSavedContentManagement() {
         fetchTimeoutRef.current = null;
       }
       
-      // CORRECTION: Ne pas annuler les requêtes en cours si des données ont été reçues
-      // Cela permet de préserver le cache même si le composant est démonté temporairement
+      // Ne pas annuler les requêtes en cours si des données ont été reçues
       if (!hasLoadedData.current) {
         console.log("🛑 Annulation des requêtes en cours (aucune donnée reçue)");
         cancelFetch();
@@ -59,40 +58,48 @@ export function useSavedContentManagement() {
     };
   }, [cancelFetch, cleanupImageContent, hasLoadedData]);
 
-  // Chargement initial des données après l'authentification
+  // Chargement initial des données après l'authentification - OPTIMISÉ
   useEffect(() => {
     const loadInitialContent = async () => {
-      if (!authReady || !user || initialFetchDone.current || hasLoadedData.current) {
+      // Vérification préalable pour éviter les requêtes inutiles
+      if (!authReady || !user || initialFetchDone.current) {
         console.log("📋 Vérification initiale:", {
           authReady,
           user: user ? "connecté" : "non connecté",
-          initialFetchDone: initialFetchDone.current,
-          hasLoadedData: hasLoadedData.current
+          initialFetchDone: initialFetchDone.current
         });
         return;
       }
       
-      console.log("🔑 Authentification prête et utilisateur connecté, chargement initial des données");
+      // IMPORTANTE AMÉLIORATION: Vérifier explicitement si l'utilisateur est authentifié
+      if (!user.id) {
+        console.error("❌ ID utilisateur non disponible, abandon du chargement");
+        return;
+      }
+      
+      console.log(`🔑 Authentification prête et utilisateur connecté (ID: ${user.id}), chargement initial`);
       initialFetchDone.current = true;
       
       try {
         console.log("📥 Début du chargement initial...");
-        // Forcer le rafraîchissement au chargement initial pour s'assurer d'avoir les données fraîches
+        // Forcer le rafraîchissement pour garantir les données les plus récentes
+        invalidateCache(); // IMPORTANT: Toujours invalider le cache au chargement initial
+        
         const initialContent = await fetchContent({ forceRefresh: true });
         
         if (!didUnmount.current) {
           console.log(`📊 Chargement initial terminé: ${initialContent.length} éléments`);
           
-          // CORRECTION CRITIQUE: Toujours mettre à jour le state, même si le contenu est vide
+          // Toujours mettre à jour l'état avec les données récupérées
           setContent(initialContent);
           lastContentUpdate.current = Date.now();
           
-          // Si pas de contenu au premier chargement, on réessaye une fois après un délai
+          // Si aucun contenu au premier chargement, réessayer rapidement une fois
           if (initialContent.length === 0 && errorRetryCount.current < 2) {
             errorRetryCount.current++;
             console.log(`🔄 Tentative de rechargement automatique (${errorRetryCount.current}/2)...`);
             
-            // Attendre un peu plus longtemps avant de réessayer
+            // Attendre un délai minimal avant de réessayer
             fetchTimeoutRef.current = setTimeout(async () => {
               console.log("🔄 Exécution du rechargement automatique");
               try {
@@ -109,7 +116,7 @@ export function useSavedContentManagement() {
               } catch (error) {
                 console.error("❌ Échec du rechargement automatique:", error);
               }
-            }, REQUEST_COOLDOWN * 1.5); // Délai réduit pour permettre un chargement plus rapide
+            }, REQUEST_COOLDOWN); // Utiliser REQUEST_COOLDOWN sans modification pour assurer la stabilité
           }
         }
       } catch (error) {
@@ -117,22 +124,28 @@ export function useSavedContentManagement() {
       }
     };
     
-    // Utiliser un délai pour éviter les requêtes trop rapprochées
+    // Utiliser un délai court pour éviter les requêtes trop rapprochées
     if (authReady && user && !initialFetchDone.current) {
       console.log("⏱️ Configuration du délai pour le chargement initial");
-      fetchTimeoutRef.current = setTimeout(loadInitialContent, REQUEST_COOLDOWN / 2); // Délai réduit
+      fetchTimeoutRef.current = setTimeout(loadInitialContent, REQUEST_COOLDOWN / 3); // Délai réduit pour plus de réactivité
     }
-  }, [authReady, user, fetchContent, hasLoadedData, invalidateCache]);
+  }, [authReady, user, fetchContent, invalidateCache, cancelFetch]);
 
-  // Fonction pour récupérer les données avec un rafraîchissement forcé
+  // Fonction pour récupérer les données avec un rafraîchissement forcé - OPTIMISÉE
   const refreshContent = useCallback(async (): Promise<SavedContent[]> => {
     if (didUnmount.current) return [];
+    
+    // IMPORTANTE AMÉLIORATION: Vérifier explicitement si l'utilisateur est authentifié
+    if (!user || !user.id) {
+      console.error("❌ Utilisateur non authentifié lors du rafraîchissement");
+      return content; // Retourner le contenu actuel
+    }
     
     const now = Date.now();
     const timeSinceLastUpdate = now - lastContentUpdate.current;
     
     try {
-      console.log("🔄 Rafraîchissement forcé du contenu...");
+      console.log(`🔄 Rafraîchissement forcé du contenu (ID utilisateur: ${user.id})...`);
       // Augmenter le compteur de tentatives
       refreshAttempts.current += 1;
       
@@ -142,9 +155,9 @@ export function useSavedContentManagement() {
         invalidateCache();
       }
       
-      // AJOUT: Si la dernière mise à jour est trop récente et que nous avons déjà du contenu,
+      // Si la dernière mise à jour est trop récente et que nous avons déjà du contenu,
       // retourner le contenu actuel sans faire de requête
-      if (timeSinceLastUpdate < 1000 && content.length > 0) {
+      if (timeSinceLastUpdate < 800 && content.length > 0) {
         console.log(`⏱️ Dernière mise à jour trop récente (${timeSinceLastUpdate}ms), contenu existant retourné`);
         return content;
       }
@@ -153,7 +166,8 @@ export function useSavedContentManagement() {
       
       if (!didUnmount.current) {
         console.log(`✅ Rafraîchissement réussi: ${newContent.length} éléments`);
-        // CORRECTION CRITIQUE: Toujours mettre à jour le state, même si le contenu est vide
+        
+        // CRUCIAL: Toujours mettre à jour le state avec les données récupérées
         setContent(newContent);
         lastContentUpdate.current = now;
         
@@ -168,16 +182,22 @@ export function useSavedContentManagement() {
       console.error("❌ Erreur lors du rafraîchissement du contenu:", error);
       return content; // Retourner le contenu actuel en cas d'erreur
     }
-  }, [fetchContent, invalidateCache, content]);
+  }, [fetchContent, invalidateCache, content, user]);
 
-  // Gestionnaire de suppression avec mise à jour de l'état local
+  // Gestionnaire de suppression avec mise à jour de l'état local - OPTIMISÉ
   const handleContentDelete = useCallback(async (id: string, type: SavedContent['type']): Promise<void> => {
     if (!id || !type) {
       console.error("❌ ID ou type manquant pour la suppression");
       return;
     }
     
-    console.log(`🗑️ Suppression de contenu demandée: ${id} (type: ${type})`);
+    // AMÉLIORATION: Vérifier explicitement si l'utilisateur est authentifié
+    if (!user || !user.id) {
+      console.error("❌ Utilisateur non authentifié lors de la suppression");
+      return;
+    }
+    
+    console.log(`🗑️ Suppression de contenu demandée: ${id} (type: ${type}, utilisateur: ${user.id})`);
     const success = await handleDelete(id, type);
     
     if (success && !didUnmount.current) {
@@ -188,7 +208,7 @@ export function useSavedContentManagement() {
       // Après une suppression réussie, on invalide le cache pour s'assurer de la cohérence
       invalidateCache();
     }
-  }, [handleDelete, invalidateCache]);
+  }, [handleDelete, invalidateCache, user]);
 
   // Combiner les erreurs des différents hooks
   const errors = {

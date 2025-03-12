@@ -11,7 +11,7 @@ export function useImageContent() {
   const lastFetchTime = useRef<number>(0);
   const isFetchingImages = useRef(false);
   const abortController = useRef<AbortController | null>(null);
-  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
+  const CACHE_TTL = 3 * 60 * 1000; // 3 minutes cache (réduit de 5 à 3 minutes)
   const MAX_IMAGES = 50; // Limiter le nombre d'images
 
   const isCacheValid = useCallback(() => {
@@ -23,9 +23,16 @@ export function useImageContent() {
     image_url?: string;
   }): Promise<ImageGenerationUsage | null> => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Utilisateur non connecté');
-
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast({
+          variant: "destructive",
+          title: "Non authentifié",
+          description: "Veuillez vous connecter pour sauvegarder une image"
+        })
+        throw new Error('Non authentifié')
+      }
+      
       const newRecord: Omit<ImageGenerationUsage, 'id'> = {
         prompt: params.prompt,
         user_id: user.id,
@@ -43,11 +50,19 @@ export function useImageContent() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur lors de l\'insertion de l\'image:', error);
+        toast({
+          variant: "destructive",
+          title: "Erreur",
+          description: "Impossible de sauvegarder l'image"
+        });
+        throw error;
+      }
 
       // Vérification simple que l'objet retourné est valide
       if (!record || typeof record !== 'object' || !('id' in record)) {
-        throw new Error('Invalid image data returned from database');
+        throw new Error('Données d\'image invalides retournées par la base de données');
       }
 
       // Invalider le cache après ajout d'une nouvelle image
@@ -60,8 +75,8 @@ export function useImageContent() {
       }
 
       return record as ImageGenerationUsage;
-    } catch (error) {
-      console.error('Error saving image:', error);
+    } catch (err) {
+      console.error('Erreur lors de la sauvegarde de l\'image:', err);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -73,16 +88,29 @@ export function useImageContent() {
 
   const retryFailedImage = async (recordId: string): Promise<boolean> => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('Utilisateur non authentifié lors de la nouvelle tentative');
+        return false;
+      }
+      
       const { data: record, error: fetchError } = await supabase
         .from('image_generation_usage')
         .select('*')
         .eq('id', recordId)
+        .eq('user_id', user.id) // Vérifier que l'image appartient à l'utilisateur
         .single();
 
-      if (fetchError || !record) return false;
+      if (fetchError || !record) {
+        console.error('Erreur ou image non trouvée:', fetchError);
+        return false;
+      }
 
       const currentRetryCount = record.retry_count || 0;
-      if (currentRetryCount >= 3) return false;
+      if (currentRetryCount >= 3) {
+        console.log('Nombre maximal de tentatives atteint');
+        return false;
+      }
 
       const { error: updateError } = await supabase
         .from('image_generation_usage')
@@ -91,16 +119,20 @@ export function useImageContent() {
           retry_count: currentRetryCount + 1,
           last_retry: new Date().toISOString()
         })
-        .eq('id', recordId);
+        .eq('id', recordId)
+        .eq('user_id', user.id); // S'assurer que l'image appartient à l'utilisateur
 
-      if (updateError) return false;
+      if (updateError) {
+        console.error('Erreur lors de la mise à jour de l\'image:', updateError);
+        return false;
+      }
 
       // Invalider le cache après modification
       imageCache.current = null;
-
+      
       return true;
     } catch (error) {
-      console.error('Error retrying image:', error);
+      console.error('Erreur lors de la nouvelle tentative de génération d\'image:', error);
       return false;
     }
   };
@@ -137,9 +169,8 @@ export function useImageContent() {
         return [];
       }
 
-      // Ajouter un délai pour éviter les requêtes trop rapprochées
-      await new Promise(resolve => setTimeout(resolve, 300));
-
+      console.log(`Récupération des images pour l'utilisateur ${user.id}`);
+      
       // Vérifier si la requête a été annulée pendant le délai
       if (abortController.current?.signal.aborted) {
         throw new Error('Requête annulée');
@@ -153,7 +184,10 @@ export function useImageContent() {
         .order('generated_at', { ascending: false })
         .limit(MAX_IMAGES);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erreur lors de la récupération des images:', error);
+        throw error;
+      }
 
       if (!images || !Array.isArray(images)) {
         console.log('Aucune image trouvée ou format invalide');
@@ -189,13 +223,13 @@ export function useImageContent() {
       }
       
       console.error('Error fetching images:', error);
-      return [];
+      return imageCache.current || []; // Utiliser le cache même en cas d'erreur
     } finally {
       setIsLoading(false);
       // Délai avant de permettre une nouvelle requête pour éviter les avalanches de requêtes
       setTimeout(() => {
         isFetchingImages.current = false;
-      }, 2000);
+      }, 1500); // Réduit de 2000ms à 1500ms
       
       // Réinitialiser le contrôleur d'annulation
       abortController.current = null;

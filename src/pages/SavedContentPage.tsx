@@ -13,6 +13,7 @@ import { useStableContent } from "@/hooks/saved-content/useStableContent";
 import { SavedContentHeader } from "@/components/saved-content/SavedContentHeader";
 import { SavedContentTabs } from "@/components/saved-content/SavedContentTabs";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SavedContentPage() {
   const [selectedContent, setSelectedContent] = useState<SavedContent | null>(null);
@@ -31,7 +32,9 @@ export default function SavedContentPage() {
   const didInitialFetch = useRef(false);
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const waitTimeRef = useRef(0);
+  const fetchFailuresRef = useRef(0);
   const { toast } = useToast();
+  const { user, authReady } = useAuth();
 
   // Use stable content hook to prevent unnecessary rerenders
   const { stableContent, updateContent, forceRefresh } = useStableContent();
@@ -47,13 +50,28 @@ export default function SavedContentPage() {
     invalidateCache
   } = useSavedContentManagement();
 
+  // Afficher explicitement les informations d'authentification pour le débogage
+  useEffect(() => {
+    console.log("💡 État d'authentification sur SavedContentPage:", { 
+      authReady, 
+      user: user ? "connecté" : "non connecté",
+      userId: user?.id,
+      hasContent: content.length > 0,
+      hasStableContent: stableContent.length > 0
+    });
+  }, [authReady, user, content.length, stableContent.length]);
+
   // CORRECTION CRITIQUE: Mettre à jour le contenu stable seulement lorsque le contenu change
   // ET qu'il n'est pas vide, pour éviter de perdre les données déjà chargées
   useEffect(() => {
     console.log(`📊 SavedContentPage: Analyse de la mise à jour du contenu: ${content.length} éléments`);
     
-    // Toujours mettre à jour le contenu stable avec les nouvelles données
-    updateContent(content);
+    // N'actualiser que s'il y a du nouveau contenu ou forcement au chargement initial
+    if (content.length > 0 || !didInitialFetch.current) {
+      updateContent(content);
+    } else {
+      console.log("⚠️ Contenu vide ignoré pour préserver le contenu stable existant");
+    }
   }, [content, updateContent]);
 
   // Mettre en place un timer pour incrémenter le temps d'attente
@@ -84,47 +102,78 @@ export default function SavedContentPage() {
 
   // Load data once after authentication
   useEffect(() => {
-    if (!didInitialFetch.current) {
-      console.log("📥 SavedContentPage: Chargement initial des données...");
-      didInitialFetch.current = true;
+    const loadContentData = async () => {
+      // Vérifier que l'authentification est prête et que l'utilisateur est connecté
+      if (!authReady || !user) {
+        console.log("⏳ En attente de l'authentification...");
+        return;
+      }
       
-      // Forcer le rafraîchissement du contenu stable
-      forceRefresh();
-      
-      fetchContent().then(data => {
-        console.log(`✅ SavedContentPage: Chargement initial terminé: ${data.length} éléments chargés`);
+      if (!didInitialFetch.current) {
+        console.log("📥 SavedContentPage: Chargement initial des données...");
+        didInitialFetch.current = true;
         
-        if (data.length === 0) {
-          // Si aucun contenu n'est trouvé au premier chargement, on tente un rechargement forcé
-          console.log("🔄 SavedContentPage: Aucun contenu trouvé, tentative de rechargement forcé");
-          
-          // Invalider le cache pour forcer une requête fraîche
+        // Forcer le rafraîchissement du contenu stable
+        forceRefresh();
+        
+        try {
+          // Invalider le cache avant le premier chargement
           invalidateCache();
           
-          setTimeout(() => {
-            fetchContent().then(refreshedData => {
-              console.log(`📊 SavedContentPage: Rechargement forcé terminé: ${refreshedData.length} éléments`);
-              
-              if (refreshedData.length === 0) {
-                // Un double rechargement n'a rien donné, on notifie l'utilisateur
-                toast({
-                  description: "Aucun contenu trouvé. Créez votre premier contenu !",
-                });
+          const data = await fetchContent();
+          console.log(`✅ SavedContentPage: Chargement initial terminé: ${data.length} éléments chargés`);
+          
+          if (data.length === 0) {
+            // Si aucun contenu n'est trouvé au premier chargement, on tente un rechargement forcé
+            console.log("🔄 SavedContentPage: Aucun contenu trouvé, tentative de rechargement forcé");
+            
+            // Invalider le cache pour forcer une requête fraîche
+            invalidateCache();
+            
+            setTimeout(async () => {
+              try {
+                const refreshedData = await fetchContent();
+                console.log(`📊 SavedContentPage: Rechargement forcé terminé: ${refreshedData.length} éléments`);
+                
+                if (refreshedData.length === 0) {
+                  // Un double rechargement n'a rien donné, on notifie l'utilisateur
+                  toast({
+                    description: "Aucun contenu trouvé. Créez votre premier contenu !",
+                  });
+                  fetchFailuresRef.current += 1;
+                }
+              } catch (error) {
+                console.error("❌ Erreur lors du rechargement forcé:", error);
+                fetchFailuresRef.current += 1;
               }
-            });
-          }, 1500); // Délai réduit pour un rechargement plus rapide
+            }, 1000); // Délai réduit pour un rechargement plus rapide
+          }
+        } catch (err) {
+          console.error("❌ SavedContentPage: Erreur lors du chargement initial:", err);
+          fetchFailuresRef.current += 1;
         }
-      }).catch(err => {
-        console.error("❌ SavedContentPage: Erreur lors du chargement initial:", err);
-      });
-    }
-  }, [fetchContent, toast, forceRefresh, invalidateCache]);
+      }
+    };
+    
+    loadContentData();
+  }, [fetchContent, toast, forceRefresh, invalidateCache, authReady, user]);
 
   // Async handleRefresh - fixes TypeScript error
   const handleRefresh = useCallback(async (): Promise<void> => {
     if (!isRefreshing) {
       try {
-        console.log("🔄 SavedContentPage: Lancement du rafraîchissement...");
+        console.log("🔄 SavedContentPage: Lancement du rafraîchissement manuel...");
+        
+        // Vérifier l'authentification avant de rafraîchir
+        if (!user || !user.id) {
+          console.error("❌ SavedContentPage: Utilisateur non authentifié lors du rafraîchissement");
+          toast({
+            variant: "destructive",
+            title: "Erreur d'authentification",
+            description: "Veuillez vous reconnecter pour accéder à vos contenus."
+          });
+          return Promise.reject("Non authentifié");
+        }
         
         // Toujours invalider le cache pour forcer une requête fraîche lors d'un rafraîchissement manuel
         console.log("🧹 SavedContentPage: Invalidation du cache avant rafraîchissement manuel");
@@ -145,11 +194,22 @@ export default function SavedContentPage() {
         return Promise.resolve();
       } catch (error) {
         console.error("❌ SavedContentPage: Erreur lors du rafraîchissement:", error);
+        fetchFailuresRef.current += 1;
+        
+        // Si plusieurs échecs consécutifs, suggérer une reconnexion
+        if (fetchFailuresRef.current > 2) {
+          toast({
+            variant: "destructive",
+            title: "Problème de connexion",
+            description: "Veuillez vous reconnecter pour résoudre le problème."
+          });
+        }
+        
         return Promise.reject(error);
       }
     }
     return Promise.resolve();
-  }, [fetchContent, isRefreshing, toast, stableContent.length, invalidateCache, forceRefresh]);
+  }, [fetchContent, isRefreshing, toast, stableContent.length, invalidateCache, forceRefresh, user]);
 
   const handleItemSelect = useCallback((item: SavedContent) => {
     setSelectedContent(item);
@@ -159,7 +219,7 @@ export default function SavedContentPage() {
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
     
-    // AJOUT: Refraîchir les données lors du changement d'onglet
+    // Refraîchir les données lors du changement d'onglet si nécessaire
     if (stableContent.length === 0 && !isLoading && !isRefreshing) {
       console.log(`🔄 Onglet changé vers ${tab}, rafraîchissement des données...`);
       // Déclencher un rafraîchissement sans toast si on n'a pas de contenu
@@ -187,12 +247,24 @@ export default function SavedContentPage() {
   }, []);
 
   const handleConfirmDelete = useCallback(async () => {
+    // Vérifier l'authentification avant de supprimer
+    if (!user || !user.id) {
+      console.error("❌ Utilisateur non authentifié lors de la suppression");
+      toast({
+        variant: "destructive",
+        title: "Erreur d'authentification",
+        description: "Veuillez vous reconnecter pour supprimer des contenus."
+      });
+      setDeleteDialog(prev => ({ ...prev, isOpen: false }));
+      return;
+    }
+    
     const item = stableContent.find(item => item.id === deleteDialog.itemId);
     if (item) {
       await handleDelete(deleteDialog.itemId, item.type);
       setDeleteDialog(prev => ({ ...prev, isOpen: false }));
     }
-  }, [deleteDialog.itemId, stableContent, handleDelete]);
+  }, [deleteDialog.itemId, stableContent, handleDelete, toast, user]);
 
   // Cleanup resources only on unmount
   useEffect(() => {
@@ -223,11 +295,12 @@ export default function SavedContentPage() {
     isRefreshing, 
     hasError, 
     contentCount: stableContent.length,
-    activeTab
+    activeTab,
+    authentifié: !!user
   });
 
   // Show loading only during initial load
-  if (isLoading && !isRefreshing && stableContent.length === 0) {
+  if ((isLoading && !isRefreshing && stableContent.length === 0) || !authReady) {
     return <SavedContentLoader activeTab={activeTab} />;
   }
 
