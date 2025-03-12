@@ -66,10 +66,15 @@ export const useAuthForm = () => {
         throw new Error("Email et mot de passe requis")
       }
 
-      // Make sure firstName is not an empty string when passing to metadata
+      // Make sure firstName is properly handled - don't pass empty strings
       const firstName = formState.firstName && formState.firstName.trim() !== "" 
         ? formState.firstName.trim() 
         : null;
+
+      console.log("Attempting signup with data:", {
+        email: formState.email,
+        firstName: firstName
+      });
 
       const { error } = await supabase.auth.signUp({
         email: formState.email,
@@ -82,11 +87,13 @@ export const useAuthForm = () => {
       })
 
       if (error) {
+        console.error("Supabase signup error:", error);
         throw error
       }
 
       setSignUpSuccess(true)
     } catch (error) {
+      console.error("Signup error details:", error);
       if (error instanceof AuthError) {
         throw error
       }

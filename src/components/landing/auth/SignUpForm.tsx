@@ -108,7 +108,7 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
         <Checkbox 
           id="terms" 
           checked={formState.acceptedTerms}
-          onCheckedChange={(checked) => setField("acceptedTerms", checked)}
+          onCheckedChange={(checked) => setField("acceptedTerms", checked === true)}
           className="mt-1"
         />
         <div className="grid gap-1.5 leading-none">
