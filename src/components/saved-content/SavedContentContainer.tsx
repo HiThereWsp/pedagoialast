@@ -18,6 +18,7 @@ interface SavedContentContainerProps {
   activeTab: string;
   contentCount: number;
   waitTime: number;
+  children: React.ReactNode;
   
   onRefresh: () => Promise<void>;
   onTabChange: (tab: string) => void;
@@ -96,4 +97,3 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
     </>
   );
 };
-
