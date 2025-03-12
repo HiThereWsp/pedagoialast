@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
@@ -30,11 +31,35 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const { record } = await req.json()
+    
+    // Extraire firstName de manière sécurisée
+    const firstName = record.raw_user_meta_data?.first_name || null;
+    
     console.log('📝 Nouvel utilisateur créé:', {
       id: record.id,
       email: record.email,
-      firstName: record.raw_user_meta_data?.first_name
+      firstName: firstName
     })
+
+    // Appeler la fonction create-brevo-contact
+    console.log('📧 Tentative d\'ajout du contact à Brevo...')
+    const { data: brevoResponse, error: brevoError } = await supabase.functions.invoke(
+      'create-brevo-contact',
+      {
+        body: JSON.stringify({
+          userId: record.id,
+          email: record.email,
+          firstName: firstName
+        })
+      }
+    )
+
+    if (brevoError) {
+      console.error('❌ Échec de l\'ajout à Brevo:', brevoError)
+      // Ne pas échouer complètement même si Brevo échoue
+    } else {
+      console.log('✅ Contact ajouté à Brevo avec succès:', brevoResponse)
+    }
 
     // Appeler la fonction process-welcome-emails
     console.log('📧 Tentative de traitement de l\'email de bienvenue...')
@@ -44,17 +69,17 @@ const handler = async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           userId: record.id,
           email: record.email,
-          firstName: record.raw_user_meta_data?.first_name || 'Utilisateur'
+          firstName: firstName || 'Utilisateur'
         })
       }
     )
 
     if (welcomeEmailError) {
       console.error('❌ Échec du traitement de l\'email de bienvenue:', welcomeEmailError)
-      throw welcomeEmailError
+      // Ne pas échouer complètement même si l'email échoue
+    } else {
+      console.log('✅ Email de bienvenue traité avec succès:', welcomeEmailResponse)
     }
-
-    console.log('✅ Email de bienvenue traité avec succès:', welcomeEmailResponse)
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

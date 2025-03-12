@@ -1,3 +1,4 @@
+
 import { AuthError, AuthApiError } from "@supabase/supabase-js"
 
 export const getAuthErrorMessage = (error: AuthError): string => {
@@ -14,25 +15,27 @@ export const getAuthErrorMessage = (error: AuthError): string => {
         if (error.message.includes("User already registered")) {
           return "Un compte existe déjà avec cet email. Veuillez vous connecter."
         }
+        if (error.message.includes("Database error saving new user")) {
+          return "Une erreur technique est survenue lors de la création de votre compte. Notre équipe a été notifiée. Veuillez réessayer plus tard."
+        }
         return "Les identifiants fournis sont invalides."
       case 422:
         if (error.code === 'same_password'){
           return "Pour des raisons de sécurité, veuillez choisir un mot de passe différent de vos mots de passe précédents. Assurez-vous que votre nouveau mot de passe est unique et sécurisé."
         }
-
         return "Format d'email invalide."
       case 429:
         return "Trop de tentatives. Veuillez réessayer plus tard."
       case 500:
         if (error.message.includes("Database error saving new user")) {
-          return "Une erreur est survenue lors de la création de votre compte. Veuillez réessayer avec un autre email."
+          return "Une erreur technique est survenue lors de la création de votre compte. Notre équipe a été notifiée. Veuillez réessayer plus tard."
         }
         return "Une erreur serveur est survenue. Veuillez réessayer plus tard."
       default:
         return "Une erreur est survenue. Veuillez réessayer."
     }
   }
-  return "aUne erreur est survenue. Veuillez réessayer."
+  return "Une erreur est survenue. Veuillez réessayer."
 }
 
 export const validateAuthForm = (email: string, password: string) => {
@@ -77,7 +80,6 @@ export const validateForgotPasswordForm = (email: string) => {
   if (!email.trim()) {
     errors.push("Veuillez saisir votre email.")
   }
-
 
   return errors
 }
