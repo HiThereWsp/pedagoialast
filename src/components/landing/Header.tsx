@@ -46,7 +46,7 @@ export function Header() {
         <div className="flex items-center gap-3">
           {!user && <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline" className="hidden md:flex gap-2">
+              <Button variant="outline" className="flex gap-2">
                 <LogIn className="h-4 w-4" />
                 Se connecter
               </Button>
