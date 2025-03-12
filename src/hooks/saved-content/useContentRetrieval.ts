@@ -114,12 +114,12 @@ export function useContentRetrieval() {
         console.log(`🖼️ [Requête ${requestId}] Images récupérées: ${imageData.length}`);
         
         // Transformer les données d'image en format SavedContent
-        const images = imageData.map(img => ({
+        const images: SavedContent[] = imageData.map(img => ({
           id: img.id,
           title: "Image générée",
           content: img.image_url || '',
           created_at: img.generated_at || new Date().toISOString(),
-          type: 'Image',
+          type: 'Image' as const,
           displayType: 'Image générée',
           tags: [{
             label: 'Image',
