@@ -1,4 +1,3 @@
-
 import { useState } from "react"
 import { SignUpForm } from "./auth/SignUpForm"
 import { SignInForm } from "./auth/SignInForm"
@@ -10,16 +9,19 @@ import {useNavigate} from "react-router-dom";
 import { Provider } from "@supabase/supabase-js";
 
 export const LoginForm = () => {
-  const [isSignUp, setIsSignUp] = useState(false)
+  // Changed default state to true to show signup first
+  const [isSignUp, setIsSignUp] = useState(true)
   const navigate = useNavigate()
-    const SocialLogin = async (provider_name: Provider) => {
-      const {data, error} = await supabase.auth.signInWithOAuth({
-          provider: provider_name,
-          options: {
-              redirectTo: "https://pedagoia.fr/login"
-          }
-      })
+  
+  const SocialLogin = async (provider_name: Provider) => {
+    const {data, error} = await supabase.auth.signInWithOAuth({
+        provider: provider_name,
+        options: {
+            redirectTo: "https://pedagoia.fr/login"
+        }
+    })
   }
+  
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold text-center">
