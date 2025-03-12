@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { GenerationPrompt } from "@/components/image-generation/types";
+import { GenerationPrompt } from "./types";
 import { UseImageGenerationResult } from './types';
 import { useGenerateImageApi } from './useGenerateImageApi';
 import { useContentScreening } from './useContentScreening';

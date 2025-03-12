@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { GenerationPrompt } from "@/components/image-generation/types";
+import { GenerationPrompt } from "../image-generation/types";
 import { useAuth } from "@/hooks/useAuth";
 
 export const useGenerateImageApi = () => {

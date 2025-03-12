@@ -5,11 +5,11 @@ import { GenerationForm } from './GenerationForm'
 import { GeneratedImage } from './GeneratedImage'
 import { useImageGeneration } from '@/hooks/image-generation'
 import { useState, useRef } from 'react'
-import { ImageStyle, GenerationPrompt } from './types'
+import { GenerationPrompt } from './types'
 import { useToast } from '@/hooks/use-toast'
 
 export const ImageGenerator = () => {
-  const [selectedStyle, setSelectedStyle] = useState<ImageStyle>('auto')
+  const [selectedStyle, setSelectedStyle] = useState<string>('auto')
   const [lastPrompt, setLastPrompt] = useState<GenerationPrompt | null>(null)
   const operationInProgress = useRef(false)
   const { toast } = useToast()
@@ -29,7 +29,7 @@ export const ImageGenerator = () => {
       return
     }
 
-    if (prompt.user_prompt.length < 3) {
+    if (prompt.user_prompt && prompt.user_prompt.length < 3) {
       toast({
         variant: "destructive",
         description: "Veuillez entrer une description plus détaillée (minimum 3 caractères)"
@@ -37,7 +37,7 @@ export const ImageGenerator = () => {
       return
     }
 
-    if (prompt.user_prompt.length > 1000) {
+    if (prompt.user_prompt && prompt.user_prompt.length > 1000) {
       toast({
         variant: "destructive",
         description: "La description est trop longue (maximum 1000 caractères)"
@@ -47,7 +47,7 @@ export const ImageGenerator = () => {
 
     try {
       operationInProgress.current = true
-      setSelectedStyle(prompt.style)
+      setSelectedStyle(prompt.style || 'auto')
       setLastPrompt(prompt)
       await generateImage(prompt)
     } finally {

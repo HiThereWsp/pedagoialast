@@ -5,12 +5,12 @@ import { ImageStyle } from "./types"
 import { Paintbrush, Wand2, Image } from "lucide-react"
 
 interface ImageStyleSelectorProps {
-  selectedStyle: ImageStyle
-  onStyleChange: (style: ImageStyle) => void
+  selectedStyle: string
+  onStyleChange: (style: string) => void
 }
 
 const styles: Array<{
-  value: ImageStyle
+  value: string
   label: string
   description: string
   Icon: React.ComponentType<{ className?: string }>
