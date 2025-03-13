@@ -1,5 +1,13 @@
 import { AuthError, AuthApiError } from "@supabase/supabase-js"
 
+// Nouvelle fonction pour détecter spécifiquement les erreurs d'utilisateurs existants
+export const isUserExistsError = (error: AuthError): boolean => {
+  if (error instanceof AuthApiError) {
+    return error.status === 400 && error.message.includes("User already registered");
+  }
+  return false;
+}
+
 export const getAuthErrorMessage = (error: AuthError): string => {
   console.log({error})
   if (error instanceof AuthApiError) {
@@ -32,7 +40,7 @@ export const getAuthErrorMessage = (error: AuthError): string => {
         return "Une erreur est survenue. Veuillez réessayer."
     }
   }
-  return "aUne erreur est survenue. Veuillez réessayer."
+  return "Une erreur est survenue. Veuillez réessayer."
 }
 
 export const validateAuthForm = (email: string, password: string) => {

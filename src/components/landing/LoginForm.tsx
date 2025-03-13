@@ -4,9 +4,11 @@ import { SignInForm } from "./auth/SignInForm";
 import { SignUpForm } from "./auth/SignUpForm";
 import { AnimatedText } from "@/components/ui/animated-text";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
 
 export const LoginForm = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  // Modification: l'inscription est maintenant l'option par défaut
+  const [isSignUp, setIsSignUp] = useState(true);
   
   // Les deux phrases à alterner
   const welcomePhrases = [
@@ -19,9 +21,17 @@ export const LoginForm = () => {
       {/* Formulaire de gauche */}
       <div className="flex-1 bg-white p-8 md:p-10">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-2">
-            {isSignUp ? "Inscription" : "Connexion"}
-          </h2>
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-2xl font-bold">
+              {isSignUp ? "Inscription" : "Connexion"}
+            </h2>
+            {/* Badge "Essayez gratuitement" pour le mode inscription */}
+            {isSignUp && (
+              <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                Essayez gratuitement
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground text-sm">
             {isSignUp ? "Créez votre compte pour commencer" : "Accédez à votre compte"}
           </p>
@@ -41,7 +51,7 @@ export const LoginForm = () => {
         <div className="max-w-md">
           <AnimatedText 
             phrases={welcomePhrases} 
-            className="text-4xl md:text-5xl font-bold mb-6 text-white" 
+            className="text-5xl font-extrabold leading-tight tracking-tight text-balance mb-6 text-white" 
             typingSpeed={100} 
             deletingSpeed={50} 
             delayBetweenPhrases={3000} 
