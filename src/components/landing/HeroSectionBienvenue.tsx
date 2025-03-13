@@ -3,8 +3,8 @@ import React from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { DynamicText } from "@/components/landing/DynamicText";
 import { Tiles } from "@/components/ui/tiles";
+import { AnimatedText } from "@/components/ui/animated-text";
 
 export function HeroSectionBienvenue() {
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
@@ -14,14 +14,6 @@ export function HeroSectionBienvenue() {
       
       <div className="container mx-auto px-4 relative z-10 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="mb-8">
-            <img 
-              src="/lovable-uploads/d13e3386-8e0a-49a4-b20f-e4bf5030fdb1.png" 
-              alt="Pedago.ia" 
-              className="h-20 md:h-24 mx-auto"
-            />
-          </div>
-          
           <div className="inline-block animate-fade-in">
             <div className="flex items-center rounded-full border border-border bg-background p-1 shadow shadow-black/5 mb-8">
               <div className="flex -space-x-1.5">
@@ -39,7 +31,17 @@ export function HeroSectionBienvenue() {
           <h1 className="text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight md:text-5xl">L'assistant pédagogique intelligent pour travailler 15x plus vite</h1>
           
           <h2 className="text-2xl md:text-3xl mb-6">
-            Avec des outils IA conçus pour <br className="hidden sm:block" /> <DynamicText />
+            Avec des outils IA conçus pour <br className="hidden sm:block" /> 
+            <AnimatedText 
+              phrases={[
+                "planifier vos cours",
+                "générer du contenu pédagogique",
+                "évaluer vos élèves",
+                "différencier en quelques clics",
+                "gagner du temps"
+              ]} 
+              className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text"
+            />
           </h2>
           
           <Link to="/login">
