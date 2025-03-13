@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import Stripe from "https://esm.sh/stripe@14.21.0"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
@@ -18,8 +19,8 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId } = await req.json()
-    console.log('Received request with priceId:', priceId)
+    const { priceId, subscriptionType = 'monthly' } = await req.json()
+    console.log('Received request with priceId:', priceId, 'and subscriptionType:', subscriptionType)
     
     if (!priceId) {
       throw new Error('Price ID is required')
@@ -55,6 +56,7 @@ serve(async (req) => {
     console.log('Creating checkout session for:', {
       priceId,
       userEmail: user.email,
+      subscriptionType,
     })
 
     // Vérifier si le client existe déjà
@@ -71,9 +73,22 @@ serve(async (req) => {
       console.log('Creating new customer')
       const customer = await stripe.customers.create({
         email: user.email,
+        metadata: {
+          userId: user.id,
+          subscriptionType
+        }
       })
       customerId = customer.id
       console.log('New customer created:', customerId)
+    } else {
+      // Mettre à jour les métadonnées du client existant
+      await stripe.customers.update(customerId, {
+        metadata: {
+          userId: user.id,
+          subscriptionType
+        }
+      });
+      console.log('Updated existing customer metadata');
     }
 
     // Créer la session de paiement
@@ -86,11 +101,31 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/chat`,
-      cancel_url: `${req.headers.get('origin')}/pricing`,
+      success_url: `${req.headers.get('origin')}/subscription-success?type=${subscriptionType}`,
+      cancel_url: `${req.headers.get('origin')}/checkout-canceled?type=${subscriptionType}`,
+      metadata: {
+        userId: user.id,
+        subscriptionType
+      }
     })
 
     console.log('Checkout session created:', session.id)
+
+    // Préparer l'utilisateur pour le transfert vers la liste premium une fois le paiement réussi
+    try {
+      await supabaseClient.functions.invoke('create-brevo-contact', {
+        body: {
+          email: user.email,
+          contactName: user.user_metadata?.first_name || 'Utilisateur',
+          userType: "free", // Encore gratuit jusqu'à confirmation du paiement
+          source: "checkout_started"
+        }
+      });
+      console.log('User prepared for premium list transfer in Brevo');
+    } catch (brevoError) {
+      console.error('Error preparing user in Brevo:', brevoError);
+      // Continue despite Brevo error
+    }
 
     return new Response(
       JSON.stringify({ url: session.url }),

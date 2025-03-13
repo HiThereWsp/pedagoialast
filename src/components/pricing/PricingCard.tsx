@@ -1,130 +1,103 @@
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Check, Info } from "lucide-react"
-import { ReactNode } from "react"
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip"
-
-interface Feature {
-  text: string
-  tooltip?: string
-}
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface PricingCardProps {
-  title: string
-  price: string
-  period?: string
-  yearlyPrice?: string
-  features: (string | { text: string; tooltip: string })[]
-  badge?: string
-  badgeIcon?: React.ReactNode
-  isPremium?: boolean
-  onSubscribe?: () => void
-  ctaText?: string
-  CustomCTA?: ReactNode
-  originalPrice?: string
+  title: string;
+  price: string;
+  period?: string;
+  originalPrice?: string;
+  features: string[];
+  ctaText: string;
+  onSubscribe: () => void;
+  isPremium?: boolean;
+  badge?: string;
+  disabled?: boolean;
 }
 
 export const PricingCard = ({
   title,
   price,
-  period,
-  yearlyPrice,
+  period = "",
+  originalPrice,
   features,
-  badge,
-  badgeIcon,
-  isPremium,
-  onSubscribe,
   ctaText,
-  CustomCTA,
-  originalPrice
+  onSubscribe,
+  isPremium = false,
+  badge,
+  disabled = false
 }: PricingCardProps) => {
   return (
-    <Card className={`p-8 relative ${
-      isPremium 
-        ? 'border-2 border-primary/20 shadow-xl hover:shadow-2xl' 
-        : 'hover:shadow-xl'
-    } transition-shadow duration-300 bg-white/90 backdrop-blur-sm`}>
+    <div className="relative pt-5">
       {badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className={isPremium 
-            ? "bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white"
-            : "bg-secondary text-primary/90"
-          }>
-            {badgeIcon}
-            {badge}
-          </Badge>
-        </div>
+        <Badge className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-[#FFA500] to-[#FF69B4] text-white font-semibold border-none shadow-md z-10">
+          {badge}
+        </Badge>
       )}
-
-      <div className="text-center">
-        <h3 className="text-2xl font-bold mb-3">{title}</h3>
-        <div className="flex items-baseline justify-center gap-2 mb-2">
-          {originalPrice && (
-            <span className="text-lg font-medium line-through text-muted-foreground">{originalPrice}</span>
-          )}
-          <span className="text-4xl font-bold">{price}</span>
-          {period && <span className="text-lg text-muted-foreground">{period}</span>}
-        </div>
-        {yearlyPrice && (
-          <p className="text-sm text-primary mt-2 text-center">
-            Soit {yearlyPrice}
-          </p>
-        )}
-      </div>
-
-      <div className="mt-8">
-        <ul className="space-y-4">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-              <span className="text-muted-foreground">
-                {typeof feature === 'string' ? (
-                  feature
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="flex items-center gap-1 cursor-help">
-                        {feature.text}
-                        <Info className="w-4 h-4" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{feature.tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+      
+      <Card
+        className={`relative overflow-hidden p-8 flex flex-col justify-between transform transition-all duration-300 hover:scale-105 ${
+          isPremium 
+            ? "shadow-xl border-2 border-transparent bg-gradient-to-b from-background to-background" 
+            : "shadow-md"
+        }`}
+        style={isPremium ? {
+          backgroundClip: "padding-box",
+          borderImage: "linear-gradient(to bottom, #FFA500, #FF69B4) 1",
+        } : {}}
+      >
+        <div>
+          <h3 className="text-2xl font-bold mb-3">{title}</h3>
+          
+          <div className="mb-6 flex flex-col items-center">
+            {isPremium ? (
+              // Style pour le prix du plan premium (annuel)
+              <>
+                <span className="text-4xl font-bold">{price}</span>
+                {period && <span className="text-muted-foreground ml-1">{period}</span>}
+                
+                {originalPrice && (
+                  <div className="mt-1">
+                    <span className="text-muted-foreground line-through text-4xl">
+                      {originalPrice}
+                    </span>
+                  </div>
                 )}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mt-10">
-        {CustomCTA ? (
-          CustomCTA
-        ) : (
-          <Button 
-            onClick={onSubscribe} 
-            className={`w-full ${
-              isPremium 
-                ? 'bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:shadow-[0_8px_20px_-3px_rgba(251,146,60,0.4)] transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(251,146,60,0.3)]' 
-                : 'bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-900 text-white transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(15,23,42,0.2)] hover:shadow-[0_8px_20px_-3px_rgba(15,23,42,0.3)]'
-            } text-sm py-7 px-5 font-medium tracking-wider rounded-xl letter-spacing-wide`}
-            size="lg"
-            style={{ paddingLeft: '20px', paddingRight: '20px' }}
-          >
-            {ctaText}
-          </Button>
-        )}
-      </div>
-    </Card>
+              </>
+            ) : (
+              // Style pour le prix du plan mensuel
+              <div className="flex flex-col items-start">
+                <span className="text-4xl font-bold">{price}</span>
+                {period && <span className="text-4xl font-bold text-muted-foreground">{period}</span>}
+              </div>
+            )}
+          </div>
+          
+          <ul className="space-y-3 mb-8">
+            {features.map((feature, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <span className="text-muted-foreground text-sm">{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <Button
+          onClick={onSubscribe}
+          disabled={disabled}
+          className={`w-full transition-all duration-300 ${
+            isPremium
+              ? "bg-gradient-to-r from-[#FFA500] via-[#FF8C00] to-[#FF69B4] text-white hover:shadow-xl hover:shadow-primary/20 font-medium"
+              : "bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium"
+          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        >
+          {ctaText}
+        </Button>
+      </Card>
+    </div>
   );
 };
-
