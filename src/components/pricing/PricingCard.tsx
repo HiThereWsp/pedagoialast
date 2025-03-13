@@ -61,7 +61,7 @@ export const PricingCard = ({
                 
                 {originalPrice && (
                   <div className="mt-1">
-                    <span className="text-muted-foreground line-through text-sm">
+                    <span className="text-muted-foreground line-through text-4xl">
                       {originalPrice}
                     </span>
                   </div>
@@ -69,10 +69,10 @@ export const PricingCard = ({
               </>
             ) : (
               // Style pour le prix du plan mensuel
-              <>
-                <span className="text-4xl font-bold block">{price}</span>
-                {period && <span className="text-4xl font-bold text-muted-foreground block">{period}</span>}
-              </>
+              <div className="flex flex-col items-start">
+                <span className="text-4xl font-bold">{price}</span>
+                {period && <span className="text-4xl font-bold text-muted-foreground">{period}</span>}
+              </div>
             )}
           </div>
           

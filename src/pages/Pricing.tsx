@@ -1,3 +1,4 @@
+
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
@@ -111,11 +112,11 @@ const Pricing = () => {
             price="11,90€"
             period="/mois"
             features={[
-              "Accéder à l'assistant pédagogique via le chat sans limite",
-              "Utiliser plus de 10 outils IA pédagogiques",
-              "Sauvegarder tous vos supports de cours générés",
-              "Exploiter tous les outils sans limitation",
-              "Économiser plus de 14h par semaine grâce aux outils IA"
+              "Accédez à l'assistant pédagogique via le chat sans limite",
+              "Utilisez plus de 10 outils pédagogiques",
+              "Sauvegardez tous vos supports de cours générés",
+              "Exploitez tous les outils sans limitation",
+              "Économisez plus de 14h par semaine grâce aux outils IA"
             ]}
             ctaText={getButtonText('monthly')}
             onSubscribe={handleMonthlySubscription}
@@ -128,10 +129,10 @@ const Pricing = () => {
             badge="2 mois offerts"
             isPremium
             features={[
-              "Bénéficier de tous les avantages du plan mensuel",
-              "Votez de nouveaux outils tous les mois",
-              "Recevoir les mises à jour en avant-première",
-              "Accéder à la communauté privée d'enseignants 3.0"
+              "Bénéficiez de tous les avantages du plan mensuel",
+              "Votez pour de nouveaux outils tous les mois",
+              "Recevez les mises à jour en avant-première",
+              "Accédez à la communauté privée d'enseignants 3.0"
             ]}
             ctaText={getButtonText('yearly')}
             onSubscribe={handleYearlySubscription}
@@ -141,10 +142,10 @@ const Pricing = () => {
             title="Établissement scolaire"
             price="Sur mesure"
             features={[
-              "Bénéficier de tout ce qui est inclus dans le plan annuel",
-              "Créer des outils personnalisés pour votre établissement",
-              "Accéder au tableau de suivi pour la direction",
-              "Adapter les outils à votre projet d'établissement"
+              "Bénéficiez de tout ce qui est inclus dans le plan annuel",
+              "Créez des outils personnalisés pour votre établissement",
+              "Accédez au tableau de suivi pour la direction",
+              "Adaptez les outils à votre projet d'établissement"
             ]}
             ctaText="Prendre contact"
             onSubscribe={handleSchoolContactRequest}
