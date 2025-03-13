@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -115,6 +114,10 @@ async function handleSubscriptionCreated(subscription, stripe, supabase) {
     // Obtenir les détails du client depuis Stripe
     const customer = await stripe.customers.retrieve(customerId);
     const customerEmail = typeof customer === 'object' ? customer.email : null;
+    const productId = typeof customer === 'object' && customer.metadata ? customer.metadata.productId : null;
+    
+    console.log('Customer metadata:', customer.metadata);
+    console.log('Product ID from metadata:', productId);
     
     if (!customerEmail) {
       throw new Error('Email client non trouvé');
@@ -143,6 +146,7 @@ async function handleSubscriptionCreated(subscription, stripe, supabase) {
         stripe_subscription_id: subscriptionId,
         status: 'active',
         type: 'paid',
+        product_id: productId,
         expires_at: expiresAt
       }, {
         onConflict: 'user_id'
@@ -153,7 +157,7 @@ async function handleSubscriptionCreated(subscription, stripe, supabase) {
       throw upsertError;
     }
     
-    console.log(`Abonnement créé pour l'utilisateur ${userId}`);
+    console.log(`Abonnement créé pour l'utilisateur ${userId} avec le product ID: ${productId}`);
     
     // Synchroniser avec Brevo - déplacer l'utilisateur vers la liste des utilisateurs premium
     try {

@@ -19,8 +19,8 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, subscriptionType = 'monthly' } = await req.json()
-    console.log('Received request with priceId:', priceId, 'and subscriptionType:', subscriptionType)
+    const { priceId, subscriptionType = 'monthly', productId } = await req.json()
+    console.log('Received request with priceId:', priceId, 'and subscriptionType:', subscriptionType, 'productId:', productId)
     
     if (!priceId) {
       throw new Error('Price ID is required')
@@ -55,6 +55,7 @@ serve(async (req) => {
 
     console.log('Creating checkout session for:', {
       priceId,
+      productId,
       userEmail: user.email,
       subscriptionType,
     })
@@ -75,7 +76,8 @@ serve(async (req) => {
         email: user.email,
         metadata: {
           userId: user.id,
-          subscriptionType
+          subscriptionType,
+          productId
         }
       })
       customerId = customer.id
@@ -85,7 +87,8 @@ serve(async (req) => {
       await stripe.customers.update(customerId, {
         metadata: {
           userId: user.id,
-          subscriptionType
+          subscriptionType,
+          productId
         }
       });
       console.log('Updated existing customer metadata');
@@ -105,7 +108,8 @@ serve(async (req) => {
       cancel_url: `${req.headers.get('origin')}/checkout-canceled?type=${subscriptionType}`,
       metadata: {
         userId: user.id,
-        subscriptionType
+        subscriptionType,
+        productId
       }
     })
 

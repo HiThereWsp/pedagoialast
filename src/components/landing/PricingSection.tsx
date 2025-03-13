@@ -9,17 +9,17 @@ export const PricingSection = () => {
   const { trackPlanSelection } = usePricingAnalytics(promoCode);
 
   const handleFreePlan = () => {
-    trackPlanSelection('free');
+    trackPlanSelection('free', 'free_plan');
     console.log('Free plan selected');
   };
 
   const handlePremiumPlan = () => {
-    trackPlanSelection('premium');
+    trackPlanSelection('premium', 'prod_Rvu5l79HX8EAis');
     console.log('Premium plan selected');
   };
 
   const handleEnterprisePlan = () => {
-    trackPlanSelection('enterprise');
+    trackPlanSelection('enterprise', 'prod_Rvu5hv7FxnkHpv');
     console.log('Enterprise plan selected');
   };
 

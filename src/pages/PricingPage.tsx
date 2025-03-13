@@ -43,7 +43,7 @@ const PricingPage = () => {
     facebookEvents.initiateCheckout('monthly', 11.90);
     
     // Utiliser le système d'abonnement Stripe via notre fonction
-    const stripeMonthlyPriceId = 'price_1O8GJRGJLmrCBLPXcfwxVP6b'; // ID de prix pour l'abonnement mensuel
+    const stripeMonthlyPriceId = 'price_monthly_prod_Rvu5l79HX8EAis'; // ID de prix pour l'abonnement mensuel
     await handleSubscription(stripeMonthlyPriceId);
   }
 
@@ -58,7 +58,7 @@ const PricingPage = () => {
     facebookEvents.initiateCheckout('yearly', 9.00);
     
     // Utiliser le système d'abonnement Stripe via notre fonction
-    const stripeYearlyPriceId = 'price_1O8GJvGJLmrCBLPXFvw6SHHn'; // ID de prix pour l'abonnement annuel
+    const stripeYearlyPriceId = 'price_yearly_prod_Rvu5hv7FxnkHpv'; // ID de prix pour l'abonnement annuel
     await handleSubscription(stripeYearlyPriceId);
   }
 
