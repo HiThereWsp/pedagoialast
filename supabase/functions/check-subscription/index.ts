@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from 'https://esm.sh/stripe@14.21.0'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
@@ -29,35 +30,28 @@ serve(async (req) => {
 
     console.log("Checking subscription status for user:", user.id);
 
-    // Vérifier l'abonnement dans notre base de données
+    // Utiliser une requête SQL directe pour éviter les problèmes de RLS
     const { data: subscriptionData, error: subscriptionError } = await supabaseClient
-      .from('user_subscriptions')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
+      .rpc('get_user_subscription_status', { user_uuid: user.id });
 
     if (subscriptionError) {
       console.error("Error retrieving subscription:", subscriptionError);
       
-      if (subscriptionError.code === 'PGRST116') {
-        // Pas d'abonnement trouvé
-        return new Response(
-          JSON.stringify({ 
-            subscribed: false,
-            subscription: null,
-            message: "No subscription found" 
-          }),
-          {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-          }
-        );
-      }
-      
-      throw subscriptionError;
+      // Si l'erreur n'est pas "aucune donnée trouvée", c'est une erreur technique
+      return new Response(
+        JSON.stringify({ 
+          subscribed: false,
+          subscription: null,
+          message: "Error fetching subscription data" 
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        }
+      );
     }
     
-    if (!subscriptionData) {
+    if (!subscriptionData || subscriptionData.length === 0) {
       return new Response(
         JSON.stringify({ 
           subscribed: false,
@@ -70,27 +64,30 @@ serve(async (req) => {
       );
     }
     
+    // Utiliser la première entrée si c'est un tableau
+    const subscription = Array.isArray(subscriptionData) ? subscriptionData[0] : subscriptionData;
+    
     // Vérifier si l'abonnement est actif
     const now = new Date();
-    const expiresAt = new Date(subscriptionData.expires_at);
-    const isActive = subscriptionData.status === 'active' && expiresAt > now;
+    const expiresAt = new Date(subscription.expires_at);
+    const isActive = subscription.status === 'active' && expiresAt > now;
     
     console.log("Subscription check result:", {
-      type: subscriptionData.type,
-      status: subscriptionData.status,
-      expiresAt: subscriptionData.expires_at,
+      type: subscription.type,
+      status: subscription.status,
+      expiresAt: subscription.expires_at,
       isActive
     });
 
     // Si c'est un abonnement Stripe et qu'il est actif, on vérifie aussi dans Stripe
-    if (isActive && subscriptionData.type === 'paid' && subscriptionData.stripe_subscription_id) {
+    if (isActive && subscription.type === 'paid' && subscription.stripe_subscription_id) {
       try {
         const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
           apiVersion: '2023-10-16',
         });
         
         const stripeSubscription = await stripe.subscriptions.retrieve(
-          subscriptionData.stripe_subscription_id
+          subscription.stripe_subscription_id
         );
         
         console.log("Stripe subscription status:", stripeSubscription.status);
@@ -109,9 +106,9 @@ serve(async (req) => {
             JSON.stringify({ 
               subscribed: false,
               subscription: {
-                type: subscriptionData.type,
+                type: subscription.type,
                 status: 'expired',
-                expiresAt: subscriptionData.expires_at,
+                expiresAt: subscription.expires_at,
                 stripeStatus: stripeSubscription.status
               }
             }),
@@ -131,9 +128,9 @@ serve(async (req) => {
       JSON.stringify({ 
         subscribed: isActive,
         subscription: {
-          type: subscriptionData.type,
-          status: subscriptionData.status,
-          expiresAt: subscriptionData.expires_at
+          type: subscription.type,
+          status: subscription.status,
+          expiresAt: subscription.expires_at
         }
       }),
       {

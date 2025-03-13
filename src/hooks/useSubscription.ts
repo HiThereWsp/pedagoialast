@@ -23,6 +23,7 @@ export const useSubscription = () => {
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const fetchSubscription = async () => {
     if (!user) {
@@ -33,40 +34,96 @@ export const useSubscription = () => {
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('user_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      // Utiliser le RPC pour éviter les problèmes de récursion dans les politiques RLS
+      const { data, error: rpcError } = await supabase.rpc(
+        'get_user_subscription_status',
+        { user_uuid: user.id }
+      );
 
-      if (error) {
-        console.error("Erreur lors de la récupération de l'abonnement :", error);
-        setError(error.message);
-        setSubscription(null);
+      if (rpcError) {
+        // Fallback à une requête normale en cas d'erreur RPC
+        const { data: fallbackData, error } = await supabase
+          .from('user_subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Erreur lors de la récupération de l'abonnement:", error);
+          setError(error.message);
+          
+          // Essayer de vérifier l'abonnement via l'edge function en dernier recours
+          try {
+            const { data: edgeData, error: edgeError } = await supabase.functions.invoke("check-subscription");
+            
+            if (edgeError) {
+              throw edgeError;
+            }
+            
+            if (edgeData?.subscription) {
+              const subscriptionData = edgeData.subscription;
+              processSubscriptionData(subscriptionData);
+              return;
+            }
+          } catch (edgeCallError) {
+            console.error("Erreur lors de la vérification via edge function:", edgeCallError);
+            // On continue avec la valeur null
+          }
+          
+          setSubscription(null);
+        } else if (fallbackData) {
+          processSubscriptionData(fallbackData);
+        } else {
+          setSubscription(null);
+        }
       } else if (data) {
-        // Calculer le nombre de jours restants
-        const expiresAt = new Date(data.expires_at);
-        const now = new Date();
-        const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-        setSubscription({
-          id: data.id,
-          userId: data.user_id,
-          type: data.type,
-          expiresAt: data.expires_at,
-          status: data.status,
-          stripeCustomerId: data.stripe_customer_id,
-          stripeSubscriptionId: data.stripe_subscription_id,
-          daysLeft: daysLeft > 0 ? daysLeft : 0
-        });
+        processSubscriptionData(data);
+      } else {
+        setSubscription(null);
         setError(null);
       }
     } catch (err) {
-      console.error("Erreur inattendue :", err);
+      console.error("Erreur inattendue:", err);
       setError("Une erreur inattendue s'est produite");
+      
+      // Si moins de 3 tentatives, réessayer après un court délai
+      if (retryCount < 3) {
+        setRetryCount(count => count + 1);
+        setTimeout(() => fetchSubscription(), 1000);
+      } else {
+        // Après 3 échecs, on initialise avec un abonnement par défaut
+        setSubscription({
+          id: 'default',
+          userId: user.id,
+          type: 'trial',
+          expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 jours à partir d'aujourd'hui
+          status: 'active',
+          daysLeft: 3
+        });
+      }
     } finally {
       setLoading(false);
     }
+  };
+  
+  // Helper function to process subscription data
+  const processSubscriptionData = (data: any) => {
+    // Calculer le nombre de jours restants
+    const expiresAt = new Date(data.expires_at);
+    const now = new Date();
+    const daysLeft = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    setSubscription({
+      id: data.id,
+      userId: data.user_id,
+      type: data.type,
+      expiresAt: data.expires_at,
+      status: data.status,
+      stripeCustomerId: data.stripe_customer_id,
+      stripeSubscriptionId: data.stripe_subscription_id,
+      daysLeft: daysLeft > 0 ? daysLeft : 0
+    });
+    setError(null);
   };
 
   useEffect(() => {

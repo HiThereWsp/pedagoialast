@@ -28,7 +28,13 @@ export const useCheckoutSession = () => {
       if (error) {
         console.error("Erreur lors de la création de la session de paiement:", error);
         setError("Erreur lors de la création de la session de paiement");
-        toast.error("Erreur lors de la création de la session de paiement");
+        toast.error("Erreur lors de la création de la session de paiement. Veuillez réessayer.");
+        return null;
+      }
+
+      if (!data?.url) {
+        setError("Réponse invalide du serveur");
+        toast.error("Une erreur est survenue avec le service de paiement");
         return null;
       }
 
@@ -37,7 +43,7 @@ export const useCheckoutSession = () => {
     } catch (err) {
       console.error("Erreur inattendue:", err);
       setError("Une erreur inattendue s'est produite");
-      toast.error("Une erreur inattendue s'est produite");
+      toast.error("Une erreur inattendue s'est produite. Veuillez réessayer ultérieurement.");
       return null;
     } finally {
       setLoading(false);

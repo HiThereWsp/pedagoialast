@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -78,16 +79,20 @@ export const PricingCard = ({
       <CardHeader className="space-y-2">
         <CardTitle className="text-2xl font-bold">{title}</CardTitle>
         <CardDescription>
-          {price}
-          {period && <span className="text-sm text-muted-foreground">{period}</span>}
-          {originalPrice && (
-            <span className="ml-2 text-sm line-through text-muted-foreground">
-              {originalPrice}
-            </span>
-          )}
-          {badge && (
-            <Badge className="ml-2 rounded-full font-normal">{badge}</Badge>
-          )}
+          <div className="flex items-center flex-wrap">
+            <span>{price}</span>
+            {period && <span className="text-sm text-muted-foreground">{period}</span>}
+            {originalPrice && (
+              <span className="ml-2 text-sm line-through text-muted-foreground">
+                {originalPrice}
+              </span>
+            )}
+            {badge && (
+              <span className="ml-2">
+                <Badge className="rounded-full font-normal">{badge}</Badge>
+              </span>
+            )}
+          </div>
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">

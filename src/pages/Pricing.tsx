@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 import { subscriptionEvents } from "@/integrations/posthog/events"
 import { SEO } from "@/components/SEO"
-import { Shield, Clock, RefreshCw } from "lucide-react"
+import { Shield, Clock, RefreshCw, AlertCircle } from "lucide-react"
 import { SparklesText } from "@/components/ui/sparkles-text"
 import { PricingFormDialog } from "@/components/pricing/PricingFormDialog"
 import {
@@ -15,10 +15,13 @@ import {
 } from "@/components/ui/dialog"
 import PricingForm from "@/components/pricing/PricingForm"
 import { useSubscription } from "@/hooks/useSubscription"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { useNavigate } from "react-router-dom"
 
 const Pricing = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
-  const { subscription } = useSubscription();
+  const { subscription, loading, error, getSubscriptionType } = useSubscription();
+  const navigate = useNavigate();
   
   useEffect(() => {
     // Tracking PostHog
@@ -67,17 +70,68 @@ const Pricing = () => {
             Choisissez le plan qui vous convient le mieux
           </p>
           
-          {isBetaTester && (
+          {error && (
+            <Alert variant="destructive" className="mt-6 max-w-lg mx-auto">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Erreur de chargement</AlertTitle>
+              <AlertDescription>
+                Impossible de charger les informations d'abonnement. Veuillez réessayer ultérieurement.
+                <button 
+                  onClick={() => window.location.reload()} 
+                  className="ml-2 underline text-primary"
+                >
+                  Actualiser
+                </button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {isBetaTester && !error && (
             <div className="mt-6 p-4 bg-indigo-50 rounded-lg text-indigo-700 border border-indigo-200">
               <p className="font-medium">Vous bénéficiez de l'accès bêta gratuit jusqu'au 31 décembre 2024.</p>
               <p className="text-sm mt-1">Merci de votre confiance et de votre participation au développement de PedagoIA !</p>
+              <button 
+                onClick={() => navigate("/subscription")} 
+                className="mt-2 text-sm text-indigo-800 font-medium underline"
+              >
+                Voir les détails de votre abonnement
+              </button>
             </div>
           )}
           
-          {isSubscribed && (
+          {isSubscribed && !error && (
             <div className="mt-6 p-4 bg-green-50 rounded-lg text-green-700 border border-green-200">
               <p className="font-medium">Vous êtes actuellement abonné à notre offre premium.</p>
               <p className="text-sm mt-1">Merci pour votre confiance ! Vous avez accès à toutes les fonctionnalités.</p>
+              <button 
+                onClick={() => navigate("/subscription")} 
+                className="mt-2 text-sm text-green-800 font-medium underline"
+              >
+                Gérer votre abonnement
+              </button>
+            </div>
+          )}
+          
+          {!isSubscribed && !isBetaTester && subscription && !error && (
+            <div className="mt-6 p-4 bg-amber-50 rounded-lg text-amber-700 border border-amber-200">
+              <p className="font-medium">
+                Votre abonnement actuel : <span className="font-bold">{getSubscriptionType()}</span>
+              </p>
+              {subscription.type === 'trial' && subscription.daysLeft && subscription.daysLeft > 0 ? (
+                <p className="text-sm mt-1">
+                  Il vous reste {subscription.daysLeft} jour{subscription.daysLeft > 1 ? 's' : ''} d'essai.
+                </p>
+              ) : (
+                <p className="text-sm mt-1">
+                  Choisissez un plan ci-dessous pour accéder à toutes les fonctionnalités.
+                </p>
+              )}
+              <button 
+                onClick={() => navigate("/subscription")} 
+                className="mt-2 text-sm text-amber-800 font-medium underline"
+              >
+                Voir les détails
+              </button>
             </div>
           )}
         </div>
@@ -96,7 +150,7 @@ const Pricing = () => {
             ]}
             ctaText={isSubscribed ? "Abonnement actif" : "Démarrer l'essai gratuit"}
             onSubscribe={handleMonthlySubscription}
-            disabled={isSubscribed || isBetaTester}
+            disabled={isSubscribed || isBetaTester || loading}
             priceId="price_1Omj7zBvGBk8R8kDBEpKPQoF"
           />
           <PricingCard
@@ -113,7 +167,7 @@ const Pricing = () => {
             ]}
             ctaText={isSubscribed ? "Abonnement actif" : "Démarrer l'essai gratuit"}
             onSubscribe={handleYearlySubscription}
-            disabled={isSubscribed || isBetaTester}
+            disabled={isSubscribed || isBetaTester || loading}
             priceId="price_1OmjA6BvGBk8R8kDmzDsxRgE"
           />
           <PricingCard

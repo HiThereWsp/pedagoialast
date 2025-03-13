@@ -4,6 +4,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useSubscription } from "@/hooks/useSubscription";
+import { toast } from "sonner";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -16,10 +17,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const location = useLocation();
   const { user, loading, authReady } = useAuth();
-  const { isSubscriptionActive, loading: subscriptionLoading } = useSubscription();
+  const { isSubscriptionActive, loading: subscriptionLoading, error: subscriptionError } = useSubscription();
   const [showLoadingTimeout, setShowLoadingTimeout] = useState(false);
   const initialLoadComplete = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const errorShown = useRef(false);
 
   // Détermine si la page actuelle est une page publique d'authentification
   const isAuthPage = () => {
@@ -29,9 +31,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Détermine si la page actuelle est une page publique (y compris la landing page)
   const isPublicPage = () => {
-    const publicPaths = ['/', '/bienvenue', '/waiting-list', '/contact', '/pricing', '/terms', '/privacy', '/legal'];
+    const publicPaths = ['/', '/bienvenue', '/waiting-list', '/contact', '/pricing', '/terms', '/privacy', '/legal', '/subscription'];
     return publicPaths.some(path => location.pathname === path) || isAuthPage();
   };
+
+  // Afficher un message d'erreur pour les erreurs d'abonnement
+  useEffect(() => {
+    if (subscriptionError && !errorShown.current && user && requireSubscription && !isPublicPage()) {
+      errorShown.current = true;
+      toast.error(
+        "Impossible de vérifier votre abonnement. Vous pouvez continuer à utiliser l'application, mais certaines fonctionnalités peuvent être limitées.",
+        { duration: 10000 }
+      );
+      
+      // Réinitialiser après 30 secondes pour permettre un nouveau message si l'erreur persiste
+      setTimeout(() => {
+        errorShown.current = false;
+      }, 30000);
+    }
+  }, [subscriptionError, user, requireSubscription, isPublicPage]);
 
   // Montrer le chargement seulement après un délai pour éviter les flashs
   useEffect(() => {
@@ -64,6 +82,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       authReady,
       subscription: isSubscriptionActive() ? "active" : "inactive",
       subscriptionLoading,
+      subscriptionError: subscriptionError ? true : false,
       path: location.pathname,
       isPublicPage: isPublicPage(),
       isAuthPage: isAuthPage(),
@@ -73,7 +92,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     if (authReady && !loading && !subscriptionLoading) {
       initialLoadComplete.current = true;
     }
-  }, [user, loading, authReady, isSubscriptionActive, subscriptionLoading, location.pathname]);
+  }, [user, loading, authReady, isSubscriptionActive, subscriptionLoading, subscriptionError, location.pathname]);
 
   // État de chargement initial, afficher l'indicateur de chargement seulement après le délai
   if ((loading || !authReady || (requireSubscription && subscriptionLoading)) && !initialLoadComplete.current && !isPublicPage()) {
@@ -102,8 +121,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   // Si l'abonnement est requis et que l'utilisateur n'a pas d'abonnement actif,
-  // rediriger vers la page de tarification, sauf si c'est déjà une page publique
-  if (user && requireSubscription && !isSubscriptionActive() && !subscriptionLoading && !isPublicPage() && !location.pathname.startsWith('/pricing')) {
+  // rediriger vers la page de tarification, sauf si c'est déjà une page publique ou de gestion d'abonnement
+  if (user && requireSubscription && !isSubscriptionActive() && !subscriptionLoading && !isPublicPage() && !location.pathname.startsWith('/pricing') && !location.pathname.startsWith('/subscription')) {
     console.log("Abonnement requis mais non actif, redirection vers /pricing");
     return <Navigate to="/pricing" replace />;
   }
