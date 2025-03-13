@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { DynamicText } from "@/components/landing/DynamicText";
 import { Tiles } from "@/components/ui/tiles";
-
 export function HeroSectionBienvenue() {
   return <section className="relative min-h-screen flex items-center overflow-hidden bg-white">
       <div className="absolute inset-0 opacity-25">
@@ -28,9 +26,7 @@ export function HeroSectionBienvenue() {
             </div>
           </div>
           
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 text-balance leading-tight tracking-tight">
-            L'assistant pédagogique intelligent
-          </h1>
+          <h1 className="text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight md:text-5xl">L'assistant pédagogique intelligent pour travailler 15x plus vite</h1>
           
           <h2 className="text-2xl md:text-3xl mb-6">
             Des outils IA conçus pour <DynamicText /> en quelques clics
