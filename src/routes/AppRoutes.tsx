@@ -35,6 +35,7 @@ const SubscriptionSuccessPage = lazy(() => import('@/pages/SubscriptionSuccessPa
 const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage'));
 const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
+const SubscriptionStatus = lazy(() => import('@/pages/SubscriptionStatus'));
 
 // Composant de chargement pour Suspense
 const LoadingPage = () => (
@@ -59,23 +60,24 @@ function AppRoutes() {
         <Route path="/waiting-list" element={<WaitlistLanding />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/exercise" element={<ProtectedRoute><ExercisePage /></ProtectedRoute>} />
-        <Route path="/saved-content" element={<ProtectedRoute><SavedContentPage /></ProtectedRoute>} />
-        <Route path="/lesson-plan" element={<ProtectedRoute><LessonPlanPage /></ProtectedRoute>} />
-        <Route path="/image-generation" element={<ProtectedRoute><ImageGenerationPage /></ProtectedRoute>} />
-        <Route path="/discover" element={<ProtectedRoute><DiscoverPage /></ProtectedRoute>} />
-        <Route path="/metrics" element={<ProtectedRoute><MetricsPage /></ProtectedRoute>} />
+        <Route path="/exercise" element={<ProtectedRoute requireSubscription={true}><ExercisePage /></ProtectedRoute>} />
+        <Route path="/saved-content" element={<ProtectedRoute requireSubscription={true}><SavedContentPage /></ProtectedRoute>} />
+        <Route path="/lesson-plan" element={<ProtectedRoute requireSubscription={true}><LessonPlanPage /></ProtectedRoute>} />
+        <Route path="/image-generation" element={<ProtectedRoute requireSubscription={true}><ImageGenerationPage /></ProtectedRoute>} />
+        <Route path="/discover" element={<ProtectedRoute requireSubscription={true}><DiscoverPage /></ProtectedRoute>} />
+        <Route path="/metrics" element={<ProtectedRoute requireSubscription={true}><MetricsPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/subscription" element={<ProtectedRoute requireSubscription={false}><SubscriptionStatus /></ProtectedRoute>} />
         <Route path="/delete-account" element={<ProtectedRoute><DeleteAccount /></ProtectedRoute>} />
-        <Route path="/utm-links" element={<ProtectedRoute><UTMLinksPage /></ProtectedRoute>} />
+        <Route path="/utm-links" element={<ProtectedRoute requireSubscription={true}><UTMLinksPage /></ProtectedRoute>} />
         <Route path="/legal" element={<Legal />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
-        <Route path="/suggestions" element={<ProtectedRoute><SuggestionsPage /></ProtectedRoute>} />
-        <Route path="/marketing" element={<ProtectedRoute><MarketingPage /></ProtectedRoute>} />
-        <Route path="/correspondence" element={<ProtectedRoute><CorrespondencePage /></ProtectedRoute>} />
+        <Route path="/suggestions" element={<ProtectedRoute requireSubscription={true}><SuggestionsPage /></ProtectedRoute>} />
+        <Route path="/marketing" element={<ProtectedRoute requireSubscription={true}><MarketingPage /></ProtectedRoute>} />
+        <Route path="/correspondence" element={<ProtectedRoute requireSubscription={true}><CorrespondencePage /></ProtectedRoute>} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/offline-chat" element={<ProtectedRoute><OfflineChatPage /></ProtectedRoute>} />
+        <Route path="/offline-chat" element={<ProtectedRoute requireSubscription={true}><OfflineChatPage /></ProtectedRoute>} />
         {/* Routes de suivi des conversions */}
         <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
         <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />

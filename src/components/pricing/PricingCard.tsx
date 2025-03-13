@@ -1,130 +1,110 @@
-
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Check, Info } from "lucide-react"
-import { ReactNode } from "react"
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip"
-
-interface Feature {
-  text: string
-  tooltip?: string
-}
+import { cn } from "@/lib/utils"
+import { CheckCircle } from "lucide-react"
+import { toast } from "sonner"
+import { useCheckoutSession } from "@/hooks/useCheckoutSession"
 
 interface PricingCardProps {
   title: string
   price: string
   period?: string
-  yearlyPrice?: string
-  features: (string | { text: string; tooltip: string })[]
+  features: string[]
+  ctaText: string
   badge?: string
-  badgeIcon?: React.ReactNode
+  originalPrice?: string
   isPremium?: boolean
   onSubscribe?: () => void
-  ctaText?: string
-  CustomCTA?: ReactNode
-  originalPrice?: string
+  disabled?: boolean
+  priceId?: string
 }
 
 export const PricingCard = ({
   title,
   price,
   period,
-  yearlyPrice,
   features,
+  ctaText,
   badge,
-  badgeIcon,
+  originalPrice,
   isPremium,
   onSubscribe,
-  ctaText,
-  CustomCTA,
-  originalPrice
+  disabled,
+  priceId
 }: PricingCardProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { createCheckoutSession } = useCheckoutSession();
+  
+  const handleSubscribe = async () => {
+    if (disabled) return;
+    
+    // Si c'est pour le contact établissement scolaire, utiliser le callback directement
+    if (title === "Établissement scolaire") {
+      onSubscribe?.();
+      return;
+    }
+    
+    // Sinon, traiter l'abonnement via Stripe
+    setIsLoading(true);
+    
+    try {
+      if (priceId) {
+        // Utiliser l'API Stripe via Edge Function
+        const checkoutUrl = await createCheckoutSession(priceId);
+        if (checkoutUrl) {
+          window.location.href = checkoutUrl;
+        }
+      } else {
+        // Fallback vers l'ancienne méthode si priceId n'est pas défini
+        onSubscribe?.();
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'abonnement:", error);
+      toast.error("Une erreur est survenue lors du processus d'abonnement");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <Card className={`p-8 relative ${
-      isPremium 
-        ? 'border-2 border-primary/20 shadow-xl hover:shadow-2xl' 
-        : 'hover:shadow-xl'
-    } transition-shadow duration-300 bg-white/90 backdrop-blur-sm`}>
-      {badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className={isPremium 
-            ? "bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white"
-            : "bg-secondary text-primary/90"
-          }>
-            {badgeIcon}
-            {badge}
-          </Badge>
-        </div>
+    <Card
+      className={cn(
+        "bg-secondary border-0",
+        isPremium && "border-2 border-primary"
       )}
-
-      <div className="text-center">
-        <h3 className="text-2xl font-bold mb-3">{title}</h3>
-        <div className="flex items-baseline justify-center gap-2 mb-2">
+    >
+      <CardHeader className="space-y-2">
+        <CardTitle className="text-2xl font-bold">{title}</CardTitle>
+        <CardDescription>
+          {price}
+          {period && <span className="text-sm text-muted-foreground">{period}</span>}
           {originalPrice && (
-            <span className="text-lg font-medium line-through text-muted-foreground">{originalPrice}</span>
+            <span className="ml-2 text-sm line-through text-muted-foreground">
+              {originalPrice}
+            </span>
           )}
-          <span className="text-4xl font-bold">{price}</span>
-          {period && <span className="text-lg text-muted-foreground">{period}</span>}
-        </div>
-        {yearlyPrice && (
-          <p className="text-sm text-primary mt-2 text-center">
-            Soit {yearlyPrice}
-          </p>
-        )}
-      </div>
-
-      <div className="mt-8">
-        <ul className="space-y-4">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-              <span className="text-muted-foreground">
-                {typeof feature === 'string' ? (
-                  feature
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="flex items-center gap-1 cursor-help">
-                        {feature.text}
-                        <Info className="w-4 h-4" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{feature.tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
-              </span>
+          {badge && (
+            <Badge className="ml-2 rounded-full font-normal">{badge}</Badge>
+          )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="grid gap-4">
+        <ul className="grid gap-3">
+          {features.map((feature, i) => (
+            <li key={i} className="flex items-center">
+              <CheckCircle className="h-4 w-4 mr-2 text-primary" />
+              {feature}
             </li>
           ))}
         </ul>
-      </div>
-
-      <div className="mt-10">
-        {CustomCTA ? (
-          CustomCTA
-        ) : (
-          <Button 
-            onClick={onSubscribe} 
-            className={`w-full ${
-              isPremium 
-                ? 'bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:shadow-[0_8px_20px_-3px_rgba(251,146,60,0.4)] transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(251,146,60,0.3)]' 
-                : 'bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-900 text-white transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(15,23,42,0.2)] hover:shadow-[0_8px_20px_-3px_rgba(15,23,42,0.3)]'
-            } text-sm py-7 px-5 font-medium tracking-wider rounded-xl letter-spacing-wide`}
-            size="lg"
-            style={{ paddingLeft: '20px', paddingRight: '20px' }}
-          >
-            {ctaText}
-          </Button>
-        )}
-      </div>
+      </CardContent>
+      <CardFooter>
+        <Button className="w-full" onClick={handleSubscribe} disabled={disabled || isLoading}>
+          {isLoading ? "Chargement..." : ctaText}
+        </Button>
+      </CardFooter>
     </Card>
-  );
-};
-
+  )
+}

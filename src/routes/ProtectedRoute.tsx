@@ -3,14 +3,20 @@ import React, { useEffect, useState, useRef } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requireSubscription?: boolean;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children,
+  requireSubscription = true
+}) => {
   const location = useLocation();
   const { user, loading, authReady } = useAuth();
+  const { isSubscriptionActive, loading: subscriptionLoading } = useSubscription();
   const [showLoadingTimeout, setShowLoadingTimeout] = useState(false);
   const initialLoadComplete = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -21,13 +27,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return authPaths.some(path => location.pathname.startsWith(path));
   };
 
+  // Détermine si la page actuelle est une page publique (y compris la landing page)
+  const isPublicPage = () => {
+    const publicPaths = ['/', '/bienvenue', '/waiting-list', '/contact', '/pricing', '/terms', '/privacy', '/legal'];
+    return publicPaths.some(path => location.pathname === path) || isAuthPage();
+  };
+
   // Montrer le chargement seulement après un délai pour éviter les flashs
   useEffect(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
     
-    if (loading || !authReady) {
+    if ((loading || !authReady || subscriptionLoading) && !isPublicPage()) {
       timeoutRef.current = setTimeout(() => {
         if (!initialLoadComplete.current) {
           setShowLoadingTimeout(true);
@@ -42,7 +54,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
         clearTimeout(timeoutRef.current);
       }
     };
-  }, [loading, authReady]);
+  }, [loading, authReady, subscriptionLoading, isPublicPage]);
 
   // Journalisation améliorée pour le débogage
   useEffect(() => {
@@ -50,22 +62,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       user: user ? "connecté" : "non connecté", 
       loading, 
       authReady,
+      subscription: isSubscriptionActive() ? "active" : "inactive",
+      subscriptionLoading,
       path: location.pathname,
+      isPublicPage: isPublicPage(),
       isAuthPage: isAuthPage(),
       initialLoadComplete: initialLoadComplete.current
     });
     
-    if (authReady && !loading) {
+    if (authReady && !loading && !subscriptionLoading) {
       initialLoadComplete.current = true;
     }
-  }, [user, loading, authReady, location.pathname]);
+  }, [user, loading, authReady, isSubscriptionActive, subscriptionLoading, location.pathname]);
 
   // État de chargement initial, afficher l'indicateur de chargement seulement après le délai
-  if ((loading || !authReady) && !initialLoadComplete.current) {
+  if ((loading || !authReady || (requireSubscription && subscriptionLoading)) && !initialLoadComplete.current && !isPublicPage()) {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoadingIndicator 
-          message={showLoadingTimeout ? "Vérification de l'authentification..." : undefined}
+          message={showLoadingTimeout ? "Vérification de l'accès..." : undefined}
           submessage={showLoadingTimeout ? "Cela prend plus de temps que prévu" : undefined}
         />
       </div>
@@ -80,12 +95,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, 
-  // rediriger vers la page de connexion, sauf si c'est déjà une page d'authentification
-  if (!user && authReady && !loading && !isAuthPage()) {
+  // rediriger vers la page de connexion, sauf si c'est déjà une page publique
+  if (!user && authReady && !loading && !isPublicPage()) {
     console.log("Utilisateur non authentifié, redirection vers /login");
     return <Navigate to="/login" state={{ returnUrl: location.pathname }} replace />;
   }
 
-  // Si l'utilisateur est authentifié ou si c'est une page d'authentification, afficher le contenu
+  // Si l'abonnement est requis et que l'utilisateur n'a pas d'abonnement actif,
+  // rediriger vers la page de tarification, sauf si c'est déjà une page publique
+  if (user && requireSubscription && !isSubscriptionActive() && !subscriptionLoading && !isPublicPage() && !location.pathname.startsWith('/pricing')) {
+    console.log("Abonnement requis mais non actif, redirection vers /pricing");
+    return <Navigate to="/pricing" replace />;
+  }
+
+  // Si l'utilisateur est authentifié ou si c'est une page publique, afficher le contenu
   return <>{children}</>;
 };

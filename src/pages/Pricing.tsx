@@ -14,9 +14,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import PricingForm from "@/components/pricing/PricingForm"
+import { useSubscription } from "@/hooks/useSubscription"
 
 const Pricing = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
+  const { subscription } = useSubscription();
   
   useEffect(() => {
     // Tracking PostHog
@@ -27,33 +29,21 @@ const Pricing = () => {
     // Tracking PostHog
     pricingEvents.selectPlan('premium')
     subscriptionEvents.subscriptionStarted('monthly', 11.90)
-    
-    // URLs de redirection Stripe
-    const successUrl = `${window.location.origin}/subscription-success?type=monthly`
-    const cancelUrl = `${window.location.origin}/checkout-canceled?type=monthly`
-    const failedUrl = `${window.location.origin}/subscription-failed?type=monthly`
-    
-    // Redirect vers Stripe avec parametres de callback
-    window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
   }
 
   const handleYearlySubscription = () => {
     // Tracking PostHog
     pricingEvents.selectPlan('premium')
     subscriptionEvents.subscriptionStarted('yearly', 9.90)
-    
-    // URLs de redirection Stripe
-    const successUrl = `${window.location.origin}/subscription-success?type=yearly`
-    const cancelUrl = `${window.location.origin}/checkout-canceled?type=yearly`
-    const failedUrl = `${window.location.origin}/subscription-failed?type=yearly`
-    
-    // Redirect vers Stripe avec parametres de callback
-    window.location.href = 'https://buy.stripe.com/5kA9DS2pYgeF2SA7sw'
   }
 
   const handleSchoolContactRequest = () => {
     setShowContactDialog(true);
   }
+
+  // Vérifier si l'utilisateur est déjà abonné pour adapter l'interface
+  const isSubscribed = subscription && subscription.type === 'paid' && subscription.status === 'active';
+  const isBetaTester = subscription && subscription.type === 'beta' && subscription.status === 'active';
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -76,7 +66,22 @@ const Pricing = () => {
           <p className="text-xl text-muted-foreground max-w-lg mx-auto mt-6">
             Choisissez le plan qui vous convient le mieux
           </p>
+          
+          {isBetaTester && (
+            <div className="mt-6 p-4 bg-indigo-50 rounded-lg text-indigo-700 border border-indigo-200">
+              <p className="font-medium">Vous bénéficiez de l'accès bêta gratuit jusqu'au 31 décembre 2024.</p>
+              <p className="text-sm mt-1">Merci de votre confiance et de votre participation au développement de PedagoIA !</p>
+            </div>
+          )}
+          
+          {isSubscribed && (
+            <div className="mt-6 p-4 bg-green-50 rounded-lg text-green-700 border border-green-200">
+              <p className="font-medium">Vous êtes actuellement abonné à notre offre premium.</p>
+              <p className="text-sm mt-1">Merci pour votre confiance ! Vous avez accès à toutes les fonctionnalités.</p>
+            </div>
+          )}
         </div>
+        
         <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
           <PricingCard
             title="Plan mensuel"
@@ -89,8 +94,10 @@ const Pricing = () => {
               "Exploiter tous les outils sans limitation",
               "Économiser plus de 14h par semaine grâce aux outils IA"
             ]}
-            ctaText="Démarrer l'essai gratuit"
+            ctaText={isSubscribed ? "Abonnement actif" : "Démarrer l'essai gratuit"}
             onSubscribe={handleMonthlySubscription}
+            disabled={isSubscribed || isBetaTester}
+            priceId="price_1Omj7zBvGBk8R8kDBEpKPQoF"
           />
           <PricingCard
             title="Plan annuel"
@@ -104,8 +111,10 @@ const Pricing = () => {
               "Recevoir les mises à jour en avant-première",
               "Accéder à la communauté privée d'enseignants 3.0"
             ]}
-            ctaText="Démarrer l'essai gratuit"
+            ctaText={isSubscribed ? "Abonnement actif" : "Démarrer l'essai gratuit"}
             onSubscribe={handleYearlySubscription}
+            disabled={isSubscribed || isBetaTester}
+            priceId="price_1OmjA6BvGBk8R8kDmzDsxRgE"
           />
           <PricingCard
             title="Établissement scolaire"

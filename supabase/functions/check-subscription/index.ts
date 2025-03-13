@@ -22,41 +22,119 @@ serve(async (req) => {
     const token = authHeader.replace('Bearer ', '')
     const { data } = await supabaseClient.auth.getUser(token)
     const user = data.user
-    const email = user?.email
-
-    if (!email) {
-      throw new Error('No email found')
+    
+    if (!user?.id) {
+      throw new Error('User not found')
     }
 
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
-    })
+    console.log("Checking subscription status for user:", user.id);
 
-    const customers = await stripe.customers.list({
-      email: email,
-      limit: 1
-    })
+    // Vérifier l'abonnement dans notre base de données
+    const { data: subscriptionData, error: subscriptionError } = await supabaseClient
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
 
-    if (customers.data.length === 0) {
+    if (subscriptionError) {
+      console.error("Error retrieving subscription:", subscriptionError);
+      
+      if (subscriptionError.code === 'PGRST116') {
+        // Pas d'abonnement trouvé
+        return new Response(
+          JSON.stringify({ 
+            subscribed: false,
+            subscription: null,
+            message: "No subscription found" 
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+          }
+        );
+      }
+      
+      throw subscriptionError;
+    }
+    
+    if (!subscriptionData) {
       return new Response(
-        JSON.stringify({ subscribed: false }),
+        JSON.stringify({ 
+          subscribed: false,
+          message: "No subscription found"
+        }),
         {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         }
-      )
+      );
     }
+    
+    // Vérifier si l'abonnement est actif
+    const now = new Date();
+    const expiresAt = new Date(subscriptionData.expires_at);
+    const isActive = subscriptionData.status === 'active' && expiresAt > now;
+    
+    console.log("Subscription check result:", {
+      type: subscriptionData.type,
+      status: subscriptionData.status,
+      expiresAt: subscriptionData.expires_at,
+      isActive
+    });
 
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customers.data[0].id,
-      status: 'active',
-      limit: 1
-    })
+    // Si c'est un abonnement Stripe et qu'il est actif, on vérifie aussi dans Stripe
+    if (isActive && subscriptionData.type === 'paid' && subscriptionData.stripe_subscription_id) {
+      try {
+        const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+          apiVersion: '2023-10-16',
+        });
+        
+        const stripeSubscription = await stripe.subscriptions.retrieve(
+          subscriptionData.stripe_subscription_id
+        );
+        
+        console.log("Stripe subscription status:", stripeSubscription.status);
+        
+        // Si l'abonnement Stripe n'est pas actif, on met à jour notre base
+        if (stripeSubscription.status !== 'active' && stripeSubscription.status !== 'trialing') {
+          await supabaseClient
+            .from('user_subscriptions')
+            .update({
+              status: 'expired',
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id);
+            
+          return new Response(
+            JSON.stringify({ 
+              subscribed: false,
+              subscription: {
+                type: subscriptionData.type,
+                status: 'expired',
+                expiresAt: subscriptionData.expires_at,
+                stripeStatus: stripeSubscription.status
+              }
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200,
+            }
+          );
+        }
+      } catch (stripeError) {
+        console.error("Error checking Stripe subscription:", stripeError);
+        // On continue quand même, on se fie à notre base de données
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
-        subscribed: subscriptions.data.length > 0,
-        subscription: subscriptions.data[0] || null
+        subscribed: isActive,
+        subscription: {
+          type: subscriptionData.type,
+          status: subscriptionData.status,
+          expiresAt: subscriptionData.expires_at
+        }
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
