@@ -81,18 +81,18 @@ export const PricingCard = ({
         <CardDescription>
           <div className="flex items-center flex-wrap">
             <span>{price}</span>
-            {period && <span className="text-sm text-muted-foreground">{period}</span>}
+            {period && <span className="text-sm text-muted-foreground ml-1">{period}</span>}
             {originalPrice && (
               <span className="ml-2 text-sm line-through text-muted-foreground">
                 {originalPrice}
               </span>
             )}
-            {badge && (
-              <span className="ml-2">
-                <Badge className="rounded-full font-normal">{badge}</Badge>
-              </span>
-            )}
           </div>
+          {badge && (
+            <div className="mt-2">
+              <Badge className="rounded-full font-normal">{badge}</Badge>
+            </div>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">

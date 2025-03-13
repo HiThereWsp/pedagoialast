@@ -17,7 +17,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const location = useLocation();
   const { user, loading, authReady } = useAuth();
-  const { isSubscriptionActive, loading: subscriptionLoading, error: subscriptionError } = useSubscription();
+  const { isSubscriptionActive, loading: subscriptionLoading, error: subscriptionError, subscription } = useSubscription();
   const [showLoadingTimeout, setShowLoadingTimeout] = useState(false);
   const initialLoadComplete = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -29,10 +29,32 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return authPaths.some(path => location.pathname.startsWith(path));
   };
 
+  // Détermine si la page actuelle est une page liée à l'abonnement
+  const isSubscriptionPage = () => {
+    const subscriptionPaths = ['/pricing', '/subscription', '/subscription-success', '/checkout-canceled'];
+    return subscriptionPaths.some(path => location.pathname === path || location.pathname.startsWith(path));
+  };
+
   // Détermine si la page actuelle est une page publique (y compris la landing page)
   const isPublicPage = () => {
-    const publicPaths = ['/', '/bienvenue', '/waiting-list', '/contact', '/pricing', '/terms', '/privacy', '/legal', '/subscription'];
-    return publicPaths.some(path => location.pathname === path) || isAuthPage();
+    const publicPaths = ['/', '/bienvenue', '/waiting-list', '/contact', '/terms', '/privacy', '/legal'];
+    return publicPaths.some(path => location.pathname === path) || isAuthPage() || isSubscriptionPage();
+  };
+
+  // Vérifier si l'utilisateur est un bêta testeur
+  const isBetaTester = () => {
+    if (!user?.email) return false;
+    
+    // Liste des domaines email bêta testeurs
+    const betaEmails = [
+      '@pedagogia.io',
+      '@example.com',
+      'andyguitteaud@gmail.com'
+    ];
+    
+    return betaEmails.some(domain => 
+      user.email?.includes(domain) || user.email === domain
+    );
   };
 
   // Afficher un message d'erreur pour les erreurs d'abonnement
@@ -83,16 +105,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       subscription: isSubscriptionActive() ? "active" : "inactive",
       subscriptionLoading,
       subscriptionError: subscriptionError ? true : false,
+      subscriptionType: subscription?.type,
+      isBetaTester: isBetaTester(),
       path: location.pathname,
       isPublicPage: isPublicPage(),
       isAuthPage: isAuthPage(),
+      isSubscriptionPage: isSubscriptionPage(),
       initialLoadComplete: initialLoadComplete.current
     });
     
     if (authReady && !loading && !subscriptionLoading) {
       initialLoadComplete.current = true;
     }
-  }, [user, loading, authReady, isSubscriptionActive, subscriptionLoading, subscriptionError, location.pathname]);
+  }, [user, loading, authReady, isSubscriptionActive, subscriptionLoading, subscriptionError, location.pathname, subscription]);
 
   // État de chargement initial, afficher l'indicateur de chargement seulement après le délai
   if ((loading || !authReady || (requireSubscription && subscriptionLoading)) && !initialLoadComplete.current && !isPublicPage()) {
@@ -120,9 +145,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" state={{ returnUrl: location.pathname }} replace />;
   }
 
+  // Si l'utilisateur est un bêta testeur, le laisser accéder à toutes les pages
+  if (user && isBetaTester()) {
+    console.log("Bêta testeur détecté, accès autorisé");
+    return <>{children}</>;
+  }
+
   // Si l'abonnement est requis et que l'utilisateur n'a pas d'abonnement actif,
   // rediriger vers la page de tarification, sauf si c'est déjà une page publique ou de gestion d'abonnement
-  if (user && requireSubscription && !isSubscriptionActive() && !subscriptionLoading && !isPublicPage() && !location.pathname.startsWith('/pricing') && !location.pathname.startsWith('/subscription')) {
+  if (user && requireSubscription && !isSubscriptionActive() && !subscriptionLoading && !isPublicPage()) {
     console.log("Abonnement requis mais non actif, redirection vers /pricing");
     return <Navigate to="/pricing" replace />;
   }

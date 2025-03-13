@@ -1,4 +1,3 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
@@ -17,10 +16,11 @@ import PricingForm from "@/components/pricing/PricingForm"
 import { useSubscription } from "@/hooks/useSubscription"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 const Pricing = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
-  const { subscription, loading, error, getSubscriptionType } = useSubscription();
+  const { subscription, loading, error, getSubscriptionType, refreshSubscription } = useSubscription();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -42,6 +42,11 @@ const Pricing = () => {
 
   const handleSchoolContactRequest = () => {
     setShowContactDialog(true);
+  }
+
+  const handleRefreshSubscription = () => {
+    refreshSubscription();
+    toast.success("Actualisation des informations d'abonnement en cours...");
   }
 
   // Vérifier si l'utilisateur est déjà abonné pour adapter l'interface
@@ -77,7 +82,7 @@ const Pricing = () => {
               <AlertDescription>
                 Impossible de charger les informations d'abonnement. Veuillez réessayer ultérieurement.
                 <button 
-                  onClick={() => window.location.reload()} 
+                  onClick={handleRefreshSubscription} 
                   className="ml-2 underline text-primary"
                 >
                   Actualiser
