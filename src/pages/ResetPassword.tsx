@@ -116,7 +116,7 @@ export default function ResetPassword() {
               <img 
                 src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                 alt="PedagoIA Logo" 
-                className="w-[100px] h-[120px] object-contain mx-auto mb-4" 
+                className="h-24 w-auto mx-auto mb-4" 
               />
               <h1 className="text-2xl font-bold">Réinitialisation du mot de passe</h1>
             </div>
@@ -156,16 +156,19 @@ export default function ResetPassword() {
         </div>
         
         <footer className="w-full border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center justify-between">
+          <div className="container flex flex-col md:flex-row h-14 items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              © 2024 PedagoIA. Tous droits réservés.
+              © 2025 PedagoIA. Tous droits réservés.
             </p>
             <div className="space-x-4">
               <Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">
                 Contact
               </Link>
-              <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">
-                Tarifs
+              <Link to="/terms" className="text-sm text-muted-foreground hover:underline">
+                Conditions d'utilisation
+              </Link>
+              <Link to="/privacy" className="text-sm text-muted-foreground hover:underline">
+                Politique de confidentialité
               </Link>
             </div>
           </div>
