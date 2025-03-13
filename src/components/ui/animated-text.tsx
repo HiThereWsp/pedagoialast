@@ -52,7 +52,7 @@ export function AnimatedText({
     return () => clearTimeout(timeout);
   }, [currentText, isDeleting, isWaiting, currentPhraseIndex, phrases, typingSpeed, deletingSpeed, delayBetweenPhrases]);
   return <div className={className}>
-      <span className="inline-block text-xl">{currentText}</span>
+      <span className="inline-block text-xl tracking-wide">{currentText}</span>
       <span className="inline-block animate-blink ml-1">|</span>
     </div>;
 }
