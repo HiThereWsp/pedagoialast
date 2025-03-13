@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 
@@ -10,8 +11,14 @@ export const handleSubscription = async (priceId: string) => {
   }
 
   try {
+    // Déterminer le type d'abonnement (mensuel ou annuel)
+    const subscriptionType = priceId.includes('monthly') ? 'monthly' : 'yearly';
+    
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-      body: { priceId }
+      body: { 
+        priceId,
+        subscriptionType
+      }
     })
 
     if (error) throw error

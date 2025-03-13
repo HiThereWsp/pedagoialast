@@ -77,10 +77,10 @@ serve(async (req) => {
         await handleSubscriptionCreated(event.data.object, stripe, supabase);
         break;
       case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object, supabase);
+        await handleSubscriptionUpdated(event.data.object, stripe, supabase);
         break;
       case 'customer.subscription.deleted':
-        await handleSubscriptionDeleted(event.data.object, supabase);
+        await handleSubscriptionDeleted(event.data.object, stripe, supabase);
         break;
       case 'checkout.session.completed':
         await handleCheckoutCompleted(event.data.object, stripe, supabase);
@@ -155,16 +155,17 @@ async function handleSubscriptionCreated(subscription, stripe, supabase) {
     
     console.log(`Abonnement créé pour l'utilisateur ${userId}`);
     
-    // Appeler la fonction de synchronisation avec Brevo si elle existe
+    // Synchroniser avec Brevo - déplacer l'utilisateur vers la liste des utilisateurs premium
     try {
       await supabase.functions.invoke('create-brevo-contact', {
         body: { 
           email: customerEmail,
-          contactName: 'Membre Premium',
+          contactName: customer.name || 'Membre Premium',
+          userType: "premium", // Marquer comme utilisateur premium
           source: "paid_subscription"
         }
       });
-      console.log('Utilisateur synchronisé avec Brevo');
+      console.log('Utilisateur déplacé vers la liste premium dans Brevo');
     } catch (brevoError) {
       console.error('Erreur lors de la synchronisation avec Brevo:', brevoError);
       // On continue même si la synchro Brevo échoue
@@ -212,6 +213,32 @@ async function handleSubscriptionUpdated(subscription, supabase) {
     }
     
     console.log(`Abonnement mis à jour pour l'utilisateur ${existingSubscription.user_id}`);
+    
+    // Si le statut a changé, mettre à jour dans Brevo également
+    if (status !== 'active') {
+      // Obtenir l'email de l'utilisateur
+      const { data: userData, error: userError } = await supabase
+        .from('auth.users')
+        .select('email')
+        .eq('id', existingSubscription.user_id)
+        .single();
+      
+      if (!userError && userData && userData.email) {
+        try {
+          // L'abonnement n'est plus actif, remettre l'utilisateur dans la liste des utilisateurs gratuits
+          await supabase.functions.invoke('create-brevo-contact', {
+            body: { 
+              email: userData.email,
+              userType: "free", // Remettre comme utilisateur gratuit
+              source: "subscription_updated"
+            }
+          });
+          console.log('Utilisateur remis dans la liste des utilisateurs gratuits dans Brevo');
+        } catch (brevoError) {
+          console.error('Erreur lors de la synchronisation avec Brevo:', brevoError);
+        }
+      }
+    }
   } catch (error) {
     console.error('Erreur dans handleSubscriptionUpdated:', error);
     throw error;
@@ -252,6 +279,29 @@ async function handleSubscriptionDeleted(subscription, supabase) {
     }
     
     console.log(`Abonnement supprimé pour l'utilisateur ${existingSubscription.user_id}`);
+    
+    // Obtenir l'email de l'utilisateur
+    const { data: userData, error: userError } = await supabase
+      .from('auth.users')
+      .select('email')
+      .eq('id', existingSubscription.user_id)
+      .single();
+    
+    if (!userError && userData && userData.email) {
+      try {
+        // L'abonnement est supprimé, remettre l'utilisateur dans la liste des utilisateurs gratuits
+        await supabase.functions.invoke('create-brevo-contact', {
+          body: { 
+            email: userData.email,
+            userType: "free", // Remettre comme utilisateur gratuit
+            source: "subscription_canceled"
+          }
+        });
+        console.log('Utilisateur remis dans la liste des utilisateurs gratuits dans Brevo');
+      } catch (brevoError) {
+        console.error('Erreur lors de la synchronisation avec Brevo:', brevoError);
+      }
+    }
   } catch (error) {
     console.error('Erreur dans handleSubscriptionDeleted:', error);
     throw error;
