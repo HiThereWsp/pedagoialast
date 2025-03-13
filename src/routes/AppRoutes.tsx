@@ -22,6 +22,7 @@ const MetricsPage = lazy(() => import('@/pages/MetricsPage'));
 const Settings = lazy(() => import('@/pages/Settings'));
 const DeleteAccount = lazy(() => import('@/pages/DeleteAccount'));
 const UTMLinksPage = lazy(() => import('@/pages/UTMLinksPage'));
+const RedirectsPage = lazy(() => import('@/pages/RedirectsPage'));
 const Legal = lazy(() => import('@/pages/Legal'));
 const Privacy = lazy(() => import('@/pages/Privacy'));
 const Terms = lazy(() => import('@/pages/Terms'));
@@ -68,6 +69,7 @@ function AppRoutes() {
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/delete-account" element={<ProtectedRoute><DeleteAccount /></ProtectedRoute>} />
         <Route path="/utm-links" element={<ProtectedRoute><UTMLinksPage /></ProtectedRoute>} />
+        <Route path="/redirects" element={<ProtectedRoute><RedirectsPage /></ProtectedRoute>} />
         <Route path="/legal" element={<Legal />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
