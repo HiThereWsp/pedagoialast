@@ -211,7 +211,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           authCheckCompleted.current = true
           setAuthReady(true)
         }
-      } catch (error) {
+   catch (error) {
         console.error("Exception lors de la vérification de l'utilisateur:", error)
         // Sur les pages publiques, ne pas afficher de toast d'erreur
         if (!isPublicPage() && mounted) {
