@@ -6,7 +6,6 @@ import AppRoutes from '@/routes/AppRoutes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/hooks/useAuth'
 import { Toaster } from '@/components/ui/toaster'
-import { CookieBanner } from '@/components/CookieBanner'
 import '@/App.css'
 
 const queryClient = new QueryClient()
@@ -19,7 +18,7 @@ function App() {
           <AuthProvider>
             <AppRoutes />
             <Toaster />
-            <CookieBanner />
+            {/* CookieBanner removed as requested */}
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>
