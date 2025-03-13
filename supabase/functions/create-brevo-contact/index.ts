@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
         }
 
         // Parse the request body
-        const { email, contactName, etablissement, taille, phone } = await req.json();
+        const { email, contactName, etablissement, taille, phone, source = "signup" } = await req.json();
         
         if (!email) {
             return new Response(JSON.stringify({ error: "Email is required" }), {
@@ -37,9 +37,32 @@ Deno.serve(async (req) => {
             });
         }
         
-        console.log("Creating Brevo contact for:", contactName, email, "from", etablissement);
+        console.log(`Creating Brevo contact for: ${contactName}, ${email}, from ${source}`);
         
-        // Create Brevo contact with all provided information
+        // Create payload with attributes based on source
+        let attributes = {};
+        let listIds = [7]; // Always use list #7 as requested
+        
+        if (source === "pricing_form") {
+            // For school pricing form submissions
+            attributes = {
+                CONTACT: contactName || "Direction",
+                EMAIL: email,
+                PHONE: phone || "Non spécifié",
+                TYPE_ETABLISSEMENT: etablissement || "Non spécifié",
+                TAILLE: taille || "Non spécifiée",
+                TYPE_DEMANDE: "Établissement scolaire"
+            };
+        } else {
+            // For regular signups
+            attributes = {
+                PRENOM: contactName || "Utilisateur",
+                EMAIL: email,
+                SOURCE: "Inscription site web"
+            };
+        }
+        
+        // Create Brevo contact
         const response = await fetch("https://api.brevo.com/v3/contacts", {
             method: "POST",
             headers: {
@@ -48,15 +71,9 @@ Deno.serve(async (req) => {
             },
             body: JSON.stringify({
                 email: email,
-                attributes: {
-                    PRENOM: contactName || "Direction",
-                    ETABLISSEMENT: etablissement || "Non spécifié",
-                    TAILLE: taille || "Non spécifiée",
-                    TELEPHONE: phone || "Non spécifié",
-                    TYPE_DEMANDE: "Établissement scolaire"
-                },
+                attributes: attributes,
                 updateEnabled: true, // Update existing contacts
-                listIds: [7], // Changed from list ID 4 to list ID 7
+                listIds: listIds, // List #7 only
             }),
         });
 
