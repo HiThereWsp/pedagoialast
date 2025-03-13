@@ -1,11 +1,2 @@
 
-# Redirections marketing
-/t20/* /.netlify/functions/url-redirect/:splat 302
-/t40/* /.netlify/functions/url-redirect/:splat 302
-/i20/* /.netlify/functions/url-redirect/:splat 302
-/i40/* /.netlify/functions/url-redirect/:splat 302
-/fb /.netlify/functions/url-redirect/fb 302
-/tt /.netlify/functions/url-redirect/tt 302
-
-# Redirection par défaut pour SPA
 /* /index.html 200
