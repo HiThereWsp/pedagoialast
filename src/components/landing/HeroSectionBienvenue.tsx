@@ -36,7 +36,7 @@ export function HeroSectionBienvenue() {
             Des outils IA conçus pour <DynamicText /> en quelques clics
           </h2>
           
-          <Link to="/pricing">
+          <Link to="/login">
             <Button size="lg" className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-lg px-8 py-6 rounded-full shadow-premium hover:shadow-premium-lg transform hover:scale-105 group">
               J'essaie gratuitement
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
