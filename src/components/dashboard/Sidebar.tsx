@@ -2,7 +2,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
-  Home, 
   MessageSquare, 
   Image, 
   BookOpen, 
@@ -54,26 +53,21 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
   return (
     <div className={`fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 shadow-lg`}>
       <div className="flex flex-col h-full">
-        {/* Logo centré et agrandi sans le texte */}
-        <div className="flex justify-center items-center py-5 border-b border-gray-200">
+        {/* Logo centré avec padding réduit */}
+        <div className="flex justify-center items-center py-3 border-b border-gray-200">
           <Link to="/home" className="flex items-center justify-center">
             <img 
               src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
               alt="PedagoIA Logo" 
-              className="h-20 w-20" 
+              className="h-18 w-18" 
             />
           </Link>
         </div>
         
         {/* Navigation Menu */}
         <div className="flex-1 overflow-y-auto p-4 space-y-5 flex flex-col">
-          {/* Accueil & Assistant */}
+          {/* Assistant section - "Accueil" removed */}
           <div className="space-y-2">
-            <SidebarButton 
-              icon={<Home className="h-5 w-5" />} 
-              label="Accueil" 
-              onClick={() => navigate("/home")}
-            />
             <SidebarButton 
               icon={<MessageSquare className="h-5 w-5" />} 
               label="Assistant IA avancé" 
@@ -112,14 +106,15 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
           
           <Separator className="my-2" />
           
-          {/* Suggestions et ressources */}
+          {/* Suppression du titre "Vos outils" */}
           <div className="space-y-2">
-            <h3 className="px-3 text-xs font-semibold uppercase text-gray-500">Vos outils</h3>
             <div className="space-y-2">
+              {/* Mise en évidence de "Demander des fonctionnalités" */}
               <SidebarButton 
-                icon={<MessageCircle className="h-5 w-5" />} 
+                icon={<MessageCircle className="h-5 w-5 text-purple-600" />} 
                 label="Demander des fonctionnalités" 
                 onClick={() => navigate("/suggestions")}
+                className="bg-purple-50 text-purple-700 hover:bg-purple-100"
               />
               <SidebarButton 
                 icon={<BookOpen className="h-5 w-5" />} 
@@ -143,7 +138,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
               </div>
               <div>
                 <p className="text-sm font-medium">{firstName || 'Utilisateur'}</p>
-                <p className="text-xs text-gray-500">Enseignant</p>
+                {/* Suppression du texte "Enseignant" */}
               </div>
             </div>
             

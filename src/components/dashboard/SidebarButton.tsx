@@ -10,6 +10,7 @@ interface SidebarButtonProps {
   notAvailable?: boolean;
   notAvailableIcon?: React.ReactNode;
   onClick?: () => void;
+  className?: string; // Added className prop
 }
 
 export const SidebarButton = ({ 
@@ -19,7 +20,8 @@ export const SidebarButton = ({
   small = false, 
   notAvailable = false, 
   notAvailableIcon = <Clock className="h-3.5 w-3.5 text-amber-500" />,
-  onClick = () => {}
+  onClick = () => {},
+  className = "" // Default value
 }: SidebarButtonProps) => {
   return (
     <button 
@@ -27,7 +29,7 @@ export const SidebarButton = ({
         active 
           ? 'bg-purple-100 text-purple-700' 
           : 'text-gray-700 hover:bg-gray-100'
-      } ${small ? 'text-xs' : ''} ${notAvailable ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+      } ${small ? 'text-xs' : ''} ${notAvailable ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
       onClick={onClick}
       disabled={notAvailable}
     >
