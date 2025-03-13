@@ -36,9 +36,7 @@ serve(async (req) => {
 
     // Rechercher la redirection dans la base de données
     const { data: redirect, error: redirectError } = await supabaseClient
-      .from('url_redirects')
-      .select('id, target_url')
-      .eq('short_path', path)
+      .rpc('get_url_redirect_by_path', { p_short_path: path })
       .single();
 
     if (redirectError || !redirect) {
@@ -51,12 +49,11 @@ serve(async (req) => {
 
     // Enregistrer le log de redirection
     const { error: logError } = await supabaseClient
-      .from('redirect_logs')
-      .insert({
-        redirect_id: redirect.id,
-        user_agent: req.headers.get('user-agent') || null,
-        referer: req.headers.get('referer') || null,
-        ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null,
+      .rpc('log_redirect_click', {
+        p_redirect_id: redirect.id,
+        p_user_agent: req.headers.get('user-agent') || null,
+        p_referer: req.headers.get('referer') || null,
+        p_ip_address: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null,
       });
 
     if (logError) {

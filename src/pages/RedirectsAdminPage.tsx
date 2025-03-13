@@ -10,25 +10,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Trash, Plus, Save, RotateCcw } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { RedirectRow, RedirectLogRow } from "@/types/redirects"
 
-type Redirect = {
-  id: string
-  short_path: string
-  target_url: string
-  click_count: number
-  last_clicked_at: string | null
-  description: string | null
-  created_at: string
-}
-
-type RedirectLog = {
-  id: string
-  redirect_id: string
-  clicked_at: string
-  user_agent: string | null
-  ip_address: string | null
-  referer: string | null
-}
+type Redirect = RedirectRow
+type RedirectLog = RedirectLogRow
 
 export default function RedirectsAdminPage() {
   const navigate = useNavigate()
@@ -72,10 +57,8 @@ export default function RedirectsAdminPage() {
   const fetchRedirects = async () => {
     setLoading(true)
     try {
-      const { data, error } = await supabase
-        .from('url_redirects')
-        .select('*')
-        .order('short_path')
+      // Utilisons rpc pour contourner la limitation des types
+      const { data, error } = await supabase.rpc('get_url_redirects')
       
       if (error) throw error
       setRedirects(data || [])
@@ -92,11 +75,8 @@ export default function RedirectsAdminPage() {
 
   const fetchLogs = async () => {
     try {
-      const { data, error } = await supabase
-        .from('redirect_logs')
-        .select('*')
-        .order('clicked_at', { ascending: false })
-        .limit(100)
+      // Utilisons rpc pour contourner la limitation des types
+      const { data, error } = await supabase.rpc('get_redirect_logs')
       
       if (error) throw error
       setLogs(data || [])
@@ -120,15 +100,12 @@ export default function RedirectsAdminPage() {
     }
 
     try {
-      const { error } = await supabase
-        .from('url_redirects')
-        .insert([
-          {
-            short_path: newRedirect.short_path,
-            target_url: newRedirect.target_url,
-            description: newRedirect.description || null
-          }
-        ])
+      // Utilisons rpc pour contourner la limitation des types
+      const { error } = await supabase.rpc('insert_url_redirect', {
+        p_short_path: newRedirect.short_path,
+        p_target_url: newRedirect.target_url,
+        p_description: newRedirect.description || null
+      })
       
       if (error) throw error
       
@@ -159,10 +136,10 @@ export default function RedirectsAdminPage() {
     }
 
     try {
-      const { error } = await supabase
-        .from('url_redirects')
-        .delete()
-        .eq('id', id)
+      // Utilisons rpc pour contourner la limitation des types
+      const { error } = await supabase.rpc('delete_url_redirect', {
+        p_id: id
+      })
       
       if (error) throw error
       
@@ -183,14 +160,13 @@ export default function RedirectsAdminPage() {
 
   const updateRedirect = async (redirect: Redirect) => {
     try {
-      const { error } = await supabase
-        .from('url_redirects')
-        .update({
-          short_path: redirect.short_path,
-          target_url: redirect.target_url,
-          description: redirect.description
-        })
-        .eq('id', redirect.id)
+      // Utilisons rpc pour contourner la limitation des types
+      const { error } = await supabase.rpc('update_url_redirect', {
+        p_id: redirect.id,
+        p_short_path: redirect.short_path,
+        p_target_url: redirect.target_url,
+        p_description: redirect.description
+      })
       
       if (error) throw error
       
