@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
 import { Dialog, DialogTrigger, DialogContent } from '../ui/dialog';
 import { X, Menu, LogIn, LayoutDashboard } from 'lucide-react';
-import { LoginForm } from './LoginForm';
+import { LoginDialog } from './auth/LoginDialog';
 import { useAuth } from '@/hooks/useAuth';
 
 export function Header() {
@@ -69,8 +69,8 @@ export function Header() {
                   Se connecter
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <LoginForm />
+              <DialogContent className="sm:max-w-[425px] p-6">
+                <LoginDialog />
               </DialogContent>
             </Dialog>
           )}
@@ -134,8 +134,8 @@ export function Header() {
                         Se connecter
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <LoginForm />
+                    <DialogContent className="sm:max-w-[425px] p-6">
+                      <LoginDialog />
                     </DialogContent>
                   </Dialog>
                 )}

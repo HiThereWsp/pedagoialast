@@ -65,7 +65,7 @@ export function MetricsSection() {
           </div>
           
           <div className="mt-8 sm:mt-12">
-            <Link to="/pricing">
+            <Link to="/login">
               <Button 
                 size="lg"
                 className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-base sm:text-lg px-6 sm:px-8 py-4 sm:py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group relative overflow-hidden"

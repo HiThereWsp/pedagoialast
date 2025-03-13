@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from "react-router-dom";
 import { Check, X, ArrowRight } from "lucide-react";
 import { Tiles } from "@/components/ui/tiles";
 import { Button } from "@/components/ui/button";
@@ -74,13 +75,15 @@ export function ComparisonSection() {
           </div>
           
           <div className="mt-12 text-center">
-            <Button 
-              size="lg"
-              className="bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group"
-            >
-              Je veux gagner du temps
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <Link to="/login">
+              <Button 
+                size="lg"
+                className="bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group"
+              >
+                Je veux gagner du temps
+                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
             
             <p className="mt-4 text-sm text-muted-foreground">
               Rejoignez les enseignants qui ont déjà repris le contrôle sur leur temps

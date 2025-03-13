@@ -34,6 +34,7 @@ const WaitlistLanding = lazy(() => import('@/pages/WaitlistLanding'));
 const SubscriptionSuccessPage = lazy(() => import('@/pages/SubscriptionSuccessPage'));
 const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage'));
 const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
 
 // Composant de chargement pour Suspense
 const LoadingPage = () => (
@@ -56,6 +57,7 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/waiting-list" element={<WaitlistLanding />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/exercise" element={<ProtectedRoute><ExercisePage /></ProtectedRoute>} />
         <Route path="/saved-content" element={<ProtectedRoute><SavedContentPage /></ProtectedRoute>} />

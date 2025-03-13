@@ -1,8 +1,17 @@
+
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { corsHeaders } from '../_shared/cors.ts';
 
 Deno.serve(async (req) => {
     const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
+    
+    if (!BREVO_API_KEY) {
+        console.error("BREVO_API_KEY is missing");
+        return new Response(JSON.stringify({ error: "API key configuration missing" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+    }
 
     // Handle CORS preflight request
     if (req.method === 'OPTIONS') {
@@ -19,15 +28,18 @@ Deno.serve(async (req) => {
         }
 
         // Parse the request body
-        const { email, firstName } = await req.json();
+        const { email, contactName, etablissement, taille, phone } = await req.json();
+        
         if (!email) {
             return new Response(JSON.stringify({ error: "Email is required" }), {
                 status: 400,
                 headers: { "Content-Type": "application/json", ...corsHeaders },
             });
         }
-        console.log("Creating Bevo for", firstName, email);
-        // Create Brevo contact
+        
+        console.log("Creating Brevo contact for:", contactName, email, "from", etablissement);
+        
+        // Create Brevo contact with all provided information
         const response = await fetch("https://api.brevo.com/v3/contacts", {
             method: "POST",
             headers: {
@@ -37,33 +49,50 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
                 email: email,
                 attributes: {
-                    PRENOM: firstName || "Unknown", // Optional: First name
+                    PRENOM: contactName || "Direction",
+                    ETABLISSEMENT: etablissement || "Non spécifié",
+                    TAILLE: taille || "Non spécifiée",
+                    TELEPHONE: phone || "Non spécifié",
+                    TYPE_DEMANDE: "Établissement scolaire"
                 },
-                updateEnabled: false, // Do not update existing contacts
+                updateEnabled: true, // Update existing contacts
+                listIds: [7], // Changed from list ID 4 to list ID 7
             }),
         });
-        const response_detail = await response.text()
+
+        // Get response details for debugging
+        let responseDetails;
+        try {
+            responseDetails = await response.json();
+        } catch (e) {
+            responseDetails = await response.text();
+        }
+
         // Handle Brevo API response
         if (!response.ok) {
-            const msg = JSON.stringify({ error: "Failed to create Brevo contact", details: response_detail });
-            console.log(msg);
-            return new Response(msg, {
+            console.error("Brevo API error:", responseDetails);
+            return new Response(JSON.stringify({ 
+                error: "Failed to create Brevo contact", 
+                details: responseDetails,
+                status: response.status
+            }), {
                 status: response.status,
                 headers: { "Content-Type": "application/json", ...corsHeaders },
             });
         }
 
         // Success response
-        const msg = JSON.stringify({ message: `Brevo contact created for ${email}, response: ${response_detail}` });
-        console.log(msg);
-        return new Response(msg, {
+        console.log("Contact successfully created in Brevo:", responseDetails);
+        return new Response(JSON.stringify({ 
+            message: `Brevo contact created for ${email}`,
+            details: responseDetails
+        }), {
             headers: { "Content-Type": "application/json", ...corsHeaders },
         });
     } catch (error) {
         // Handle errors
-        const msg = JSON.stringify({ error: "Internal Server Error", details: error.message });
-        console.log(msg);
-        return new Response(msg, {
+        console.error("Internal error:", error.message);
+        return new Response(JSON.stringify({ error: "Internal Server Error", details: error.message }), {
             status: 500,
             headers: { "Content-Type": "application/json", ...corsHeaders },
         });
