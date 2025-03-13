@@ -29,7 +29,7 @@ const Pricing = () => {
   const handleYearlySubscription = () => {
     // Tracking PostHog
     pricingEvents.selectPlan('premium')
-    subscriptionEvents.subscriptionStarted('yearly', 9.00)
+    subscriptionEvents.subscriptionStarted('yearly', 9.90)
     
     // URLs de redirection Stripe
     const successUrl = `${window.location.origin}/subscription-success?type=yearly`
@@ -73,9 +73,9 @@ const Pricing = () => {
           />
           <PricingCard
             title="Plan annuel"
-            price="94,20€"
+            price="119€"
             originalPrice="142,80€"
-            badge="4 mois offerts"
+            badge="2 mois offerts"
             isPremium
             features={[
               "Bénéficier de tous les avantages du plan mensuel",
