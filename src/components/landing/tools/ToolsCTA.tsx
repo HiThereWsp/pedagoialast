@@ -18,7 +18,7 @@ export function ToolsCTA() {
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <Link to="/pricing">
+          <Link to="/login">
             <Button 
               size="lg"
               className="bg-primary text-white hover:bg-primary/90 transition-all duration-300 text-lg px-8 py-6 rounded-xl shadow-premium hover:shadow-premium-lg transform hover:scale-105 group"
