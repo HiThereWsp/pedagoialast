@@ -1,130 +1,84 @@
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Check, Info } from "lucide-react"
-import { ReactNode } from "react"
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip"
-
-interface Feature {
-  text: string
-  tooltip?: string
-}
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface PricingCardProps {
-  title: string
-  price: string
-  period?: string
-  yearlyPrice?: string
-  features: (string | { text: string; tooltip: string })[]
-  badge?: string
-  badgeIcon?: React.ReactNode
-  isPremium?: boolean
-  onSubscribe?: () => void
-  ctaText?: string
-  CustomCTA?: ReactNode
-  originalPrice?: string
+  title: string;
+  price: string;
+  period?: string;
+  originalPrice?: string;
+  features: string[];
+  ctaText: string;
+  onSubscribe: () => void;
+  isPremium?: boolean;
+  badge?: string;
+  disabled?: boolean;
 }
 
 export const PricingCard = ({
   title,
   price,
-  period,
-  yearlyPrice,
+  period = "",
+  originalPrice,
   features,
-  badge,
-  badgeIcon,
-  isPremium,
-  onSubscribe,
   ctaText,
-  CustomCTA,
-  originalPrice
+  onSubscribe,
+  isPremium = false,
+  badge,
+  disabled = false
 }: PricingCardProps) => {
   return (
-    <Card className={`p-8 relative ${
-      isPremium 
-        ? 'border-2 border-primary/20 shadow-xl hover:shadow-2xl' 
-        : 'hover:shadow-xl'
-    } transition-shadow duration-300 bg-white/90 backdrop-blur-sm`}>
+    <Card
+      className={`relative overflow-hidden shadow-lg p-8 flex flex-col justify-between ${
+        isPremium ? "border-2 border-primary" : ""
+      }`}
+    >
       {badge && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className={isPremium 
-            ? "bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white"
-            : "bg-secondary text-primary/90"
-          }>
-            {badgeIcon}
-            {badge}
-          </Badge>
-        </div>
+        <Badge className="absolute right-0 top-7 -rotate-90 origin-bottom-right bg-primary/90">
+          {badge}
+        </Badge>
       )}
-
-      <div className="text-center">
+      
+      <div>
         <h3 className="text-2xl font-bold mb-3">{title}</h3>
-        <div className="flex items-baseline justify-center gap-2 mb-2">
-          {originalPrice && (
-            <span className="text-lg font-medium line-through text-muted-foreground">{originalPrice}</span>
-          )}
+        
+        <div className="mb-6">
           <span className="text-4xl font-bold">{price}</span>
-          {period && <span className="text-lg text-muted-foreground">{period}</span>}
-        </div>
-        {yearlyPrice && (
-          <p className="text-sm text-primary mt-2 text-center">
-            Soit {yearlyPrice}
-          </p>
-        )}
-      </div>
-
-      <div className="mt-8">
-        <ul className="space-y-4">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-              <span className="text-muted-foreground">
-                {typeof feature === 'string' ? (
-                  feature
-                ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger className="flex items-center gap-1 cursor-help">
-                        {feature.text}
-                        <Info className="w-4 h-4" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{feature.tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+          {period && <span className="text-muted-foreground ml-1">{period}</span>}
+          
+          {originalPrice && (
+            <div className="mt-1">
+              <span className="text-muted-foreground line-through text-sm">
+                {originalPrice}
               </span>
+            </div>
+          )}
+        </div>
+        
+        <ul className="space-y-3 mb-8">
+          {features.map((feature, index) => (
+            <li key={index} className="flex items-start gap-2">
+              <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <span className="text-muted-foreground text-sm">{feature}</span>
             </li>
           ))}
         </ul>
       </div>
-
-      <div className="mt-10">
-        {CustomCTA ? (
-          CustomCTA
-        ) : (
-          <Button 
-            onClick={onSubscribe} 
-            className={`w-full ${
-              isPremium 
-                ? 'bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-white hover:shadow-[0_8px_20px_-3px_rgba(251,146,60,0.4)] transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(251,146,60,0.3)]' 
-                : 'bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-900 text-white transition-all duration-300 shadow-[0_6px_12px_-2px_rgba(15,23,42,0.2)] hover:shadow-[0_8px_20px_-3px_rgba(15,23,42,0.3)]'
-            } text-sm py-7 px-5 font-medium tracking-wider rounded-xl letter-spacing-wide`}
-            size="lg"
-            style={{ paddingLeft: '20px', paddingRight: '20px' }}
-          >
-            {ctaText}
-          </Button>
-        )}
-      </div>
+      
+      <Button
+        onClick={onSubscribe}
+        disabled={disabled}
+        className={`w-full ${
+          isPremium
+            ? "bg-primary hover:bg-primary/90"
+            : "bg-secondary hover:bg-secondary/90"
+        }`}
+      >
+        {ctaText}
+      </Button>
     </Card>
   );
 };
-

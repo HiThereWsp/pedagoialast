@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import Stripe from "https://esm.sh/stripe@14.21.0"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
@@ -86,8 +87,8 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/chat`,
-      cancel_url: `${req.headers.get('origin')}/pricing`,
+      success_url: `${req.headers.get('origin')}/subscription-success?type=${priceId.includes('monthly') ? 'monthly' : 'yearly'}`,
+      cancel_url: `${req.headers.get('origin')}/checkout-canceled?type=${priceId.includes('monthly') ? 'monthly' : 'yearly'}`,
     })
 
     console.log('Checkout session created:', session.id)

@@ -2,6 +2,7 @@
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
+import { SubscriptionRoute } from './SubscriptionRoute';
 import LandingPage from '@/pages/Landing';
 import NotFound from '@/pages/NotFound';
 import ConfirmEmail from '@/pages/ConfirmEmail';
@@ -61,10 +62,16 @@ function AppRoutes() {
         <Route path="/waiting-list" element={<WaitlistLanding />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-        <Route path="/exercise" element={<ProtectedRoute><ExercisePage /></ProtectedRoute>} />
-        <Route path="/saved-content" element={<ProtectedRoute><SavedContentPage /></ProtectedRoute>} />
-        <Route path="/lesson-plan" element={<ProtectedRoute><LessonPlanPage /></ProtectedRoute>} />
-        <Route path="/image-generation" element={<ProtectedRoute><ImageGenerationPage /></ProtectedRoute>} />
+        
+        {/* Routes nécessitant un abonnement */}
+        <Route path="/exercise" element={<ProtectedRoute><SubscriptionRoute><ExercisePage /></SubscriptionRoute></ProtectedRoute>} />
+        <Route path="/saved-content" element={<ProtectedRoute><SubscriptionRoute><SavedContentPage /></SubscriptionRoute></ProtectedRoute>} />
+        <Route path="/lesson-plan" element={<ProtectedRoute><SubscriptionRoute><LessonPlanPage /></SubscriptionRoute></ProtectedRoute>} />
+        <Route path="/image-generation" element={<ProtectedRoute><SubscriptionRoute><ImageGenerationPage /></SubscriptionRoute></ProtectedRoute>} />
+        <Route path="/correspondence" element={<ProtectedRoute><SubscriptionRoute><CorrespondencePage /></SubscriptionRoute></ProtectedRoute>} />
+        <Route path="/offline-chat" element={<ProtectedRoute><SubscriptionRoute><OfflineChatPage /></SubscriptionRoute></ProtectedRoute>} />
+        
+        {/* Routes accessibles sans abonnement */}
         <Route path="/discover" element={<ProtectedRoute><DiscoverPage /></ProtectedRoute>} />
         <Route path="/metrics" element={<ProtectedRoute><MetricsPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
@@ -76,9 +83,8 @@ function AppRoutes() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/suggestions" element={<ProtectedRoute><SuggestionsPage /></ProtectedRoute>} />
         <Route path="/marketing" element={<ProtectedRoute><MarketingPage /></ProtectedRoute>} />
-        <Route path="/correspondence" element={<ProtectedRoute><CorrespondencePage /></ProtectedRoute>} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/offline-chat" element={<ProtectedRoute><OfflineChatPage /></ProtectedRoute>} />
+        
         {/* Routes de suivi des conversions */}
         <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
         <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />
