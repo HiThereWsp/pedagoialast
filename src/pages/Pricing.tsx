@@ -1,4 +1,3 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
@@ -24,7 +23,7 @@ const Pricing = () => {
     const failedUrl = `${window.location.origin}/subscription-failed?type=monthly`
     
     // Redirect vers Stripe avec parametres de callback
-    window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
+    window.location.href = 'https://buy.stripe.com/test_cN203tebg49K9uo9AA'
   }
 
   const handleYearlySubscription = () => {
@@ -38,7 +37,7 @@ const Pricing = () => {
     const failedUrl = `${window.location.origin}/subscription-failed?type=yearly`
     
     // Redirect vers Stripe avec parametres de callback
-    window.location.href = 'https://buy.stripe.com/fZe03i3u20fHdxe4gj'
+    window.location.href = 'https://buy.stripe.com/test_4gw7vV3wC49KcGA001'
   }
 
   return (
