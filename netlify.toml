@@ -9,6 +9,12 @@
 [context.production.environment]
   BRANCH = "Second-branch"
 
+# Redirect root to bienvenue page
+[[redirects]]
+  from = "/"
+  to = "/bienvenue"
+  status = 301
+
 [[redirects]]
   from = "/t20/*"
   to = "/.netlify/functions/redirect/t20/:splat"

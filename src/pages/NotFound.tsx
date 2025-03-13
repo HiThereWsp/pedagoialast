@@ -10,7 +10,7 @@ const NotFound = () => {
     if (window.history.length > 2) {
       navigate(-1)
     } else {
-      navigate('/')
+      navigate('/bienvenue')
     }
   }
 
@@ -41,7 +41,7 @@ const NotFound = () => {
         
         <div className="space-y-4">
           <Button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/bienvenue')}
             className="w-full bg-primary hover:bg-primary/90"
           >
             Retourner à l'accueil

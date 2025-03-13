@@ -86,7 +86,28 @@ serve(async (req) => {
     console.log(`Redirecting to: ${redirect.target_url}`);
 
     // Create the redirect to tracking page with the target URL as a parameter
-    const trackingPage = `/r-track.html?id=${encodeURIComponent(redirect.id)}&dest=${encodeURIComponent(redirect.target_url)}`;
+    // Update to target bienvenue page instead
+    let finalUrl = `/bienvenue?ref=${encodeURIComponent(path)}`;
+    
+    // Add redirect_id parameter for tracking
+    finalUrl += `&rid=${encodeURIComponent(redirect.id)}`;
+    
+    // Pass any UTM parameters from the target URL
+    try {
+      const targetUrl = new URL(redirect.target_url);
+      const utmParams = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+      
+      utmParams.forEach(param => {
+        const value = targetUrl.searchParams.get(param);
+        if (value) {
+          finalUrl += `&${param}=${encodeURIComponent(value)}`;
+        }
+      });
+    } catch (err) {
+      console.error(`Error parsing target URL: ${err.message}`);
+    }
+    
+    const trackingPage = `/r-track.html?id=${encodeURIComponent(redirect.id)}&dest=${encodeURIComponent(finalUrl)}`;
     
     return new Response(null, {
       status: 302,
