@@ -21,17 +21,17 @@ export const LoginForm = () => {
       {/* Formulaire de gauche */}
       <div className="flex-1 bg-white p-8 md:p-10">
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-2xl font-bold">
-              {isSignUp ? "Inscription" : "Connexion"}
-            </h2>
-            {/* Badge "Essayez gratuitement" pour le mode inscription */}
-            {isSignUp && (
+          {/* Badge "Essayez gratuitement" placé au-dessus du titre en mode inscription */}
+          {isSignUp && (
+            <div className="mb-2">
               <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
                 Essayez gratuitement
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
+          <h2 className="text-2xl font-bold">
+            {isSignUp ? "Inscription" : "Connexion"}
+          </h2>
           <p className="text-muted-foreground text-sm">
             {isSignUp ? "Créez votre compte pour commencer" : "Accédez à votre compte"}
           </p>
