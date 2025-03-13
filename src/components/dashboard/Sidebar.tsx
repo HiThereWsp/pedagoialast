@@ -54,15 +54,14 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
   return (
     <div className={`fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 shadow-lg`}>
       <div className="flex flex-col h-full">
-        {/* Logo centré et agrandi */}
+        {/* Logo centré et agrandi sans le texte */}
         <div className="flex justify-center items-center py-5 border-b border-gray-200">
-          <Link to="/home" className="flex flex-col items-center">
+          <Link to="/home" className="flex items-center justify-center">
             <img 
               src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
               alt="PedagoIA Logo" 
               className="h-20 w-20" 
             />
-            <span className="text-xl font-bold mt-2">PedagoIA</span>
           </Link>
         </div>
         
