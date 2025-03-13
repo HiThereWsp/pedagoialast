@@ -70,28 +70,32 @@ export const usePricingForm = () => {
 
     setIsSubmitting(true)
     try {
-      // S'assurer que tous les champs sont correctement envoyés
-      const { error } = await supabase.functions.invoke('add-to-brevo', {
+      console.log("Submitting form data to create-brevo-contact", formData);
+      
+      // Utiliser la fonction create-brevo-contact au lieu de add-to-brevo
+      const { data, error } = await supabase.functions.invoke('create-brevo-contact', {
         body: {
           email: formData.email,
           contactName: formData.contactName,
           etablissement: formData.etablissement,
           taille: formData.taille,
-          phone: formData.phoneNumber // Format complet du numéro
+          phone: formData.phoneNumber
         }
       })
 
       if (error) {
-        throw error
+        console.error("Error calling edge function:", error);
+        throw error;
       }
 
-      nextStep()
-      toast.success("Votre demande a été enregistrée avec succès !")
+      console.log("Form submission response:", data);
+      nextStep();
+      toast.success("Votre demande a été enregistrée avec succès !");
     } catch (error) {
-      console.error('Error:', error)
-      toast.error("Une erreur est survenue, veuillez réessayer.")
+      console.error('Error submitting form:', error);
+      toast.error("Une erreur est survenue lors de l'envoi du formulaire. Veuillez réessayer.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
