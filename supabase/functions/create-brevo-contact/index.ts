@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
                     TYPE_DEMANDE: "Établissement scolaire"
                 },
                 updateEnabled: true, // Update existing contacts
-                listIds: [4], // Add to the Schools list (ID 4)
+                listIds: [7], // Changed from list ID 4 to list ID 7
             }),
         });
 
