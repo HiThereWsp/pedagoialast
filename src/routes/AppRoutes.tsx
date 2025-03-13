@@ -32,7 +32,6 @@ const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
 const CorrespondencePage = lazy(() => import('@/pages/CorrespondencePage'));
 const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const OfflineChatPage = lazy(() => import('@/pages/OfflineChatPage'));
-const WaitlistLanding = lazy(() => import('@/pages/WaitlistLanding'));
 const SubscriptionSuccessPage = lazy(() => import('@/pages/SubscriptionSuccessPage'));
 const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage'));
 const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
@@ -59,7 +58,6 @@ function AppRoutes() {
         <Route path="/confirm-email" element={<ConfirmEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/waiting-list" element={<WaitlistLanding />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         

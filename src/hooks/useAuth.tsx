@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, useRef } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
@@ -39,7 +38,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Pages d'accueil et landing
       '/', 
       '/bienvenue',
-      '/waiting-list',
       
       // Pages d'authentification
       '/login', 

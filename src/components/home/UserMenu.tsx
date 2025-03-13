@@ -24,13 +24,13 @@ export const UserMenu = () => {
         console.error("Session error:", sessionError)
         // En cas d'erreur de session, on nettoie quand même
         localStorage.clear()
-        navigate('/waiting-list')
+        navigate('/bienvenue')
         return
       }
 
       if (!session) {
-        console.log("No session found, redirecting to waiting-list")
-        navigate('/waiting-list')
+        console.log("No session found, redirecting to bienvenue")
+        navigate('/bienvenue')
         return
       }
 
@@ -46,12 +46,12 @@ export const UserMenu = () => {
       } else {
         console.log("Successfully signed out")
         localStorage.clear() // Nettoyer le localStorage
-        navigate('/waiting-list')
+        navigate('/bienvenue')
       }
     } catch (error) {
       console.error("Unexpected error during signout:", error)
       localStorage.clear() // Par sécurité, on nettoie quand même
-      navigate('/waiting-list')
+      navigate('/bienvenue')
     }
   }
 
