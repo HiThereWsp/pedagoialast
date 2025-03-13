@@ -14,7 +14,8 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   
   useEffect(() => {
     if (!isLoading) {
-      const timer = setTimeout(() => setIsChecking(false), 500);
+      // Réduire le délai à presque zéro pour éviter l'affichage du message de vérification
+      const timer = setTimeout(() => setIsChecking(false), 50);
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
@@ -24,7 +25,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <LoadingIndicator />
-          <p className="mt-4 text-gray-600">Vérification de l'abonnement...</p>
+          {/* Message de vérification supprimé */}
         </div>
       </div>
     );

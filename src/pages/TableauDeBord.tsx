@@ -80,7 +80,7 @@ const TableauDeBord = () => {
               <h1 className="text-5xl font-extrabold mb-4 text-gray-800 leading-tight tracking-tight text-balance">
                 Bonjour {isLoading ? "..." : (firstName || "Enseignant")} 👋
               </h1>
-              <p className="text-xl text-gray-600">Sélectionnez un outil dans le menu de gauche pour commencer</p>
+              <p className="text-xl text-gray-600">Sélectionnez un outil pour commencer</p>
             </div>
           </div>
         </div>

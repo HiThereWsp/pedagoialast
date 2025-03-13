@@ -11,12 +11,13 @@ import {
   Leaf, 
   Settings,
   HelpCircle,
-  Clock,
-  LogOut
+  LogOut,
+  MessageCircle
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import SidebarButton from './SidebarButton';
+import { Separator } from "@/components/ui/separator";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -53,20 +54,22 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
   return (
     <div className={`fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 shadow-lg`}>
       <div className="flex flex-col h-full">
-        {/* Header */}
-        <div className="border-b border-gray-200 p-4">
-          <div className="flex items-center gap-2">
-            <Link to="/home" className="flex items-center gap-2">
-              <img src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" alt="PedagoIA Logo" className="h-8 w-8" />
-              <span className="text-xl font-bold">PedagoIA</span>
-            </Link>
-          </div>
+        {/* Logo centré et agrandi */}
+        <div className="flex justify-center items-center py-5 border-b border-gray-200">
+          <Link to="/home" className="flex flex-col items-center">
+            <img 
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+              alt="PedagoIA Logo" 
+              className="h-20 w-20" 
+            />
+            <span className="text-xl font-bold mt-2">PedagoIA</span>
+          </Link>
         </div>
         
         {/* Navigation Menu */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 flex flex-col">
-          {/* Main Navigation */}
-          <div className="space-y-1">
+        <div className="flex-1 overflow-y-auto p-4 space-y-5 flex flex-col">
+          {/* Accueil & Assistant */}
+          <div className="space-y-2">
             <SidebarButton 
               icon={<Home className="h-5 w-5" />} 
               label="Accueil" 
@@ -79,10 +82,12 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
             />
           </div>
           
+          <Separator className="my-2" />
+          
           {/* Outils pédagogiques */}
           <div className="space-y-2">
             <h3 className="px-3 text-xs font-semibold uppercase text-gray-500">Outils pédagogiques</h3>
-            <div className="space-y-1">
+            <div className="space-y-2">
               <SidebarButton 
                 icon={<Sparkles className="h-5 w-5" />} 
                 label="Générateur de séquences" 
@@ -106,16 +111,27 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
             </div>
           </div>
           
-          {/* Mes ressources - placé en bas */}
-          <div className="space-y-2 mt-auto">
-            <h3 className="px-3 text-xs font-semibold uppercase text-gray-500">Ressources</h3>
-            <div className="space-y-1">
+          <Separator className="my-2" />
+          
+          {/* Suggestions et ressources */}
+          <div className="space-y-2">
+            <h3 className="px-3 text-xs font-semibold uppercase text-gray-500">Vos outils</h3>
+            <div className="space-y-2">
+              <SidebarButton 
+                icon={<MessageCircle className="h-5 w-5" />} 
+                label="Demander des fonctionnalités" 
+                onClick={() => navigate("/suggestions")}
+              />
               <SidebarButton 
                 icon={<BookOpen className="h-5 w-5" />} 
                 label="Mes ressources" 
                 onClick={() => navigate("/saved-content")}
               />
             </div>
+          </div>
+          
+          <div className="mt-auto">
+            <Separator className="my-4" />
           </div>
         </div>
         
