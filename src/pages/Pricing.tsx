@@ -37,7 +37,7 @@ const Pricing = () => {
     const failedUrl = `${window.location.origin}/subscription-failed?type=yearly`
     
     // Redirect vers Stripe avec parametres de callback
-    window.location.href = 'https://buy.stripe.com/test_4gw7vV3wC49KcGA001'
+    window.location.href = 'https://buy.stripe.com/5kA9DS2pYgeF2SA7sw'
   }
 
   return (
