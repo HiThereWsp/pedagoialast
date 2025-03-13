@@ -1,6 +1,6 @@
 
 import { PricingCard } from "@/components/pricing/PricingCard"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 import { subscriptionEvents } from "@/integrations/posthog/events"
 import { SEO } from "@/components/SEO"
@@ -18,7 +18,6 @@ import { handleSubscription } from "@/utils/subscription"
 import { useSubscription } from "@/hooks/useSubscription"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
-import { useState } from "react"
 
 const Pricing = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -94,13 +93,16 @@ const Pricing = () => {
       />
       <main className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <h1 className="text-5xl font-extrabold mb-4 leading-tight tracking-tight text-balance">
-            La magie de l'IA
-          </h1>
-          <p className="text-3xl bg-gradient-to-r from-pink-500 to-orange-500 bg-clip-text text-transparent font-semibold mb-8">
-            au service de l'enseignement
-          </p>
-          <p className="text-xl text-muted-foreground max-w-lg mx-auto">
+          <div className="text-5xl font-extrabold mb-4 leading-tight tracking-tight text-balance">
+            <SparklesText 
+              text="La magie de l'Intelligence Artificielle" 
+              className="text-4xl sm:text-5xl font-extrabold mb-1"
+              sparklesCount={15}
+              colors={{ first: "#9E7AFF", second: "#FE8BBB" }}
+            />
+            <div className="mt-2">au service de l'enseignement</div>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-lg mx-auto mt-6">
             Choisissez le plan qui vous convient le mieux
           </p>
         </div>
@@ -122,9 +124,9 @@ const Pricing = () => {
           />
           <PricingCard
             title="Plan annuel"
-            price="94,20€"
+            price="119€"
             originalPrice="142,80€"
-            badge="4 mois offerts"
+            badge="2 mois offerts"
             isPremium
             features={[
               "Bénéficier de tous les avantages du plan mensuel",

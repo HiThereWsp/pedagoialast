@@ -32,12 +32,12 @@ export const PricingCard = ({
 }: PricingCardProps) => {
   return (
     <Card
-      className={`relative overflow-hidden shadow-lg p-8 flex flex-col justify-between ${
-        isPremium ? "border-2 border-primary" : ""
+      className={`relative overflow-hidden shadow-lg p-8 flex flex-col justify-between transform transition-all duration-200 hover:scale-105 ${
+        isPremium ? "border-2 border-primary shadow-xl" : ""
       }`}
     >
       {badge && (
-        <Badge className="absolute right-0 top-7 -rotate-90 origin-bottom-right bg-primary/90">
+        <Badge className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 px-4 py-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-semibold border-none">
           {badge}
         </Badge>
       )}
@@ -71,11 +71,11 @@ export const PricingCard = ({
       <Button
         onClick={onSubscribe}
         disabled={disabled}
-        className={`w-full ${
+        className={`w-full transition-all duration-300 ${
           isPremium
-            ? "bg-primary hover:bg-primary/90"
+            ? "bg-gradient-to-r from-[#9E7AFF] via-[#8B5CF6] to-[#D946EF] text-white hover:shadow-xl hover:shadow-primary/20"
             : "bg-secondary hover:bg-secondary/90"
-        }`}
+        } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         {ctaText}
       </Button>
