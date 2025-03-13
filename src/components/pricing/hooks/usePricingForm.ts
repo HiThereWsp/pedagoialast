@@ -70,17 +70,16 @@ export const usePricingForm = () => {
 
     setIsSubmitting(true)
     try {
-      console.log("Submitting form data to create-brevo-contact", formData);
+      console.log("Submitting form data to create-school-contact", formData);
       
-      // Using the create-brevo-contact function with source parameter
-      const { data, error } = await supabase.functions.invoke('create-brevo-contact', {
+      // Using the dedicated create-school-contact function for school submissions
+      const { data, error } = await supabase.functions.invoke('create-school-contact', {
         body: {
           email: formData.email,
           contactName: formData.contactName,
           etablissement: formData.etablissement,
           taille: formData.taille,
-          phone: formData.phoneNumber,
-          source: "pricing_form" // Add source parameter to identify the form type
+          phone: formData.phoneNumber
         }
       })
 
