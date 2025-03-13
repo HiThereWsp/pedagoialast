@@ -1,12 +1,12 @@
+
 import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client.ts";
-import {
-  FunctionsHttpError,
-  FunctionsRelayError,
-  FunctionsFetchError,
-} from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 type AuthType = "signup" | "email" | "magiclink" | "invite" | "recovery";
 
@@ -18,24 +18,43 @@ export default function ConfirmEmail() {
     type: AuthType | null;
     redirect_to: string;
   }>({ token: "", type: null, redirect_to: "/home" });
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
   // Extract and validate auth parameters
   useEffect(() => {
-    const token = searchParams.get("token_hash");
-    const typeParam = searchParams.get("type");
-    const redirect_to = searchParams.get("redirect_to") || "/home";
+    const checkSession = async () => {
+      // Vérifier si l'utilisateur est déjà connecté
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          navigate('/home', { replace: true });
+          return;
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification de session:", error);
+      }
+      
+      // Continuer avec la vérification des paramètres
+      const token = searchParams.get("token_hash");
+      const typeParam = searchParams.get("type");
+      const redirect_to = searchParams.get("redirect_to") || "/home";
 
-    const validTypes: AuthType[] = ["signup", "email", "magiclink", "invite", "recovery"];
-    const type = validTypes.includes(typeParam as AuthType)
-        ? (typeParam as AuthType)
-        : null;
+      const validTypes: AuthType[] = ["signup", "email", "magiclink", "invite", "recovery"];
+      const type = validTypes.includes(typeParam as AuthType)
+          ? (typeParam as AuthType)
+          : null;
 
-    if (token && type) {
-      setAuth({ token, type, redirect_to });
-    }
-  }, [searchParams]);
+      if (token && type) {
+        setAuth({ token, type, redirect_to });
+      } else {
+        setIsLoading(false);
+        setErrorMessage("Paramètres de vérification manquants ou invalides.");
+      }
+    };
+    
+    checkSession();
+  }, [searchParams, navigate]);
 
   const handleRedirect = useCallback(async () => {
     if (!auth.token || !auth.type) return;
@@ -51,47 +70,17 @@ export default function ConfirmEmail() {
       });
 
       if (error) {
-        console.error("Verification failed:", error.message);
-        setErrorMessage("Something went wrong. Please try again.");
+        console.error("Erreur de vérification:", error.message);
+        setErrorMessage("Une erreur s'est produite lors de la vérification. Veuillez réessayer.");
         return;
       }
 
       // Use session from verification response
       const session = data.session;
       if (!session) {
-        setErrorMessage("Session not available. Please try again.");
+        setErrorMessage("Session non disponible. Veuillez réessayer.");
         return;
       }
-
-      // Handle post-verification actions
-      // if (auth.type === "signup") {
-      //   console.log("sending email!")
-      //   try {
-      //     const { data: emailData, error: emailError } = await supabase.functions.invoke(
-      //         "send-welcome-emails-after-signup",
-      //         {
-      //           body: {
-      //             type: "welcome",
-      //             email: session.user?.email,
-      //           },
-      //         }
-      //     );
-      //
-      //     if (emailError) {
-      //       if (emailError instanceof FunctionsHttpError) {
-      //         const errorMessage = await emailError.context.json();
-      //         console.error("Function error:", errorMessage);
-      //       } else if (emailError instanceof FunctionsRelayError) {
-      //         console.error("Relay error:", emailError.message);
-      //       } else if (emailError instanceof FunctionsFetchError) {
-      //         console.error("Fetch error:", emailError.message);
-      //       }
-      //       console.log("Welcome email data:", emailData);
-      //     }
-      //   } catch (emailErr) {
-      //     console.error("Email sending failed:", emailErr);
-      //   }
-      // }
 
       // Handle navigation
       switch (auth.type) {
@@ -106,8 +95,8 @@ export default function ConfirmEmail() {
           navigate("/");
       }
     } catch (err) {
-      console.error("Unexpected error:", err);
-      setErrorMessage("An unexpected error occurred.");
+      console.error("Erreur inattendue:", err);
+      setErrorMessage("Une erreur technique inattendue s'est produite.");
     } finally {
       setIsLoading(false);
     }
@@ -122,31 +111,66 @@ export default function ConfirmEmail() {
 
   if (isLoading) {
     return (
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <Card className="w-full max-w-md py-8">
+          <div className="text-center mb-6">
+            <img 
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+              alt="PedagoIA Logo" 
+              className="h-24 w-auto mx-auto mb-4" 
+            />
+            <h1 className="text-2xl font-bold">Vérification en cours</h1>
+            <p className="text-muted-foreground mt-2">Veuillez patienter pendant que nous vérifions votre email...</p>
+          </div>
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        {errorMessage && (
-            <div className="mb-4">
-              <p className="text-red-500 mb-2">{errorMessage}</p>
-              {auth.token && (
-                  <Button
-                      onClick={handleRedirect}
-                      className="px-4 py-2 text-white bg-blue-600 rounded-md"
-                  >
-                    Retry Verification
-                  </Button>
-              )}
+    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardContent className="pt-6 pb-6">
+          <div className="text-center mb-6">
+            <img 
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+              alt="PedagoIA Logo" 
+              className="h-24 w-auto mx-auto mb-4" 
+            />
+            <h1 className="text-2xl font-bold">Vérification de l'email</h1>
+          </div>
+          
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Erreur de vérification</AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+          
+          <div className="space-y-4">
+            {!auth.token ? (
+              <p className="text-center text-red-500">Lien de vérification invalide ou expiré.</p>
+            ) : (
+              <Button
+                onClick={handleRedirect}
+                className="w-full"
+              >
+                Réessayer la vérification
+              </Button>
+            )}
+            
+            <div className="text-center mt-4">
+              <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground">
+                Retour à la page de connexion
+              </Link>
             </div>
-        )}
-
-        {!auth.token && (
-            <p className="text-red-500">Invalid or expired verification link.</p>
-        )}
-      </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

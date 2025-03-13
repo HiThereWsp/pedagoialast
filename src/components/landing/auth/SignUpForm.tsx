@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -7,14 +8,23 @@ import { AuthFormField } from "./AuthFormField"
 import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
 import { useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 
 interface SignUpFormProps {
   onToggleMode: () => void
 }
 
 export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
-  const { formState, setField, handleSignUp, signUpSuccess } = useAuthForm()
+  const { 
+    formState, 
+    setField, 
+    handleSignUp, 
+    signUpSuccess, 
+    existingUserDetected,
+    setExistingUserDetected 
+  } = useAuthForm()
   const { toast } = useToast()
+  const navigate = useNavigate()
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,10 +46,12 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
 
       await handleSignUp(e)
       
-      // Track successful signup
-      posthog.capture('signup_completed', {
-        has_first_name: !!formState.firstName
-      })
+      if (!existingUserDetected) {
+        // Track successful signup
+        posthog.capture('signup_completed', {
+          has_first_name: !!formState.firstName
+        })
+      }
     } catch (error: any) {
       console.error("Signup error details:", error)
       
@@ -56,6 +68,23 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
     }
   }
 
+  // Gestion de l'utilisateur existant
+  useEffect(() => {
+    if (existingUserDetected) {
+      toast({
+        title: "Compte existant",
+        description: "Un compte existe déjà avec cet email. Nous vous avons redirigé vers la page de connexion.",
+        duration: 5000,
+      })
+      
+      // Basculer vers le mode connexion
+      onToggleMode();
+      
+      // Réinitialiser le drapeau après la gestion
+      setExistingUserDetected(false)
+    }
+  }, [existingUserDetected, onToggleMode, setExistingUserDetected, toast])
+
   // Gestion de l'état de succès de l'inscription
   useEffect(() => {
     if (signUpSuccess) {
@@ -65,7 +94,9 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
   }, [signUpSuccess])
 
   return signUpSuccess ? (
-    <p>Merci pour votre inscription ! Veuillez vérifier votre email ({formState.email}) pour le lien de confirmation.</p>
+    <p className="text-center p-4 bg-green-50 border border-green-100 rounded-md text-green-800">
+      Merci pour votre inscription ! Veuillez vérifier votre email ({formState.email}) pour le lien de confirmation.
+    </p>
   ) : (
     <form onSubmit={onSubmit} className="space-y-4">
       <AuthFormField

@@ -30,7 +30,6 @@ const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
 const CorrespondencePage = lazy(() => import('@/pages/CorrespondencePage'));
 const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const OfflineChatPage = lazy(() => import('@/pages/OfflineChatPage'));
-const PricingPage = lazy(() => import('@/pages/PricingPage'));
 const WaitlistLanding = lazy(() => import('@/pages/WaitlistLanding'));
 const SubscriptionSuccessPage = lazy(() => import('@/pages/SubscriptionSuccessPage'));
 const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage'));
@@ -73,9 +72,8 @@ function AppRoutes() {
         <Route path="/suggestions" element={<ProtectedRoute><SuggestionsPage /></ProtectedRoute>} />
         <Route path="/marketing" element={<ProtectedRoute><MarketingPage /></ProtectedRoute>} />
         <Route path="/correspondence" element={<ProtectedRoute><CorrespondencePage /></ProtectedRoute>} />
-        <Route path="/contact" element={<ProtectedRoute><ContactPage /></ProtectedRoute>} />
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/offline-chat" element={<ProtectedRoute><OfflineChatPage /></ProtectedRoute>} />
-        <Route path="/pricing" element={<PricingPage />} />
         {/* Routes de suivi des conversions */}
         <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
         <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />

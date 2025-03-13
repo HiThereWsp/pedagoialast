@@ -15,6 +15,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const initialLoadComplete = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Détermine si la page actuelle est une page publique d'authentification
+  const isAuthPage = () => {
+    const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password', '/confirm-email'];
+    return authPaths.some(path => location.pathname.startsWith(path));
+  };
+
   // Montrer le chargement seulement après un délai pour éviter les flashs
   useEffect(() => {
     if (timeoutRef.current) {
@@ -45,6 +51,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       loading, 
       authReady,
       path: location.pathname,
+      isAuthPage: isAuthPage(),
       initialLoadComplete: initialLoadComplete.current
     });
     
@@ -65,12 +72,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, rediriger vers la page de connexion
-  if (!user && authReady && !loading) {
+  // Si l'utilisateur est déjà connecté et essaie d'accéder à une page d'authentification,
+  // rediriger vers la page d'accueil
+  if (user && isAuthPage()) {
+    console.log("Utilisateur déjà authentifié, redirection vers /home");
+    return <Navigate to="/home" replace />;
+  }
+
+  // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, 
+  // rediriger vers la page de connexion, sauf si c'est déjà une page d'authentification
+  if (!user && authReady && !loading && !isAuthPage()) {
     console.log("Utilisateur non authentifié, redirection vers /login");
     return <Navigate to="/login" state={{ returnUrl: location.pathname }} replace />;
   }
 
-  // Si l'utilisateur est authentifié, afficher le contenu protégé
+  // Si l'utilisateur est authentifié ou si c'est une page d'authentification, afficher le contenu
   return <>{children}</>;
 };

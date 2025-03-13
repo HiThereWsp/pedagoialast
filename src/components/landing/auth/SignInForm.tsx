@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
 import { useNavigate } from "react-router-dom"
 import { AuthError } from "@supabase/supabase-js"
+import { Mail, Lock } from "lucide-react"
 
 interface SignInFormProps {
   onToggleMode: () => void
@@ -83,48 +84,62 @@ export const SignInForm = ({ onToggleMode }: SignInFormProps) => {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <AuthFormField
-        id="email"
-        label="Email"
-        type="email"
-        value={formState.email}
-        onChange={(value) => setField("email", value)}
-        placeholder="Votre email"
-        required
-      />
-      
-      <AuthFormField
-        id="password"
-        label="Mot de passe"
-        type="password"
-        value={formState.password}
-        onChange={(value) => setField("password", value)}
-        placeholder="Votre mot de passe"
-        required
-      />
+    <form onSubmit={onSubmit} className="space-y-5">
+      <div className="space-y-4">
+        <div className="relative">
+          <AuthFormField
+            id="email"
+            label="Email"
+            type="email"
+            value={formState.email}
+            onChange={(value) => setField("email", value)}
+            placeholder="Votre email"
+            required
+            icon={<Mail className="h-4 w-4 text-gray-400" />}
+          />
+        </div>
+        
+        <div className="relative">
+          <AuthFormField
+            id="password"
+            label="Mot de passe"
+            type="password"
+            value={formState.password}
+            onChange={(value) => setField("password", value)}
+            placeholder="Votre mot de passe"
+            required
+            icon={<Lock className="h-4 w-4 text-gray-400" />}
+          />
+        </div>
+      </div>
 
-      <Button type="submit" className="w-full" disabled={formState.isLoading}>
+      <Button 
+        type="submit" 
+        className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+        disabled={formState.isLoading}
+      >
         {formState.isLoading ? "Connexion en cours..." : "Se connecter"}
       </Button>
 
-      <Button 
-        type="button" 
-        variant="ghost" 
-        className="w-full"
-        onClick={onToggleMode}
-      >
-        Pas encore de compte ? S'inscrire
-      </Button>
-
-      <Button
-        type="button"
-        variant="ghost"
-        className="w-full"
-        onClick={() => navigate("/forgot-password")}
-      >
-        Mot de passe oublié ? Réinitialisez ici
-      </Button>
+      <div className="flex flex-col space-y-2 text-center text-sm">
+        <Button 
+          type="button" 
+          variant="ghost" 
+          className="text-gray-500 hover:text-gray-700"
+          onClick={() => navigate("/forgot-password")}
+        >
+          Mot de passe oublié ?
+        </Button>
+        
+        <Button 
+          type="button" 
+          variant="ghost"
+          className="text-gray-500 hover:text-gray-700" 
+          onClick={onToggleMode}
+        >
+          Pas encore de compte ? <span className="font-semibold ml-1">S'inscrire</span>
+        </Button>
+      </div>
     </form>
   )
 }
