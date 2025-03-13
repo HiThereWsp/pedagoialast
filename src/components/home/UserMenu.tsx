@@ -1,86 +1,93 @@
-import { useAuth } from "@/hooks/useAuth"
+
+import { Settings, LogOut, MessageSquare, Mail } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { useState } from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { LogOut, Settings, User, CreditCard } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
-import { toast } from "sonner"
-import { useSubscription } from "@/hooks/useSubscription"
+import { useToast } from "@/hooks/use-toast"
 
-export function UserMenu() {
-  const { user } = useAuth()
-  const { isSubscriptionActive, getSubscriptionType } = useSubscription()
+export const UserMenu = () => {
   const navigate = useNavigate()
-  const [openMenu, setOpenMenu] = useState(false)
+  const { toast } = useToast()
 
-  const handleLogout = async () => {
+  const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut()
-      navigate("/login")
-    } catch (error) {
-      console.error("Error logging out:", error)
-      toast.error("Une erreur est survenue lors de la déconnexion")
-    }
-  }
+      // Vérifier d'abord si une session existe
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError) {
+        console.error("Session error:", sessionError)
+        // En cas d'erreur de session, on nettoie quand même
+        localStorage.clear()
+        navigate('/waiting-list')
+        return
+      }
 
-  const getInitials = () => {
-    if (!user) return "U"
-    
-    // Si l'utilisateur a un email, utiliser la première lettre
-    if (user.email) {
-      return user.email.charAt(0).toUpperCase()
+      if (!session) {
+        console.log("No session found, redirecting to waiting-list")
+        navigate('/waiting-list')
+        return
+      }
+
+      // Si on a une session valide, on tente la déconnexion
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error("Signout error:", error)
+        toast({
+          variant: "destructive",
+          title: "Erreur de déconnexion",
+          description: "Une erreur est survenue lors de la déconnexion. Veuillez réessayer.",
+        })
+      } else {
+        console.log("Successfully signed out")
+        localStorage.clear() // Nettoyer le localStorage
+        navigate('/waiting-list')
+      }
+    } catch (error) {
+      console.error("Unexpected error during signout:", error)
+      localStorage.clear() // Par sécurité, on nettoie quand même
+      navigate('/waiting-list')
     }
-    
-    // Fallback
-    return "U"
   }
 
   return (
-    <DropdownMenu open={openMenu} onOpenChange={setOpenMenu}>
-      <DropdownMenuTrigger asChild className="overflow-hidden">
-        <Avatar className="h-8 w-8 cursor-pointer">
-          <AvatarFallback className="bg-primary text-primary-foreground">
-            {getInitials()}
-          </AvatarFallback>
-        </Avatar>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none truncate">
-              {user?.email}
-            </p>
-            <p className="text-xs leading-none text-muted-foreground">
-              Abonnement: {getSubscriptionType()}
-            </p>
+    <div className="w-full flex justify-end mb-8">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
+            <svg className="w-6 h-6 text-gray-600" viewBox="0 0 24 24">
+              <path 
+                fill="currentColor" 
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+              />
+            </svg>
           </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        
-        {/* Ajouter un lien vers la page d'abonnement */}
-        <DropdownMenuItem onSelect={() => navigate("/subscription")}>
-          <CreditCard className="mr-2 h-4 w-4" />
-          <span>Mon abonnement</span>
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onSelect={() => navigate("/settings")}>
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Paramètres</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={handleLogout}>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Se déconnecter</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={() => navigate('/suggestions')} className="cursor-pointer">
+            <MessageSquare className="mr-2 h-4 w-4" />
+            <span>Suggérer des fonctionnalités</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Paramètres</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/contact')} className="cursor-pointer">
+            <Mail className="mr-2 h-4 w-4" />
+            <span>Nous contacter</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Se déconnecter</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }

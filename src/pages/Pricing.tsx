@@ -1,9 +1,10 @@
+
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 import { subscriptionEvents } from "@/integrations/posthog/events"
 import { SEO } from "@/components/SEO"
-import { Shield, Clock, RefreshCw, AlertCircle } from "lucide-react"
+import { Shield, Clock, RefreshCw } from "lucide-react"
 import { SparklesText } from "@/components/ui/sparkles-text"
 import { PricingFormDialog } from "@/components/pricing/PricingFormDialog"
 import {
@@ -13,15 +14,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import PricingForm from "@/components/pricing/PricingForm"
-import { useSubscription } from "@/hooks/useSubscription"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { useNavigate } from "react-router-dom"
-import { toast } from "sonner"
 
 const Pricing = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
-  const { subscription, loading, error, getSubscriptionType, refreshSubscription } = useSubscription();
-  const navigate = useNavigate();
   
   useEffect(() => {
     // Tracking PostHog
@@ -32,26 +27,33 @@ const Pricing = () => {
     // Tracking PostHog
     pricingEvents.selectPlan('premium')
     subscriptionEvents.subscriptionStarted('monthly', 11.90)
+    
+    // URLs de redirection Stripe
+    const successUrl = `${window.location.origin}/subscription-success?type=monthly`
+    const cancelUrl = `${window.location.origin}/checkout-canceled?type=monthly`
+    const failedUrl = `${window.location.origin}/subscription-failed?type=monthly`
+    
+    // Redirect vers Stripe avec parametres de callback
+    window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
   }
 
   const handleYearlySubscription = () => {
     // Tracking PostHog
     pricingEvents.selectPlan('premium')
     subscriptionEvents.subscriptionStarted('yearly', 9.90)
+    
+    // URLs de redirection Stripe
+    const successUrl = `${window.location.origin}/subscription-success?type=yearly`
+    const cancelUrl = `${window.location.origin}/checkout-canceled?type=yearly`
+    const failedUrl = `${window.location.origin}/subscription-failed?type=yearly`
+    
+    // Redirect vers Stripe avec parametres de callback
+    window.location.href = 'https://buy.stripe.com/5kA9DS2pYgeF2SA7sw'
   }
 
   const handleSchoolContactRequest = () => {
     setShowContactDialog(true);
   }
-
-  const handleRefreshSubscription = () => {
-    refreshSubscription();
-    toast.success("Actualisation des informations d'abonnement en cours...");
-  }
-
-  // Vérifier si l'utilisateur est déjà abonné pour adapter l'interface
-  const isSubscribed = subscription && subscription.type === 'paid' && subscription.status === 'active';
-  const isBetaTester = subscription && subscription.type === 'beta' && subscription.status === 'active';
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -74,73 +76,7 @@ const Pricing = () => {
           <p className="text-xl text-muted-foreground max-w-lg mx-auto mt-6">
             Choisissez le plan qui vous convient le mieux
           </p>
-          
-          {error && (
-            <Alert variant="destructive" className="mt-6 max-w-lg mx-auto">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Erreur de chargement</AlertTitle>
-              <AlertDescription>
-                Impossible de charger les informations d'abonnement. Veuillez réessayer ultérieurement.
-                <button 
-                  onClick={handleRefreshSubscription} 
-                  className="ml-2 underline text-primary"
-                >
-                  Actualiser
-                </button>
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {isBetaTester && !error && (
-            <div className="mt-6 p-4 bg-indigo-50 rounded-lg text-indigo-700 border border-indigo-200">
-              <p className="font-medium">Vous bénéficiez de l'accès bêta gratuit jusqu'au 31 décembre 2024.</p>
-              <p className="text-sm mt-1">Merci de votre confiance et de votre participation au développement de PedagoIA !</p>
-              <button 
-                onClick={() => navigate("/subscription")} 
-                className="mt-2 text-sm text-indigo-800 font-medium underline"
-              >
-                Voir les détails de votre abonnement
-              </button>
-            </div>
-          )}
-          
-          {isSubscribed && !error && (
-            <div className="mt-6 p-4 bg-green-50 rounded-lg text-green-700 border border-green-200">
-              <p className="font-medium">Vous êtes actuellement abonné à notre offre premium.</p>
-              <p className="text-sm mt-1">Merci pour votre confiance ! Vous avez accès à toutes les fonctionnalités.</p>
-              <button 
-                onClick={() => navigate("/subscription")} 
-                className="mt-2 text-sm text-green-800 font-medium underline"
-              >
-                Gérer votre abonnement
-              </button>
-            </div>
-          )}
-          
-          {!isSubscribed && !isBetaTester && subscription && !error && (
-            <div className="mt-6 p-4 bg-amber-50 rounded-lg text-amber-700 border border-amber-200">
-              <p className="font-medium">
-                Votre abonnement actuel : <span className="font-bold">{getSubscriptionType()}</span>
-              </p>
-              {subscription.type === 'trial' && subscription.daysLeft && subscription.daysLeft > 0 ? (
-                <p className="text-sm mt-1">
-                  Il vous reste {subscription.daysLeft} jour{subscription.daysLeft > 1 ? 's' : ''} d'essai.
-                </p>
-              ) : (
-                <p className="text-sm mt-1">
-                  Choisissez un plan ci-dessous pour accéder à toutes les fonctionnalités.
-                </p>
-              )}
-              <button 
-                onClick={() => navigate("/subscription")} 
-                className="mt-2 text-sm text-amber-800 font-medium underline"
-              >
-                Voir les détails
-              </button>
-            </div>
-          )}
         </div>
-        
         <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
           <PricingCard
             title="Plan mensuel"
@@ -153,10 +89,8 @@ const Pricing = () => {
               "Exploiter tous les outils sans limitation",
               "Économiser plus de 14h par semaine grâce aux outils IA"
             ]}
-            ctaText={isSubscribed ? "Abonnement actif" : "Démarrer l'essai gratuit"}
+            ctaText="Démarrer l'essai gratuit"
             onSubscribe={handleMonthlySubscription}
-            disabled={isSubscribed || isBetaTester || loading}
-            priceId="price_1Omj7zBvGBk8R8kDBEpKPQoF"
           />
           <PricingCard
             title="Plan annuel"
@@ -170,10 +104,8 @@ const Pricing = () => {
               "Recevoir les mises à jour en avant-première",
               "Accéder à la communauté privée d'enseignants 3.0"
             ]}
-            ctaText={isSubscribed ? "Abonnement actif" : "Démarrer l'essai gratuit"}
+            ctaText="Démarrer l'essai gratuit"
             onSubscribe={handleYearlySubscription}
-            disabled={isSubscribed || isBetaTester || loading}
-            priceId="price_1OmjA6BvGBk8R8kDmzDsxRgE"
           />
           <PricingCard
             title="Établissement scolaire"

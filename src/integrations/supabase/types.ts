@@ -906,42 +906,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_subscriptions: {
-        Row: {
-          created_at: string
-          expires_at: string
-          id: string
-          status: Database["public"]["Enums"]["subscription_status"]
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          type: Database["public"]["Enums"]["subscription_type"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          expires_at: string
-          id?: string
-          status?: Database["public"]["Enums"]["subscription_status"]
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          type?: Database["public"]["Enums"]["subscription_type"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          expires_at?: string
-          id?: string
-          status?: Database["public"]["Enums"]["subscription_status"]
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          type?: Database["public"]["Enums"]["subscription_type"]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       utm_links: {
         Row: {
           base_url: string
@@ -1133,12 +1097,6 @@ export type Database = {
         }
         Returns: number
       }
-      has_active_subscription: {
-        Args: {
-          user_uuid: string
-        }
-        Returns: boolean
-      }
       hnsw_bit_support: {
         Args: {
           "": unknown
@@ -1219,10 +1177,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      migrate_existing_users_to_beta: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       sparsevec_out: {
         Args: {
           "": unknown
@@ -1288,8 +1242,6 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       feedback_type: "like" | "dislike"
-      subscription_status: "active" | "expired"
-      subscription_type: "beta" | "trial" | "paid"
       tool_type:
         | "differentiation"
         | "sequence"

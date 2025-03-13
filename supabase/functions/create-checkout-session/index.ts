@@ -45,11 +45,6 @@ serve(async (req) => {
       console.error('No user email found')
       throw new Error('User email not found')
     }
-    
-    if (!user?.id) {
-      console.error('No user ID found')
-      throw new Error('User ID not found')
-    }
 
     console.log('Found user email:', user.email)
 
@@ -60,56 +55,25 @@ serve(async (req) => {
     console.log('Creating checkout session for:', {
       priceId,
       userEmail: user.email,
-      userId: user.id,
     })
 
-    // Vérifier si l'utilisateur a déjà un customer_id dans Stripe
-    const { data: subscriptionData, error: subscriptionError } = await supabaseClient
-      .from('user_subscriptions')
-      .select('stripe_customer_id')
-      .eq('user_id', user.id)
-      .single();
-      
-    if (subscriptionError && subscriptionError.code !== 'PGRST116') {
-      console.error('Error checking existing subscription:', subscriptionError);
-      throw new Error('Failed to check subscription status');
-    }
-    
-    let customerId = subscriptionData?.stripe_customer_id;
+    // Vérifier si le client existe déjà
+    const customers = await stripe.customers.list({
+      email: user.email,
+      limit: 1,
+    })
 
-    // Si pas de customer_id enregistré, vérifier s'il existe déjà un client avec cet email
-    if (!customerId) {
-      const customers = await stripe.customers.list({
-        email: user.email,
-        limit: 1,
-      });
-      
-      customerId = customers.data[0]?.id;
-      console.log('Existing customer ID:', customerId);
-    }
+    let customerId = customers.data[0]?.id
+    console.log('Existing customer ID:', customerId)
 
     // Créer un nouveau client si nécessaire
     if (!customerId) {
-      console.log('Creating new customer');
+      console.log('Creating new customer')
       const customer = await stripe.customers.create({
         email: user.email,
-        metadata: {
-          user_id: user.id
-        }
-      });
-      customerId = customer.id;
-      console.log('New customer created:', customerId);
-      
-      // Mettre à jour la table user_subscriptions avec le nouveau customer_id
-      const { error: updateError } = await supabaseClient
-        .from('user_subscriptions')
-        .update({ stripe_customer_id: customerId })
-        .eq('user_id', user.id);
-        
-      if (updateError) {
-        console.error('Error updating customer ID:', updateError);
-        // On continue quand même, ce n'est pas bloquant
-      }
+      })
+      customerId = customer.id
+      console.log('New customer created:', customerId)
     }
 
     // Créer la session de paiement
@@ -122,12 +86,11 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/subscription-success`,
-      cancel_url: `${req.headers.get('origin')}/checkout-canceled`,
-      client_reference_id: user.id, // Pour identifier l'utilisateur dans les webhooks
-    });
+      success_url: `${req.headers.get('origin')}/chat`,
+      cancel_url: `${req.headers.get('origin')}/pricing`,
+    })
 
-    console.log('Checkout session created:', session.id);
+    console.log('Checkout session created:', session.id)
 
     return new Response(
       JSON.stringify({ url: session.url }),
