@@ -17,7 +17,8 @@ export const handleSubscription = async (priceId: string) => {
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
       body: { 
         priceId,
-        subscriptionType
+        subscriptionType,
+        productId: priceId.includes('monthly') ? 'prod_Rvu5l79HX8EAis' : 'prod_Rvu5hv7FxnkHpv'
       }
     })
 

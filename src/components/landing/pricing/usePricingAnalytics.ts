@@ -13,9 +13,10 @@ export const usePricingAnalytics = (promoCode: string | null) => {
     }
   }, [promoCode]);
 
-  const trackPlanSelection = (plan: string) => {
+  const trackPlanSelection = (plan: string, productId: string) => {
     posthog.capture('pricing_plan_selected', {
       plan,
+      product_id: productId,
       location: 'pricing_page',
       promo_code_displayed: promoCode,
       ref_source: localStorage.getItem('pedago_ref')
