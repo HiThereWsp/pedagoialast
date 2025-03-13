@@ -32,12 +32,18 @@ export const PricingCard = ({
 }: PricingCardProps) => {
   return (
     <Card
-      className={`relative overflow-hidden shadow-lg p-8 flex flex-col justify-between transform transition-all duration-200 hover:scale-105 ${
-        isPremium ? "border-2 border-primary shadow-xl" : ""
+      className={`relative overflow-hidden p-8 flex flex-col justify-between transform transition-all duration-300 hover:scale-105 ${
+        isPremium 
+          ? "shadow-xl border-2 border-transparent bg-gradient-to-b from-background to-background" 
+          : "shadow-md"
       }`}
+      style={isPremium ? {
+        backgroundClip: "padding-box",
+        borderImage: "linear-gradient(to bottom, #9E7AFF, #D946EF) 1",
+      } : {}}
     >
       {badge && (
-        <Badge className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 px-4 py-1 bg-gradient-to-r from-pink-500 to-orange-500 text-white font-semibold border-none">
+        <Badge className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-[#9E7AFF] to-[#D946EF] text-white font-semibold border-none shadow-md">
           {badge}
         </Badge>
       )}
@@ -73,8 +79,8 @@ export const PricingCard = ({
         disabled={disabled}
         className={`w-full transition-all duration-300 ${
           isPremium
-            ? "bg-gradient-to-r from-[#9E7AFF] via-[#8B5CF6] to-[#D946EF] text-white hover:shadow-xl hover:shadow-primary/20"
-            : "bg-secondary hover:bg-secondary/90"
+            ? "bg-gradient-to-r from-[#9E7AFF] via-[#8B5CF6] to-[#D946EF] text-white hover:shadow-xl hover:shadow-primary/20 font-medium"
+            : "bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium"
         } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
       >
         {ctaText}
