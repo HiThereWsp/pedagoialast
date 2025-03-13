@@ -4,9 +4,36 @@ import { SEO } from "@/components/SEO"
 import { Link, useNavigate } from "react-router-dom"
 import { ForgotPasswordForm } from "@/components/landing/auth/ForgotPassowrdForm";
 import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+import { supabase } from "@/integrations/supabase/client"
 
 export default function ForgotPassword() {
   const navigate = useNavigate()
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  
+  // Vérification légère pour rediriger les utilisateurs connectés
+  useEffect(() => {
+    const checkLoggedIn = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          navigate('/home', { replace: true })
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification de la session:", error)
+      } finally {
+        setIsCheckingAuth(false)
+      }
+    }
+    
+    checkLoggedIn()
+  }, [navigate])
+  
+  if (isCheckingAuth) {
+    return <div className="flex min-h-screen items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  }
   
   return (
     <>

@@ -8,7 +8,7 @@ import type { User } from "@supabase/supabase-js"
 type AuthContextType = {
   user: User | null
   loading: boolean
-  authReady: boolean  // Nouvel indicateur pour signaler que le processus d'auth est terminé
+  authReady: boolean
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -39,13 +39,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       '/', 
       '/login', 
       '/signup', 
-      '/reset-password', 
+      '/forgot-password',  // Ajouter oubli de mot de passe
+      '/reset-password',   // Ajouter réinitialisation
+      '/confirm-email',    // Ajouter confirmation d'email
       '/contact', 
       '/pricing',
       '/bienvenue',
-      '/waiting-list'
+      '/waiting-list',
+      '/terms',
+      '/privacy',
+      '/legal'
     ]
-    return publicPaths.includes(location.pathname)
+    return publicPaths.some(path => location.pathname.startsWith(path))
   }
 
   useEffect(() => {
@@ -60,6 +65,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // Pour éviter les multiples vérifications
         if (authCheckCompleted.current) {
           console.log("Vérification d'auth déjà effectuée, ignorée")
+          return
+        }
+        
+        // Sur les pages publiques, définir authReady = true immédiatement
+        // pour éviter les vérifications de session non nécessaires
+        if (isPublicPage()) {
+          console.log("Page publique détectée, vérification minimale")
+          setAuthReady(true)
+          setLoading(false)
+          authCheckCompleted.current = true
           return
         }
         
@@ -105,7 +120,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await checkUser()
         
         if (mounted) {
-          // Abonnement aux changements d'état d'authentification
+          // N'abonnez aux changements d'authentification que si ce n'est pas une page publique
+          // ou si l'utilisateur est déjà connecté
           const { data } = supabase.auth.onAuthStateChange(
             async (event, session) => {
               if (mounted) {

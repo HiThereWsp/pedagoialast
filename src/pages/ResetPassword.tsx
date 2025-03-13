@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
@@ -25,6 +24,13 @@ export default function ResetPassword() {
       setIsLoading(true)
       
       try {
+        // Vérifier si l'utilisateur est déjà connecté, dans ce cas rediriger
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          navigate('/home', { replace: true })
+          return
+        }
+        
         // Récupérer tous les paramètres d'URL pour le debugging
         const allParams = Object.fromEntries([...searchParams.entries()])
         const type = searchParams.get("type")
@@ -87,7 +93,7 @@ export default function ResetPassword() {
     }
 
     verifyResetToken()
-  }, [searchParams, toast])
+  }, [searchParams, toast, navigate])
 
   if (isLoading) {
     return <div className="flex min-h-screen items-center justify-center">

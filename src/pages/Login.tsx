@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
@@ -15,32 +14,32 @@ export default function Login() {
   
   useEffect(() => {
     const verifyMagicLink = async () => {
-      // Get the current URL's query parameters
+      // Récupérer les paramètres de requête de l'URL actuelle
       const queryParams = new URLSearchParams(window.location.search);
-      const token = queryParams.get("token_hash"); // Extract the token value
-      console.log("Token ^:", token);
+      const token = queryParams.get("token_hash"); // Extraire la valeur du token
+      
       if (token) {
         console.log("Token:", token);
 
         try {
-          // Verify the OTP using Supabase
+          // Vérifier l'OTP en utilisant Supabase
           const { error } = await supabase.auth.verifyOtp({
             token_hash: token,
-            type: "magiclink", // Adjust this based on your use case
+            type: "magiclink", // Ajuster en fonction de votre cas d'utilisation
           });
 
           if (error) {
-            console.error("Error verifying magic link:", error.message);
+            console.error("Erreur de vérification du lien magique:", error.message);
           } else {
-            console.log("Magic link verified successfully!");
-            // Redirect the user to the dashboard or another page
-            window.location.href = "/home"; // Adjust redirect as needed
+            console.log("Lien magique vérifié avec succès!");
+            // Rediriger l'utilisateur vers le tableau de bord ou une autre page
+            window.location.href = "/home"; // Ajuster la redirection selon les besoins
           }
         } catch (err) {
-          console.error("Unexpected error during verification:", err);
+          console.error("Erreur inattendue lors de la vérification:", err);
         }
       } else {
-        console.log("No token found in the URL.");
+        console.log("Aucun token trouvé dans l'URL.");
       }
     };
 
@@ -51,27 +50,24 @@ export default function Login() {
     const checkUser = async () => {
       try {
         setIsLoading(true)
-        console.log("Checking session...")
+        console.log("Vérification de la session...")
         const { data: { session }, error } = await supabase.auth.getSession()
         
         if (error) {
-          console.error("Session error:", error)
-          toast({
-            variant: "destructive",
-            title: "Session expirée",
-            description: "Veuillez vous reconnecter.",
-          })
+          console.error("Erreur de session:", error)
+          setIsLoading(false)
+          // Ne pas afficher d'erreur pour les pages d'authentification
         } else if (session) {
-          console.log("Active session found:", session)
+          console.log("Session active trouvée:", session)
           const returnUrl = location.state?.returnUrl || '/home'
-          console.log("Redirecting to:", returnUrl)
+          console.log("Redirection vers:", returnUrl)
           navigate(returnUrl, { replace: true })
         } else {
-          console.log("No active session found")
+          console.log("Aucune session active trouvée")
+          setIsLoading(false)
         }
       } catch (error) {
-        console.error("Auth error:", error)
-      } finally {
+        console.error("Erreur d'authentification:", error)
         setIsLoading(false)
       }
     }
@@ -79,13 +75,15 @@ export default function Login() {
     checkUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("Auth state changed:", event, session)
+      console.log("État d'authentification modifié:", event, session)
       
       if (event === 'SIGNED_IN' && session) {
-        console.log("User signed in, redirecting...")
+        console.log("Utilisateur connecté, redirection...")
         const returnUrl = location.state?.returnUrl || '/home'
-        console.log("Redirecting to:", returnUrl)
+        console.log("Redirection vers:", returnUrl)
         navigate(returnUrl, { replace: true })
+      } else {
+        setIsLoading(false)
       }
     })
 
