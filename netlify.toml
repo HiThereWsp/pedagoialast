@@ -10,6 +10,41 @@
   BRANCH = "Second-branch"
 
 [[redirects]]
+  from = "/t20/*"
+  to = "/.netlify/functions/redirect/t20/:splat"
+  status = 302
+
+[[redirects]]
+  from = "/t40/*"
+  to = "/.netlify/functions/redirect/t40/:splat"
+  status = 302
+
+[[redirects]]
+  from = "/i20/*"
+  to = "/.netlify/functions/redirect/i20/:splat"
+  status = 302
+
+[[redirects]]
+  from = "/i40/*"
+  to = "/.netlify/functions/redirect/i40/:splat"
+  status = 302
+
+[[redirects]]
+  from = "/r/*"
+  to = "/.netlify/functions/redirect/r/:splat"
+  status = 302
+
+[[redirects]]
+  from = "/tt"
+  to = "/.netlify/functions/redirect/tt"
+  status = 302
+
+[[redirects]]
+  from = "/fb"
+  to = "/.netlify/functions/redirect/fb"
+  status = 302
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

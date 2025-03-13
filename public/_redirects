@@ -1,2 +1,20 @@
 
 /* /index.html 200
+
+# Redirections spéciales pour les créateurs
+/*/maitreClement /functions/redirect/*/maitreClement 302
+/*/lollieUnicorn /functions/redirect/*/lollieUnicorn 302
+/*/laprof40 /functions/redirect/*/laprof40 302
+/*/mehdush /functions/redirect/*/mehdush 302
+/*/sylvie /functions/redirect/*/sylvie 302
+
+# Redirections génériques pour les différentes plateformes
+/t20/* /functions/redirect/t20/:splat 302
+/t40/* /functions/redirect/t40/:splat 302
+/i20/* /functions/redirect/i20/:splat 302
+/i40/* /functions/redirect/i40/:splat 302
+/r/* /functions/redirect/r/:splat 302
+
+# Redirections courtes vers les plateformes sociales
+/tt /functions/redirect/tt 302
+/fb /functions/redirect/fb 302
