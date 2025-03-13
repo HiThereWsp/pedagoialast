@@ -1,4 +1,3 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
