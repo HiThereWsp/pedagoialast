@@ -108,9 +108,9 @@ export default function Login() {
       />
       <div className="flex min-h-screen flex-col items-center justify-between bg-background">
         <div className="w-full flex flex-col items-center p-4 py-8">
-          <div className="mb-6">
+          <div className="mb-8">
             <Link to="/" className="flex items-center gap-2">
-              <img src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" alt="PedagoIA Logo" className="h-16 w-auto" />
+              <img src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" alt="PedagoIA Logo" className="h-24 w-auto" />
             </Link>
           </div>
           
