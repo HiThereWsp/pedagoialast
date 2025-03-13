@@ -1,13 +1,23 @@
 
 import { PricingCard } from "@/components/pricing/PricingCard"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 import { subscriptionEvents } from "@/integrations/posthog/events"
 import { SEO } from "@/components/SEO"
 import { Shield, Clock, RefreshCw } from "lucide-react"
 import { SparklesText } from "@/components/ui/sparkles-text"
+import { PricingFormDialog } from "@/components/pricing/PricingFormDialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import PricingForm from "@/components/pricing/PricingForm"
 
 const Pricing = () => {
+  const [showContactDialog, setShowContactDialog] = useState(false);
+  
   useEffect(() => {
     // Tracking PostHog
     pricingEvents.viewPricing()
@@ -39,6 +49,10 @@ const Pricing = () => {
     
     // Redirect vers Stripe avec parametres de callback
     window.location.href = 'https://buy.stripe.com/5kA9DS2pYgeF2SA7sw'
+  }
+
+  const handleSchoolContactRequest = () => {
+    setShowContactDialog(true);
   }
 
   return (
@@ -103,7 +117,7 @@ const Pricing = () => {
               "Adapter les outils à votre projet d'établissement"
             ]}
             ctaText="Prendre contact"
-            onSubscribe={() => {}}
+            onSubscribe={handleSchoolContactRequest}
           />
         </div>
 
@@ -131,6 +145,18 @@ const Pricing = () => {
           </div>
         </div>
       </main>
+
+      {/* Dialog pour le formulaire de contact établissement */}
+      <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-center text-xl font-bold">
+              Demande d'information pour établissement scolaire
+            </DialogTitle>
+          </DialogHeader>
+          <PricingForm />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
