@@ -192,3 +192,111 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     </AuthContext.Provider>
   )
 }
+        
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error) {
+          console.error("Erreur lors de la vérification de l'utilisateur:", error)
+          // Sur les pages publiques, ne pas afficher de toast d'erreur
+          if (!isPublicPage() && mounted) {
+            toast({
+              title: "Erreur d'authentification",
+              description: "Une erreur est survenue lors de la vérification de votre session.",
+              variant: "destructive",
+            })
+          }
+        }
+        
+        if (mounted) {
+          setUser(user)
+          authCheckCompleted.current = true
+          setAuthReady(true)
+        }
+   catch (error) {
+        console.error("Exception lors de la vérification de l'utilisateur:", error)
+        // Sur les pages publiques, ne pas afficher de toast d'erreur
+        if (!isPublicPage() && mounted) {
+          toast({
+            title: "Erreur d'authentification",
+            description: "Une erreur est survenue lors de la vérification de votre session.",
+            variant: "destructive",
+          })
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    // Écoute les changements d'authentification avec gestion adaptée des erreurs
+    const setupAuthListener = async () => {
+      try {
+        await checkUser()
+        
+        if (mounted) {
+          // N'abonnez aux changements d'authentification que si ce n'est pas une page publique
+          // ou si l'utilisateur est déjà connecté
+          const { data } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+              if (mounted) {
+                console.log("Auth state changed:", event)
+                if (session?.user) {
+                  console.log("Session active:", session.user.email)
+                } else {
+                  console.log("Pas de session active")
+                }
+                
+                setUser(session?.user ?? null)
+                setLoading(false)
+                setAuthReady(true)
+              }
+            }
+          )
+          
+          subscription = data.subscription
+        }
+      } catch (err) {
+        console.error("Erreur dans setupAuthListener:", err)
+        if (mounted) {
+          setLoading(false)
+          setAuthReady(true)
+        }
+      }
+    }
+
+    setupAuthListener()
+
+    return () => {
+      mounted = false
+      if (subscription) {
+        subscription.unsubscribe()
+      }
+    }
+  }, [toast, location.pathname])
+
+  // Amélioration de la gestion du chargement pour éviter de bloquer l'UI sur les pages publiques
+  if (loading) {
+    // Sur les pages publiques, afficher le contenu même pendant le chargement
+    if (isPublicPage()) {
+      return (
+        <AuthContext.Provider value={{ user: null, loading: true, authReady: false }}>
+          {children}
+        </AuthContext.Provider>
+      )
+    }
+    
+    // Sur les pages privées, montrer l'indicateur de chargement
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
+
+  return (
+    <AuthContext.Provider value={{ user, loading, authReady }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
