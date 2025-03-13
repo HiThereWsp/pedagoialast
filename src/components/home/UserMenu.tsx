@@ -1,5 +1,5 @@
 
-import { Settings, LogOut, MessageSquare, Mail } from "lucide-react"
+import { Settings, LogOut, MessageSquare, Mail, LayoutDashboard } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import {
   DropdownMenu,
@@ -69,6 +69,10 @@ export const UserMenu = () => {
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={() => navigate('/tableaudebord')} className="cursor-pointer">
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Tableau de bord</span>
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/suggestions')} className="cursor-pointer">
             <MessageSquare className="mr-2 h-4 w-4" />
             <span>Suggérer des fonctionnalités</span>
