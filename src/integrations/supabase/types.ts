@@ -466,6 +466,41 @@ export type Database = {
         }
         Relationships: []
       }
+      redirect_logs: {
+        Row: {
+          clicked_at: string | null
+          id: string
+          ip_address: string | null
+          redirect_id: string | null
+          referer: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          clicked_at?: string | null
+          id?: string
+          ip_address?: string | null
+          redirect_id?: string | null
+          referer?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          clicked_at?: string | null
+          id?: string
+          ip_address?: string | null
+          redirect_id?: string | null
+          referer?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redirect_logs_redirect_id_fkey"
+            columns: ["redirect_id"]
+            isOneToOne: false
+            referencedRelation: "url_redirects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_correspondences: {
         Row: {
           content: string
@@ -759,6 +794,36 @@ export type Database = {
           system_prompt?: string
           tool_type?: Database["public"]["Enums"]["tool_type"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      url_redirects: {
+        Row: {
+          click_count: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          last_clicked_at: string | null
+          short_path: string
+          target_url: string
+        }
+        Insert: {
+          click_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_clicked_at?: string | null
+          short_path: string
+          target_url: string
+        }
+        Update: {
+          click_count?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          last_clicked_at?: string | null
+          short_path?: string
+          target_url?: string
         }
         Relationships: []
       }
@@ -1095,9 +1160,52 @@ export type Database = {
             }
             Returns: unknown
           }
+      delete_url_redirect: {
+        Args: {
+          p_id: string
+        }
+        Returns: undefined
+      }
       generate_report: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_redirect_logs: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          clicked_at: string | null
+          id: string
+          ip_address: string | null
+          redirect_id: string | null
+          referer: string | null
+          user_agent: string | null
+        }[]
+      }
+      get_url_redirect_by_path: {
+        Args: {
+          p_short_path: string
+        }
+        Returns: {
+          click_count: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          last_clicked_at: string | null
+          short_path: string
+          target_url: string
+        }
+      }
+      get_url_redirects: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          click_count: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          last_clicked_at: string | null
+          short_path: string
+          target_url: string
+        }[]
       }
       get_user_chats: {
         Args: {
@@ -1163,6 +1271,22 @@ export type Database = {
         }
         Returns: unknown
       }
+      insert_url_redirect: {
+        Args: {
+          p_short_path: string
+          p_target_url: string
+          p_description: string
+        }
+        Returns: {
+          click_count: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          last_clicked_at: string | null
+          short_path: string
+          target_url: string
+        }
+      }
       ivfflat_bit_support: {
         Args: {
           "": unknown
@@ -1219,6 +1343,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      log_redirect_click: {
+        Args: {
+          p_redirect_id: string
+          p_user_agent: string
+          p_referer: string
+          p_ip_address: string
+        }
+        Returns: undefined
+      }
       migrate_existing_users_to_beta: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -1240,6 +1373,23 @@ export type Database = {
           "": unknown[]
         }
         Returns: number
+      }
+      update_url_redirect: {
+        Args: {
+          p_id: string
+          p_short_path: string
+          p_target_url: string
+          p_description: string
+        }
+        Returns: {
+          click_count: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          last_clicked_at: string | null
+          short_path: string
+          target_url: string
+        }
       }
       vector_avg: {
         Args: {
