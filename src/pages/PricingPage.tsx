@@ -6,6 +6,9 @@ import { subscriptionEvents } from "@/integrations/posthog/events"
 import { facebookEvents } from "@/integrations/meta-pixel/client"
 import { SEO } from "@/components/SEO"
 import { Shield, Clock, RefreshCw } from "lucide-react"
+import { handleSubscription } from "@/utils/subscription"
+import { supabase } from "@/integrations/supabase/client"
+import { toast } from "sonner"
 
 const PricingPage = () => {
   useEffect(() => {
@@ -16,40 +19,47 @@ const PricingPage = () => {
     facebookEvents.viewPricing()
   }, [])
 
-  const handleMonthlySubscription = () => {
+  // Vérifier si l'utilisateur est connecté
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      toast.error("Veuillez vous connecter pour souscrire à un abonnement");
+      window.location.href = '/login?redirect=/pricing';
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleMonthlySubscription = async () => {
+    if (!await checkAuth()) return;
+    
     // Tracking PostHog
-    pricingEvents.selectPlan('premium')
-    subscriptionEvents.subscriptionStarted('monthly', 11.90)
+    pricingEvents.selectPlan('premium');
+    subscriptionEvents.subscriptionStarted('monthly', 11.90);
     
-    // Tracking Facebook - Prix: 11.90€
-    facebookEvents.initiateCheckout('monthly', 11.90)
+    // Tracking Facebook
+    facebookEvents.initiateCheckout('monthly', 11.90);
     
-    // URLs de redirection Stripe
-    const successUrl = `${window.location.origin}/subscription-success?type=monthly`
-    const cancelUrl = `${window.location.origin}/checkout-canceled?type=monthly`
-    const failedUrl = `${window.location.origin}/subscription-failed?type=monthly`
-    
-    // Redirect vers Stripe avec parametres de callback
-    // Note: Pour l'exemple, on utilise les URL directes, mais idéalement il faudrait 
-    // configurer ces URL dans Stripe et ajouter les paramètres via query params
-    window.location.href = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'
+    // Utiliser le système d'abonnement Stripe via notre fonction
+    const stripeMonthlyPriceId = 'price_1O8GJRGJLmrCBLPXcfwxVP6b'; // ID de prix pour l'abonnement mensuel
+    await handleSubscription(stripeMonthlyPriceId);
   }
 
-  const handleYearlySubscription = () => {
+  const handleYearlySubscription = async () => {
+    if (!await checkAuth()) return;
+    
     // Tracking PostHog
-    pricingEvents.selectPlan('premium')
-    subscriptionEvents.subscriptionStarted('yearly', 9.00)
+    pricingEvents.selectPlan('premium');
+    subscriptionEvents.subscriptionStarted('yearly', 9.90);
     
-    // Tracking Facebook - Prix: 9.00€/mois (équivalent)
-    facebookEvents.initiateCheckout('yearly', 9.00)
+    // Tracking Facebook
+    facebookEvents.initiateCheckout('yearly', 9.00);
     
-    // URLs de redirection Stripe
-    const successUrl = `${window.location.origin}/subscription-success?type=yearly`
-    const cancelUrl = `${window.location.origin}/checkout-canceled?type=yearly`
-    const failedUrl = `${window.location.origin}/subscription-failed?type=yearly`
-    
-    // Redirect vers Stripe avec parametres de callback
-    window.location.href = 'https://buy.stripe.com/fZe03i3u20fHdxe4gj'
+    // Utiliser le système d'abonnement Stripe via notre fonction
+    const stripeYearlyPriceId = 'price_1O8GJvGJLmrCBLPXFvw6SHHn'; // ID de prix pour l'abonnement annuel
+    await handleSubscription(stripeYearlyPriceId);
   }
 
   return (
@@ -111,7 +121,9 @@ const PricingPage = () => {
               "Adapter les outils à votre projet d'établissement"
             ]}
             ctaText="Prendre contact"
-            onSubscribe={() => {}}
+            onSubscribe={() => {
+              window.location.href = '/contact?subject=Abonnement Établissement';
+            }}
           />
         </div>
 
