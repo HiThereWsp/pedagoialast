@@ -5,9 +5,10 @@ import { SignUpForm } from "./auth/SignUpForm";
 import { AnimatedText } from "@/components/ui/animated-text";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { SocialLoginButtons } from "./auth/SocialLoginButtons";
 
 export const LoginForm = () => {
-  // Modification: l'inscription est maintenant l'option par défaut
+  // Inscription est maintenant l'option par défaut
   const [isSignUp, setIsSignUp] = useState(true);
   
   // Les deux phrases à alterner
@@ -43,6 +44,9 @@ export const LoginForm = () => {
           ) : (
             <SignInForm onToggleMode={() => setIsSignUp(true)} />
           )}
+          
+          {/* Ajout des boutons d'authentification sociale */}
+          <SocialLoginButtons isSignUp={isSignUp} />
         </div>
       </div>
       
