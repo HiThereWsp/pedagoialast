@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
         }
 
         // Parse the request body
-        const { email, contactName, etablissement, taille, phone, source = "signup" } = await req.json();
+        const { email, contactName, etablissement, taille, phone } = await req.json();
         
         if (!email) {
             return new Response(JSON.stringify({ error: "Email is required" }), {
@@ -37,30 +37,17 @@ Deno.serve(async (req) => {
             });
         }
         
-        console.log(`Creating Brevo contact for: ${contactName}, ${email}, from ${source}`);
+        console.log(`Creating Brevo contact for school: ${contactName}, ${email}, ${etablissement}, ${taille}`);
         
-        // Create payload with attributes based on source
-        let attributes = {};
-        let listIds = [7]; // Always use list #7 as requested
-        
-        if (source === "pricing_form") {
-            // For school pricing form submissions
-            attributes = {
-                CONTACT: contactName || "Direction",
-                EMAIL: email,
-                PHONE: phone || "Non spécifié",
-                TYPE_ETABLISSEMENT: etablissement || "Non spécifié",
-                TAILLE: taille || "Non spécifiée",
-                TYPE_DEMANDE: "Établissement scolaire"
-            };
-        } else {
-            // For regular signups
-            attributes = {
-                PRENOM: contactName || "Utilisateur",
-                EMAIL: email,
-                SOURCE: "Inscription site web"
-            };
-        }
+        // Create attributes for school pricing form submissions
+        const attributes = {
+            CONTACT: contactName || "Direction",
+            EMAIL: email,
+            PHONE: phone || "Non spécifié",
+            TYPE_ETABLISSEMENT: etablissement || "Non spécifié",
+            TAILLE: taille || "Non spécifiée",
+            TYPE_DEMANDE: "Établissement scolaire"
+        };
         
         // Create Brevo contact
         const response = await fetch("https://api.brevo.com/v3/contacts", {
@@ -73,7 +60,7 @@ Deno.serve(async (req) => {
                 email: email,
                 attributes: attributes,
                 updateEnabled: true, // Update existing contacts
-                listIds: listIds, // List #7 only
+                listIds: [7], // List #7 only
             }),
         });
 
@@ -99,7 +86,7 @@ Deno.serve(async (req) => {
         }
 
         // Success response
-        console.log("Contact successfully created in Brevo:", responseDetails);
+        console.log("School contact successfully created in Brevo:", responseDetails);
         return new Response(JSON.stringify({ 
             message: `Brevo contact created for ${email}`,
             details: responseDetails
