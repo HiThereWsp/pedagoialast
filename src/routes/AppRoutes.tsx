@@ -12,6 +12,7 @@ import Bienvenue from '@/pages/Bienvenue';
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
 const Home = lazy(() => import('@/pages/Home'));
+const TableauDeBord = lazy(() => import('@/pages/TableauDeBord'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const ExercisePage = lazy(() => import('@/pages/ExercisePage'));
@@ -60,6 +61,7 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/tableaudebord" element={<ProtectedRoute><TableauDeBord /></ProtectedRoute>} />
         
         {/* Routes nécessitant un abonnement */}
         <Route path="/exercise" element={<ProtectedRoute><SubscriptionRoute><ExercisePage /></SubscriptionRoute></ProtectedRoute>} />
