@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { Check } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
@@ -14,7 +15,8 @@ const PricingCard = ({
   features,
   popular,
   ctaText,
-  ctaAction
+  ctaAction,
+  promoCode
 }: {
   title: string;
   description: string;
@@ -25,6 +27,7 @@ const PricingCard = ({
   popular?: boolean;
   ctaText: string;
   ctaAction: () => void;
+  promoCode?: string;
 }) => (
   <Card className={`p-6 relative ${popular ? 'border-2 border-primary shadow-premium' : ''}`}>
     {popular && (
@@ -41,6 +44,11 @@ const PricingCard = ({
         <p className="text-sm text-muted-foreground mt-1">
           ou {yearlyPrice} /an (économisez 17%)
         </p>
+      )}
+      {promoCode && (
+        <div className="mt-2 bg-amber-100 border border-amber-300 text-amber-800 px-3 py-1 rounded-md text-sm">
+          Code promo: <span className="font-bold">{promoCode}</span>
+        </div>
       )}
     </div>
     <ul className="space-y-4 mb-8">
@@ -65,10 +73,50 @@ const PricingCard = ({
 );
 
 export const PricingSection = () => {
+  const [promoCode, setPromoCode] = useState<string | null>(null);
+  
+  // Check localStorage for referral info to set promo code
+  useEffect(() => {
+    const refSource = localStorage.getItem('pedago_ref');
+    
+    if (refSource) {
+      // Generate promo code based on referral source
+      if (refSource.includes('maitreClement')) {
+        setPromoCode('CLEMENT25');
+      } else if (refSource.includes('lollieUnicorn')) {
+        setPromoCode('LOLLIE25');
+      } else if (refSource.includes('laprof40')) {
+        setPromoCode('PROF40-25');
+      } else if (refSource.includes('mehdush')) {
+        setPromoCode('MEHDUSH25');
+      } else if (refSource.includes('sylvie')) {
+        setPromoCode('SYLVIE25');
+      } else if (refSource.includes('fb')) {
+        setPromoCode('FB25');
+      } else if (refSource.includes('tt')) {
+        setPromoCode('TT25');
+      } else if (refSource.startsWith('t20/') || refSource.startsWith('t40/')) {
+        setPromoCode('TIKTOK25');
+      } else if (refSource.startsWith('i20/') || refSource.startsWith('i40/')) {
+        setPromoCode('INSTA25');
+      }
+      
+      // Track promo code generation
+      if (promoCode) {
+        posthog.capture('promo_code_generated', {
+          promo_code: promoCode,
+          ref_source: refSource,
+          redirect_id: localStorage.getItem('pedago_redirect_id')
+        });
+      }
+    }
+  }, []);
+
   const handleFreePlan = () => {
     posthog.capture('pricing_plan_selected', {
       plan: 'free',
-      location: 'pricing_page'
+      location: 'pricing_page',
+      promo_code_displayed: promoCode
     })
     console.log('Free plan selected');
   };
@@ -76,7 +124,9 @@ export const PricingSection = () => {
   const handlePremiumPlan = () => {
     posthog.capture('pricing_plan_selected', {
       plan: 'premium',
-      location: 'pricing_page'
+      location: 'pricing_page',
+      promo_code_displayed: promoCode,
+      ref_source: localStorage.getItem('pedago_ref')
     })
     console.log('Premium plan selected');
   };
@@ -84,7 +134,8 @@ export const PricingSection = () => {
   const handleEnterprisePlan = () => {
     posthog.capture('pricing_plan_selected', {
       plan: 'enterprise',
-      location: 'pricing_page'
+      location: 'pricing_page',
+      promo_code_displayed: promoCode
     })
     console.log('Enterprise plan selected');
   };
@@ -92,9 +143,12 @@ export const PricingSection = () => {
   // Track pricing page view
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      posthog.capture('pricing_page_viewed')
+      posthog.capture('pricing_page_viewed', {
+        ref_source: localStorage.getItem('pedago_ref'),
+        promo_code_displayed: promoCode
+      })
     }
-  }, [])
+  }, [promoCode])
 
   return (
     <section className="py-20 bg-gradient-to-b from-background to-secondary/20">
@@ -142,6 +196,7 @@ export const PricingSection = () => {
             popular
             ctaText="Débloquez l'accès illimité"
             ctaAction={handlePremiumPlan}
+            promoCode={promoCode || undefined}
           />
 
           <PricingCard

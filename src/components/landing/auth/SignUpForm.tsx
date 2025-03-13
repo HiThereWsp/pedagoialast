@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { posthog } from "@/integrations/posthog/client"
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { ExistingUserDialog } from "./ExistingUserDialog"
 
 interface SignUpFormProps {
   onToggleMode: () => void
@@ -68,23 +69,6 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
     }
   }
 
-  // Gestion de l'utilisateur existant
-  useEffect(() => {
-    if (existingUserDetected) {
-      toast({
-        title: "Compte existant",
-        description: "Un compte existe déjà avec cet email. Nous vous avons redirigé vers la page de connexion.",
-        duration: 5000,
-      })
-      
-      // Basculer vers le mode connexion
-      onToggleMode();
-      
-      // Réinitialiser le drapeau après la gestion
-      setExistingUserDetected(false)
-    }
-  }, [existingUserDetected, onToggleMode, setExistingUserDetected, toast])
-
   // Gestion de l'état de succès de l'inscription
   useEffect(() => {
     if (signUpSuccess) {
@@ -98,62 +82,72 @@ export const SignUpForm = ({ onToggleMode }: SignUpFormProps) => {
       Merci pour votre inscription ! Veuillez vérifier votre email ({formState.email}) pour le lien de confirmation.
     </p>
   ) : (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <AuthFormField
-        id="firstName"
-        label="Prénom"
-        value={formState.firstName || ""}
-        onChange={(value) => setField("firstName", value)}
-        placeholder="Votre prénom"
-      />
-      
-      <AuthFormField
-        id="email"
-        label="Email"
-        type="email"
-        value={formState.email}
-        onChange={(value) => setField("email", value)}
-        placeholder="Votre email"
-      />
-      
-      <AuthFormField
-        id="password"
-        label="Mot de passe"
-        type="password"
-        value={formState.password}
-        onChange={(value) => setField("password", value)}
-        placeholder="Votre mot de passe"
-      />
-
-      <div className="flex items-start space-x-2">
-        <Checkbox 
-          id="terms" 
-          checked={formState.acceptedTerms}
-          onCheckedChange={(checked) => setField("acceptedTerms", checked)}
-          className="mt-1"
+    <>
+      <form onSubmit={onSubmit} className="space-y-4">
+        <AuthFormField
+          id="firstName"
+          label="Prénom"
+          value={formState.firstName || ""}
+          onChange={(value) => setField("firstName", value)}
+          placeholder="Votre prénom"
         />
-        <div className="grid gap-1.5 leading-none">
-          <Label
-            htmlFor="terms"
-            className="text-sm text-muted-foreground leading-relaxed"
-          >
-            J'accepte les <TermsDialog /> et la politique de confidentialité de Pedagoia
-          </Label>
+        
+        <AuthFormField
+          id="email"
+          label="Email"
+          type="email"
+          value={formState.email}
+          onChange={(value) => setField("email", value)}
+          placeholder="Votre email"
+        />
+        
+        <AuthFormField
+          id="password"
+          label="Mot de passe"
+          type="password"
+          value={formState.password}
+          onChange={(value) => setField("password", value)}
+          placeholder="Votre mot de passe"
+        />
+
+        <div className="flex items-start space-x-2">
+          <Checkbox 
+            id="terms" 
+            checked={formState.acceptedTerms}
+            onCheckedChange={(checked) => setField("acceptedTerms", checked)}
+            className="mt-1"
+          />
+          <div className="grid gap-1.5 leading-none">
+            <Label
+              htmlFor="terms"
+              className="text-sm text-muted-foreground leading-relaxed"
+            >
+              J'accepte les <TermsDialog /> et la politique de confidentialité de Pedagoia
+            </Label>
+          </div>
         </div>
-      </div>
 
-      <Button type="submit" className="w-full" disabled={formState.isLoading}>
-        {formState.isLoading ? "Inscription en cours..." : "S'inscrire"}
-      </Button>
+        <Button type="submit" className="w-full" disabled={formState.isLoading}>
+          {formState.isLoading ? "Inscription en cours..." : "S'inscrire"}
+        </Button>
 
-      <Button 
-        type="button" 
-        variant="ghost" 
-        className="w-full"
-        onClick={onToggleMode}
-      >
-        Déjà inscrit ? Se connecter
-      </Button>
-    </form>
+        <Button 
+          type="button" 
+          variant="ghost" 
+          className="w-full"
+          onClick={onToggleMode}
+        >
+          Déjà inscrit ? Se connecter
+        </Button>
+      </form>
+      
+      {/* Dialogue pour les utilisateurs existants */}
+      <ExistingUserDialog 
+        isOpen={existingUserDetected}
+        onClose={() => setExistingUserDetected(false)}
+        onSwitchToSignIn={onToggleMode}
+        email={formState.email}
+      />
+    </>
   )
 }

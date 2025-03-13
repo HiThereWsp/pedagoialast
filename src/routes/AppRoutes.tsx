@@ -51,8 +51,9 @@ function AppRoutes() {
   return (
     <Suspense fallback={<LoadingPage />}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<Navigate to="/bienvenue" replace />} />
         <Route path="/bienvenue" element={<Bienvenue />} />
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/confirm-email" element={<ConfirmEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

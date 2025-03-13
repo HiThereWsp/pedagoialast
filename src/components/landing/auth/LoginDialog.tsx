@@ -10,6 +10,7 @@ import { useAuthForm } from "@/hooks/use-auth-form";
 import { posthog } from "@/integrations/posthog/client";
 import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { AuthError } from "@supabase/supabase-js";
+import { SocialLoginButtons } from "./SocialLoginButtons";
 
 export function LoginDialog() {
   const { formState, setField, handleSignIn } = useAuthForm();
@@ -160,6 +161,9 @@ export function LoginDialog() {
         >
           {formState.isLoading ? "Connexion en cours..." : "Se connecter"}
         </Button>
+
+        {/* Ajout des boutons de connexion sociale */}
+        <SocialLoginButtons isSignUp={false} />
 
         <DialogFooter className="flex-col gap-2 text-center sm:gap-0">
           <Button 

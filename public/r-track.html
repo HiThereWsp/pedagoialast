@@ -17,16 +17,25 @@
       if (typeof window.posthog !== 'undefined') {
         try {
           // Extract UTM parameters from the destination URL
-          const urlObj = new URL(destinationUrl);
-          const utmSource = urlObj.searchParams.get('utm_source');
+          const urlObj = new URL(destinationUrl, window.location.origin);
+          const utmSource = urlObj.searchParams.get('utm_source') || urlObj.searchParams.get('ref');
           const utmMedium = urlObj.searchParams.get('utm_medium');
           const utmCampaign = urlObj.searchParams.get('utm_campaign');
           const utmContent = urlObj.searchParams.get('utm_content');
+          const refPath = urlObj.searchParams.get('ref');
+
+          // Save tracking info to localStorage for later use (e.g., promo codes)
+          if (refPath) {
+            localStorage.setItem('pedago_ref', refPath);
+            localStorage.setItem('pedago_redirect_id', redirectId);
+            localStorage.setItem('pedago_redirect_time', new Date().toISOString());
+          }
 
           // Capture redirect event with UTM parameters
           window.posthog.capture('tracked_redirect_click', {
             redirect_id: redirectId,
             destination_url: destinationUrl,
+            ref_path: refPath,
             utm_source: utmSource,
             utm_medium: utmMedium,
             utm_campaign: utmCampaign,
@@ -47,11 +56,16 @@
     function trackWithGA(destinationUrl, redirectId) {
       if (typeof window.gtag !== 'undefined') {
         try {
+          // Extract information from the URL
+          const urlObj = new URL(destinationUrl, window.location.origin);
+          const refPath = urlObj.searchParams.get('ref');
+          
           // Send a custom event to GA4
           window.gtag('event', 'tracked_redirect', {
             'event_category': 'outbound_link',
             'event_label': destinationUrl,
             'redirect_id': redirectId,
+            'ref_path': refPath,
             'transport_type': 'beacon' // Non-blocking send
           });
           
@@ -87,7 +101,7 @@
       // Wait a short time to allow tracking to complete, then redirect
       setTimeout(function() {
         window.location.href = destination;
-      }, 500); // Increased timeout to ensure tracking completes
+      }, 800); // Increased timeout to ensure tracking completes
     };
   </script>
   <style>
