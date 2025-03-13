@@ -29,7 +29,7 @@ const SidebarButton = ({
   active = false, 
   small = false, 
   notAvailable = false, 
-  notAvailableIcon,
+  notAvailableIcon = <Clock className="h-3.5 w-3.5 text-amber-500" />, // Valeur par défaut
   onClick
 }) => {
   return (
@@ -46,7 +46,7 @@ const SidebarButton = ({
       <span className="flex-1 text-left">{label}</span>
       {notAvailable && (
         <span className="ml-auto flex items-center text-xs font-medium">
-          {notAvailableIcon || <Clock className="h-3.5 w-3.5 text-amber-500" />}
+          {notAvailableIcon}
           <span className="ml-1 text-amber-500">Bientôt</span>
         </span>
       )}
@@ -107,6 +107,7 @@ const Sidebar = ({ isOpen, toggleSidebar, firstName }) => {
               icon={<MessageSquare className="h-5 w-5" />} 
               label="Assistant IA avancé" 
               notAvailable={true}
+              onClick={() => {}}
             />
           </div>
           
