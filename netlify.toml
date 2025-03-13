@@ -30,6 +30,11 @@
   status = 302
 
 [[redirects]]
+  from = "/r/*"
+  to = "/.netlify/functions/redirect/r/:splat"
+  status = 302
+
+[[redirects]]
   from = "/tt"
   to = "/.netlify/functions/redirect/tt"
   status = 302

@@ -9,5 +9,6 @@
 /t40/* /functions/redirect/t40/:splat 302
 /i20/* /functions/redirect/i20/:splat 302
 /i40/* /functions/redirect/i40/:splat 302
+/r/* /functions/redirect/r/:splat 302
 /tt /functions/redirect/tt 302
 /fb /functions/redirect/fb 302

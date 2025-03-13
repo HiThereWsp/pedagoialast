@@ -22,6 +22,7 @@ serve(async (req) => {
     const path = url.pathname.replace("/redirect/", "");
     
     if (!path) {
+      console.error("No redirect path provided");
       return new Response(
         JSON.stringify({ error: "No redirect path provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -51,16 +52,24 @@ serve(async (req) => {
                req.headers.get("x-forwarded-for") || 
                "unknown";
 
-    await supabase.rpc("log_redirect_click", {
+    // Log the click to Supabase
+    const { error: logError } = await supabase.rpc("log_redirect_click", {
       p_redirect_id: redirect.id,
       p_user_agent: userAgent,
       p_referer: referer,
       p_ip_address: ip,
     });
 
+    if (logError) {
+      console.error(`Error logging redirect click: ${logError.message}`);
+      // Continue anyway to ensure user is redirected
+    } else {
+      console.log(`Successfully logged click for redirect ID: ${redirect.id}`);
+    }
+
     console.log(`Redirecting to: ${redirect.target_url}`);
 
-    // Create the redirect to track.html with the target URL as a parameter
+    // Create the redirect to tracking page with the target URL as a parameter
     const trackingPage = `/r-track.html?id=${encodeURIComponent(redirect.id)}&dest=${encodeURIComponent(redirect.target_url)}`;
     
     return new Response(null, {

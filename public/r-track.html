@@ -15,35 +15,52 @@
     // Function to track via PostHog
     function trackWithPostHog(destinationUrl, redirectId) {
       if (typeof window.posthog !== 'undefined') {
-        // Extract UTM parameters from the destination URL
-        const urlObj = new URL(destinationUrl);
-        const utmSource = urlObj.searchParams.get('utm_source');
-        const utmMedium = urlObj.searchParams.get('utm_medium');
-        const utmCampaign = urlObj.searchParams.get('utm_campaign');
-        const utmContent = urlObj.searchParams.get('utm_content');
+        try {
+          // Extract UTM parameters from the destination URL
+          const urlObj = new URL(destinationUrl);
+          const utmSource = urlObj.searchParams.get('utm_source');
+          const utmMedium = urlObj.searchParams.get('utm_medium');
+          const utmCampaign = urlObj.searchParams.get('utm_campaign');
+          const utmContent = urlObj.searchParams.get('utm_content');
 
-        // Capture redirect event with UTM parameters
-        window.posthog.capture('tracked_redirect_click', {
-          redirect_id: redirectId,
-          destination_url: destinationUrl,
-          utm_source: utmSource,
-          utm_medium: utmMedium,
-          utm_campaign: utmCampaign,
-          utm_content: utmContent,
-          referrer: document.referrer
-        });
+          // Capture redirect event with UTM parameters
+          window.posthog.capture('tracked_redirect_click', {
+            redirect_id: redirectId,
+            destination_url: destinationUrl,
+            utm_source: utmSource,
+            utm_medium: utmMedium,
+            utm_campaign: utmCampaign,
+            utm_content: utmContent,
+            referrer: document.referrer
+          });
+          
+          console.log('PostHog tracking event sent');
+        } catch (err) {
+          console.error('Error tracking with PostHog:', err);
+        }
+      } else {
+        console.warn('PostHog not available for tracking');
       }
     }
 
     // Function to track via Google Analytics
-    function trackWithGA(destinationUrl) {
+    function trackWithGA(destinationUrl, redirectId) {
       if (typeof window.gtag !== 'undefined') {
-        // Send a custom event to GA4
-        window.gtag('event', 'tracked_redirect', {
-          'event_category': 'outbound_link',
-          'event_label': destinationUrl,
-          'transport_type': 'beacon' // Non-blocking send
-        });
+        try {
+          // Send a custom event to GA4
+          window.gtag('event', 'tracked_redirect', {
+            'event_category': 'outbound_link',
+            'event_label': destinationUrl,
+            'redirect_id': redirectId,
+            'transport_type': 'beacon' // Non-blocking send
+          });
+          
+          console.log('Google Analytics tracking event sent');
+        } catch (err) {
+          console.error('Error tracking with Google Analytics:', err);
+        }
+      } else {
+        console.warn('Google Analytics not available for tracking');
       }
     }
 
@@ -57,17 +74,20 @@
         document.getElementById('redirect-message').innerText = 'Erreur de redirection. URL de destination manquante.';
         return;
       }
+      
+      console.log('Redirecting to:', destination);
+      console.log('Redirect ID:', redirectId);
 
       // Track with PostHog
       trackWithPostHog(destination, redirectId);
       
       // Track with Google Analytics
-      trackWithGA(destination);
+      trackWithGA(destination, redirectId);
 
       // Wait a short time to allow tracking to complete, then redirect
       setTimeout(function() {
         window.location.href = destination;
-      }, 300);
+      }, 500); // Increased timeout to ensure tracking completes
     };
   </script>
   <style>
@@ -109,5 +129,14 @@
     <div class="loader"></div>
     <p id="redirect-message">Vous allez être redirigé automatiquement.</p>
   </div>
+
+  <!-- Load PostHog script -->
+  <script>
+    !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    posthog.init('phc_mOEl3UZueX3X2l9vl1o3Po3fngypg9qPpafj33Ar54', {
+      api_host: 'https://eu.posthog.com',
+      persistence: 'localStorage'
+    });
+  </script>
 </body>
 </html>
