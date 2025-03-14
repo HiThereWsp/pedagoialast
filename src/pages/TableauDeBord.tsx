@@ -8,46 +8,150 @@ import { Tiles } from "@/components/ui/tiles";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BottomBar } from '@/components/mobile/BottomBar';
+import { WelcomeMessage } from "@/components/home/WelcomeMessage";
+import { ActionButtons } from "@/components/home/ActionButtons";
+import { Footer } from "@/components/home/Footer";
+import { UpdateNotification } from "@/components/home/UpdateNotification";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { FunctionsFetchError, FunctionsHttpError, FunctionsRelayError } from "@supabase/supabase-js";
 
 const TableauDeBord = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { user } = useAuth();
+  const { user, loading: authLoading, authReady } = useAuth();
   const [firstName, setFirstName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const loadUserProfile = async () => {
       if (!user) return;
       
       try {
-        setIsLoading(true);
-        const { data: profile, error } = await supabase
+        setIsProfileLoading(true);
+        console.log("Chargement du profil utilisateur...");
+        
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('first_name')
           .eq('id', user.id)
           .single();
           
-        if (error) {
-          console.error("Erreur lors de la récupération du profil:", error);
-        } else if (profile) {
-          setFirstName(profile.first_name || "");
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          toast({
+            variant: "destructive",
+            title: "Erreur",
+            description: "Impossible de charger votre profil"
+          });
+          return;
+        }
+        
+        if (profile) {
+          console.log("Profil chargé:", profile.first_name);
+          setFirstName(profile.first_name);
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des données utilisateur:", error);
+        console.error("Error fetching user data:", error);
       } finally {
-        setIsLoading(false);
+        setIsProfileLoading(false);
       }
     };
     
-    fetchUserProfile();
-  }, [user]);
+    // Charger le profil uniquement si l'authentification est prête et qu'un utilisateur est connecté
+    if (authReady) {
+      if (user) {
+        loadUserProfile();
+        
+        // Vérification de l'envoi d'email de bienvenue
+        checkWelcomeEmail();
+      } else {
+        // Rediriger vers login si pas d'utilisateur
+        navigate('/login');
+      }
+    }
+  }, [user, authReady, navigate, toast]);
+
+  const checkWelcomeEmail = async () => {
+    if (!user?.email || !user.email_confirmed_at) return;
+    
+    try {
+      const { data: userProfiles, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_email', user.email);
+        
+      console.log({ userProfiles });
+      
+      if (error) {
+        console.error("Erreur lors de la vérification du profil:", error);
+        return;
+      }
+      
+      if (userProfiles && !userProfiles[0]?.welcome_email_sent) {
+        try {
+          console.log("Envoi de l'email de bienvenue...");
+          
+          const { data: emailData, error: emailError } = await supabase.functions.invoke(
+            "send-welcome-emails-after-signup",
+            {
+              body: {
+                type: "welcome",
+                email: user.email,
+              },
+            }
+          );
+          
+          if (emailError) {
+            handleEmailError(emailError);
+          } else {
+            console.log("Email de bienvenue envoyé avec succès");
+            
+            // Mise à jour du statut dans la base de données
+            await supabase
+              .from('user_profiles')
+              .update({ welcome_email_sent: true })
+              .eq('user_email', user.email);
+          }
+        } catch (emailErr) {
+          console.error("Email sending failed:", emailErr);
+        }
+      }
+    } catch (err) {
+      console.error("Erreur lors de la vérification de l'email de bienvenue:", err);
+    }
+  };
+
+  const handleEmailError = (emailError: any) => {
+    if (emailError instanceof FunctionsHttpError) {
+      console.error("Function error:", emailError.context);
+    } else if (emailError instanceof FunctionsRelayError) {
+      console.error("Relay error:", emailError.message);
+    } else if (emailError instanceof FunctionsFetchError) {
+      console.error("Fetch error:", emailError.message);
+    } else {
+      console.error("Unknown error:", emailError);
+    }
+  };
+
+  if (authLoading || (authReady && user && isProfileLoading)) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Chargement en cours...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <>
       <SEO
         title="Tableau de bord | PedagoIA - Votre assistant pédagogique"
-        description="Accédez à tous vos outils pédagogiques depuis votre tableau de bord personnalisé."
+        description="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé."
       />
       <div className="flex min-h-screen bg-gray-50">
         {/* Mobile menu toggle - only visible if NOT on mobile */}
@@ -66,7 +170,7 @@ const TableauDeBord = () => {
             <div className="flex flex-col h-full">
               {/* Logo centré avec taille réduite */}
               <div className="flex justify-center items-center py-3 border-b border-gray-200">
-                <a href="/home" className="flex items-center justify-center">
+                <a href="/tableaudebord" className="flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                     alt="PedagoIA Logo" 
@@ -81,13 +185,13 @@ const TableauDeBord = () => {
           </div>
         )}
         
-        {/* Main Content with adjustments for mobile (padding at top for mobile header) */}
-        <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : 'mt-16 mb-16'}`}>
-          {/* Mobile header - only visible on mobile */}
-          {isMobile && (
+        {/* Main Content */}
+        {isMobile ? (
+          <div className="relative z-10 min-h-screen w-full flex flex-col items-center px-6 py-8 max-w-md mx-auto mt-16 mb-16">
+            {/* Mobile header - only visible on mobile */}
             <div className="fixed top-0 left-0 right-0 z-40 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4">
               <div className="flex-1 flex justify-center">
-                <a href="/home" className="flex items-center justify-center">
+                <a href="/tableaudebord" className="flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                     alt="PedagoIA Logo" 
@@ -96,10 +200,7 @@ const TableauDeBord = () => {
                 </a>
               </div>
             </div>
-          )}
-          
-          <div className="min-h-screen bg-white relative overflow-hidden">
-            {/* Grid Pattern Background */}
+            
             <div className="fixed inset-0 overflow-hidden">
               <Tiles
                 rows={50}
@@ -109,18 +210,37 @@ const TableauDeBord = () => {
               />
             </div>
             
-            {/* Welcome Message */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center z-10">
-              <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl'} font-extrabold mb-4 text-gray-800 leading-tight tracking-tight text-balance`}>
-                Bonjour {isLoading ? "..." : (firstName || "Enseignant")} 👋
-              </h1>
-              <p className="text-xl text-gray-600">Sélectionnez un outil pour commencer</p>
+            <WelcomeMessage firstName={firstName} />
+            <ActionButtons />
+            <Footer />
+            <UpdateNotification />
+            
+            {/* Bottom Bar for Mobile */}
+            <BottomBar firstName={firstName} />
+          </div>
+        ) : (
+          <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : ''}`}>
+            <div className="min-h-screen bg-white relative overflow-hidden">
+              {/* Grid Pattern Background */}
+              <div className="fixed inset-0 overflow-hidden">
+                <Tiles
+                  rows={50}
+                  cols={8}
+                  tileSize="md"
+                  className="opacity-30"
+                />
+              </div>
+              
+              {/* Welcome Message */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center z-10">
+                <h1 className="text-5xl font-extrabold mb-4 text-gray-800 leading-tight tracking-tight text-balance">
+                  Bonjour {isProfileLoading ? "..." : (firstName || "Enseignant")} 👋
+                </h1>
+                <p className="text-xl text-gray-600">Sélectionnez un outil pour commencer</p>
+              </div>
             </div>
           </div>
-        </div>
-        
-        {/* Bottom Bar for Mobile */}
-        {isMobile && <BottomBar firstName={firstName} />}
+        )}
       </div>
     </>
   );
