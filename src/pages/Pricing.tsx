@@ -28,7 +28,15 @@ const Pricing = () => {
   useEffect(() => {
     // Tracking PostHog
     pricingEvents.viewPricing();
-  }, []);
+    
+    // Log pour le débogage
+    console.log("Pricing page loaded", { 
+      isSubscribed, 
+      subscriptionType, 
+      isLoading, 
+      isDev: import.meta.env.DEV 
+    });
+  }, [isSubscribed, subscriptionType, isLoading]);
 
   const handleSchoolContactRequest = () => {
     setShowContactDialog(true);
