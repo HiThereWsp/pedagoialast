@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { PricingCard } from './pricing/PricingCard';
 import { usePromoCode } from './pricing/usePromoCode';
@@ -15,17 +14,15 @@ export const PricingSection = () => {
   };
 
   const handlePremiumPlan = () => {
-    const monthlyPriceId = 'price_monthly_prod_Rvu5l79HX8EAis';
     trackPlanSelection('premium', 'prod_Rvu5l79HX8EAis');
     console.log('Premium plan selected');
-    handleSubscription(monthlyPriceId);
+    handleSubscription('monthly');
   };
 
   const handleEnterprisePlan = () => {
-    const yearlyPriceId = 'price_yearly_prod_Rvu5hv7FxnkHpv';
     trackPlanSelection('enterprise', 'prod_Rvu5hv7FxnkHpv');
     console.log('Enterprise plan selected');
-    handleSubscription(yearlyPriceId);
+    handleSubscription('yearly');
   };
 
   return (
