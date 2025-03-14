@@ -1,10 +1,11 @@
 
+
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { ChevronLeft, Menu } from "lucide-react"
 import { useState } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { ConversationList } from "./sidebar/ConversationList"
 import { SidebarHeader } from "./sidebar/SidebarHeader"
 import { SidebarFooter } from "./sidebar/SidebarFooter"
@@ -32,6 +33,7 @@ export function AppSidebar({
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   return (
     <>

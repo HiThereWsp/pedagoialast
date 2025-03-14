@@ -1,3 +1,4 @@
+
 import type { FC } from "react"
 
 interface WelcomeMessageProps {
@@ -7,7 +8,7 @@ interface WelcomeMessageProps {
 export const WelcomeMessage: FC<WelcomeMessageProps> = ({ firstName }) => {
   return (
     <div className="text-center mb-12">
-      <h1 className="text-4xl font-bold mb-4 flex items-center justify-center gap-2">
+      <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 flex items-center justify-center gap-2 leading-tight tracking-tight text-balance">
         Bonjour {firstName} 
         <span role="img" aria-label="wave">👋</span>
       </h1>

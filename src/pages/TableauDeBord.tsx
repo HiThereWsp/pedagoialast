@@ -8,6 +8,11 @@ import { Tiles } from "@/components/ui/tiles";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BottomBar } from '@/components/mobile/BottomBar';
+import { WelcomeMessage } from "@/components/home/WelcomeMessage";
+import { ActionButtons } from "@/components/home/ActionButtons";
+import { UpdateNotification } from "@/components/home/UpdateNotification";
+import { UserMenu } from "@/components/home/UserMenu";
+import { FunctionsFetchError, FunctionsHttpError, FunctionsRelayError } from "@supabase/supabase-js";
 
 const TableauDeBord = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -41,13 +46,80 @@ const TableauDeBord = () => {
     };
     
     fetchUserProfile();
+    
+    // Vérification de l'envoi d'email de bienvenue
+    if (user) {
+      checkWelcomeEmail();
+    }
   }, [user]);
+  
+  const checkWelcomeEmail = async () => {
+    if (!user?.email || !user.email_confirmed_at) return;
+    
+    try {
+      const { data: userProfiles, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_email', user.email);
+        
+      console.log({ userProfiles });
+      
+      if (error) {
+        console.error("Erreur lors de la vérification du profil:", error);
+        return;
+      }
+      
+      if (userProfiles && !userProfiles[0]?.welcome_email_sent) {
+        try {
+          console.log("Envoi de l'email de bienvenue...");
+          
+          const { data: emailData, error: emailError } = await supabase.functions.invoke(
+            "send-welcome-emails-after-signup",
+            {
+              body: {
+                type: "welcome",
+                email: user.email,
+              },
+            }
+          );
+          
+          if (emailError) {
+            handleEmailError(emailError);
+          } else {
+            console.log("Email de bienvenue envoyé avec succès");
+            
+            // Mise à jour du statut dans la base de données
+            await supabase
+              .from('user_profiles')
+              .update({ welcome_email_sent: true })
+              .eq('user_email', user.email);
+          }
+        } catch (emailErr) {
+          console.error("Email sending failed:", emailErr);
+        }
+      }
+    } catch (err) {
+      console.error("Erreur lors de la vérification de l'email de bienvenue:", err);
+    }
+  };
+
+  const handleEmailError = (emailError: any) => {
+    if (emailError instanceof FunctionsHttpError) {
+      console.error("Function error:", emailError.context);
+    } else if (emailError instanceof FunctionsRelayError) {
+      console.error("Relay error:", emailError.message);
+    } else if (emailError instanceof FunctionsFetchError) {
+      console.error("Fetch error:", emailError.message);
+    } else {
+      console.error("Unknown error:", emailError);
+    }
+  };
   
   return (
     <>
       <SEO
         title="Tableau de bord | PedagoIA - Votre assistant pédagogique"
-        description="Accédez à tous vos outils pédagogiques depuis votre tableau de bord personnalisé."
+        description="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé."
       />
       <div className="flex min-h-screen bg-gray-50">
         {/* Mobile menu toggle - only visible if NOT on mobile */}
@@ -66,7 +138,7 @@ const TableauDeBord = () => {
             <div className="flex flex-col h-full">
               {/* Logo centré avec taille réduite */}
               <div className="flex justify-center items-center py-3 border-b border-gray-200">
-                <a href="/home" className="flex items-center justify-center">
+                <a href="/tableaudebord" className="flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                     alt="PedagoIA Logo" 
@@ -87,7 +159,7 @@ const TableauDeBord = () => {
           {isMobile && (
             <div className="fixed top-0 left-0 right-0 z-40 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4">
               <div className="flex-1 flex justify-center">
-                <a href="/home" className="flex items-center justify-center">
+                <a href="/tableaudebord" className="flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                     alt="PedagoIA Logo" 
@@ -109,13 +181,25 @@ const TableauDeBord = () => {
               />
             </div>
             
-            {/* Welcome Message */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center z-10">
-              <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl'} font-extrabold mb-4 text-gray-800 leading-tight tracking-tight text-balance`}>
-                Bonjour {isLoading ? "..." : (firstName || "Enseignant")} 👋
-              </h1>
-              <p className="text-xl text-gray-600">Sélectionnez un outil pour commencer</p>
-            </div>
+            {/* Pour les appareils mobiles, nous utilisons la disposition du tableau de bord existant */}
+            {isMobile ? (
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center z-10 w-full px-6">
+                <h1 className="text-4xl font-extrabold mb-4 text-gray-800 leading-tight tracking-tight text-balance">
+                  Bonjour {isLoading ? "..." : (firstName || "Enseignant")} 👋
+                </h1>
+                <p className="text-xl text-gray-600 mb-8">Sélectionnez un outil pour commencer</p>
+                
+                {/* Action buttons will be shown in bottom bar on mobile */}
+              </div>
+            ) : (
+              /* Pour desktop, nous intégrons les composants de la page Home avec le style de TableauDeBord */
+              <div className="relative z-10 min-h-screen flex flex-col items-center px-6 py-8 max-w-md mx-auto">
+                <UserMenu />
+                <WelcomeMessage firstName={firstName} />
+                <ActionButtons />
+                <UpdateNotification />
+              </div>
+            )}
           </div>
         </div>
         
