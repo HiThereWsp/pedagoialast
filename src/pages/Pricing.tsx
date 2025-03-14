@@ -47,10 +47,8 @@ const Pricing = () => {
     pricingEvents.selectPlan('premium');
     subscriptionEvents.subscriptionStarted('monthly', 11.90);
     
-    // Use consistent price ID format
-    const stripeMonthlyPriceId = 'price_monthly_prod_Rvu5l79HX8EAis';
-    console.log('Starting monthly subscription with price ID:', stripeMonthlyPriceId);
-    await handleSubscription(stripeMonthlyPriceId);
+    // Utiliser le nouveau système d'abonnement avec lien direct
+    handleSubscription('monthly');
   }
 
   const handleYearlySubscription = async () => {
@@ -60,10 +58,8 @@ const Pricing = () => {
     pricingEvents.selectPlan('premium');
     subscriptionEvents.subscriptionStarted('yearly', 9.90);
     
-    // Use consistent price ID format
-    const stripeYearlyPriceId = 'price_yearly_prod_Rvu5hv7FxnkHpv';
-    console.log('Starting yearly subscription with price ID:', stripeYearlyPriceId);
-    await handleSubscription(stripeYearlyPriceId);
+    // Utiliser le nouveau système d'abonnement avec lien direct
+    handleSubscription('yearly');
   }
 
   const handleSchoolContactRequest = () => {

@@ -1,4 +1,3 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
@@ -42,9 +41,8 @@ const PricingPage = () => {
     // Tracking Facebook
     facebookEvents.initiateCheckout('monthly', 11.90);
     
-    // Utiliser le système d'abonnement Stripe via notre fonction
-    const stripeMonthlyPriceId = 'price_monthly_prod_Rvu5l79HX8EAis'; // ID de prix pour l'abonnement mensuel
-    await handleSubscription(stripeMonthlyPriceId);
+    // Utiliser le système d'abonnement avec lien direct
+    handleSubscription('monthly');
   }
 
   const handleYearlySubscription = async () => {
@@ -57,9 +55,8 @@ const PricingPage = () => {
     // Tracking Facebook
     facebookEvents.initiateCheckout('yearly', 9.00);
     
-    // Utiliser le système d'abonnement Stripe via notre fonction
-    const stripeYearlyPriceId = 'price_yearly_prod_Rvu5hv7FxnkHpv'; // ID de prix pour l'abonnement annuel
-    await handleSubscription(stripeYearlyPriceId);
+    // Utiliser le système d'abonnement avec lien direct
+    handleSubscription('yearly');
   }
 
   return (

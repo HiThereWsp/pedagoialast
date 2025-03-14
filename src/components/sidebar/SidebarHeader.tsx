@@ -15,7 +15,7 @@ export function SidebarHeader({ firstName, onNewConversation }: SidebarHeaderPro
         <img 
           src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
           alt="PedagoIA Logo" 
-          className="w-[120px] h-[140px] object-contain" 
+          className="h-17 w-17 object-contain" 
         />
       </div>
       <Tooltip>
