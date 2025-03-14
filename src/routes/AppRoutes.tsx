@@ -8,6 +8,7 @@ import NotFound from '@/pages/NotFound';
 import ConfirmEmail from '@/pages/ConfirmEmail';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import Bienvenue from '@/pages/Bienvenue';
+import ToolsLayout from '@/components/layout/ToolsLayout';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
@@ -19,6 +20,7 @@ const ExercisePage = lazy(() => import('@/pages/ExercisePage'));
 const SavedContentPage = lazy(() => import('@/pages/SavedContentPage'));
 const LessonPlanPage = lazy(() => import('@/pages/LessonPlanPage'));
 const ImageGenerationPage = lazy(() => import('@/pages/ImageGenerationPage'));
+const CorrespondencePage = lazy(() => import('@/pages/CorrespondencePage'));
 const DiscoverPage = lazy(() => import('@/pages/DiscoverPage'));
 const MetricsPage = lazy(() => import('@/pages/MetricsPage'));
 const Settings = lazy(() => import('@/pages/Settings'));
@@ -30,13 +32,12 @@ const Privacy = lazy(() => import('@/pages/Privacy'));
 const Terms = lazy(() => import('@/pages/Terms'));
 const SuggestionsPage = lazy(() => import('@/pages/SuggestionsPage'));
 const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
-const CorrespondencePage = lazy(() => import('@/pages/CorrespondencePage'));
-const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const OfflineChatPage = lazy(() => import('@/pages/OfflineChatPage'));
 const SubscriptionSuccessPage = lazy(() => import('@/pages/SubscriptionSuccessPage'));
 const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage'));
 const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
+const ContactPage = lazy(() => import('@/pages/ContactPage'));
 
 // Composant de chargement pour Suspense
 const LoadingPage = () => (
@@ -63,13 +64,15 @@ function AppRoutes() {
         <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/tableaudebord" element={<ProtectedRoute><TableauDeBord /></ProtectedRoute>} />
         
-        {/* Routes nécessitant un abonnement */}
-        <Route path="/exercise" element={<ProtectedRoute><SubscriptionRoute><ExercisePage /></SubscriptionRoute></ProtectedRoute>} />
-        <Route path="/saved-content" element={<ProtectedRoute><SubscriptionRoute><SavedContentPage /></SubscriptionRoute></ProtectedRoute>} />
-        <Route path="/lesson-plan" element={<ProtectedRoute><SubscriptionRoute><LessonPlanPage /></SubscriptionRoute></ProtectedRoute>} />
-        <Route path="/image-generation" element={<ProtectedRoute><SubscriptionRoute><ImageGenerationPage /></SubscriptionRoute></ProtectedRoute>} />
-        <Route path="/correspondence" element={<ProtectedRoute><SubscriptionRoute><CorrespondencePage /></SubscriptionRoute></ProtectedRoute>} />
-        <Route path="/offline-chat" element={<ProtectedRoute><SubscriptionRoute><OfflineChatPage /></SubscriptionRoute></ProtectedRoute>} />
+        {/* Routes des outils pédagogiques utilisant le layout partagé */}
+        <Route element={<ProtectedRoute><SubscriptionRoute><ToolsLayout /></SubscriptionRoute></ProtectedRoute>}>
+          <Route path="/exercise" element={<ExercisePage />} />
+          <Route path="/lesson-plan" element={<LessonPlanPage />} />
+          <Route path="/image-generation" element={<ImageGenerationPage />} />
+          <Route path="/correspondence" element={<CorrespondencePage />} />
+          <Route path="/offline-chat" element={<OfflineChatPage />} />
+          <Route path="/saved-content" element={<SavedContentPage />} />
+        </Route>
         
         {/* Routes accessibles sans abonnement */}
         <Route path="/discover" element={<ProtectedRoute><DiscoverPage /></ProtectedRoute>} />

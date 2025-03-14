@@ -1,32 +1,40 @@
 
 import React from 'react';
 import { Clock } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 interface SidebarButtonProps {
   icon: React.ReactNode;
   label: string;
+  path?: string;
   active?: boolean;
   small?: boolean;
   notAvailable?: boolean;
   notAvailableIcon?: React.ReactNode;
   onClick?: () => void;
-  className?: string; // Added className prop
+  className?: string;
 }
 
 export const SidebarButton = ({ 
   icon, 
   label, 
+  path,
   active = false, 
   small = false, 
   notAvailable = false, 
   notAvailableIcon = <Clock className="h-3.5 w-3.5 text-amber-500" />,
   onClick = () => {},
-  className = "" // Default value
+  className = ""
 }: SidebarButtonProps) => {
+  const location = useLocation();
+  
+  // Vérifier si le bouton est actif en comparant le chemin actuel
+  const isActive = active || (path && location.pathname === path);
+  
   return (
     <button 
       className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-        active 
+        isActive 
           ? 'bg-purple-100 text-purple-700' 
           : 'text-gray-700 hover:bg-gray-100'
       } ${small ? 'text-xs' : ''} ${notAvailable ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
