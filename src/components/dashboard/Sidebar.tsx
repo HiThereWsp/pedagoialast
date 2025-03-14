@@ -59,7 +59,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
             <img 
               src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
               alt="PedagoIA Logo" 
-              className="h-18 w-18" 
+              className="h-17 w-17" 
             />
           </Link>
         </div>
