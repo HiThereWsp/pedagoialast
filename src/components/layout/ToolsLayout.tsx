@@ -10,6 +10,7 @@ import { Menu, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { BottomBar } from '@/components/mobile/BottomBar';
 
 export const ToolsLayout = () => {
   const { user } = useAuth();
@@ -104,39 +105,13 @@ export const ToolsLayout = () => {
                 />
               </a>
             </div>
-            
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
           </div>
         )}
         
-        {/* Menu mobile dans un drawer */}
-        {isMobile && (
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-            <SheetContent side="left" className="w-4/5 max-w-xs p-0">
-              <div className="flex flex-col h-full">
-                <div className="flex justify-center items-center py-4 border-b border-gray-200">
-                  <a href="/home" className="flex items-center justify-center">
-                    <img 
-                      src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
-                      alt="PedagoIA Logo" 
-                      className="h-16 w-16" 
-                    />
-                  </a>
-                </div>
-                <Sidebar isOpen={true} toggleSidebar={() => setMobileMenuOpen(false)} firstName={firstName} />
-              </div>
-            </SheetContent>
-          </Sheet>
-        )}
+        {/* Menu mobile dans un drawer - Now removed as we use BottomBar instead */}
         
         {/* Contenu principal avec marge à gauche pour la sidebar sur desktop */}
-        <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : 'mt-16'}`}>
+        <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : 'mt-16 mb-16'}`}>
           <div className="min-h-screen bg-white relative overflow-hidden">
             {/* Grid Pattern Background */}
             <div className="fixed inset-0 overflow-hidden">
@@ -154,6 +129,9 @@ export const ToolsLayout = () => {
             </div>
           </div>
         </div>
+        
+        {/* Bottom Bar for Mobile */}
+        {isMobile && <BottomBar firstName={firstName} />}
       </div>
     </>
   );

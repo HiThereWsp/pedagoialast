@@ -12,9 +12,9 @@ export const Header = () => {
         alt="PedagoIA Logo"
         className={`${isMobile ? 'w-[80px] h-[100px]' : 'w-[100px] h-[120px]'} object-contain mx-auto mb-4`}
       />
-      <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold mb-2 bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent`}>
-        Créateur de plans de leçon
-      </h1>
+      <h2 className={`${isMobile ? 'text-2xl' : 'text-3xl'} font-bold mb-2 bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent`}>
+        <span className="rotate-1 inline-block">Créateur</span> de plans de leçon
+      </h2>
       <p className="text-muted-foreground max-w-2xl mx-auto text-sm sm:text-base">
         Créez facilement des plans de leçon adaptés à vos besoins et objectifs d'apprentissage.
       </p>
