@@ -8,15 +8,20 @@ interface SavedContentListProps {
   onItemSelect: (item: SavedContent) => void;
   selectedItemId?: string;
   activeTab: string;
+  isMobileView?: boolean;
+  sectionMode?: boolean;
 }
 
 export const SavedContentList = React.memo(({ 
   content, 
   onItemSelect, 
   selectedItemId,
-  activeTab
+  activeTab,
+  isMobileView = false,
+  sectionMode = false
 }: SavedContentListProps) => {
-  console.log(`🔍 SavedContentList: Contenu reçu: ${content.length} éléments, onglet actif: ${activeTab}`);
+  
+  console.log(`🔍 SavedContentList: Contenu reçu: ${content.length} éléments, onglet actif: ${activeTab}, mode section: ${sectionMode}`);
   
   // Vérifier la structure des données reçues pour le débogage
   if (content.length > 0) {
@@ -57,16 +62,17 @@ export const SavedContentList = React.memo(({
 
   if (filteredContent.length === 0) {
     return (
-      <div className="text-center py-16">
-        <p className="text-gray-500 dark:text-gray-400">
+      <div className="text-center py-4">
+        <p className="text-gray-500 dark:text-gray-400 text-sm">
           Aucun contenu disponible pour cette catégorie
         </p>
       </div>
     );
   }
 
+  // Mobile view with sections uses full width cards
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+    <div className={`grid ${isMobileView || sectionMode ? 'grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-4 md:gap-6`}>
       {filteredContent.map((item) => (
         <ResourceCard
           key={item.id}
