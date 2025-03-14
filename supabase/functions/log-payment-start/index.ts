@@ -18,8 +18,8 @@ serve(async (req) => {
   }
 
   try {
-    const { planType, userId, email } = await req.json()
-    console.log('Logging payment start for:', { planType, userId, email });
+    const { planType, userId, email, promoCode } = await req.json()
+    console.log('Logging payment start for:', { planType, userId, email, promoCode });
     
     if (!planType || !userId || !email) {
       console.error('Missing required data');
@@ -39,7 +39,8 @@ serve(async (req) => {
         email: email,
         plan_type: planType,
         event_type: 'payment_started',
-        payment_method: 'stripe_direct'
+        payment_method: 'stripe_checkout',
+        promo_code: promoCode || null
       });
       
     if (insertError) {

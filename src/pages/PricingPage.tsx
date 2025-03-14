@@ -1,3 +1,4 @@
+
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
@@ -41,7 +42,7 @@ const PricingPage = () => {
     // Tracking Facebook
     facebookEvents.initiateCheckout('monthly', 11.90);
     
-    // Utiliser le système d'abonnement avec lien direct
+    // Utiliser Stripe Checkout via la fonction handleSubscription
     handleSubscription('monthly');
   }
 
@@ -55,7 +56,7 @@ const PricingPage = () => {
     // Tracking Facebook
     facebookEvents.initiateCheckout('yearly', 9.00);
     
-    // Utiliser le système d'abonnement avec lien direct
+    // Utiliser Stripe Checkout via la fonction handleSubscription
     handleSubscription('yearly');
   }
 

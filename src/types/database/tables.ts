@@ -67,3 +67,28 @@ export interface SuggestionVoteRow {
   suggestion_id: string;
   created_at: string;
 }
+
+export interface PaymentEventRow {
+  id: string;
+  user_id: string;
+  email: string;
+  plan_type: 'monthly' | 'yearly' | 'school';
+  event_type: 'payment_started' | 'payment_completed' | 'payment_failed';
+  payment_method: 'stripe_direct' | 'stripe_checkout';
+  promo_code?: string;
+  created_at: string;
+}
+
+export interface UserSubscriptionRow {
+  id: string;
+  user_id: string;
+  stripe_customer_id: string;
+  stripe_subscription_id: string;
+  status: 'active' | 'inactive' | 'canceled';
+  type: 'free' | 'paid' | 'trial' | 'beta';
+  product_id?: string;
+  promo_code?: string;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+}

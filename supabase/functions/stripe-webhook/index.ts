@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -115,9 +116,11 @@ async function handleSubscriptionCreated(subscription, stripe, supabase) {
     const customer = await stripe.customers.retrieve(customerId);
     const customerEmail = typeof customer === 'object' ? customer.email : null;
     const productId = typeof customer === 'object' && customer.metadata ? customer.metadata.productId : null;
+    const promoCode = typeof customer === 'object' && customer.metadata ? customer.metadata.promoCode : null;
     
     console.log('Customer metadata:', customer.metadata);
     console.log('Product ID from metadata:', productId);
+    console.log('Promo code from metadata:', promoCode);
     
     if (!customerEmail) {
       throw new Error('Email client non trouvé');
@@ -125,14 +128,14 @@ async function handleSubscriptionCreated(subscription, stripe, supabase) {
     
     // Trouver l'utilisateur par email
     const { data: userData, error: userError } = await supabase
-      .from('auth.users')
+      .from('profiles')
       .select('id')
-      .eq('email', customerEmail)
+      .eq('id', customer.metadata.userId)
       .single();
       
     if (userError || !userData) {
       console.error('Utilisateur non trouvé:', userError);
-      throw new Error(`Utilisateur non trouvé pour l'email: ${customerEmail}`);
+      throw new Error(`Utilisateur non trouvé pour l'ID: ${customer.metadata.userId}`);
     }
     
     const userId = userData.id;
@@ -147,6 +150,7 @@ async function handleSubscriptionCreated(subscription, stripe, supabase) {
         status: 'active',
         type: 'paid',
         product_id: productId,
+        promo_code: promoCode || null,
         expires_at: expiresAt
       }, {
         onConflict: 'user_id'
@@ -222,7 +226,7 @@ async function handleSubscriptionUpdated(subscription, supabase) {
     if (status !== 'active') {
       // Obtenir l'email de l'utilisateur
       const { data: userData, error: userError } = await supabase
-        .from('auth.users')
+        .from('profiles')
         .select('email')
         .eq('id', existingSubscription.user_id)
         .single();
@@ -286,7 +290,7 @@ async function handleSubscriptionDeleted(subscription, supabase) {
     
     // Obtenir l'email de l'utilisateur
     const { data: userData, error: userError } = await supabase
-      .from('auth.users')
+      .from('profiles')
       .select('email')
       .eq('id', existingSubscription.user_id)
       .single();
@@ -326,6 +330,28 @@ async function handleCheckoutCompleted(session, stripe, supabase) {
     const customerEmail = session.customer_details?.email;
     if (!customerEmail) {
       throw new Error('Email client non trouvé dans la session de checkout');
+    }
+    
+    // Récupérer les métadonnées de la session
+    console.log('Métadonnées de la session:', session.metadata);
+    const userId = session.metadata?.userId;
+    const subscriptionType = session.metadata?.subscriptionType || 'monthly';
+    const promoCode = session.metadata?.promoCode || session.metadata?.applied_promo_code;
+    
+    // Enregistrer l'événement de paiement réussi
+    try {
+      await supabase.from('payment_events').insert({
+        user_id: userId,
+        email: customerEmail,
+        plan_type: subscriptionType,
+        event_type: 'payment_completed',
+        payment_method: 'stripe_checkout',
+        promo_code: promoCode || null
+      });
+      console.log('Événement de paiement enregistré avec succès');
+    } catch (eventError) {
+      console.error('Erreur lors de l\'enregistrement de l\'événement:', eventError);
+      // On continue malgré l'erreur
     }
     
     // Vérifier si l'abonnement est bien créé

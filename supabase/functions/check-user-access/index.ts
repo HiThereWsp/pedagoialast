@@ -1,108 +1,151 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { corsHeaders } from '../_shared/cors.ts';
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    })
   }
 
-  const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-  const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
-
   try {
-    // Authentification
-    const authHeader = req.headers.get('Authorization')!;
+    // Récupérer le token d'authentification
+    const authHeader = req.headers.get('Authorization');
     
     if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'Authentification requise' }),
+        JSON.stringify({ 
+          access: false, 
+          message: 'Non authentifié' 
+        }),
         { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
         }
       );
     }
     
     const token = authHeader.replace('Bearer ', '');
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // Initialiser le client Supabase
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    );
+
+    // Vérifier l'utilisateur
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-
+    
     if (userError || !user) {
-      console.error('Erreur authentification:', userError);
       return new Response(
-        JSON.stringify({ error: 'Utilisateur non authentifié', details: userError }),
+        JSON.stringify({ 
+          access: false, 
+          message: 'Utilisateur non trouvé' 
+        }),
         { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
         }
       );
     }
 
-    // Vérifier si l'utilisateur est beta testeur
-    const { data: roleData } = await supabaseClient
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .maybeSingle();
-    
-    if (roleData?.role === 'beta_tester') {
+    // Vérifier si c'est un utilisateur beta
+    const { data: betaUser, error: betaError } = await supabaseClient
+      .from('beta_users')
+      .select('*')
+      .eq('email', user.email)
+      .single();
+      
+    if (betaUser) {
+      console.log('Utilisateur beta trouvé');
       return new Response(
         JSON.stringify({ 
           access: true, 
-          type: 'beta_tester',
-          expires_at: '2025-08-31T23:59:59Z' // Date de fin de la période beta
+          type: 'beta',
+          expires_at: null,
         }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
         }
       );
     }
-    
-    // Vérifier si abonnement actif
-    const { data: subscriptionData, error: subscriptionError } = await supabaseClient
+
+    // Vérifier l'abonnement dans la table user_subscriptions
+    const { data: subscription, error: subError } = await supabaseClient
       .from('user_subscriptions')
-      .select('status, type, expires_at')
+      .select('status, type, expires_at, promo_code')
       .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle();
     
-    if (subscriptionError) {
-      console.error('Erreur vérification abonnement:', subscriptionError);
-    }
-    
-    if (subscriptionData?.status === 'active' && 
-        new Date(subscriptionData.expires_at) > new Date()) {
+    if (subscription) {
+      console.log('Abonnement trouvé:', subscription);
+      
+      // Vérifier si l'abonnement est expiré
+      if (subscription.expires_at) {
+        const expiryDate = new Date(subscription.expires_at);
+        if (expiryDate < new Date()) {
+          return new Response(
+            JSON.stringify({ 
+              access: false, 
+              message: 'Abonnement expiré',
+              type: subscription.type,
+              expires_at: subscription.expires_at
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 200
+            }
+          );
+        }
+      }
+      
       return new Response(
         JSON.stringify({ 
           access: true, 
-          type: subscriptionData.type,
-          expires_at: subscriptionData.expires_at
+          type: subscription.type,
+          expires_at: subscription.expires_at,
+          promo_code: subscription.promo_code
         }),
         { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200
         }
       );
     }
-    
-    // Aucun accès valide trouvé
+
+    // Aucun abonnement trouvé
+    console.log('Aucun abonnement trouvé pour', user.email);
     return new Response(
       JSON.stringify({ 
-        access: false,
-        message: "Abonnement requis ou expiré"
+        access: false, 
+        message: 'Aucun abonnement actif' 
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
       }
     );
+
   } catch (error) {
-    console.error('Erreur générale:', error);
+    console.error('Erreur:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
       }
     );
   }
