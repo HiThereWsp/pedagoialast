@@ -2,6 +2,7 @@
 import React, { useMemo, useCallback } from "react";
 import { type SavedContent } from "@/types/saved-content";
 import { ResourceCard } from "./ResourceCard";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SavedContentListProps {
   content: SavedContent[];
@@ -16,6 +17,8 @@ export const SavedContentList = React.memo(({
   selectedItemId,
   activeTab
 }: SavedContentListProps) => {
+  const isMobile = useIsMobile();
+  
   console.log(`🔍 SavedContentList: Contenu reçu: ${content.length} éléments, onglet actif: ${activeTab}`);
   
   // Vérifier la structure des données reçues pour le débogage
@@ -57,8 +60,8 @@ export const SavedContentList = React.memo(({
 
   if (filteredContent.length === 0) {
     return (
-      <div className="text-center py-16">
-        <p className="text-gray-500 dark:text-gray-400">
+      <div className="text-center py-10 md:py-16">
+        <p className="text-gray-500 dark:text-gray-400 text-sm md:text-base">
           Aucun contenu disponible pour cette catégorie
         </p>
       </div>
@@ -66,7 +69,7 @@ export const SavedContentList = React.memo(({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+    <div className={`grid grid-cols-1 ${isMobile ? '' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-4 md:gap-6 xl:gap-8`}>
       {filteredContent.map((item) => (
         <ResourceCard
           key={item.id}
