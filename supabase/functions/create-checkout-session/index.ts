@@ -20,9 +20,15 @@ serve(async (req) => {
 
   try {
     const { priceId, subscriptionType = 'monthly', productId } = await req.json()
-    console.log('Received request with priceId:', priceId, 'and subscriptionType:', subscriptionType, 'productId:', productId)
+    console.log('Received request with:', { 
+      priceId, 
+      subscriptionType, 
+      productId,
+      headers: Object.fromEntries(req.headers.entries())
+    })
     
     if (!priceId) {
+      console.error('Price ID is missing');
       throw new Error('Price ID is required')
     }
 
@@ -92,6 +98,21 @@ serve(async (req) => {
         }
       });
       console.log('Updated existing customer metadata');
+    }
+
+    // Validate the priceId actually exists in Stripe
+    try {
+      const price = await stripe.prices.retrieve(priceId);
+      console.log('Price validated successfully:', { id: price.id, product: price.product });
+    } catch (priceError) {
+      console.error('Invalid price ID:', priceError);
+      return new Response(
+        JSON.stringify({ error: `Prix invalide: ${priceId}. Erreur: ${priceError.message}` }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400,
+        }
+      )
     }
 
     // Créer la session de paiement

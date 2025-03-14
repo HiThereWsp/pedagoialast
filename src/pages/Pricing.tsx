@@ -1,4 +1,3 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
@@ -48,8 +47,9 @@ const Pricing = () => {
     pricingEvents.selectPlan('premium');
     subscriptionEvents.subscriptionStarted('monthly', 11.90);
     
-    // Utiliser le système d'abonnement Stripe via notre fonction
-    const stripeMonthlyPriceId = 'price_1O8GJRGJLmrCBLPXcfwxVP6b'; // ID de prix pour l'abonnement mensuel
+    // Use consistent price ID format
+    const stripeMonthlyPriceId = 'price_monthly_prod_Rvu5l79HX8EAis';
+    console.log('Starting monthly subscription with price ID:', stripeMonthlyPriceId);
     await handleSubscription(stripeMonthlyPriceId);
   }
 
@@ -60,8 +60,9 @@ const Pricing = () => {
     pricingEvents.selectPlan('premium');
     subscriptionEvents.subscriptionStarted('yearly', 9.90);
     
-    // Utiliser le système d'abonnement Stripe via notre fonction
-    const stripeYearlyPriceId = 'price_1O8GJvGJLmrCBLPXFvw6SHHn'; // ID de prix pour l'abonnement annuel
+    // Use consistent price ID format
+    const stripeYearlyPriceId = 'price_yearly_prod_Rvu5hv7FxnkHpv';
+    console.log('Starting yearly subscription with price ID:', stripeYearlyPriceId);
     await handleSubscription(stripeYearlyPriceId);
   }
 
@@ -189,7 +190,7 @@ const Pricing = () => {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
 
-export default Pricing
+export default Pricing;
