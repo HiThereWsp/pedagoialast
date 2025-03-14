@@ -12,10 +12,12 @@ import { useContentDeletionDialog } from "@/hooks/saved-content/useContentDeleti
 import { useContentLoading } from "@/hooks/saved-content/useContentLoading";
 import { useInitialContentLoad } from "@/hooks/saved-content/useInitialContentLoad";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const SavedContentView: React.FC = () => {
   const { toast } = useToast();
   const { user, authReady } = useAuth();
+  const isMobile = useIsMobile();
 
   // Content management hooks
   const { stableContent, updateContent, forceRefresh } = useStableContent();
@@ -136,6 +138,7 @@ export const SavedContentView: React.FC = () => {
       waitTime={0}
       onRefresh={handleRefresh}
       onTabChange={handleTabChange}
+      isMobileView={isMobile}
     >
       {null}
     </SavedContentContainer>;
@@ -153,12 +156,14 @@ export const SavedContentView: React.FC = () => {
         waitTime={waitTimeRef.current}
         onRefresh={handleRefresh}
         onTabChange={handleExtendedTabChange}
+        isMobileView={isMobile}
       >
         <SavedContentList
           content={stableContent}
           onItemSelect={handleItemSelect}
           selectedItemId={selectedContent?.id}
           activeTab={activeTab}
+          isMobileView={isMobile}
         />
       </SavedContentContainer>
 

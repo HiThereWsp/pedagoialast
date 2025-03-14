@@ -11,6 +11,7 @@ import { useContentNavigation } from "./useContentNavigation";
 import { useContentDeletionDialog } from "./useContentDeletionDialog";
 import { useContentLoading } from "./useContentLoading";
 import { useInitialContentLoad } from "./useInitialContentLoad";
+import { useStableContent } from "./useStableContent";
 
 export {
   useFetchContent,
@@ -24,5 +25,6 @@ export {
   useContentNavigation,
   useContentDeletionDialog,
   useContentLoading,
-  useInitialContentLoad
+  useInitialContentLoad,
+  useStableContent
 };
