@@ -213,5 +213,7 @@ export const BottomBar = ({ firstName }: BottomBarProps) => {
         </Drawer>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default BottomBar;

@@ -12,6 +12,7 @@ import ToolsLayout from '@/components/layout/ToolsLayout';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
+const Home = lazy(() => import('@/pages/Home'));
 const TableauDeBord = lazy(() => import('@/pages/TableauDeBord'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
@@ -60,9 +61,7 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/pricing" element={<Pricing />} />
-        
-        {/* Redirection de /home vers /tableaudebord */}
-        <Route path="/home" element={<Navigate to="/tableaudebord" replace />} />
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/tableaudebord" element={<ProtectedRoute><TableauDeBord /></ProtectedRoute>} />
         
         {/* Routes des outils pédagogiques utilisant le layout partagé */}
