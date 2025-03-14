@@ -2,12 +2,15 @@
 import React from 'react';
 import { LessonPlanCreator } from '@/components/lesson-plan/LessonPlanCreator';
 import { Header } from '@/components/lesson-plan/Header';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const LessonPlanPage = () => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="container mx-auto py-4 px-4">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent">
+        <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl'} font-extrabold mb-2 bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent leading-tight tracking-tight text-balance`}>
           Générateur de séquences
         </h1>
         <p className="max-w-2xl mx-auto text-slate-500">

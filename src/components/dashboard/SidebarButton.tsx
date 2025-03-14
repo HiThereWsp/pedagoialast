@@ -31,6 +31,13 @@ export const SidebarButton = ({
   // Vérifier si le bouton est actif en comparant le chemin actuel
   const isActive = active || (path && location.pathname === path);
   
+  // Gérer le clic en fonction des props
+  const handleClick = () => {
+    if (!notAvailable) {
+      onClick();
+    }
+  };
+  
   return (
     <button 
       className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
@@ -38,7 +45,7 @@ export const SidebarButton = ({
           ? 'bg-purple-100 text-purple-700' 
           : 'text-gray-700 hover:bg-gray-100'
       } ${small ? 'text-xs' : ''} ${notAvailable ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
-      onClick={onClick}
+      onClick={handleClick}
       disabled={notAvailable}
     >
       {icon}

@@ -1,19 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { SEO } from "@/components/SEO";
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Tiles } from "@/components/ui/tiles";
 import Sidebar from "@/components/dashboard/Sidebar";
+import { Menu, ArrowLeft } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const ToolsLayout = () => {
   const { user } = useAuth();
   const [firstName, setFirstName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
-  // La sidebar est toujours visible dans ce layout
+  // La sidebar est toujours visible sur desktop
   const sidebarOpen = true;
   
   useEffect(() => {
@@ -42,6 +49,11 @@ export const ToolsLayout = () => {
     
     fetchUserProfile();
   }, [user]);
+
+  // Fonction pour revenir à la page précédente
+  const handleGoBack = () => {
+    navigate(-1);
+  };
   
   return (
     <>
@@ -50,27 +62,81 @@ export const ToolsLayout = () => {
         description="Accédez à tous vos outils pédagogiques avec PedagoIA, votre assistant d'enseignement IA."
       />
       <div className="flex min-h-screen bg-gray-50">
-        {/* Sidebar fixe (non rétractable) */}
-        <div className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 shadow-lg">
-          <div className="flex flex-col h-full">
-            {/* Logo centré avec taille réduite */}
-            <div className="flex justify-center items-center py-3 border-b border-gray-200">
+        {/* Sidebar fixe sur desktop uniquement */}
+        {!isMobile && (
+          <div className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 shadow-lg">
+            <div className="flex flex-col h-full">
+              {/* Logo centré avec taille réduite */}
+              <div className="flex justify-center items-center py-4 border-b border-gray-200">
+                <a href="/home" className="flex items-center justify-center">
+                  <img 
+                    src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+                    alt="PedagoIA Logo" 
+                    className="h-16 w-16" 
+                  />
+                </a>
+              </div>
+              
+              {/* Sidebar content */}
+              <Sidebar isOpen={true} toggleSidebar={() => {}} firstName={firstName} />
+            </div>
+          </div>
+        )}
+        
+        {/* Barre de navigation mobile */}
+        {isMobile && (
+          <div className="fixed top-0 left-0 right-0 z-40 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="mr-3"
+              onClick={handleGoBack}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            
+            <div className="flex-1 flex justify-center">
               <a href="/home" className="flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                   alt="PedagoIA Logo" 
-                  className="h-14 w-14" 
+                  className="h-12 w-12" 
                 />
               </a>
             </div>
             
-            {/* Sidebar content */}
-            <Sidebar isOpen={true} toggleSidebar={() => {}} firstName={firstName} />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
           </div>
-        </div>
+        )}
         
-        {/* Contenu principal avec marge à gauche pour la sidebar */}
-        <div className="flex-1 ml-0 md:ml-64">
+        {/* Menu mobile dans un drawer */}
+        {isMobile && (
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetContent side="left" className="w-4/5 max-w-xs p-0">
+              <div className="flex flex-col h-full">
+                <div className="flex justify-center items-center py-4 border-b border-gray-200">
+                  <a href="/home" className="flex items-center justify-center">
+                    <img 
+                      src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+                      alt="PedagoIA Logo" 
+                      className="h-16 w-16" 
+                    />
+                  </a>
+                </div>
+                <Sidebar isOpen={true} toggleSidebar={() => setMobileMenuOpen(false)} firstName={firstName} />
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
+        
+        {/* Contenu principal avec marge à gauche pour la sidebar sur desktop */}
+        <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : 'mt-16'}`}>
           <div className="min-h-screen bg-white relative overflow-hidden">
             {/* Grid Pattern Background */}
             <div className="fixed inset-0 overflow-hidden">
