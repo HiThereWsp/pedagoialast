@@ -1,8 +1,8 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect, useState } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
 import { subscriptionEvents } from "@/integrations/posthog/events"
+import { facebookEvents } from "@/integrations/meta-pixel/client" // Add this import
 import { SEO } from "@/components/SEO"
 import { Shield, Clock, RefreshCw, Tag } from "lucide-react"
 import { SparklesText } from "@/components/ui/sparkles-text"
