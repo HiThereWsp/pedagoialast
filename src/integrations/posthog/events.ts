@@ -7,6 +7,12 @@ export const pricingEvents = {
   },
   selectPlan: (plan: string) => {
     posthog.capture('pricing_plan_selected', { plan })
+  },
+  applyPromoCode: (code: string) => {
+    posthog.capture('promo_code_applied', { 
+      code,
+      location: 'pricing_page' 
+    })
   }
 }
 

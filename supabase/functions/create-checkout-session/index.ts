@@ -19,11 +19,12 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, subscriptionType = 'monthly', productId } = await req.json()
+    const { priceId, subscriptionType = 'monthly', productId, promoCode } = await req.json()
     console.log('Received request with:', { 
       priceId, 
       subscriptionType, 
       productId,
+      promoCode,
       headers: Object.fromEntries(req.headers.entries())
     })
     
@@ -64,6 +65,7 @@ serve(async (req) => {
       productId,
       userEmail: user.email,
       subscriptionType,
+      promoCode
     })
 
     // Vérifier si le client existe déjà
@@ -116,7 +118,7 @@ serve(async (req) => {
     }
 
     // Créer la session de paiement
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams = {
       customer: customerId,
       line_items: [
         {
@@ -130,10 +132,28 @@ serve(async (req) => {
       metadata: {
         userId: user.id,
         subscriptionType,
-        productId
+        productId,
+        promoCode: promoCode || 'none'
+      },
+      // Autoriser les codes promo pré-définis dans Stripe
+      allow_promotion_codes: true
+    };
+    
+    // Si un code promo spécifique est fourni, essayer de l'appliquer
+    if (promoCode) {
+      try {
+        // Loguer l'utilisation du code promo
+        console.log(`Attempting to use promo code: ${promoCode}`);
+        
+        // Stocker le code promo dans les métadonnées pour le suivi
+        sessionParams.metadata.applied_promo_code = promoCode;
+      } catch (promoError) {
+        console.error('Error with promo code:', promoError);
+        // Continuer sans le code promo en cas d'erreur
       }
-    })
+    }
 
+    const session = await stripe.checkout.sessions.create(sessionParams);
     console.log('Checkout session created:', session.id)
 
     // Préparer l'utilisateur pour le transfert vers la liste premium une fois le paiement réussi

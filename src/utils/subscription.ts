@@ -2,7 +2,14 @@
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 
-export const handleSubscription = async (planType: 'monthly' | 'yearly') => {
+type SubscriptionType = 'monthly' | 'yearly';
+
+const PRICE_IDS = {
+  monthly: 'price_1R22GyIqXQKnGj4mvQpgJUIR',
+  yearly: 'price_1R22GrIqXQKnGj4md4Ce7dgb'
+}
+
+export const handleSubscription = async (planType: SubscriptionType, promoCode?: string | null) => {
   const { data: { session } } = await supabase.auth.getSession()
   
   if (!session) {
@@ -11,24 +18,14 @@ export const handleSubscription = async (planType: 'monthly' | 'yearly') => {
   }
 
   try {
-    // Utiliser des liens directs Stripe plutôt que de créer une session de paiement
-    let paymentLink;
-    
-    if (planType === 'monthly') {
-      paymentLink = 'https://buy.stripe.com/14k3fuggO8Md9gY3ce'; // Lien de paiement mensuel
-    } else {
-      paymentLink = 'https://buy.stripe.com/5kA9DS2pYgeF2SA7sw'; // Lien de paiement annuel
-    }
-    
-    console.log('Redirection vers le lien de paiement Stripe pour:', { planType, paymentLink });
-    
     // Journaliser l'événement de début de paiement
     try {
       await supabase.functions.invoke('log-payment-start', {
         body: { 
           planType,
           userId: session.user.id,
-          email: session.user.email
+          email: session.user.email,
+          promoCode: promoCode || undefined
         }
       })
     } catch (logError) {
@@ -36,8 +33,32 @@ export const handleSubscription = async (planType: 'monthly' | 'yearly') => {
       // Continue même si la journalisation échoue
     }
     
+    // Créer une session de paiement Stripe Checkout
+    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+      body: { 
+        priceId: PRICE_IDS[planType],
+        subscriptionType: planType,
+        productId: planType === 'monthly' ? 'prod_Rvu5l79HX8EAis' : 'prod_Rvu5hv7FxnkHpv',
+        promoCode: promoCode || undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Erreur lors de la création de la session de paiement:', error);
+      toast.error("Une erreur est survenue lors de la création de la session de paiement");
+      return null;
+    }
+    
+    if (!data.url) {
+      console.error('URL de checkout manquante dans la réponse');
+      toast.error("Une erreur est survenue lors de la redirection vers la page de paiement");
+      return null;
+    }
+    
+    console.log('Redirection vers Stripe Checkout:', data.url);
+    
     // Rediriger vers la page de paiement Stripe
-    window.location.href = paymentLink;
+    window.location.href = data.url;
     
   } catch (error) {
     console.error('Erreur lors de la redirection vers Stripe:', error);
