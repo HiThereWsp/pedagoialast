@@ -12,6 +12,11 @@ import { useContentDeletionDialog } from "./useContentDeletionDialog";
 import { useContentLoading } from "./useContentLoading";
 import { useInitialContentLoad } from "./useInitialContentLoad";
 import { useStableContent } from "./useStableContent";
+import { useExerciseRetrieval } from "./retrieval/useExerciseRetrieval";
+import { useLessonPlanRetrieval } from "./retrieval/useLessonPlanRetrieval";
+import { useCorrespondenceRetrieval } from "./retrieval/useCorrespondenceRetrieval";
+import { useImageRetrieval } from "./retrieval/useImageRetrieval";
+import { useRetryHandler } from "./retrieval/useRetryHandler";
 
 export {
   useFetchContent,
@@ -26,5 +31,11 @@ export {
   useContentDeletionDialog,
   useContentLoading,
   useInitialContentLoad,
-  useStableContent
+  useStableContent,
+  // New specialized retrieval hooks
+  useExerciseRetrieval,
+  useLessonPlanRetrieval,
+  useCorrespondenceRetrieval,
+  useImageRetrieval,
+  useRetryHandler
 };

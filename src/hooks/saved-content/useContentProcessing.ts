@@ -14,7 +14,8 @@ export function useContentProcessing() {
     getPendingContent,
     updatePendingContent,
     setDataReceived,
-    hasDataReceived
+    hasDataReceived,
+    invalidateCache
   } = useContentCache();
   
   const { addError, showErrorToast } = useContentErrors();
@@ -69,6 +70,7 @@ export function useContentProcessing() {
     getPendingContent,
     updatePendingContent,
     setDataReceived,
-    hasDataReceived
+    hasDataReceived,
+    invalidateCache
   };
 }
