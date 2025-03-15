@@ -64,13 +64,13 @@ export const SavedContentHeader: React.FC<SavedContentHeaderProps> = React.memo(
 
   return (
     <>
-      <div className="mb-3 md:mb-4">
+      <div className={`${isMobile ? 'mb-2' : 'mb-3 md:mb-4'}`}>
         <BackButton />
       </div>
       
-      <div className="flex items-center justify-between mb-4 md:mb-8">
-        <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl sm:text-4xl'} font-bold text-gray-900 dark:text-white tracking-tight text-balance`}>
-          Mes ressources
+      <div className="flex items-center justify-between mb-3 md:mb-6">
+        <h1 className={`${isMobile ? 'text-2xl' : 'text-3xl sm:text-4xl'} font-extrabold leading-tight tracking-tight text-balance`}>
+          Mes <span className="bg-black text-white px-2 py-1 rounded rotate-1 inline-block">ressources</span>
         </h1>
         
         <div className="flex items-center gap-1 sm:gap-2">
@@ -86,10 +86,10 @@ export const SavedContentHeader: React.FC<SavedContentHeaderProps> = React.memo(
           
           <Button 
             onClick={handleCreate}
-            className="bg-gradient-to-r from-[#FFDD00] via-[#FFA800] to-[#FF7A00] hover:opacity-90 text-white shadow-sm text-xs md:text-sm"
+            className="bg-gradient-to-r from-[#FFDD00] via-[#FFA800] to-[#FF7A00] hover:opacity-90 text-white shadow-sm"
             size={isMobile ? "sm" : "default"}
           >
-            <Plus className="w-4 h-4 mr-1 md:mr-2" />
+            <Plus className="w-3.5 h-3.5 mr-1 md:mr-2" />
             <span className="hidden sm:inline">{currentTab.buttonText}</span>
             <span className="sm:hidden">Créer</span>
           </Button>

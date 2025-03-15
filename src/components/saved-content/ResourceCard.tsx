@@ -59,22 +59,22 @@ export const ResourceCard = React.memo(({
   return (
     <Card 
       className={cn(
-        "transition-shadow duration-200 hover:shadow-md flex flex-col h-full", 
+        "transition-all duration-200 hover:shadow-md flex flex-col h-full", 
         isSelected ? "ring-2 ring-[#FFA800]" : "",
         isMobile ? "w-full" : ""
       )}
     >
-      <CardHeader className={`pb-3 ${isMobile ? 'p-4' : 'p-5'}`}>
-        <CardTitle className={`${isMobile ? 'text-lg' : 'text-xl'} font-bold line-clamp-2 text-left`}>
+      <CardHeader className={`${isMobile ? 'p-4 pb-2' : 'p-5 pb-3'}`}>
+        <CardTitle className={`${isMobile ? 'text-base font-bold' : 'text-xl font-bold'} line-clamp-2 text-left`}>
           {resource.title || "Sans titre"}
         </CardTitle>
-        <p className="text-xs text-muted-foreground pt-1 text-left">
+        <p className="text-xs text-muted-foreground text-left mt-1">
           {formatDate(resource.created_at)}
         </p>
       </CardHeader>
       
-      <CardContent className={`grow text-left ${isMobile ? 'px-4 pb-2' : 'px-5 py-0'}`}>
-        <div className="flex items-start space-x-2 mb-2">
+      <CardContent className={`grow text-left ${isMobile ? 'px-4 py-2' : 'px-5 py-0'}`}>
+        <div className="flex items-start space-x-2">
           <div className={`h-2 w-2 rounded-full mt-1.5 ${getIconClass(resource.type)}`} />
           <p className="text-sm text-muted-foreground">
             {resource.displayType || resource.type || "Ressource"}
@@ -82,7 +82,7 @@ export const ResourceCard = React.memo(({
         </div>
         
         {resource.summary && (
-          <p className="text-sm line-clamp-3 mt-2 text-gray-600 dark:text-gray-300">
+          <p className="text-sm line-clamp-2 mt-2 text-gray-600 dark:text-gray-300">
             {resource.summary}
           </p>
         )}
@@ -95,8 +95,8 @@ export const ResourceCard = React.memo(({
           onClick={handleSelect}
           className="w-full"
         >
-          <Eye className="mr-2 h-4 w-4" />
-          Voir le détail
+          <Eye className="mr-2 h-3.5 w-3.5" />
+          Voir
         </Button>
       </CardFooter>
     </Card>

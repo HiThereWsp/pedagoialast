@@ -65,7 +65,7 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
         description="Consultez l'historique de vos contenus générés sur PedagoIA - exercices, séquences et documents administratifs."
       />
       
-      <div className={`container mx-auto ${isMobileView ? 'px-3 py-4' : 'px-4 sm:px-6 lg:px-8 py-8'}`}>
+      <div className={`container mx-auto ${isMobileView ? 'px-3 pt-2 pb-5' : 'px-4 sm:px-6 lg:px-8 py-8'}`}>
         <SavedContentHeader 
           activeTab={activeTab}
           onRefresh={onRefresh}
@@ -73,16 +73,16 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
         />
         
         {isMobileView ? (
-          <div className="mb-4">
+          <div className="mt-3 mb-4">
             {/* Mobile view shows all sections vertically */}
             {isRefreshing ? (
               <RefreshIndicator waitTime={waitTime} />
             ) : contentCount === 0 ? (
               <div className="text-center py-8">
-                <p className="text-xl text-balance font-bold text-gray-700 dark:text-gray-300 mb-2 tracking-tight">
+                <p className="text-lg font-bold text-gray-700 dark:text-gray-300 mb-1.5 tracking-tight text-balance">
                   Aucun contenu disponible
                 </p>
-                <p className="text-gray-500 dark:text-gray-400 text-sm md:text-lg mb-4">
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-2">
                   Créez votre premier contenu dès maintenant !
                 </p>
                 <p className="text-gray-400 dark:text-gray-500 text-xs">
@@ -90,10 +90,10 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
                 </p>
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {savedContentTabs.map((tab) => (
-                  <div key={tab.id} className="pb-4" id={`section-${tab.id}`}>
-                    <h2 className="text-xl font-bold mb-3 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-gray-100 dark:border-gray-800">
+                  <div key={tab.id} className="pb-2" id={`section-${tab.id}`}>
+                    <h2 className="text-lg font-bold mb-2.5 sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-gray-100 dark:border-gray-800">
                       {tab.label}
                     </h2>
                     {React.Children.map(children, child => {
@@ -121,7 +121,7 @@ export const SavedContentContainer: React.FC<SavedContentContainerProps> = ({
               <RefreshIndicator waitTime={waitTime} />
             ) : contentCount === 0 ? (
               <div className="text-center py-10 md:py-16">
-                <p className="text-xl text-balance font-bold text-gray-700 dark:text-gray-300 mb-2 tracking-tight">
+                <p className="text-xl font-bold text-gray-700 dark:text-gray-300 mb-2 tracking-tight text-balance">
                   Aucun contenu disponible
                 </p>
                 <p className="text-gray-500 dark:text-gray-400 text-sm md:text-lg mb-4 md:mb-6">

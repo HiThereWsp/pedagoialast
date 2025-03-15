@@ -22,12 +22,12 @@ export const SavedContentTabs: React.FC<SavedContentTabsProps> = React.memo(({
         value={activeTab}
         onValueChange={handleValueChange}
       >
-        <TabsList className="w-full justify-start border-b bg-transparent p-0">
+        <TabsList className="w-full justify-start border-b bg-transparent p-0 overflow-x-auto scrollbar-none">
           {savedContentTabs.map((tab) => (
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="py-3 px-4 text-sm min-w-fit font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-[#FFA800] data-[state=active]:border-b-2 data-[state=active]:border-[#FFA800] transition-colors rounded-none"
+              className="py-2.5 px-4 text-sm whitespace-nowrap min-w-fit font-medium text-gray-600 dark:text-gray-400 data-[state=active]:text-[#FFA800] data-[state=active]:border-b-2 data-[state=active]:border-[#FFA800] transition-colors rounded-none"
             >
               {tab.label}
             </TabsTrigger>
