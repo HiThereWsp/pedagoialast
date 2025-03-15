@@ -72,7 +72,7 @@ export const SavedContentList = React.memo(({
 
   // Mobile view with sections uses full width cards
   return (
-    <div className={`grid ${isMobileView || sectionMode ? 'grid-cols-1' : 'sm:grid-cols-2 lg:grid-cols-3'} gap-4 md:gap-6`}>
+    <div className={`grid ${isMobileView || sectionMode ? 'grid-cols-1 gap-3' : 'sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'}`}>
       {filteredContent.map((item) => (
         <ResourceCard
           key={item.id}
