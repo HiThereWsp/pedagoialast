@@ -1,6 +1,5 @@
 
-
-import { Settings, LogOut, MessageSquare, Mail, LayoutDashboard } from "lucide-react"
+import { Settings, LogOut, HelpCircle, Mail } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import {
   DropdownMenu,
@@ -59,25 +58,10 @@ export const UserMenu = () => {
   return (
     <div className="w-full flex justify-end mb-8">
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300 transition-colors">
-            <svg className="w-6 h-6 text-gray-600" viewBox="0 0 24 24">
-              <path 
-                fill="currentColor" 
-                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-              />
-            </svg>
-          </div>
+        <DropdownMenuTrigger className="flex items-center gap-2 py-1 px-3 rounded-md hover:bg-gray-100 transition-colors">
+          <span className="font-medium">Andy</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-48">
-          <DropdownMenuItem onClick={() => navigate('/tableaudebord')} className="cursor-pointer">
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            <span>Tableau de bord</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate('/suggestions')} className="cursor-pointer">
-            <MessageSquare className="mr-2 h-4 w-4" />
-            <span>Suggérer des fonctionnalités</span>
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             <span>Paramètres</span>
@@ -85,6 +69,10 @@ export const UserMenu = () => {
           <DropdownMenuItem onClick={() => navigate('/contact')} className="cursor-pointer">
             <Mail className="mr-2 h-4 w-4" />
             <span>Nous contacter</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/contact')} className="cursor-pointer">
+            <HelpCircle className="mr-2 h-4 w-4" />
+            <span>Aide</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600">
