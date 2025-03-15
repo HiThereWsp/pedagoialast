@@ -4,12 +4,10 @@ import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
 import { handleSubscription } from "@/utils/subscription";
-import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface PricingPlansProps {
-  currentPromoCode: string | null;
   isSubscribed: boolean;
   subscriptionType: string | null;
   isLoading: boolean;
@@ -17,7 +15,6 @@ interface PricingPlansProps {
 }
 
 export const PricingPlans = ({
-  currentPromoCode,
   isSubscribed,
   subscriptionType,
   isLoading,
@@ -46,8 +43,8 @@ export const PricingPlans = ({
     // Tracking Facebook
     facebookEvents.initiateCheckout('monthly', 11.90);
     
-    // Utiliser le code promo s'il existe
-    handleSubscription('monthly', currentPromoCode);
+    // Redirection vers Stripe
+    handleSubscription('monthly');
   };
 
   const handleYearlySubscription = async () => {
@@ -60,8 +57,8 @@ export const PricingPlans = ({
     // Tracking Facebook
     facebookEvents.initiateCheckout('yearly', 9.00);
     
-    // Utiliser le code promo s'il existe
-    handleSubscription('yearly', currentPromoCode);
+    // Redirection vers Stripe
+    handleSubscription('yearly');
   };
 
   // Texte du bouton selon l'état de l'abonnement
