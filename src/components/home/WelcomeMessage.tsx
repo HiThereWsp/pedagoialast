@@ -7,12 +7,12 @@ interface WelcomeMessageProps {
 
 export const WelcomeMessage: FC<WelcomeMessageProps> = ({ firstName }) => {
   return (
-    <div className="text-center mb-12">
-      <h1 className="text-4xl sm:text-5xl font-extrabold mb-4 flex items-center justify-center gap-2 leading-tight tracking-tight text-balance">
+    <div className="text-center mb-10">
+      <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight text-balance">
         Bonjour {firstName} 
-        <span role="img" aria-label="wave">👋</span>
+        <span role="img" aria-label="wave" className="ml-2">👋</span>
       </h1>
-      <p className="text-xl text-gray-600 flex items-center justify-center px-4 sm:px-0">
+      <p className="text-xl text-gray-600 mt-4 max-w-md mx-auto">
         Sur quoi souhaitez-vous travailler aujourd'hui ?
       </p>
     </div>
