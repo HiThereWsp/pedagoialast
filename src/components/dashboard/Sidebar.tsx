@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import SidebarButton from './SidebarButton';
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -79,22 +80,29 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
   return (
     <div className="flex flex-col h-full">
       {/* Navigation Menu */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5 flex flex-col">
-        {/* Assistant section - "Accueil" removed */}
-        <div className="space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col">
+        {/* Chat IA with improved "Bientôt" badge */}
+        <div className="mb-6">
           <SidebarButton 
             icon={<MessageSquare className="h-5 w-5" />} 
-            label="Assistant IA avancé" 
+            label="Chat IA" 
             notAvailable={true}
+            notAvailableIcon={
+              <span className="ml-auto flex items-center">
+                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 font-normal px-2 py-0.5">
+                  Bientôt
+                </Badge>
+              </span>
+            }
           />
         </div>
         
-        <Separator className="my-2" />
+        <Separator className="my-6" />
         
-        {/* Outils pédagogiques */}
-        <div className="space-y-2">
+        {/* Outils pédagogiques - with more space */}
+        <div className="space-y-6 mb-auto">
           <h3 className="px-3 text-xs font-semibold uppercase text-gray-500">Outils pédagogiques</h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             <SidebarButton 
               icon={<Sparkles className="h-5 w-5" />} 
               label="Générateur de séquences" 
@@ -122,19 +130,12 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
           </div>
         </div>
         
-        <Separator className="my-2" />
-        
-        {/* Suppression du titre "Vos outils" */}
-        <div className="space-y-2">
-          <div className="space-y-2">
-            {/* Mise en évidence de "Demander des fonctionnalités" */}
-            <SidebarButton 
-              icon={<MessageCircle className="h-5 w-5 text-purple-600" />} 
-              label="Demander des fonctionnalités" 
-              path="/suggestions"
-              onClick={() => navigate("/suggestions")}
-              className="bg-purple-50 text-purple-700 hover:bg-purple-100"
-            />
+        {/* Bottom section containing user resources and suggestion button */}
+        <div className="mt-auto pt-6">
+          <Separator className="mb-6" />
+          
+          {/* Resources section */}
+          <div className="space-y-3 mb-6">
             <SidebarButton 
               icon={<BookOpen className="h-5 w-5" />} 
               label="Mes ressources" 
@@ -142,10 +143,19 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
               onClick={() => navigate("/saved-content")}
             />
           </div>
-        </div>
-        
-        <div className="mt-auto">
-          <Separator className="my-4" />
+          
+          <Separator className="my-6" />
+          
+          {/* Feature request section */}
+          <div className="space-y-3">
+            <SidebarButton 
+              icon={<MessageCircle className="h-5 w-5 text-purple-600" />} 
+              label="Demander des fonctionnalités" 
+              path="/suggestions"
+              onClick={() => navigate("/suggestions")}
+              className="bg-purple-50 text-purple-700 hover:bg-purple-100"
+            />
+          </div>
         </div>
       </div>
       
