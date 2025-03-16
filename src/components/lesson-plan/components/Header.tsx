@@ -12,12 +12,6 @@ export const Header = () => {
         alt="PedagoIA Logo"
         className="w-[100px] h-[120px] object-contain mx-auto mb-4"
       />
-      <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#F97316] to-[#D946EF] bg-clip-text text-transparent">
-        <span className="rotate-1 inline-block">Créateur</span> de plans de leçon
-      </h2>
-      <p className="text-muted-foreground max-w-2xl mx-auto text-base">
-        Créez facilement des plans de leçon adaptés à vos besoins et objectifs d'apprentissage.
-      </p>
     </div>
   );
 };
