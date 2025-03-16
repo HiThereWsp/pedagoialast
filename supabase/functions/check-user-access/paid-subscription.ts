@@ -1,11 +1,11 @@
 
-import { SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 export async function checkPaidAccess(
   supabaseClient: SupabaseClient,
   user: { id: string; email: string }
 ) {
-  console.log("Checking paid subscription for user");
+  console.log("Checking paid subscription for user:", user.email);
   
   const { data: paidSubscription, error: paidSubError } = await supabaseClient
     .from('user_subscriptions')
@@ -22,13 +22,13 @@ export async function checkPaidAccess(
   }
   
   if (paidSubscription) {
-    console.log('Abonnement payant trouvé:', paidSubscription);
+    console.log('Abonnement payant trouvé pour', user.email, ':', paidSubscription);
     
     // Check if subscription is expired
     if (paidSubscription.expires_at) {
       const expiryDate = new Date(paidSubscription.expires_at);
       if (expiryDate < new Date()) {
-        console.log("Paid subscription expired at:", expiryDate);
+        console.log("Paid subscription expired at:", expiryDate, "for", user.email);
         return { 
           access: false, 
           message: 'Abonnement expiré',
@@ -38,7 +38,7 @@ export async function checkPaidAccess(
       }
     }
     
-    console.log("Active paid subscription found, granting access");
+    console.log("Active paid subscription found, granting access to", user.email);
     return { 
       access: true, 
       type: paidSubscription.type,
