@@ -1,3 +1,4 @@
+
 import {
   BrowserRouter as Router,
   Routes,
@@ -12,8 +13,8 @@ import Landing from "@/pages/Landing";
 import Login from "@/pages/Login";
 import Pricing from "@/pages/Pricing";
 import Home from "@/pages/Home";
-import Tableaudebord from "@/pages/Tableaudebord";
-import Contact from "@/pages/Contact";
+import TableauDeBord from "@/pages/TableauDeBord";
+import ContactPage from "@/pages/ContactPage";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
 import Legal from "@/pages/Legal";
@@ -40,7 +41,7 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Login />} />
       <Route path="/pricing" element={<Pricing />} />
-      <Route path="/contact" element={<Contact />} />
+      <Route path="/contact" element={<ContactPage />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/legal" element={<Legal />} />
@@ -60,7 +61,7 @@ function AppRoutes() {
         path="/tableaudebord" 
         element={
           <ProtectedRoute>
-            <Tableaudebord />
+            <TableauDeBord />
           </ProtectedRoute>
         } 
       />
