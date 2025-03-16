@@ -19,7 +19,7 @@ export function Header() {
   ];
   
   const handleDashboardClick = () => {
-    navigate('/bienvenue');
+    navigate('/home');
   };
   
   return (
@@ -119,7 +119,7 @@ export function Header() {
                     className="w-full gap-2 justify-center"
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      navigate('/bienvenue');
+                      navigate('/home');
                     }}
                   >
                     <LayoutDashboard className="h-4 w-4" />

@@ -12,6 +12,8 @@ import ToolsLayout from '@/components/layout/ToolsLayout';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
+const Home = lazy(() => import('@/pages/Home'));
+const TableauDeBord = lazy(() => import('@/pages/TableauDeBord'));
 const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
 const ExercisePage = lazy(() => import('@/pages/ExercisePage'));
@@ -36,7 +38,6 @@ const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage
 const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
 const ContactPage = lazy(() => import('@/pages/ContactPage'));
-const TableauDeBord = lazy(() => import('@/pages/TableauDeBord'));
 
 // Composant de chargement pour Suspense
 const LoadingPage = () => (
@@ -54,13 +55,13 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<Navigate to="/bienvenue" replace />} />
         <Route path="/bienvenue" element={<Bienvenue />} />
-        <Route path="/home" element={<Navigate to="/bienvenue" replace />} />
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/confirm-email" element={<ConfirmEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/tableaudebord" element={<ProtectedRoute><TableauDeBord /></ProtectedRoute>} />
         
         {/* Routes des outils pédagogiques utilisant le layout partagé */}

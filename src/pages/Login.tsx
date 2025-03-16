@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
@@ -34,7 +33,7 @@ export default function Login() {
           } else {
             console.log("Lien magique vérifié avec succès!");
             // Rediriger l'utilisateur vers le tableau de bord ou une autre page
-            window.location.href = "/bienvenue"; // Redirection mise à jour
+            window.location.href = "/home"; // Ajuster la redirection selon les besoins
           }
         } catch (err) {
           console.error("Erreur inattendue lors de la vérification:", err);
@@ -60,7 +59,7 @@ export default function Login() {
           // Ne pas afficher d'erreur pour les pages d'authentification
         } else if (session) {
           console.log("Session active trouvée:", session)
-          const returnUrl = location.state?.returnUrl || '/bienvenue'
+          const returnUrl = location.state?.returnUrl || '/home'
           console.log("Redirection vers:", returnUrl)
           navigate(returnUrl, { replace: true })
         } else {
@@ -80,7 +79,7 @@ export default function Login() {
       
       if (event === 'SIGNED_IN' && session) {
         console.log("Utilisateur connecté, redirection...")
-        const returnUrl = location.state?.returnUrl || '/bienvenue'
+        const returnUrl = location.state?.returnUrl || '/home'
         console.log("Redirection vers:", returnUrl)
         navigate(returnUrl, { replace: true })
       } else {

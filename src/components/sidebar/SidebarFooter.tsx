@@ -1,4 +1,3 @@
-
 import { Home } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import {
@@ -28,8 +27,8 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SidebarMenuButton
-                    onClick={() => navigate('/bienvenue')}
-                    data-active={currentPath === '/bienvenue'}
+                    onClick={() => navigate('/home')}
+                    data-active={currentPath === '/home'}
                   >
                     <Home className="h-4 w-4" />
                     <span>Accueil</span>
