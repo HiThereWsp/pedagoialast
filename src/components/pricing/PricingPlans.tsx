@@ -79,6 +79,17 @@ export const PricingPlans = ({
     return "Démarrer l'essai gratuit";
   };
 
+  // Modification: Ne pas désactiver les boutons en mode dev pour des tests
+  const isButtonDisabled = (planType) => {
+    // En environnement de développement, permettre toujours les clics
+    if (import.meta.env.DEV) {
+      return false;
+    }
+    
+    // En production, utiliser la logique standard
+    return isSubscribed && subscriptionType === planType;
+  };
+
   return (
     <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
       <PricingCard
@@ -94,7 +105,7 @@ export const PricingPlans = ({
         ]}
         ctaText={getButtonText('monthly')}
         onSubscribe={handleMonthlySubscription}
-        disabled={isSubscribed && subscriptionType === 'monthly'}
+        disabled={isButtonDisabled('monthly')}
       />
       <PricingCard
         title="Plan annuel"
@@ -110,7 +121,7 @@ export const PricingPlans = ({
         ]}
         ctaText={getButtonText('yearly')}
         onSubscribe={handleYearlySubscription}
-        disabled={isSubscribed && subscriptionType === 'yearly'}
+        disabled={isButtonDisabled('yearly')}
       />
       <PricingCard
         title="Établissement scolaire"

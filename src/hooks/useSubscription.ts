@@ -27,6 +27,7 @@ export const useSubscription = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.log("No session found in useSubscription");
         setStatus({
           isActive: false,
           type: null,
@@ -37,6 +38,20 @@ export const useSubscription = () => {
         return;
       }
       
+      // En mode développement, simuler un abonnement actif pour faciliter les tests
+      if (import.meta.env.DEV) {
+        console.log("Dev mode detected in useSubscription, simulating active subscription");
+        setStatus({
+          isActive: true,
+          type: 'dev_mode',
+          expiresAt: null,
+          isLoading: false,
+          error: null
+        });
+        return;
+      }
+      
+      console.log("Invoking check-user-access function");
       const { data, error } = await supabase.functions.invoke('check-user-access');
       
       if (error) {
@@ -51,6 +66,7 @@ export const useSubscription = () => {
         return;
       }
       
+      console.log("check-user-access response:", data);
       setStatus({
         isActive: data.access,
         type: data.type || null,
