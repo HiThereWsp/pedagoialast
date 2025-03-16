@@ -30,8 +30,8 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // Les utilisateurs beta ont toujours un abonnement valide
-  if (!isSubscribed && subscriptionType !== 'beta') {
+  // Si pas d'abonnement actif, rediriger vers la page pricing
+  if (!isSubscribed) {
     return <Navigate to="/pricing" replace />;
   }
   

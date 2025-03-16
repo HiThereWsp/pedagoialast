@@ -108,7 +108,7 @@ export const useSubscription = () => {
   };
 
   return {
-    isSubscribed: status.isActive || status.type === 'beta', // Les utilisateurs beta sont toujours considérés comme abonnés
+    isSubscribed: status.isActive,
     subscriptionType: status.type,
     expiresAt: status.expiresAt,
     isLoading: status.isLoading,

@@ -103,6 +103,7 @@ serve(async (req) => {
     // Vérifier si c'est un utilisateur beta
     console.log("Checking if user is beta user");
     try {
+      // Première méthode: Vérifier dans la table beta_users
       const { data: betaUser, error: betaError } = await supabaseClient
         .from('beta_users')
         .select('*')
@@ -114,7 +115,7 @@ serve(async (req) => {
       }
         
       if (betaUser) {
-        console.log('Utilisateur beta trouvé');
+        console.log('Utilisateur beta trouvé dans la table beta_users');
         return new Response(
           JSON.stringify({ 
             access: true, 
@@ -124,6 +125,59 @@ serve(async (req) => {
           { 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200 
+          }
+        );
+      }
+
+      // Deuxième méthode: Vérifier dans la table user_subscriptions avec type=beta
+      const { data: betaSubscription, error: betaSubError } = await supabaseClient
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('type', 'beta')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (betaSubError) {
+        console.error("Beta subscription check error:", betaSubError);
+      }
+
+      if (betaSubscription) {
+        console.log('Abonnement beta trouvé dans user_subscriptions:', betaSubscription);
+        
+        // Vérifier si l'abonnement beta est expiré
+        if (betaSubscription.expires_at) {
+          const expiryDate = new Date(betaSubscription.expires_at);
+          if (expiryDate < new Date()) {
+            console.log("Beta subscription expired at:", expiryDate);
+            return new Response(
+              JSON.stringify({ 
+                access: false, 
+                message: 'Abonnement beta expiré',
+                type: 'beta',
+                expires_at: betaSubscription.expires_at
+              }),
+              { 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 200
+              }
+            );
+          }
+        }
+        
+        console.log("Active beta subscription found, granting access");
+        return new Response(
+          JSON.stringify({ 
+            access: true, 
+            type: 'beta',
+            expires_at: betaSubscription.expires_at,
+            promo_code: betaSubscription.promo_code
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
           }
         );
       }
