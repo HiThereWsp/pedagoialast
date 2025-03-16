@@ -1,7 +1,7 @@
 
 import * as React from "react"
 import { State } from "./types"
-import { memoryState, dispatch } from "./reducer"
+import { memoryState, dispatch, listeners } from "./reducer"
 import { toast } from "./toast"
 
 // useToast hook
@@ -14,7 +14,6 @@ export function useToast() {
     }
 
     // Add listener
-    const listeners = require("./reducer").listeners
     listeners.push(handleChange)
     
     return () => {
@@ -24,7 +23,7 @@ export function useToast() {
         listeners.splice(index, 1)
       }
     }
-  }, [state])
+  }, [])
 
   return {
     ...state,

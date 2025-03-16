@@ -1,10 +1,9 @@
 
 import { useEffect, useRef, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast"; // Utilisation directe de toast
 
 /**
- * Hook for managing content loading and refreshing
- * @returns Functions and state for loading and refreshing content
+ * Hook pour gérer le chargement et le rafraîchissement du contenu
  */
 export function useContentLoading(
   fetchContent: () => Promise<any[]>,
@@ -18,7 +17,6 @@ export function useContentLoading(
   const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const waitTimeRef = useRef(0);
   const fetchFailuresRef = useRef(0);
-  const { toast } = useToast();
 
   // Set up timer for incrementing wait time
   useEffect(() => {
@@ -60,6 +58,7 @@ export function useContentLoading(
         console.log(`✅ SavedContentPage: Rafraîchissement terminé: ${refreshedContent.length} éléments chargés`);
         
         if (refreshedContent.length === 0 && stableContentLength === 0) {
+          // Utiliser toast directement au lieu de useToast
           toast({
             description: "Aucun contenu trouvé. Essayez de créer du nouveau contenu !",
           });
@@ -71,6 +70,7 @@ export function useContentLoading(
         fetchFailuresRef.current += 1;
         
         if (fetchFailuresRef.current > 2) {
+          // Utiliser toast directement au lieu de useToast
           toast({
             variant: "destructive",
             title: "Problème de connexion",
@@ -82,7 +82,7 @@ export function useContentLoading(
       }
     }
     return Promise.resolve();
-  }, [fetchContent, isRefreshing, toast, stableContentLength, invalidateCache, forceRefresh]);
+  }, [fetchContent, isRefreshing, stableContentLength, invalidateCache, forceRefresh]);
 
   return {
     didInitialFetch,

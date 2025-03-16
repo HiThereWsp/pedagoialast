@@ -8,7 +8,16 @@ import { AuthProvider } from '@/hooks/useAuth'
 import { Toaster } from '@/components/ui/toaster'
 import '@/App.css'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 function App() {
   return (
@@ -17,9 +26,9 @@ function App() {
         <BrowserRouter>
           <AuthProvider>
             <AppRoutes />
-            <Toaster />
-            {/* CookieBanner removed as requested */}
           </AuthProvider>
+          {/* Déplacé en dehors de AuthProvider pour éviter les cycles de dépendance */}
+          <Toaster />
         </BrowserRouter>
       </QueryClientProvider>
     </HelmetProvider>

@@ -1,5 +1,5 @@
 
-import { Action, State, TOAST_REMOVE_DELAY } from "./types"
+import { Action, State, TOAST_REMOVE_DELAY, actionTypes } from "./types"
 
 // Toast timeouts management
 export const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
@@ -14,7 +14,7 @@ export const addToRemoveQueue = (toastId: string, duration?: number) => {
   const timeout = setTimeout(() => {
     toastTimeouts.delete(toastId)
     dispatch({
-      type: "REMOVE_TOAST",
+      type: actionTypes.REMOVE_TOAST,
       toastId: toastId,
     })
   }, duration || TOAST_REMOVE_DELAY)
@@ -25,13 +25,13 @@ export const addToRemoveQueue = (toastId: string, duration?: number) => {
 // State management
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
-    case "ADD_TOAST":
+    case actionTypes.ADD_TOAST:
       return {
         ...state,
         toasts: [action.toast, ...state.toasts].slice(0, state.toasts.length + 1),
       }
 
-    case "UPDATE_TOAST":
+    case actionTypes.UPDATE_TOAST:
       return {
         ...state,
         toasts: state.toasts.map((t) =>
@@ -39,7 +39,7 @@ export const reducer = (state: State, action: Action): State => {
         ),
       }
 
-    case "DISMISS_TOAST": {
+    case actionTypes.DISMISS_TOAST: {
       const { toastId } = action
 
       if (toastId) {
@@ -63,7 +63,8 @@ export const reducer = (state: State, action: Action): State => {
         ),
       }
     }
-    case "REMOVE_TOAST":
+    
+    case actionTypes.REMOVE_TOAST:
       if (action.toastId === undefined) {
         return {
           ...state,
@@ -78,7 +79,7 @@ export const reducer = (state: State, action: Action): State => {
 }
 
 // Store listeners
-const listeners: Array<(state: State) => void> = []
+export const listeners: Array<(state: State) => void> = []
 export let memoryState: State = { toasts: [] }
 
 // Dispatch function
