@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -198,7 +199,7 @@ export function LoginTroubleHelper() {
           </Alert>
         )}
         
-        <Alert variant="info" className="bg-blue-50">
+        <Alert variant="default" className="bg-blue-50">
           <Mail className="h-4 w-4" />
           <AlertTitle>Conseil important</AlertTitle>
           <AlertDescription>
@@ -208,7 +209,7 @@ export function LoginTroubleHelper() {
           </AlertDescription>
         </Alert>
         
-        <Alert variant="warning" className="bg-amber-50">
+        <Alert variant="default" className="bg-amber-50">
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Attribution d'accès beta</AlertTitle>
           <AlertDescription>
