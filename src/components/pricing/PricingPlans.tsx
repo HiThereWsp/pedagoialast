@@ -4,10 +4,12 @@ import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
 import { handleSubscription } from "@/utils/subscription";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface PricingPlansProps {
+  currentPromoCode: string | null;
   isSubscribed: boolean;
   subscriptionType: string | null;
   isLoading: boolean;
@@ -15,6 +17,7 @@ interface PricingPlansProps {
 }
 
 export const PricingPlans = ({
+  currentPromoCode,
   isSubscribed,
   subscriptionType,
   isLoading,
@@ -43,8 +46,8 @@ export const PricingPlans = ({
     // Tracking Facebook
     facebookEvents.initiateCheckout('monthly', 11.90);
     
-    // Redirection vers Stripe
-    handleSubscription('monthly');
+    // Utiliser le code promo s'il existe
+    handleSubscription('monthly', currentPromoCode);
   };
 
   const handleYearlySubscription = async () => {
@@ -57,8 +60,8 @@ export const PricingPlans = ({
     // Tracking Facebook
     facebookEvents.initiateCheckout('yearly', 9.00);
     
-    // Redirection vers Stripe
-    handleSubscription('yearly');
+    // Utiliser le code promo s'il existe
+    handleSubscription('yearly', currentPromoCode);
   };
 
   // Texte du bouton selon l'état de l'abonnement
@@ -76,17 +79,6 @@ export const PricingPlans = ({
     return "Démarrer l'essai gratuit";
   };
 
-  // Modification: Ne pas désactiver les boutons en mode dev pour des tests
-  const isButtonDisabled = (planType) => {
-    // En environnement de développement, permettre toujours les clics
-    if (import.meta.env.DEV) {
-      return false;
-    }
-    
-    // En production, utiliser la logique standard
-    return isSubscribed && subscriptionType === planType;
-  };
-
   return (
     <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
       <PricingCard
@@ -102,7 +94,7 @@ export const PricingPlans = ({
         ]}
         ctaText={getButtonText('monthly')}
         onSubscribe={handleMonthlySubscription}
-        disabled={isButtonDisabled('monthly')}
+        disabled={isSubscribed && subscriptionType === 'monthly'}
       />
       <PricingCard
         title="Plan annuel"
@@ -118,7 +110,7 @@ export const PricingPlans = ({
         ]}
         ctaText={getButtonText('yearly')}
         onSubscribe={handleYearlySubscription}
-        disabled={isButtonDisabled('yearly')}
+        disabled={isSubscribed && subscriptionType === 'yearly'}
       />
       <PricingCard
         title="Établissement scolaire"

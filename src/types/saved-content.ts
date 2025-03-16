@@ -18,7 +18,6 @@ export interface SavedContent {
   additional_instructions?: string
   exercise_type?: string
   difficulty_level?: string
-  summary?: string
   tags: Array<{
     label: string
     color: string

@@ -1,8 +1,11 @@
 
 import { useState, useEffect } from "react";
+import { SEO } from "@/components/SEO";
 import { ExerciseForm, ResultDisplay } from "@/components/exercise";
 import { useExerciseGeneration } from "@/hooks/useExerciseGeneration";
 import type { ExerciseFormData } from "@/types/saved-content";
+import { Link, useNavigate } from "react-router-dom";
+import { Tiles } from "@/components/ui/tiles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DifferentiateExerciseForm from "@/components/exercise/form/DifferentiateExerciseForm";
 import { AlertTriangle, Save } from "lucide-react";
@@ -27,6 +30,7 @@ const defaultFormData: ExerciseFormData = {
 };
 
 export default function ExercisePage() {
+  const navigate = useNavigate();
   const { 
     generateExercises, 
     isLoading, 
@@ -49,6 +53,7 @@ export default function ExercisePage() {
     
     if (cacheState.formData) {
       console.log('Données de formulaire trouvées dans le cache');
+      // S'assurer que tous les champs requis sont présents
       setFormData({
         ...defaultFormData,
         ...cacheState.formData
@@ -83,6 +88,7 @@ export default function ExercisePage() {
     const currentExercises = exercises;
     
     // Réinitialisation de l'état des exercices pour éviter la persistance visuelle
+    // Cela indique clairement à l'utilisateur qu'une nouvelle génération est en cours
     setExercises("");
     
     const result = await generateExercises(formData, activeTab === "differentiate");
@@ -98,7 +104,7 @@ export default function ExercisePage() {
   };
 
   const handleTabChange = (tab: string) => {
-    if (tab === activeTab) return;
+    if (tab === activeTab) return; // Éviter les changements inutiles
     
     console.log('Changement d\'onglet:', tab);
     setActiveTab(tab as "create" | "differentiate");
@@ -107,6 +113,7 @@ export default function ExercisePage() {
     setExercises("");
     
     // Réinitialiser certains champs du formulaire spécifiques à chaque onglet
+    // tout en conservant les champs communs
     if (tab === "create") {
       setFormData(prev => ({
         ...prev,
@@ -131,67 +138,91 @@ export default function ExercisePage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-5xl font-extrabold mb-2 tracking-tight text-balance">
-          Générateur d'exercices
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-lg mx-auto">
-          Créez des exercices adaptés à vos besoins pédagogiques
-        </p>
-      </div>
-
-      <div className="max-w-4xl mx-auto">
-        {lastSaveError && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              Erreur lors de la sauvegarde : {lastSaveError}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="ml-4" 
-                onClick={handleRetrySave}
-                disabled={isSaving}
-              >
-                {isSaving ? "Sauvegarde..." : "Réessayer"} <Save className="h-4 w-4 ml-2" />
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        <Tabs 
-          defaultValue="create" 
-          value={activeTab}
-          onValueChange={handleTabChange}
-          className="mb-8"
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="create">Créer</TabsTrigger>
-            <TabsTrigger value="differentiate">Différencier</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="create" className="mt-6">
-            <ExerciseForm
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
+    <>
+      <SEO
+        title="Générateur d'exercices | PedagoIA"
+        description="Créez des exercices personnalisés pour vos élèves"
+      />
+      <div className="relative min-h-screen">
+        <div className="fixed inset-0 overflow-hidden">
+          <Tiles
+            rows={50}
+            cols={8}
+            tileSize="md"
+            className="opacity-30"
+          />
+        </div>
+        <div className="container relative z-10 mx-auto px-4 py-8">
+          <Link to="/home" className="block mb-8">
+            <img
+              src="/lovable-uploads/93d432b8-78fb-4807-ba55-719b6b6dc7ef.png"
+              alt="PedagoIA Logo"
+              className="w-[100px] h-[120px] object-contain mx-auto hover:scale-105 transition-transform duration-200"
             />
-          </TabsContent>
-          
-          <TabsContent value="differentiate" className="mt-6">
-            <DifferentiateExerciseForm
-              formData={formData}
-              handleInputChange={handleInputChange}
-              handleSubmit={handleSubmit}
-              isLoading={isLoading}
-            />
-          </TabsContent>
-        </Tabs>
+          </Link>
 
-        {exercises && <ResultDisplay exercises={exercises} />}
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-extrabold mb-2 tracking-tight text-balance">
+              Générateur d'exercices
+            </h1>
+            <p className="text-xl text-muted-foreground max-w-lg mx-auto">
+              Créez des exercices adaptés à vos besoins pédagogiques
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            {lastSaveError && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Erreur lors de la sauvegarde : {lastSaveError}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="ml-4" 
+                    onClick={handleRetrySave}
+                    disabled={isSaving}
+                  >
+                    {isSaving ? "Sauvegarde..." : "Réessayer"} <Save className="h-4 w-4 ml-2" />
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Tabs 
+              defaultValue="create" 
+              value={activeTab}
+              onValueChange={handleTabChange}
+              className="mb-8"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="create">Créer</TabsTrigger>
+                <TabsTrigger value="differentiate">Différencier</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="create" className="mt-6">
+                <ExerciseForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                />
+              </TabsContent>
+              
+              <TabsContent value="differentiate" className="mt-6">
+                <DifferentiateExerciseForm
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  handleSubmit={handleSubmit}
+                  isLoading={isLoading}
+                />
+              </TabsContent>
+            </Tabs>
+
+            {exercises && <ResultDisplay exercises={exercises} />}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

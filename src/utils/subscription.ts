@@ -9,7 +9,7 @@ const PRICE_IDS = {
   yearly: 'price_1R22GrIqXQKnGj4md4Ce7dgb'
 }
 
-export const handleSubscription = async (planType: SubscriptionType) => {
+export const handleSubscription = async (planType: SubscriptionType, promoCode?: string | null) => {
   const { data: { session } } = await supabase.auth.getSession()
   
   if (!session) {
@@ -24,7 +24,8 @@ export const handleSubscription = async (planType: SubscriptionType) => {
         body: { 
           planType,
           userId: session.user.id,
-          email: session.user.email
+          email: session.user.email,
+          promoCode: promoCode || undefined
         }
       })
     } catch (logError) {
@@ -37,7 +38,8 @@ export const handleSubscription = async (planType: SubscriptionType) => {
       body: { 
         priceId: PRICE_IDS[planType],
         subscriptionType: planType,
-        productId: planType === 'monthly' ? 'prod_Rvu5l79HX8EAis' : 'prod_Rvu5hv7FxnkHpv'
+        productId: planType === 'monthly' ? 'prod_Rvu5l79HX8EAis' : 'prod_Rvu5hv7FxnkHpv',
+        promoCode: promoCode || undefined
       }
     });
     

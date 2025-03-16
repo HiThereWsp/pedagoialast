@@ -1,9 +1,11 @@
+
 import React from 'react'
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import {FunctionsFetchError, FunctionsHttpError, FunctionsRelayError, User} from "@supabase/supabase-js"
 import { HomeSkeleton } from "@/components/home/HomeSkeleton"
+import { UserMenu } from "@/components/home/UserMenu"
 import { WelcomeMessage } from "@/components/home/WelcomeMessage"
 import { ActionButtons } from "@/components/home/ActionButtons"
 import { Footer } from "@/components/home/Footer"
@@ -151,6 +153,7 @@ const Home = () => {
           />
         </div>
         <div className="relative z-10 min-h-screen flex flex-col items-center px-6 py-8 max-w-md mx-auto">
+          <UserMenu />
           <WelcomeMessage firstName={firstName} />
           <ActionButtons />
           <Footer />
