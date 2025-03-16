@@ -1,9 +1,11 @@
 
 import React, { createContext, useContext, useEffect, useState, useRef } from "react"
 import { supabase } from "@/integrations/supabase/client"
-import { toast } from "@/hooks/use-toast" // Utilisation directe de toast plutôt que useToast
 import { useLocation } from "react-router-dom"
 import type { User } from "@supabase/supabase-js"
+
+// Import toast directly from toast.ts to avoid circular dependencies
+import { toast } from "@/hooks/toast/toast"
 
 type AuthContextType = {
   user: User | null
@@ -85,7 +87,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return
         }
         
+        // Ajout d'un délai maximum pour l'authentification
+        const authTimeout = setTimeout(() => {
+          if (mounted && loading) {
+            console.log("Timeout d'authentification atteint, définition de authReady=true")
+            setAuthReady(true)
+            setLoading(false)
+            authCheckCompleted.current = true
+          }
+        }, 5000) // 5 secondes maximum
+        
         const { data: { user }, error } = await supabase.auth.getUser()
+        
+        // Nettoyer le timeout puisque nous avons obtenu une réponse
+        clearTimeout(authTimeout)
         
         if (error) {
           console.error("Erreur lors de la vérification de l'utilisateur:", error)
