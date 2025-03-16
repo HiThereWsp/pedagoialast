@@ -1,103 +1,97 @@
 
-import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Check } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Check, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface PricingCardProps {
   title: string;
   price: string;
-  period?: string;
   originalPrice?: string;
+  period?: string;
+  description?: string;
   features: string[];
   ctaText: string;
   onSubscribe: () => void;
-  isPremium?: boolean;
   badge?: string;
+  isPremium?: boolean;
   disabled?: boolean;
+  isLoading?: boolean;
 }
 
-export const PricingCard = ({
+export function PricingCard({
   title,
   price,
-  period = "",
   originalPrice,
+  period = "",
+  description,
   features,
   ctaText,
   onSubscribe,
-  isPremium = false,
   badge,
-  disabled = false
-}: PricingCardProps) => {
+  isPremium = false,
+  disabled = false,
+  isLoading = false
+}: PricingCardProps) {
   return (
-    <div className="relative pt-5">
-      {badge && (
-        <Badge className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-[#FFA500] to-[#FF69B4] text-white font-semibold border-none shadow-md z-10">
-          {badge}
-        </Badge>
-      )}
-      
-      <Card
-        className={`relative overflow-hidden p-8 flex flex-col justify-between transform transition-all duration-300 hover:scale-105 ${
-          isPremium 
-            ? "shadow-xl border-2 border-transparent bg-gradient-to-b from-background to-background" 
-            : "shadow-md"
-        }`}
-        style={isPremium ? {
-          backgroundClip: "padding-box",
-          borderImage: "linear-gradient(to bottom, #FFA500, #FF69B4) 1",
-        } : {}}
-      >
-        <div>
-          <h3 className="text-2xl font-bold mb-3">{title}</h3>
-          
-          <div className="mb-6 flex flex-col items-center">
-            {isPremium ? (
-              // Style pour le prix du plan premium (annuel)
-              <>
-                <span className="text-4xl font-bold">{price}</span>
-                {period && <span className="text-muted-foreground ml-1">{period}</span>}
-                
-                {originalPrice && (
-                  <div className="mt-1">
-                    <span className="text-muted-foreground line-through text-4xl">
-                      {originalPrice}
-                    </span>
-                  </div>
-                )}
-              </>
-            ) : (
-              // Style pour le prix du plan mensuel
-              <div className="flex flex-col items-start">
-                <span className="text-4xl font-bold">{price}</span>
-                {period && <span className="text-4xl font-bold text-muted-foreground">{period}</span>}
-              </div>
-            )}
-          </div>
-          
-          <ul className="space-y-3 mb-8">
-            {features.map((feature, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-muted-foreground text-sm">{feature}</span>
-              </li>
-            ))}
-          </ul>
+    <Card className={cn(
+      "flex flex-col border shadow-sm hover:shadow transition-all duration-200",
+      isPremium && "border-primary/50 shadow-primary/10"
+    )}>
+      <CardHeader className={cn(
+        "pb-8",
+        isPremium && "bg-primary/5"
+      )}>
+        <div className="space-y-2">
+          {badge && (
+            <Badge variant={isPremium ? "default" : "secondary"} className="mb-2">
+              {badge}
+            </Badge>
+          )}
+          <h3 className="text-2xl font-bold leading-none">{title}</h3>
+          {description && <p className="text-sm text-muted-foreground">{description}</p>}
         </div>
-        
-        <Button
-          onClick={onSubscribe}
-          disabled={disabled}
-          className={`w-full transition-all duration-300 ${
-            isPremium
-              ? "bg-gradient-to-r from-[#FFA500] via-[#FF8C00] to-[#FF69B4] text-white hover:shadow-xl hover:shadow-primary/20 font-medium"
-              : "bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium"
-          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+        <div className="flex items-baseline gap-1 mt-4">
+          <span className="text-3xl font-bold">{price}</span>
+          {originalPrice && (
+            <span className="text-sm text-muted-foreground line-through ml-2">
+              {originalPrice}
+            </span>
+          )}
+          {period && <span className="text-sm text-muted-foreground">{period}</span>}
+        </div>
+      </CardHeader>
+      <CardContent className="flex-grow">
+        <ul className="space-y-2">
+          {features.map((feature, index) => (
+            <li key={index} className="flex items-start gap-2">
+              <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+              <span className="text-sm">{feature}</span>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+      <CardFooter className="pt-4">
+        <Button 
+          onClick={onSubscribe} 
+          className={cn(
+            "w-full", 
+            isPremium ? "bg-primary hover:bg-primary/90" : ""
+          )}
+          disabled={disabled || isLoading}
+          variant={isPremium ? "default" : "outline"}
         >
-          {ctaText}
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Chargement...
+            </>
+          ) : (
+            ctaText
+          )}
         </Button>
-      </Card>
-    </div>
+      </CardFooter>
+    </Card>
   );
-};
+}

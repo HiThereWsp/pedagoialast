@@ -2,6 +2,7 @@
 import { FacebookLoginButton, GoogleLoginButton } from "react-social-login-buttons";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 type Provider = "facebook" | "google";
 
@@ -11,13 +12,22 @@ interface SocialLoginButtonsProps {
 
 export function SocialLoginButtons({ isSignUp }: SocialLoginButtonsProps) {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState<Provider | null>(null);
 
   const handleSocialLogin = async (provider: Provider) => {
     try {
+      setIsLoading(provider);
+      
+      // Get the current URL for redirect
+      const origin = window.location.origin;
+      const redirectTo = `${origin}/login`;
+      
+      console.log(`Attempting ${provider} login with redirect to:`, redirectTo);
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: "https://pedagoia.fr/login"
+          redirectTo
         }
       });
 
@@ -36,6 +46,8 @@ export function SocialLoginButtons({ isSignUp }: SocialLoginButtonsProps) {
         title: "Erreur d'authentification",
         description: "Une erreur est survenue lors de la connexion. Veuillez réessayer.",
       });
+    } finally {
+      setIsLoading(null);
     }
   };
 
@@ -53,12 +65,28 @@ export function SocialLoginButtons({ isSignUp }: SocialLoginButtonsProps) {
       </div>
       
       <div className="space-y-4">
-        <FacebookLoginButton onClick={() => handleSocialLogin("facebook")}>
-          {isSignUp ? <span>S'inscrire avec Facebook</span> : <span>Se connecter avec Facebook</span>}
+        <FacebookLoginButton 
+          onClick={() => handleSocialLogin("facebook")}
+          disabled={isLoading !== null}
+        >
+          {isLoading === "facebook" 
+            ? <span>Connexion en cours...</span> 
+            : isSignUp 
+              ? <span>S'inscrire avec Facebook</span> 
+              : <span>Se connecter avec Facebook</span>
+          }
         </FacebookLoginButton>
         
-        <GoogleLoginButton onClick={() => handleSocialLogin("google")}>
-          {isSignUp ? <span>S'inscrire avec Google</span> : <span>Se connecter avec Google</span>}
+        <GoogleLoginButton 
+          onClick={() => handleSocialLogin("google")}
+          disabled={isLoading !== null}
+        >
+          {isLoading === "google" 
+            ? <span>Connexion en cours...</span> 
+            : isSignUp 
+              ? <span>S'inscrire avec Google</span> 
+              : <span>Se connecter avec Google</span>
+          }
         </GoogleLoginButton>
       </div>
     </div>
