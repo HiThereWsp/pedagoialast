@@ -14,9 +14,20 @@ import { TestimonialMainSection } from "@/components/landing/TestimonialMainSect
 import { ToolsSection } from "@/components/landing/ToolsSection";
 import { MetricsSection } from "@/components/landing/MetricsSection";
 import { posthog } from '@/integrations/posthog/client';
+import { useAuth } from '@/hooks/useAuth';
+import { UserMenu } from '@/components/home/UserMenu';
+import { WelcomeMessage } from '@/components/home/WelcomeMessage';
+import { ActionButtons } from '@/components/home/ActionButtons';
+import { UpdateNotification } from '@/components/home/UpdateNotification';
+import { useEffect as useEffectState, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { HomeSkeleton } from "@/components/home/HomeSkeleton";
 
 const Bienvenue = () => {
   const [searchParams] = useSearchParams();
+  const { user, authReady } = useAuth();
+  const [firstName, setFirstName] = useState<string>("");
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
   
   // Track redirect information if present
   useEffect(() => {
@@ -45,6 +56,70 @@ const Bienvenue = () => {
     }
   }, [searchParams]);
 
+  useEffectState(() => {
+    const loadUserProfile = async () => {
+      if (!user) return;
+      
+      try {
+        setIsProfileLoading(true);
+        console.log("Chargement du profil utilisateur...");
+        
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', user.id)
+          .single();
+          
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          return;
+        }
+        
+        if (profile) {
+          console.log("Profil chargé:", profile.first_name);
+          setFirstName(profile.first_name);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setIsProfileLoading(false);
+      }
+    };
+    
+    if (authReady && user) {
+      loadUserProfile();
+    }
+  }, [user, authReady]);
+
+  // Si l'utilisateur est connecté, afficher la page d'accueil personnalisée
+  if (user) {
+    if (isProfileLoading) {
+      return <HomeSkeleton />;
+    }
+
+    return (
+      <>
+        <SEO
+          title="Tableau de bord | PedagoIA - Votre assistant pédagogique"
+          description="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé."
+        />
+        <div className="relative min-h-screen">
+          <div className="fixed inset-0 overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 opacity-50" />
+          </div>
+          <div className="relative z-10 min-h-screen flex flex-col items-center px-6 py-8 max-w-md mx-auto">
+            <UserMenu />
+            <WelcomeMessage firstName={firstName} />
+            <ActionButtons />
+            <Footer />
+            <UpdateNotification />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Sinon, afficher la page de bienvenue publique
   return (
     <div className="min-h-screen flex flex-col">
       <SEO 

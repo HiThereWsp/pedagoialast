@@ -2,6 +2,9 @@
 # Redirect root to bienvenue page
 / /bienvenue 301
 
+# Redirect old home to bienvenue
+/home /bienvenue 301
+
 /* /index.html 200
 
 # Redirections spéciales pour les créateurs
