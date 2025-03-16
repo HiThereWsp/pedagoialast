@@ -1,12 +1,14 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, Info, Mail, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
+import { 
+  DiagnosticResult, 
+  InfoAlerts, 
+  UserForm, 
+  ActionButtons 
+} from "./trouble-helper";
 
 export function LoginTroubleHelper() {
   const [email, setEmail] = useState("");
@@ -115,141 +117,28 @@ export function LoginTroubleHelper() {
       </CardHeader>
       
       <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium text-muted-foreground">
-            Email utilisateur
-          </label>
-          <Input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="utilisateur@exemple.fr"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <label htmlFor="adminKey" className="text-sm font-medium text-muted-foreground">
-            Clé admin
-          </label>
-          <Input
-            id="adminKey"
-            type="password"
-            value={adminKey}
-            onChange={(e) => setAdminKey(e.target.value)}
-            placeholder="Clé secrète admin"
-          />
-        </div>
+        <UserForm 
+          email={email}
+          setEmail={setEmail}
+          adminKey={adminKey}
+          setAdminKey={setAdminKey}
+        />
 
-        {results && (
-          <Alert variant={results.diagnosticInfo?.userFound ? "default" : "destructive"}>
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Résultat du diagnostic</AlertTitle>
-            <AlertDescription className="mt-2">
-              {results.diagnosticInfo?.userFound ? (
-                <div className="space-y-2">
-                  <p><strong>Utilisateur trouvé:</strong> {results.email}</p>
-                  <p><strong>Identités:</strong></p>
-                  <ul className="list-disc pl-5 space-y-1">
-                    {results.diagnosticInfo.hasFacebookIdentity && (
-                      <li>Facebook <CheckCircle2 className="inline h-4 w-4 text-green-600" /></li>
-                    )}
-                    {results.diagnosticInfo.hasGoogleIdentity && (
-                      <li>Google <CheckCircle2 className="inline h-4 w-4 text-green-600" /></li>
-                    )}
-                    {results.diagnosticInfo.hasEmailIdentity && (
-                      <li>Email/Mot de passe <CheckCircle2 className="inline h-4 w-4 text-green-600" /></li>
-                    )}
-                    {!results.diagnosticInfo.hasFacebookIdentity && 
-                     !results.diagnosticInfo.hasGoogleIdentity && 
-                     !results.diagnosticInfo.hasEmailIdentity && (
-                      <li>Aucune identité complète détectée</li>
-                    )}
-                  </ul>
-                  
-                  {results.diagnosticInfo?.subscription && (
-                    <div className="bg-green-50 p-2 rounded border border-green-200 mt-2">
-                      <CheckCircle2 className="inline h-4 w-4 text-green-600 mr-1" />
-                      <span className="text-green-800">
-                        Abonnement <strong>{results.diagnosticInfo.subscription.type}</strong> actif 
-                        jusqu'au {new Date(results.diagnosticInfo.subscription.expires_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <div className="bg-amber-50 p-2 rounded border border-amber-200 mt-2">
-                    <Info className="inline h-4 w-4 text-amber-600 mr-1" />
-                    <span className="text-amber-800">
-                      {results.diagnosticInfo.recommendation}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <p>Aucun utilisateur trouvé avec cet email.</p>
-                  <div className="bg-blue-50 p-2 rounded border border-blue-200 mt-2">
-                    <Info className="inline h-4 w-4 text-blue-600 mr-1" />
-                    <span className="text-blue-800">
-                      {results.diagnosticInfo?.recommendation}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </AlertDescription>
-          </Alert>
-        )}
+        <DiagnosticResult results={results} />
         
-        <Alert variant="default" className="bg-blue-50">
-          <Mail className="h-4 w-4" />
-          <AlertTitle>Conseil important</AlertTitle>
-          <AlertDescription>
-            Si un utilisateur ne reçoit pas le lien magique ou l'email de réinitialisation, 
-            recommandez-lui de vérifier son dossier spam/indésirables. Certains fournisseurs 
-            de messagerie peuvent bloquer nos emails.
-          </AlertDescription>
-        </Alert>
-        
-        <Alert variant="default" className="bg-amber-50">
-          <ShieldAlert className="h-4 w-4" />
-          <AlertTitle>Attribution d'accès beta</AlertTitle>
-          <AlertDescription>
-            L'accès beta est désormais attribué manuellement uniquement aux utilisateurs sélectionnés.
-            Les nouveaux utilisateurs reçoivent par défaut un accès d'essai de 3 jours.
-            L'attribution d'un accès beta prolonge l'accès pendant un an.
-          </AlertDescription>
-        </Alert>
+        <InfoAlerts />
       </CardContent>
       
       <CardFooter className="flex flex-col space-y-2">
-        <Button 
-          onClick={diagnoseUser} 
-          disabled={loading} 
-          className="w-full"
-        >
-          {loading ? "Diagnostic en cours..." : "Diagnostiquer"}
-        </Button>
-        
-        {results && (
-          <>
-            <Button
-              variant="outline"
-              onClick={sendMagicLink}
-              disabled={sendingInvite}
-              className="w-full"
-            >
-              {sendingInvite ? "Envoi en cours..." : "Envoyer un lien magique"}
-            </Button>
-            
-            <Button
-              variant="secondary"
-              onClick={assignBetaAccess}
-              disabled={assigningBeta}
-              className="w-full"
-            >
-              {assigningBeta ? "Attribution en cours..." : "Attribuer accès beta"}
-            </Button>
-          </>
-        )}
+        <ActionButtons 
+          loading={loading}
+          results={results}
+          sendingInvite={sendingInvite}
+          assigningBeta={assigningBeta}
+          onDiagnose={diagnoseUser}
+          onSendMagicLink={sendMagicLink}
+          onAssignBetaAccess={assignBetaAccess}
+        />
       </CardFooter>
     </Card>
   );
