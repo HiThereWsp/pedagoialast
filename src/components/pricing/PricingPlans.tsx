@@ -4,10 +4,12 @@ import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
 import { handleSubscription } from "@/utils/subscription";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface PricingPlansProps {
+  currentPromoCode: string | null;
   isSubscribed: boolean;
   subscriptionType: string | null;
   isLoading: boolean;
@@ -15,18 +17,24 @@ interface PricingPlansProps {
 }
 
 export const PricingPlans = ({
+  currentPromoCode,
   isSubscribed,
   subscriptionType,
   isLoading,
   onSchoolContactRequest
 }: PricingPlansProps) => {
+  const [processingPlan, setProcessingPlan] = useState<string | null>(null);
+  
   // Vérifier si l'utilisateur est connecté
   const checkAuth = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
       toast.error("Veuillez vous connecter pour souscrire à un abonnement");
-      window.location.href = '/login?redirect=/pricing';
+      
+      // Stocker l'URL actuelle pour rediriger après connexion
+      const returnUrl = new URL(window.location.href);
+      window.location.href = `/login?redirect=${encodeURIComponent(returnUrl.pathname)}`;
       return false;
     }
     
@@ -34,35 +42,62 @@ export const PricingPlans = ({
   };
 
   const handleMonthlySubscription = async () => {
-    if (!await checkAuth()) return;
-    
-    // Tracking PostHog
-    pricingEvents.selectPlan('premium');
-    subscriptionEvents.subscriptionStarted('monthly', 11.90);
-    
-    // Tracking Facebook
-    facebookEvents.initiateCheckout('monthly', 11.90);
-    
-    // Redirection vers Stripe
-    handleSubscription('monthly');
+    try {
+      setProcessingPlan('monthly');
+      
+      if (!await checkAuth()) {
+        setProcessingPlan(null);
+        return;
+      }
+      
+      // Tracking PostHog
+      pricingEvents.selectPlan('premium');
+      subscriptionEvents.subscriptionStarted('monthly', 11.90);
+      
+      // Tracking Facebook
+      facebookEvents.initiateCheckout('monthly', 11.90);
+      
+      // Utiliser le code promo s'il existe
+      toast.info("Redirection vers la page de paiement...");
+      await handleSubscription('monthly', currentPromoCode);
+    } catch (error) {
+      console.error("Erreur lors de la souscription mensuelle:", error);
+      toast.error("Une erreur est survenue lors de la préparation du paiement. Veuillez réessayer.");
+    } finally {
+      setProcessingPlan(null);
+    }
   };
 
   const handleYearlySubscription = async () => {
-    if (!await checkAuth()) return;
-    
-    // Tracking PostHog
-    pricingEvents.selectPlan('premium');
-    subscriptionEvents.subscriptionStarted('yearly', 9.90);
-    
-    // Tracking Facebook
-    facebookEvents.initiateCheckout('yearly', 9.00);
-    
-    // Redirection vers Stripe
-    handleSubscription('yearly');
+    try {
+      setProcessingPlan('yearly');
+      
+      if (!await checkAuth()) {
+        setProcessingPlan(null);
+        return;
+      }
+      
+      // Tracking PostHog
+      pricingEvents.selectPlan('premium');
+      subscriptionEvents.subscriptionStarted('yearly', 9.90);
+      
+      // Tracking Facebook
+      facebookEvents.initiateCheckout('yearly', 9.00);
+      
+      // Utiliser le code promo s'il existe
+      toast.info("Redirection vers la page de paiement...");
+      await handleSubscription('yearly', currentPromoCode);
+    } catch (error) {
+      console.error("Erreur lors de la souscription annuelle:", error);
+      toast.error("Une erreur est survenue lors de la préparation du paiement. Veuillez réessayer.");
+    } finally {
+      setProcessingPlan(null);
+    }
   };
 
   // Texte du bouton selon l'état de l'abonnement
   const getButtonText = (planType) => {
+    if (processingPlan === planType) return "Redirection en cours...";
     if (isLoading) return "Chargement...";
     
     if (isSubscribed) {
@@ -78,6 +113,9 @@ export const PricingPlans = ({
 
   // Modification: Ne pas désactiver les boutons en mode dev pour des tests
   const isButtonDisabled = (planType) => {
+    // Bouton désactivé pendant le traitement
+    if (processingPlan) return true;
+    
     // En environnement de développement, permettre toujours les clics
     if (import.meta.env.DEV) {
       return false;
@@ -103,6 +141,7 @@ export const PricingPlans = ({
         ctaText={getButtonText('monthly')}
         onSubscribe={handleMonthlySubscription}
         disabled={isButtonDisabled('monthly')}
+        isLoading={processingPlan === 'monthly'}
       />
       <PricingCard
         title="Plan annuel"
@@ -119,6 +158,7 @@ export const PricingPlans = ({
         ctaText={getButtonText('yearly')}
         onSubscribe={handleYearlySubscription}
         disabled={isButtonDisabled('yearly')}
+        isLoading={processingPlan === 'yearly'}
       />
       <PricingCard
         title="Établissement scolaire"

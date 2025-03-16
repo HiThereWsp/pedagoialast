@@ -47,8 +47,8 @@ export function LoginDialog() {
         duration: 3000,
       });
 
-      // Redirect to tableaudebord page
-      navigate('/tableaudebord', { replace: true });
+      // Redirect to home page
+      navigate('/home', { replace: true });
       
     } catch (error) {
       console.error("Login error:", error);

@@ -100,7 +100,39 @@ serve(async (req) => {
       );
     }
 
-    // Vérifier l'abonnement dans la table user_subscriptions, y compris les abonnements beta
+    // Vérifier si c'est un utilisateur beta
+    console.log("Checking if user is beta user");
+    try {
+      const { data: betaUser, error: betaError } = await supabaseClient
+        .from('beta_users')
+        .select('*')
+        .eq('email', user.email)
+        .single();
+        
+      if (betaError && betaError.code !== 'PGRST116') {
+        console.error("Beta user check error:", betaError);
+      }
+        
+      if (betaUser) {
+        console.log('Utilisateur beta trouvé');
+        return new Response(
+          JSON.stringify({ 
+            access: true, 
+            type: 'beta',
+            expires_at: null,
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        );
+      }
+    } catch (betaCheckError) {
+      console.error("Error checking beta user:", betaCheckError);
+      // Continue avec la vérification des abonnements même si la vérification beta échoue
+    }
+
+    // Vérifier l'abonnement dans la table user_subscriptions
     console.log("Checking subscription for user");
     try {
       const { data: subscription, error: subError } = await supabaseClient

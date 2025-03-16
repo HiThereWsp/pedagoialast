@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { SEO } from "@/components/SEO";
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -70,7 +69,7 @@ export const ToolsLayout = () => {
             <div className="flex flex-col h-full">
               {/* Logo centré avec taille réduite */}
               <div className="flex justify-center items-center py-4 border-b border-gray-200">
-                <a href="/tableaudebord" className="flex items-center justify-center">
+                <a href="/home" className="flex items-center justify-center">
                   <img 
                     src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                     alt="PedagoIA Logo" 
@@ -98,7 +97,7 @@ export const ToolsLayout = () => {
             </Button>
             
             <div className="flex-1 flex justify-center">
-              <a href="/tableaudebord" className="flex items-center justify-center">
+              <a href="/home" className="flex items-center justify-center">
                 <img 
                   src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                   alt="PedagoIA Logo" 
@@ -108,6 +107,8 @@ export const ToolsLayout = () => {
             </div>
           </div>
         )}
+        
+        {/* Menu mobile dans un drawer - Now removed as we use BottomBar instead */}
         
         {/* Contenu principal avec marge à gauche pour la sidebar sur desktop */}
         <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : 'mt-16 mb-16'}`}>

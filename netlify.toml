@@ -15,12 +15,6 @@
   to = "/bienvenue"
   status = 301
 
-# Redirect old home to tableaudebord
-[[redirects]]
-  from = "/home"
-  to = "/tableaudebord"
-  status = 301
-
 [[redirects]]
   from = "/t20/*"
   to = "/.netlify/functions/redirect/t20/:splat"

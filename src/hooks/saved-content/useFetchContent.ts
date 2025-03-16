@@ -1,70 +1,65 @@
 
-import { useCallback, useState, useRef } from "react";
+import { useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import type { SavedContent } from "@/types/saved-content";
 import { FetchConfig } from "./types";
+import { useContentCache } from "./useContentCache";
+import { useRequestStatus } from "./useRequestStatus";
+import { useContentErrors } from "./useContentErrors";
 import { useContentRetrieval } from "./useContentRetrieval";
-import { useFetchAbortController } from "./useFetchAbortController";
-import { useContentProcessing } from "./useContentProcessing";
-import { useRetryStrategy } from "./useRetryStrategy";
 
 export function useFetchContent() {
-  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const hasLoadedData = useRef(false);
-  
-  const { user, authReady } = useAuth();
-  const { toast } = useToast();
-
-  const {
+  const { errors, addError, showErrorToast } = useContentErrors();
+  const { 
+    isLoadingInitial, 
+    isRefreshing,
     shouldThrottleRequest,
     createAbortController,
     abortRequest,
-    markRequestStart,
-    markRequestEnd,
-    isFetchInProgress
-  } = useFetchAbortController();
+    startRequest,
+    finishRequest,
+    incrementRetryCount,
+    setLoading,
+    hasLoaded
+  } = useRequestStatus();
   
   const {
-    savePartialContent,
-    processFinalContent,
-    handleFetchError,
     getCachedContent,
     updateCache,
     getPendingContent,
     updatePendingContent,
-    setDataReceived,
+    invalidateCache,
     hasDataReceived,
-    invalidateCache
-  } = useContentProcessing();
-  
-  const {
-    startRequest,
-    resetRetryCount,
-    incrementRetryCount,
-    handleRetry
-  } = useRetryStrategy();
+    setDataReceived
+  } = useContentCache();
 
   const {
     retrieveExercises,
     retrieveLessonPlans,
     retrieveCorrespondences,
     retrieveImages,
+    handleRetry,
     isContentLoading
   } = useContentRetrieval();
+  
+  const { toast } = useToast();
+  const { user, authReady } = useAuth();
 
   // Fonction améliorée qui n'annule que les requêtes non terminées et préserve les données partielles
   const cancelFetch = useCallback(() => {
-    savePartialContent();
+    // CORRECTION CRITIQUE: Si des données partielles ont été récupérées, on les sauvegarde dans le cache AVANT d'annuler
+    const pendingContent = getPendingContent();
+    if (pendingContent && pendingContent.length > 0) {
+      console.log(`⚠️ Sauvegarde des ${pendingContent.length} éléments dans le cache avant annulation`);
+      updateCache(pendingContent);
+      setDataReceived(true);
+    } else {
+      console.log("🛑 Annulation d'une requête en cours (aucune donnée partielle)");
+    }
+    
     abortRequest();
-  }, [abortRequest, savePartialContent]);
-
-  // Définir l'état de chargement
-  const setLoading = useCallback((loading: boolean, refreshing: boolean = false) => {
-    setIsLoadingInitial(loading);
-    setIsRefreshing(refreshing);
-  }, []);
+  }, [abortRequest, getPendingContent, updateCache, setDataReceived]);
 
   const fetchContent = useCallback(async ({ forceRefresh = false, signal }: FetchConfig = {}): Promise<SavedContent[]> => {
     // 📋 DEBUG: Vérification de l'état d'authentification
@@ -106,7 +101,6 @@ export function useFetchContent() {
     
     // Incrémenter le compteur de requêtes pour le débogage
     const currentRequest = startRequest();
-    markRequestStart();
     
     try {
       if (forceRefresh) {
@@ -153,7 +147,9 @@ export function useFetchContent() {
         if (partialContent && partialContent.length > 0) {
           console.log(`🔆 [Requête ${currentRequest}] Utilisation des données partielles: ${partialContent.length} éléments`);
           // Trier les données partielles avant de les retourner
-          const sortedPartialContent = processFinalContent(partialContent);
+          const sortedPartialContent = partialContent.sort((a, b) => 
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
           
           // Mettre à jour le cache avec les données partielles
           updateCache(sortedPartialContent);
@@ -180,8 +176,10 @@ export function useFetchContent() {
         ...images
       ].filter(Boolean);
 
-      // Trier et finaliser le contenu
-      const sortedContent = processFinalContent(allContent);
+      // Trier par date de création (plus récent en premier)
+      const sortedContent = allContent.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
       
       console.log(`✅ [Requête ${currentRequest}] Récupération terminée avec ${sortedContent.length} éléments`);
       
@@ -197,7 +195,7 @@ export function useFetchContent() {
       return sortedContent;
 
     } catch (err) {
-      handleFetchError(err, currentRequest);
+      console.error(`❌ [Requête ${currentRequest}] Erreur lors du chargement des contenus:`, err);
       
       if (abortSignal.aborted) {
         // Utiliser les données partielles si disponibles
@@ -217,14 +215,19 @@ export function useFetchContent() {
         return fetchContent({ forceRefresh: true, signal: abortSignal });
       }
       
+      if (err instanceof Error) {
+        addError('images', "Une erreur est survenue lors du chargement de vos contenus");
+        
+        showErrorToast(
+          "Erreur de chargement", 
+          "Impossible de charger vos contenus. Veuillez réessayer ultérieurement."
+        );
+      }
+      
       // CORRECTION: Toujours retourner le cache même en cas d'erreur
       return getCachedContent();
     } finally {
-      markRequestEnd();
-      hasLoadedData.current = true;
-      resetRetryCount();
-      setLoading(false);
-      setIsRefreshing(false);
+      finishRequest();
     }
   }, [
     user, 
@@ -232,36 +235,32 @@ export function useFetchContent() {
     shouldThrottleRequest,
     createAbortController,
     startRequest,
-    markRequestStart,
-    markRequestEnd,
-    resetRetryCount,
     retrieveExercises,
     retrieveLessonPlans,
     retrieveCorrespondences,
     retrieveImages,
     getPendingContent,
     updatePendingContent,
-    processFinalContent,
     hasDataReceived,
     setDataReceived,
     getCachedContent,
     updateCache,
     handleRetry,
     incrementRetryCount,
-    handleFetchError,
-    setLoading
+    finishRequest,
+    setLoading,
+    addError,
+    showErrorToast
   ]);
 
-  const hasLoaded = useCallback(() => {
-    return hasLoadedData.current;
-  }, []);
+  const isLoading = isLoadingInitial || isContentLoading;
 
   return {
     fetchContent,
     cancelFetch,
     invalidateCache,
-    errors: {},  // Maintenant géré par useContentErrors
-    isLoading: isLoadingInitial || isContentLoading,
+    errors,
+    isLoading,
     isRefreshing,
     hasLoadedData: hasLoaded,
     cleanupImageContent: cancelFetch

@@ -138,6 +138,20 @@ serve(async (req) => {
       // Autoriser les codes promo pré-définis dans Stripe
       allow_promotion_codes: true
     };
+    
+    // Si un code promo spécifique est fourni, essayer de l'appliquer
+    if (promoCode) {
+      try {
+        // Loguer l'utilisation du code promo
+        console.log(`Attempting to use promo code: ${promoCode}`);
+        
+        // Stocker le code promo dans les métadonnées pour le suivi
+        sessionParams.metadata.applied_promo_code = promoCode;
+      } catch (promoError) {
+        console.error('Error with promo code:', promoError);
+        // Continuer sans le code promo en cas d'erreur
+      }
+    }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
     console.log('Checkout session created:', session.id)
