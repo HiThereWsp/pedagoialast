@@ -95,6 +95,9 @@ export const useSubscription = () => {
   const requireSubscription = () => {
     if (status.isLoading) return true; // Attendre le chargement
     
+    // Toujours considérer les utilisateurs beta comme ayant un abonnement valide
+    if (status.type === 'beta') return true;
+    
     if (!status.isActive) {
       toast.error("Abonnement requis pour accéder à cette fonctionnalité");
       window.location.href = '/pricing';
@@ -105,7 +108,7 @@ export const useSubscription = () => {
   };
 
   return {
-    isSubscribed: status.isActive,
+    isSubscribed: status.isActive || status.type === 'beta', // Les utilisateurs beta sont toujours considérés comme abonnés
     subscriptionType: status.type,
     expiresAt: status.expiresAt,
     isLoading: status.isLoading,

@@ -9,7 +9,7 @@ interface SubscriptionRouteProps {
 }
 
 export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
-  const { isSubscribed, isLoading } = useSubscription();
+  const { isSubscribed, subscriptionType, isLoading } = useSubscription();
   const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
@@ -25,13 +25,13 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <LoadingIndicator />
-          {/* Message de vérification supprimé */}
         </div>
       </div>
     );
   }
   
-  if (!isSubscribed) {
+  // Les utilisateurs beta ont toujours un abonnement valide
+  if (!isSubscribed && subscriptionType !== 'beta') {
     return <Navigate to="/pricing" replace />;
   }
   

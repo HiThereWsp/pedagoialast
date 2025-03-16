@@ -3,7 +3,7 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -50,6 +50,13 @@ export function SubscriptionStatus() {
     }
   };
   
+  const getBadgeVariant = () => {
+    if (subscriptionType === 'beta') {
+      return 'secondary';
+    }
+    return 'default';
+  };
+  
   const formatExpiryDate = () => {
     if (!expiresAt) return 'Date inconnue';
     
@@ -62,12 +69,26 @@ export function SubscriptionStatus() {
     }
   };
   
+  const renderIcon = () => {
+    if (subscriptionType === 'beta') {
+      return <Star className="h-4 w-4 mr-1 text-yellow-500" />;
+    }
+    return null;
+  };
+  
   return (
     <Card className="p-6">
       <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold">{getPlanName()}</h3>
-        <Badge variant={subscriptionType === 'beta' ? 'outline' : 'default'} className="bg-green-100 text-green-800 hover:bg-green-100">
-          Actif
+        <h3 className="text-lg font-semibold flex items-center">
+          {renderIcon()}
+          {getPlanName()}
+        </h3>
+        <Badge variant={getBadgeVariant()} className={
+          subscriptionType === 'beta' 
+            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" 
+            : "bg-green-100 text-green-800 hover:bg-green-100"
+        }>
+          {subscriptionType === 'beta' ? "Accès Beta" : "Actif"}
         </Badge>
       </div>
       
@@ -79,9 +100,11 @@ export function SubscriptionStatus() {
       )}
       
       <div className="mt-4 flex gap-2">
-        <Button variant="outline" size="sm" onClick={() => navigate("/pricing")}>
-          Gérer l'abonnement
-        </Button>
+        {subscriptionType !== 'beta' && (
+          <Button variant="outline" size="sm" onClick={() => navigate("/pricing")}>
+            Gérer l'abonnement
+          </Button>
+        )}
       </div>
     </Card>
   );
