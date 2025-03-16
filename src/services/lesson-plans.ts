@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client"
 import type { SaveLessonPlanParams } from "@/types/saved-content"
 import { toast } from "@/hooks/use-toast"
@@ -21,6 +22,7 @@ export const lessonPlansService = {
           title: params.title,
           content: params.content,
           subject: params.subject,
+          subject_matter: params.subject_matter,
           class_level: params.class_level,
           total_sessions: params.total_sessions,
           additional_instructions: params.additional_instructions,
@@ -86,6 +88,7 @@ export const lessonPlansService = {
         title: plan.title,
         content: plan.content,
         subject: plan.subject || '',
+        subject_matter: plan.subject_matter || '',
         class_level: plan.class_level || '',
         created_at: plan.created_at,
         type: 'lesson-plan' as const,

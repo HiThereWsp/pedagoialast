@@ -10,7 +10,7 @@ interface LessonPlanFormData {
   additionalInstructions: string;
   totalSessions: string;
   subject: string;
-  subject_matter?: string;
+  subject_matter: string;
   text: string;
   lessonPlan: string;
 }
@@ -88,7 +88,7 @@ export function useLessonPlanGeneration() {
     if (!formData.classLevel || !formData.totalSessions || !formData.subject_matter) {
       toast({
         variant: "destructive",
-        description: "Veuillez remplir tous les champs obligatoires de niveau et matière."
+        description: "Veuillez remplir tous les champs obligatoires de niveau, matière et nombre de séances."
       });
       return;
     }
