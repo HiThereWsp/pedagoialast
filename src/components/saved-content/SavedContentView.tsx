@@ -78,8 +78,7 @@ export const SavedContentView: React.FC = () => {
     forceRefresh,
     invalidateCache,
     authReady,
-    user,
-    toast
+    user
   );
 
   // Update stable content when content changes

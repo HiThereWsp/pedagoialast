@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { toast } from "@/hooks/use-toast"; // Utilisation directe de toast
+import { toast } from "../toast/toast"; // Utilisation directe de toast
 
 /**
  * Hook for handling initial content loading
