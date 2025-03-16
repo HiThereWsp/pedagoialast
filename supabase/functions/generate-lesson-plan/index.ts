@@ -11,7 +11,7 @@ interface RequestBody {
   classLevel: string;
   totalSessions: string;
   subject: string;
-  subject_matter?: string;
+  subject_matter: string;
   text?: string;
   additionalInstructions?: string;
 }
@@ -35,7 +35,7 @@ async function generateLessonPlan(body: RequestBody): Promise<string> {
   if (!subject_matter) throw new Error('La matière est requise');
 
   // Construction du prompt avec une introduction simplifiée
-  let prompt = `En tant qu'enseignant expert de l'Éducation Nationale française, créez une séquence pédagogique détaillée pour une classe de ${classLevel} en ${subject_matter || 'matière non spécifiée'}, centrée sur ${subject}.`;
+  let prompt = `En tant qu'enseignant expert de l'Éducation Nationale française, créez une séquence pédagogique détaillée pour une classe de ${classLevel} en ${subject_matter}, centrée sur ${subject}.`;
 
   // Ajout des objectifs d'apprentissage (maintenant obligatoires)
   prompt += `\n\nObjectifs d'apprentissage précis : ${subject}`;

@@ -59,28 +59,6 @@ export const useAuthForm = () => {
     }
   }
 
-  const checkUserExists = async (email: string): Promise<boolean> => {
-    try {
-      // Tentative de connexion avec un mot de passe aléatoire pour vérifier si l'email existe
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: `incorrect-password-${Date.now()}`,
-      })
-
-      // Si l'erreur indique des identifiants invalides, l'utilisateur existe
-      if (error instanceof AuthApiError && 
-          error.status === 400 && 
-          error.message.includes("Invalid login credentials")) {
-        return true
-      }
-
-      return false
-    } catch (error) {
-      console.error("Erreur lors de la vérification de l'email:", error)
-      return false
-    }
-  }
-
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormState(prev => ({ ...prev, isLoading: true }))
@@ -91,13 +69,11 @@ export const useAuthForm = () => {
         throw new Error("Email et mot de passe requis")
       }
 
-      // Vérifier si l'utilisateur existe déjà
-      const exists = await checkUserExists(formState.email)
-      if (exists) {
-        setExistingUserDetected(true)
-        setFormState(prev => ({ ...prev, isLoading: false }))
-        return
-      }
+      console.log("Tentative d'inscription avec:", { 
+        email: formState.email, 
+        hasPassword: !!formState.password,
+        hasFirstName: !!formState.firstName
+      })
 
       const { error } = await supabase.auth.signUp({
         email: formState.email,
@@ -110,19 +86,26 @@ export const useAuthForm = () => {
       })
 
       if (error) {
+        console.log("Erreur d'inscription:", error.message)
+        
         // Si c'est une erreur d'utilisateur existant, on la gère spécifiquement
         if (isUserExistsError(error)) {
+          console.log("Utilisateur existant détecté")
           setExistingUserDetected(true)
           return
         }
         throw error
       }
 
+      console.log("Inscription réussie")
       setSignUpSuccess(true)
     } catch (error) {
+      console.error("Erreur complète:", error)
+      
       if (error instanceof AuthError) {
         // Double vérification pour les erreurs d'utilisateur existant
         if (isUserExistsError(error)) {
+          console.log("Utilisateur existant détecté (catch)")
           setExistingUserDetected(true)
           return
         }

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -11,92 +11,195 @@ type SubscriptionStatus = {
   error: string | null;
 };
 
-export const useSubscription = () => {
-  const [status, setStatus] = useState<SubscriptionStatus>({
-    isActive: false,
-    type: null,
-    expiresAt: null,
-    isLoading: true,
-    error: null
-  });
+const initialStatus: SubscriptionStatus = {
+  isActive: false,
+  type: null,
+  expiresAt: null,
+  isLoading: true,
+  error: null
+};
 
-  const checkSubscription = async () => {
-    setStatus(prev => ({ ...prev, isLoading: true, error: null }));
-    
+/**
+ * Hook personnalisé pour gérer l'état et la vérification des abonnements
+ */
+export const useSubscription = () => {
+  const [status, setStatus] = useState<SubscriptionStatus>(initialStatus);
+
+  /**
+   * Vérifie si l'utilisateur est en mode développement
+   * @returns {boolean} True si en mode développement
+   */
+  const checkDevMode = useCallback(() => {
+    if (import.meta.env.DEV) {
+      console.log("Mode développement détecté, simulation d'un abonnement actif");
+      setStatus({
+        isActive: true,
+        type: 'dev_mode',
+        expiresAt: null,
+        isLoading: false,
+        error: null
+      });
+      return true;
+    }
+    return false;
+  }, []);
+
+  /**
+   * Vérifie l'état de la session utilisateur
+   * @returns {Promise<Session | null>} La session ou null si non authentifié
+   */
+  const checkUserSession = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Erreur lors de la récupération de la session:", error.message);
+        setStatus(prev => ({
+          ...prev,
+          isLoading: false,
+          error: `Erreur session: ${error.message}`
+        }));
+        return null;
+      }
       
       if (!session) {
-        console.log("No session found in useSubscription");
+        console.log("Aucune session trouvée dans useSubscription");
         setStatus({
-          isActive: false,
-          type: null,
-          expiresAt: null,
+          ...initialStatus,
           isLoading: false,
           error: 'Non authentifié'
         });
-        return;
+        return null;
       }
       
-      // En mode développement, simuler un abonnement actif pour faciliter les tests
-      if (import.meta.env.DEV) {
-        console.log("Dev mode detected in useSubscription, simulating active subscription");
-        setStatus({
-          isActive: true,
-          type: 'dev_mode',
-          expiresAt: null,
-          isLoading: false,
-          error: null
-        });
-        return;
-      }
-      
-      console.log("Invoking check-user-access function");
+      return session;
+    } catch (err) {
+      console.error("Exception lors de la vérification de session:", err);
+      setStatus(prev => ({
+        ...prev,
+        isLoading: false,
+        error: `Exception: ${err.message}`
+      }));
+      return null;
+    }
+  }, []);
+
+  /**
+   * Gère les erreurs de fonction edge
+   * @param {any} error L'erreur retournée
+   */
+  const handleEdgeFunctionError = useCallback((error) => {
+    console.error('Erreur edge function:', error);
+    
+    // Message d'erreur plus descriptif selon le contexte
+    const errorMessage = error.message && error.message.includes("enum") 
+      ? "Erreur de configuration serveur (types manquants)" 
+      : error.message || "Erreur inattendue";
+    
+    setStatus(prev => ({
+      ...prev,
+      isLoading: false,
+      error: errorMessage
+    }));
+    
+    // Log détaillé pour aider au débogage
+    console.error('Détails erreur vérification accès:', {
+      message: error.message,
+      name: error.name,
+      status: error.status,
+      stack: error.stack
+    });
+  }, []);
+
+  /**
+   * Vérifie l'abonnement de l'utilisateur via la fonction check-user-access
+   * @returns {Promise<boolean>} True si l'utilisateur a un abonnement actif
+   */
+  const checkUserAccess = useCallback(async () => {
+    try {
+      console.log("Appel de la fonction check-user-access");
       const { data, error } = await supabase.functions.invoke('check-user-access');
       
       if (error) {
-        console.error('Erreur vérification accès:', error);
-        setStatus({
-          isActive: false,
-          type: null,
-          expiresAt: null,
-          isLoading: false,
-          error: error.message
-        });
-        return;
+        handleEdgeFunctionError(error);
+        return false;
       }
       
-      console.log("check-user-access response:", data);
+      console.log("Réponse check-user-access:", data);
+      
+      if (!data) {
+        console.error("Aucune donnée reçue de check-user-access");
+        setStatus({
+          ...initialStatus,
+          isLoading: false,
+          error: "Réponse invalide du serveur"
+        });
+        return false;
+      }
+      
       setStatus({
-        isActive: data.access,
+        isActive: !!data.access,
         type: data.type || null,
         expiresAt: data.expires_at || null,
         isLoading: false,
         error: null
       });
+      
+      return !!data.access;
     } catch (err) {
-      console.error('Erreur vérification abonnement:', err);
+      console.error('Erreur inattendue lors de la vérification de l\'abonnement:', err);
+      
       setStatus({
-        isActive: false,
-        type: null,
-        expiresAt: null,
+        ...initialStatus,
         isLoading: false,
-        error: err.message
+        error: err.message || "Erreur serveur inconnue"
+      });
+      
+      return false;
+    }
+  }, [handleEdgeFunctionError]);
+
+  /**
+   * Fonction principale pour vérifier l'abonnement
+   */
+  const checkSubscription = useCallback(async () => {
+    setStatus(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    // En cas d'erreur lors des vérifications, assurer que isLoading est correctement réinitialisé
+    try {
+      // Vérifier le mode développement en priorité (court-circuite les autres vérifications)
+      if (checkDevMode()) return;
+      
+      // Vérifier la session utilisateur
+      const session = await checkUserSession();
+      if (!session) return;
+      
+      // Vérifier l'accès utilisateur
+      await checkUserAccess();
+    } catch (error) {
+      console.error("Erreur critique lors de la vérification d'abonnement:", error);
+      setStatus({
+        ...initialStatus,
+        isLoading: false,
+        error: "Erreur critique: " + (error.message || "inconnue")
       });
     }
-  };
+  }, [checkDevMode, checkUserSession, checkUserAccess]);
 
-  // Vérifier au chargement du composant
+  // Vérifier l'abonnement au chargement du composant
   useEffect(() => {
     checkSubscription();
-  }, []);
+  }, [checkSubscription]);
 
-  // Fonction pour rediriger vers l'abonnement si nécessaire
-  const requireSubscription = () => {
+  /**
+   * Vérifie si l'utilisateur a un abonnement valide, sinon redirige vers la page d'abonnement
+   * @returns {boolean} True si l'utilisateur peut accéder à la fonctionnalité
+   */
+  const requireSubscription = useCallback(() => {
     if (status.isLoading) return true; // Attendre le chargement
     
-    // Toujours considérer les utilisateurs beta comme ayant un abonnement valide
-    if (status.type === 'beta') return true;
+    // Considérer les accès spéciaux comme valides
+    if (status.type === 'beta' || status.type === 'dev_mode') return true;
     
     if (!status.isActive) {
       toast.error("Abonnement requis pour accéder à cette fonctionnalité");
@@ -105,7 +208,7 @@ export const useSubscription = () => {
     }
     
     return true;
-  };
+  }, [status]);
 
   return {
     isSubscribed: status.isActive,

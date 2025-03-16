@@ -1,12 +1,12 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-}
+import { corsHeaders } from "../_shared/cors.ts"
+import { authenticateUser, createResponse } from "./auth.ts"
+import { checkBetaAccess } from "./beta-subscription.ts"
+import { checkPaidAccess } from "./paid-subscription.ts"
+import { checkTrialAccess } from "./trial-subscription.ts"
+import { checkDevelopmentMode } from "./development.ts"
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -21,276 +21,64 @@ serve(async (req) => {
   try {
     console.log("Starting check-user-access function");
     
-    // Récupérer le token d'authentification
+    // Get authentication token
     const authHeader = req.headers.get('Authorization');
     
-    if (!authHeader) {
-      console.log("No Authorization header found");
-      return new Response(
-        JSON.stringify({ 
-          access: false, 
-          message: 'Non authentifié' 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 401 
-        }
-      );
-    }
-    
-    const token = authHeader.replace('Bearer ', '');
-    console.log("Token extracted from Authorization header");
-    
-    // Initialiser le client Supabase
+    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     );
     console.log("Supabase client initialized");
 
-    // Vérifier l'utilisateur
-    console.log("Checking user with token");
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
-    
-    if (userError) {
-      console.error("User error:", userError);
-      return new Response(
-        JSON.stringify({ 
-          access: false, 
-          message: 'Utilisateur non trouvé',
-          error: userError.message
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 401 
-        }
-      );
+    // Authenticate user
+    const authResult = await authenticateUser(supabaseClient, authHeader);
+    if (authResult.error) {
+      return createResponse(authResult.body, authResult.status);
     }
     
-    if (!user) {
-      console.log("No user found");
-      return new Response(
-        JSON.stringify({ 
-          access: false, 
-          message: 'Utilisateur non trouvé' 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 401 
-        }
-      );
+    const user = authResult.user;
+
+    // Check for development mode
+    const devModeResult = checkDevelopmentMode(Deno.env.get('ENVIRONMENT'));
+    if (devModeResult) {
+      return createResponse(devModeResult);
     }
+
+    // Check subscription access in priority order: Beta -> Paid -> Trial
     
-    console.log("User found:", user.email);
-
-    // En mode développement, retourner accès actif pour faciliter les tests
-    if (Deno.env.get('ENVIRONMENT') === 'development') {
-      console.log("Development environment detected, granting access");
-      return new Response(
-        JSON.stringify({ 
-          access: true, 
-          type: 'dev_mode',
-          expires_at: null,
-          message: 'Accès accordé en mode développement'
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      );
+    // 1. Check for beta access (HIGHEST PRIORITY)
+    const betaResult = await checkBetaAccess(supabaseClient, user);
+    if (betaResult) {
+      return createResponse(betaResult);
     }
 
-    // Vérifier si c'est un utilisateur beta
-    console.log("Checking if user is beta user");
-    try {
-      // Première méthode: Vérifier dans la table beta_users
-      const { data: betaUser, error: betaError } = await supabaseClient
-        .from('beta_users')
-        .select('*')
-        .eq('email', user.email)
-        .single();
-        
-      if (betaError && betaError.code !== 'PGRST116') {
-        console.error("Beta user check error:", betaError);
-      }
-        
-      if (betaUser) {
-        console.log('Utilisateur beta trouvé dans la table beta_users');
-        return new Response(
-          JSON.stringify({ 
-            access: true, 
-            type: 'beta',
-            expires_at: null,
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 
-          }
-        );
-      }
-
-      // Deuxième méthode: Vérifier dans la table user_subscriptions avec type=beta
-      const { data: betaSubscription, error: betaSubError } = await supabaseClient
-        .from('user_subscriptions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('type', 'beta')
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (betaSubError) {
-        console.error("Beta subscription check error:", betaSubError);
-      }
-
-      if (betaSubscription) {
-        console.log('Abonnement beta trouvé dans user_subscriptions:', betaSubscription);
-        
-        // Vérifier si l'abonnement beta est expiré
-        if (betaSubscription.expires_at) {
-          const expiryDate = new Date(betaSubscription.expires_at);
-          if (expiryDate < new Date()) {
-            console.log("Beta subscription expired at:", expiryDate);
-            return new Response(
-              JSON.stringify({ 
-                access: false, 
-                message: 'Abonnement beta expiré',
-                type: 'beta',
-                expires_at: betaSubscription.expires_at
-              }),
-              { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 200
-              }
-            );
-          }
-        }
-        
-        console.log("Active beta subscription found, granting access");
-        return new Response(
-          JSON.stringify({ 
-            access: true, 
-            type: 'beta',
-            expires_at: betaSubscription.expires_at,
-            promo_code: betaSubscription.promo_code
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
-          }
-        );
-      }
-    } catch (betaCheckError) {
-      console.error("Error checking beta user:", betaCheckError);
-      // Continue avec la vérification des abonnements même si la vérification beta échoue
+    // 2. Check for paid subscription (SECOND PRIORITY)
+    const paidResult = await checkPaidAccess(supabaseClient, user);
+    if (paidResult) {
+      return createResponse(paidResult);
     }
 
-    // Vérifier l'abonnement dans la table user_subscriptions
-    console.log("Checking subscription for user");
-    try {
-      const { data: subscription, error: subError } = await supabaseClient
-        .from('user_subscriptions')
-        .select('status, type, expires_at, promo_code')
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      if (subError) {
-        console.error("Subscription check error:", subError);
-        return new Response(
-          JSON.stringify({ 
-            access: false, 
-            message: 'Erreur lors de la vérification de l\'abonnement',
-            error: subError.message 
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
-          }
-        );
-      }
-      
-      if (subscription) {
-        console.log('Abonnement trouvé:', subscription);
-        
-        // Vérifier si l'abonnement est expiré
-        if (subscription.expires_at) {
-          const expiryDate = new Date(subscription.expires_at);
-          if (expiryDate < new Date()) {
-            console.log("Subscription expired at:", expiryDate);
-            return new Response(
-              JSON.stringify({ 
-                access: false, 
-                message: 'Abonnement expiré',
-                type: subscription.type,
-                expires_at: subscription.expires_at
-              }),
-              { 
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-                status: 200
-              }
-            );
-          }
-        }
-        
-        console.log("Active subscription found, granting access");
-        return new Response(
-          JSON.stringify({ 
-            access: true, 
-            type: subscription.type,
-            expires_at: subscription.expires_at,
-            promo_code: subscription.promo_code
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
-          }
-        );
-      }
-    } catch (subscriptionCheckError) {
-      console.error("Error checking subscription:", subscriptionCheckError);
-      return new Response(
-        JSON.stringify({ 
-          access: false, 
-          message: 'Erreur lors de la vérification de l\'abonnement',
-          error: subscriptionCheckError.message 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
+    // 3. Check for trial subscription (LOWEST PRIORITY)
+    const trialResult = await checkTrialAccess(supabaseClient, user);
+    if (trialResult) {
+      return createResponse(trialResult);
     }
 
-    // Aucun abonnement trouvé
-    console.log('Aucun abonnement trouvé pour', user.email);
-    return new Response(
-      JSON.stringify({ 
-        access: false, 
-        message: 'Aucun abonnement actif' 
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
-    );
+    // No subscription found
+    console.log('Aucun abonnement actif trouvé pour', user.email);
+    return createResponse({ 
+      access: false, 
+      message: 'Aucun abonnement actif' 
+    });
 
   } catch (error) {
     console.error('Erreur générale:', error);
-    return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        stack: error.stack,
-        access: false,
-        message: 'Erreur serveur lors de la vérification de l\'accès'
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
-    );
+    return createResponse({ 
+      error: error.message,
+      stack: error.stack,
+      access: false,
+      message: 'Erreur serveur lors de la vérification de l\'accès'
+    }, 500);
   }
 });
