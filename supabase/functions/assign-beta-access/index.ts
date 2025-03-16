@@ -21,9 +21,9 @@ serve(async (req) => {
     // Parse request
     const { userEmail, adminToken } = await req.json()
 
-    // Verify admin token for security (this should be a proper auth check in production)
+    // Vérifier le token admin pour sécurité
     if (!adminToken || adminToken !== Deno.env.get('ADMIN_SECRET_KEY')) {
-      console.error('Unauthorized access attempt');
+      console.error('Tentative d\'accès non autorisée');
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -36,7 +36,7 @@ serve(async (req) => {
       );
     }
 
-    // Validate email
+    // Valider l'email
     if (!userEmail) {
       return new Response(
         JSON.stringify({ 
@@ -50,21 +50,35 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Supabase client with service role to bypass RLS
+    // Initialiser le client Supabase avec le rôle de service pour contourner RLS
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Look up user by email
+    // Trouver l'utilisateur par email
     const { data: users, error: userError } = await supabaseAdmin
       .from('auth.users')
-      .select('id')
+      .select('id, email')
       .eq('email', userEmail)
       .limit(1);
 
-    if (userError || !users || users.length === 0) {
-      console.error('User lookup error:', userError || 'User not found');
+    if (userError) {
+      console.error('Erreur lors de la recherche de l\'utilisateur:', userError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Erreur lors de la recherche de l\'utilisateur',
+          error: userError.message 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      );
+    }
+
+    if (!users || users.length === 0) {
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -77,113 +91,142 @@ serve(async (req) => {
       );
     }
 
-    const userId = users[0].id;
-    const betaExpiryDate = '2025-08-28 23:59:59+00';
-
-    // Check if user already has a subscription
-    const { data: existingSub, error: subError } = await supabaseAdmin
+    const user = users[0];
+    
+    // Vérifier si l'utilisateur a déjà un abonnement actif
+    const { data: existingSub, error: existingSubError } = await supabaseAdmin
       .from('user_subscriptions')
-      .select('id, type, status')
-      .eq('user_id', userId)
+      .select('*')
+      .eq('user_id', user.id)
       .eq('status', 'active')
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    // Log the action for audit purposes
-    await supabaseAdmin
-      .from('admin_actions')
-      .insert({
-        action_type: 'assign_beta_access',
-        admin_id: 'system', // This should be the actual admin ID in a real implementation
-        target_user_id: userId,
-        details: { 
-          user_email: userEmail,
-          expires_at: betaExpiryDate,
-          previous_subscription: existingSub || null
+      .maybeSingle();
+      
+    if (existingSubError) {
+      console.error('Erreur lors de la vérification de l\'abonnement:', existingSubError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Erreur lors de la vérification de l\'abonnement',
+          error: existingSubError.message 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
         }
-      })
-      .select();
-
-    // If user already has an active subscription
-    if (existingSub && existingSub.length > 0) {
-      // If it's already a beta subscription, just update the expiry date
-      if (existingSub[0].type === 'beta') {
-        const { data, error } = await supabaseAdmin
-          .from('user_subscriptions')
-          .update({ 
-            expires_at: betaExpiryDate,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingSub[0].id)
-          .select();
-          
-        if (error) {
-          console.error('Error updating subscription:', error);
-          throw error;
+      );
+    }
+    
+    let response;
+    
+    // Si un abonnement existe, le mettre à jour, sinon en créer un nouveau
+    if (existingSub) {
+      // Mettre à jour l'abonnement existant
+      const { data: updatedSub, error: updateError } = await supabaseAdmin
+        .from('user_subscriptions')
+        .update({
+          type: 'beta',
+          status: 'active',
+          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1 an
+        })
+        .eq('id', existingSub.id)
+        .select()
+        .single();
+        
+      if (updateError) {
+        console.error('Erreur lors de la mise à jour de l\'abonnement:', updateError);
+        return new Response(
+          JSON.stringify({ 
+            success: false, 
+            message: 'Erreur lors de la mise à jour de l\'abonnement',
+            error: updateError.message 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 500 
+          }
+        );
+      }
+      
+      response = {
+        success: true,
+        message: 'Accès beta mis à jour avec succès',
+        subscription: updatedSub
+      };
+    } else {
+      // Créer un nouvel abonnement beta
+      const { data: newSub, error: insertError } = await supabaseAdmin
+        .from('user_subscriptions')
+        .insert({
+          user_id: user.id,
+          type: 'beta',
+          status: 'active',
+          expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1 an
+        })
+        .select()
+        .single();
+        
+      if (insertError) {
+        console.error('Erreur lors de la création de l\'abonnement beta:', insertError);
+        
+        // Vérifier si l'erreur est liée à la colonne 'type'
+        if (insertError.message.includes('type') && insertError.message.includes('does not exist')) {
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              message: 'Erreur de type de données: le type "beta" n\'est pas défini dans l\'énumération subscription_type',
+              error: insertError.message,
+              solution: 'Veuillez vérifier que l\'énumération subscription_type dans la base de données inclut la valeur "beta"'
+            }),
+            { 
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+              status: 500 
+            }
+          );
         }
         
         return new Response(
           JSON.stringify({ 
-            success: true, 
-            message: 'Accès beta prolongé jusqu\'au 28 août 2025',
-            subscription: data
+            success: false, 
+            message: 'Erreur lors de la création de l\'abonnement beta',
+            error: insertError.message 
           }),
           { 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 
+            status: 500 
           }
         );
-      } 
-      
-      // If it's a different subscription type, deactivate it and create a new beta one
-      const { error: deactivateError } = await supabaseAdmin
-        .from('user_subscriptions')
-        .update({ 
-          status: 'inactive',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', existingSub[0].id);
-        
-      if (deactivateError) {
-        console.error('Error deactivating existing subscription:', deactivateError);
-        throw deactivateError;
       }
-    }
-    
-    // Create new beta subscription
-    const { data: newSub, error: createError } = await supabaseAdmin
-      .from('user_subscriptions')
-      .insert({
-        user_id: userId,
-        type: 'beta',
-        status: 'active',
-        expires_at: betaExpiryDate
-      })
-      .select();
       
-    if (createError) {
-      console.error('Error creating beta subscription:', createError);
-      throw createError;
-    }
-    
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: 'Accès beta accordé jusqu\'au 28 août 2025',
+      response = {
+        success: true,
+        message: 'Accès beta accordé avec succès',
         subscription: newSub
-      }),
-      { 
+      };
+    }
+
+    // Journaliser l'action à des fins d'audit
+    await supabaseAdmin
+      .from('admin_actions')
+      .insert({
+        action_type: 'assign_beta_access',
+        admin_id: 'system', // Ceci devrait être l'ID admin réel dans une implémentation réelle
+        target_user_id: user.id,
+        details: { email: user.email }
+      });
+
+    return new Response(
+      JSON.stringify(response),
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 
+        status: 200
       }
     );
-    
   } catch (error) {
-    console.error('Error in assign-beta-access:', error);
+    console.error('Erreur dans assign-beta-access:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        message: 'Erreur lors de l\'attribution de l\'accès beta',
+        message: 'Erreur lors de l\'attribution d\'accès beta',
         error: error.message 
       }),
       { 

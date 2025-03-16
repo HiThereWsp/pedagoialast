@@ -26,7 +26,7 @@ export default function AdminTools() {
             <ArrowLeft className="h-4 w-4 mr-1" />
             Retour
           </Button>
-          <h1 className="text-3xl font-extrabold tracking-tight text-balance">
+          <h1 className="text-5xl font-extrabold tracking-tight text-balance">
             Outils d'administration
           </h1>
         </div>
@@ -61,6 +61,10 @@ export default function AdminTools() {
                 <li>
                   Après connexion réussie, attribuez un accès beta à l'utilisateur.
                 </li>
+                <li>
+                  Rappeler à l'utilisateur de vérifier ses dossiers spam/indésirables si les emails 
+                  n'arrivent pas. Certains fournisseurs comme Gmail ou Hotmail peuvent filtrer nos emails.
+                </li>
               </ol>
               
               <div className="mt-4 bg-amber-50 p-3 rounded border border-amber-200">
@@ -68,6 +72,15 @@ export default function AdminTools() {
                   <strong>Important :</strong> L'utilisateur doit être inscrit et avoir un compte
                   avant de pouvoir lui attribuer un accès beta. S'il ne peut pas se connecter, 
                   envoyez-lui d'abord un lien magique pour l'aider à accéder à son compte.
+                </p>
+              </div>
+              
+              <div className="mt-4 bg-blue-50 p-3 rounded border border-blue-200">
+                <p className="text-blue-800 text-sm">
+                  <strong>Problèmes connus :</strong> Si vous rencontrez une erreur indiquant 
+                  "subscription_type does not exist" lors de l'attribution d'un accès beta, contactez 
+                  l'administrateur de base de données pour ajouter la valeur "beta" à l'énumération 
+                  subscription_type dans la base de données.
                 </p>
               </div>
             </div>

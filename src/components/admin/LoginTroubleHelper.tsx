@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, Info } from "lucide-react";
+import { AlertCircle, CheckCircle2, Info, Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
@@ -67,7 +67,10 @@ export function LoginTroubleHelper() {
         return;
       }
 
-      toast.success("Lien magique envoyé à " + email);
+      toast.success(
+        "Lien magique envoyé à " + email + 
+        " (vérifiez aussi les dossiers spam ou indésirables)"
+      );
     } catch (err) {
       console.error("Exception:", err);
       toast.error("Une erreur inattendue est survenue");
@@ -184,6 +187,16 @@ export function LoginTroubleHelper() {
             </AlertDescription>
           </Alert>
         )}
+        
+        <Alert variant="info" className="bg-blue-50">
+          <Mail className="h-4 w-4" />
+          <AlertTitle>Conseil important</AlertTitle>
+          <AlertDescription>
+            Si un utilisateur ne reçoit pas le lien magique ou l'email de réinitialisation, 
+            recommandez-lui de vérifier son dossier spam/indésirables. Certains fournisseurs 
+            de messagerie peuvent bloquer nos emails.
+          </AlertDescription>
+        </Alert>
       </CardContent>
       
       <CardFooter className="flex flex-col space-y-2">
