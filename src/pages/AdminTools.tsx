@@ -27,7 +27,7 @@ export default function AdminTools() {
             Retour
           </Button>
           <h1 className="text-5xl font-extrabold tracking-tight text-balance">
-            Outils d'administration
+            Outils d'<span className="underline decoration-dashed underline-offset-4">administration</span>
           </h1>
         </div>
         
@@ -44,26 +44,23 @@ export default function AdminTools() {
           <div>
             <h2 className="text-xl font-bold mb-4">Instructions</h2>
             <div className="bg-card p-4 rounded-lg border shadow-sm">
-              <h3 className="font-semibold mb-2">Comment utiliser cet outil</h3>
+              <h3 className="font-semibold mb-2">Processus d'attribution d'accès beta</h3>
               <ol className="list-decimal pl-5 space-y-2">
                 <li>
-                  Entrez l'adresse email de l'utilisateur qui rencontre des problèmes.
+                  <strong>Inscription de l'utilisateur</strong> : L'utilisateur doit d'abord créer un compte
+                  sur la plateforme. Par défaut, il recevra un accès d'essai de 3 jours.
                 </li>
                 <li>
-                  Entrez votre clé d'administration (la valeur de ADMIN_SECRET_KEY).
+                  <strong>Vérification de l'email</strong> : Assurez-vous que l'utilisateur a vérifié son 
+                  adresse email (vérifiez le statut dans l'outil de diagnostic).
                 </li>
                 <li>
-                  Cliquez sur "Diagnostiquer" pour voir l'état actuel de l'utilisateur.
+                  <strong>Attribution manuelle</strong> : Entrez l'email de l'utilisateur et votre
+                  clé d'administration, puis cliquez sur "Attribuer accès beta".
                 </li>
                 <li>
-                  Si nécessaire, envoyez un lien magique pour permettre à l'utilisateur de se connecter.
-                </li>
-                <li>
-                  Après connexion réussie, attribuez un accès beta à l'utilisateur.
-                </li>
-                <li>
-                  Rappeler à l'utilisateur de vérifier ses dossiers spam/indésirables si les emails 
-                  n'arrivent pas. Certains fournisseurs comme Gmail ou Hotmail peuvent filtrer nos emails.
+                  <strong>Confirmation</strong> : Confirmez à l'utilisateur que son statut a été 
+                  mis à jour vers le statut beta, valable pendant un an.
                 </li>
               </ol>
               
@@ -81,6 +78,14 @@ export default function AdminTools() {
                   "subscription_type does not exist" lors de l'attribution d'un accès beta, contactez 
                   l'administrateur de base de données pour ajouter la valeur "beta" à l'énumération 
                   subscription_type dans la base de données.
+                </p>
+              </div>
+
+              <div className="mt-4 bg-green-50 p-3 rounded border border-green-200">
+                <p className="text-green-800 text-sm">
+                  <strong>Nouvelle politique :</strong> Désormais, les nouveaux utilisateurs reçoivent automatiquement
+                  un accès d'essai de 3 jours. Seuls les utilisateurs spécifiquement sélectionnés doivent
+                  recevoir un accès beta, qui est attribué manuellement via cet outil.
                 </p>
               </div>
             </div>

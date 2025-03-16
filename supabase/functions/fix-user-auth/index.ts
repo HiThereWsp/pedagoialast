@@ -18,10 +18,9 @@ serve(async (req) => {
   }
 
   try {
-    // Parse request
     const { userEmail, adminToken } = await req.json()
-
-    // Vérifier le token admin pour sécurité (ceci devrait être une vérification d'auth appropriée en production)
+    
+    // Vérifier le token admin pour sécurité
     if (!adminToken || adminToken !== Deno.env.get('ADMIN_SECRET_KEY')) {
       console.error('Tentative d\'accès non autorisée');
       return new Response(
@@ -47,123 +46,115 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400 
         }
-      );
+      )
     }
 
-    // Initialiser le client Supabase avec le rôle de service pour contourner RLS
+    // Initialiser le client Supabase
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    );
+    )
 
-    // Vérifier la situation actuelle de l'utilisateur
-    const { data: authUsers, error: authUserError } = await supabaseAdmin
-      .from('auth.users')
-      .select('id, email, identities')
-      .eq('email', userEmail)
-      .limit(1);
-
-    if (authUserError) {
-      console.error('Erreur lors de la recherche de l\'utilisateur:', authUserError);
+    // Rechercher l'utilisateur par email
+    const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers()
+    
+    if (userError) {
+      console.error('Erreur lors de la récupération des utilisateurs:', userError);
       return new Response(
         JSON.stringify({ 
           success: false, 
-          message: 'Erreur lors de la vérification des informations utilisateur',
-          error: authUserError.message 
+          message: 'Erreur lors de la récupération des utilisateurs',
+          error: userError.message 
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500 
         }
-      );
+      )
     }
 
-    // Analyser l'état actuel et les identités
-    let diagnosticInfo = {
-      userFound: false,
-      userIdentities: [],
-      hasFacebookIdentity: false,
-      hasGoogleIdentity: false,
-      hasEmailIdentity: false,
-      recommendation: ''
-    };
-
-    if (authUsers && authUsers.length > 0) {
-      const user = authUsers[0];
-      diagnosticInfo.userFound = true;
+    // Trouver l'utilisateur correspondant à l'email
+    const user = users.find(u => u.email?.toLowerCase() === userEmail.toLowerCase())
+    
+    if (!user) {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          email: userEmail,
+          diagnosticInfo: {
+            userFound: false,
+            recommendation: "Cet utilisateur n'a pas encore de compte. Invitez-le à s'inscrire ou à vérifier l'orthographe de son adresse email."
+          }
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      )
+    }
+    
+    // Vérifier les identités de l'utilisateur
+    const identities = user.identities || []
+    const hasFacebookIdentity = identities.some(id => id.provider === 'facebook' && id.identity_data?.email === userEmail)
+    const hasGoogleIdentity = identities.some(id => id.provider === 'google' && id.identity_data?.email === userEmail)
+    const hasEmailIdentity = identities.some(id => id.provider === 'email')
+    
+    // Vérifier si l'utilisateur a un abonnement actif
+    const { data: subscription, error: subError } = await supabaseAdmin
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
       
-      // Vérifier les identités (providers d'authentification)
-      const identities = user.identities || [];
-      diagnosticInfo.userIdentities = identities;
-      
-      identities.forEach((identity: any) => {
-        if (identity.provider === 'facebook') diagnosticInfo.hasFacebookIdentity = true;
-        if (identity.provider === 'google') diagnosticInfo.hasGoogleIdentity = true;
-        if (identity.provider === 'email') diagnosticInfo.hasEmailIdentity = true;
-      });
+    if (subError) {
+      console.error('Erreur lors de la vérification de l\'abonnement:', subError);
+    }
+    
+    // Préparer la recommandation
+    let recommendation = ""
+    
+    if (!hasEmailIdentity && !hasFacebookIdentity && !hasGoogleIdentity) {
+      recommendation = "Cet utilisateur n'a pas de méthode d'authentification complète. Envoyez-lui un lien magique pour aider à finaliser son compte."
+    } else if (hasEmailIdentity) {
+      recommendation = "Cet utilisateur a un compte avec mot de passe. En cas de problème de connexion, proposez une réinitialisation de mot de passe ou envoyez un lien magique."
+    } else if (hasFacebookIdentity || hasGoogleIdentity) {
+      recommendation = "Cet utilisateur se connecte via " + (hasFacebookIdentity ? "Facebook" : "Google") + ". Conseillez-lui d'utiliser le bouton correspondant pour se connecter."
+    }
 
-      // Générer une recommandation
-      if (diagnosticInfo.hasFacebookIdentity) {
-        diagnosticInfo.recommendation = "L'utilisateur devrait essayer de se connecter avec Facebook";
-      } else if (diagnosticInfo.hasGoogleIdentity) {
-        diagnosticInfo.recommendation = "L'utilisateur devrait essayer de se connecter avec Google";
-      } else if (diagnosticInfo.hasEmailIdentity) {
-        diagnosticInfo.recommendation = "L'utilisateur devrait essayer de se connecter avec son email";
-      } else {
-        diagnosticInfo.recommendation = "L'utilisateur existe mais n'a pas d'identité complète. Essayez de lui envoyer un lien magique.";
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        email: userEmail,
+        userId: user.id,
+        diagnosticInfo: {
+          userFound: true,
+          hasFacebookIdentity,
+          hasGoogleIdentity,
+          hasEmailIdentity,
+          subscription: subscription || null,
+          recommendation
+        }
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
       }
-
-      // Journaliser l'action à des fins d'audit
-      await supabaseAdmin
-        .from('admin_actions')
-        .insert({
-          action_type: 'diagnose_user_auth',
-          admin_id: 'system', // Ceci devrait être l'ID admin réel dans une implémentation réelle
-          target_user_id: user.id,
-          details: diagnosticInfo
-        })
-        .select();
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          diagnosticInfo,
-          userId: user.id,
-          email: user.email,
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
-    } else {
-      // Utilisateur non trouvé
-      diagnosticInfo.recommendation = "L'utilisateur n'existe pas encore. Il devrait s'inscrire normalement.";
-      
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: "Utilisateur non trouvé",
-          diagnosticInfo
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
-        }
-      );
-    }
+    )
   } catch (error) {
-    console.error('Erreur dans fix-user-auth:', error);
+    console.error('Erreur générale:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        message: 'Erreur lors du diagnostic de l\'authentification',
+        message: 'Erreur lors du diagnostic',
         error: error.message 
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
       }
-    );
+    )
   }
-});
+})

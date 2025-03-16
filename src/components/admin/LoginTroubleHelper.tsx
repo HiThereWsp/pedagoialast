@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { AlertCircle, CheckCircle2, Info, Mail } from "lucide-react";
+import { AlertCircle, CheckCircle2, Info, Mail, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "sonner";
@@ -166,6 +166,17 @@ export function LoginTroubleHelper() {
                       <li>Aucune identité complète détectée</li>
                     )}
                   </ul>
+                  
+                  {results.diagnosticInfo?.subscription && (
+                    <div className="bg-green-50 p-2 rounded border border-green-200 mt-2">
+                      <CheckCircle2 className="inline h-4 w-4 text-green-600 mr-1" />
+                      <span className="text-green-800">
+                        Abonnement <strong>{results.diagnosticInfo.subscription.type}</strong> actif 
+                        jusqu'au {new Date(results.diagnosticInfo.subscription.expires_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                  
                   <div className="bg-amber-50 p-2 rounded border border-amber-200 mt-2">
                     <Info className="inline h-4 w-4 text-amber-600 mr-1" />
                     <span className="text-amber-800">
@@ -195,6 +206,16 @@ export function LoginTroubleHelper() {
             Si un utilisateur ne reçoit pas le lien magique ou l'email de réinitialisation, 
             recommandez-lui de vérifier son dossier spam/indésirables. Certains fournisseurs 
             de messagerie peuvent bloquer nos emails.
+          </AlertDescription>
+        </Alert>
+        
+        <Alert variant="warning" className="bg-amber-50">
+          <ShieldAlert className="h-4 w-4" />
+          <AlertTitle>Attribution d'accès beta</AlertTitle>
+          <AlertDescription>
+            L'accès beta est désormais attribué manuellement uniquement aux utilisateurs sélectionnés.
+            Les nouveaux utilisateurs reçoivent par défaut un accès d'essai de 3 jours.
+            L'attribution d'un accès beta prolonge l'accès pendant un an.
           </AlertDescription>
         </Alert>
       </CardContent>
