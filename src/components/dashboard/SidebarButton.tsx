@@ -22,7 +22,10 @@ export const SidebarButton = ({
   active = false, 
   small = false, 
   notAvailable = false, 
-  notAvailableIcon = <Clock className="h-3.5 w-3.5 text-amber-500" />,
+  notAvailableIcon = <span className="ml-auto flex items-center text-xs font-medium">
+    <Clock className="h-3.5 w-3.5 text-amber-500" />
+    <span className="ml-1 text-amber-500">Bientôt</span>
+  </span>,
   onClick = () => {},
   className = ""
 }: SidebarButtonProps) => {
@@ -50,12 +53,7 @@ export const SidebarButton = ({
     >
       {icon}
       <span className="flex-1 text-left">{label}</span>
-      {notAvailable && (
-        <span className="ml-auto flex items-center text-xs font-medium">
-          {notAvailableIcon}
-          <span className="ml-1 text-amber-500">Bientôt</span>
-        </span>
-      )}
+      {notAvailable && notAvailableIcon}
     </button>
   );
 };

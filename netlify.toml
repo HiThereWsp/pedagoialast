@@ -15,7 +15,7 @@
   to = "/bienvenue"
   status = 301
 
-# Redirect /home to /tableaudebord
+# Redirect old home to tableaudebord
 [[redirects]]
   from = "/home"
   to = "/tableaudebord"

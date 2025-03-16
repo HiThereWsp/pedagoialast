@@ -61,10 +61,8 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/pricing" element={<Pricing />} />
         
-        {/* Redirect /home to /tableaudebord */}
+        {/* Redirection de /home vers /tableaudebord */}
         <Route path="/home" element={<Navigate to="/tableaudebord" replace />} />
-        
-        {/* Main dashboard */}
         <Route path="/tableaudebord" element={<ProtectedRoute><TableauDeBord /></ProtectedRoute>} />
         
         {/* Routes des outils pédagogiques utilisant le layout partagé */}

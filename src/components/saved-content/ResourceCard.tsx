@@ -1,78 +1,104 @@
 
 import React, { useCallback } from "react";
-import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import type { SavedContent } from "@/types/saved-content";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { type SavedContent } from "@/types/saved-content";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ResourceCardProps {
   resource: SavedContent;
-  onSelect: (item: SavedContent) => void;
+  onSelect: (resource: SavedContent) => void;
   isSelected?: boolean;
 }
 
 export const ResourceCard = React.memo(({ 
   resource, 
-  onSelect,
-  isSelected = false
+  onSelect, 
+  isSelected = false 
 }: ResourceCardProps) => {
-  const handleClick = useCallback(() => {
+  const isMobile = useIsMobile();
+  
+  const handleSelect = useCallback(() => {
     onSelect(resource);
   }, [onSelect, resource]);
 
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "Date inconnue";
+    
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('fr-FR', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch (e) {
+      return "Date invalide";
+    }
+  };
+
+  const getIconClass = (type?: string) => {
+    switch (type) {
+      case 'lesson-plan':
+        return "text-blue-500";
+      case 'exercise':
+        return "text-green-500";
+      case 'Image':
+        return "text-purple-500";
+      case 'correspondence':
+        return "text-orange-500";
+      default:
+        return "text-gray-500";
+    }
+  };
+
   return (
     <Card 
-      onClick={handleClick}
       className={cn(
-        "group cursor-pointer transition-all duration-300 hover:shadow-lg relative overflow-hidden hover:border-[#FFA800] bg-white dark:bg-gray-900",
-        isSelected && "border-[#FFA800] ring-2 ring-[#FFA800]/20"
+        "transition-all duration-200 hover:shadow-md flex flex-col h-full", 
+        isSelected ? "ring-2 ring-[#FFA800]" : "",
+        isMobile ? "w-full" : ""
       )}
     >
-      {resource.type === 'Image' ? (
-        <div className="aspect-square">
-          <img 
-            src={resource.content} 
-            alt={resource.title}
-            className="w-full h-full object-cover"
-          />
+      <CardHeader className={`${isMobile ? 'p-4 pb-2' : 'p-5 pb-3'}`}>
+        <CardTitle className={`${isMobile ? 'text-base font-bold' : 'text-xl font-bold'} line-clamp-2 text-left`}>
+          {resource.title || "Sans titre"}
+        </CardTitle>
+        <p className="text-xs text-muted-foreground text-left mt-1">
+          {formatDate(resource.created_at)}
+        </p>
+      </CardHeader>
+      
+      <CardContent className={`grow text-left ${isMobile ? 'px-4 py-2' : 'px-5 py-0'}`}>
+        <div className="flex items-start space-x-2">
+          <div className={`h-2 w-2 rounded-full mt-1.5 ${getIconClass(resource.type)}`} />
+          <p className="text-sm text-muted-foreground">
+            {resource.displayType || resource.type || "Ressource"}
+          </p>
         </div>
-      ) : (
-        <CardHeader className="p-6">
-          <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100 line-clamp-2 leading-tight">
-            {resource.title}
-          </h3>
-        </CardHeader>
-      )}
-      <CardContent className="p-6 pt-2">
-        <div className="flex flex-wrap gap-2 mb-3">
-          {resource.subject && (
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              {resource.subject}
-            </span>
-          )}
-          {resource.class_level && (
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              {resource.class_level}
-            </span>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {resource.tags?.map((tag, index) => (
-            <span
-              key={index}
-              className="text-xs px-3 py-1 rounded-full transition-colors"
-              style={{
-                backgroundColor: tag.backgroundColor,
-                color: tag.color,
-                borderWidth: '1px',
-                borderStyle: 'solid',
-                borderColor: tag.borderColor
-              }}
-            >
-              {tag.label}
-            </span>
-          ))}
-        </div>
+        
+        {resource.summary && (
+          <p className="text-sm line-clamp-2 mt-2 text-gray-600 dark:text-gray-300">
+            {resource.summary}
+          </p>
+        )}
       </CardContent>
+      
+      <CardFooter className={`${isMobile ? 'p-4 pt-2' : 'p-5 pt-3'} flex justify-end border-t mt-auto`}>
+        <Button 
+          variant="outline" 
+          size={isMobile ? "sm" : "default"} 
+          onClick={handleSelect}
+          className="w-full"
+        >
+          <Eye className="mr-2 h-3.5 w-3.5" />
+          Voir
+        </Button>
+      </CardFooter>
     </Card>
   );
 });

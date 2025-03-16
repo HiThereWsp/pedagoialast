@@ -2,10 +2,10 @@
 # Redirect root to bienvenue page
 / /bienvenue 301
 
-/* /index.html 200
-
-# Redirect /home to /tableaudebord
+# Redirect old home to tableaudebord
 /home /tableaudebord 301
+
+/* /index.html 200
 
 # Redirections spéciales pour les créateurs
 /*/maitreClement /functions/redirect/*/maitreClement 302

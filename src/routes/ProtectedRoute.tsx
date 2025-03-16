@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState, useRef } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -73,7 +74,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Si l'utilisateur est déjà connecté et essaie d'accéder à une page d'authentification,
-  // rediriger vers la page tableaudebord
+  // rediriger vers la page d'accueil
   if (user && isAuthPage()) {
     console.log("Utilisateur déjà authentifié, redirection vers /tableaudebord");
     return <Navigate to="/tableaudebord" replace />;
