@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 export function SubscriptionStatus() {
-  const { isSubscribed, subscriptionType, expiresAt, isLoading } = useSubscription();
+  const { isSubscribed, subscriptionType, expiresAt, isLoading, error } = useSubscription();
   const navigate = useNavigate();
   
   if (isLoading) {
@@ -17,6 +17,22 @@ export function SubscriptionStatus() {
       <Card className="p-4 flex items-center justify-center h-24">
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         <span className="ml-2 text-muted-foreground">Vérification de l'abonnement...</span>
+      </Card>
+    );
+  }
+  
+  if (error) {
+    return (
+      <Card className="p-6 border-red-200 bg-red-50">
+        <h3 className="text-lg sm:text-xl font-semibold mb-3 text-red-800 leading-tight tracking-tight text-balance">
+          Erreur de vérification
+        </h3>
+        <p className="text-red-700 mb-4 max-w-lg">
+          Une erreur est survenue lors de la vérification de votre abonnement: {error}
+        </p>
+        <Button onClick={() => navigate("/contact")} variant="outline" className="border-red-300 text-red-800 hover:bg-red-100">
+          Contacter le support
+        </Button>
       </Card>
     );
   }
@@ -47,6 +63,8 @@ export function SubscriptionStatus() {
         return 'Période d\'Essai';
       case 'beta':
         return 'Accès Beta';
+      case 'dev_mode':
+        return 'Mode Développement';
       default:
         return 'Abonnement Actif';
     }
@@ -55,6 +73,9 @@ export function SubscriptionStatus() {
   const getBadgeVariant = () => {
     if (subscriptionType === 'beta') {
       return 'secondary';
+    }
+    if (subscriptionType === 'dev_mode') {
+      return 'outline';
     }
     return 'default';
   };
@@ -110,7 +131,7 @@ export function SubscriptionStatus() {
       )}
       
       <div className="mt-4 flex flex-wrap gap-2">
-        {subscriptionType !== 'beta' && (
+        {subscriptionType !== 'beta' && subscriptionType !== 'dev_mode' && (
           <Button variant="outline" size="sm" onClick={() => navigate("/pricing")}>
             Gérer l'abonnement
           </Button>

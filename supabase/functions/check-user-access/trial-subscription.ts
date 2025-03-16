@@ -1,11 +1,11 @@
 
-import { SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 export async function checkTrialAccess(
   supabaseClient: SupabaseClient,
   user: { id: string; email: string }
 ) {
-  console.log("Checking trial subscription for user");
+  console.log("Checking trial subscription for user:", user.email);
   
   const { data: trialSubscription, error: trialSubError } = await supabaseClient
     .from('user_subscriptions')
@@ -22,13 +22,13 @@ export async function checkTrialAccess(
   }
   
   if (trialSubscription) {
-    console.log('Abonnement d\'essai trouvé:', trialSubscription);
+    console.log('Abonnement d\'essai trouvé pour', user.email, ':', trialSubscription);
     
     // Check if trial is expired
     if (trialSubscription.expires_at) {
       const expiryDate = new Date(trialSubscription.expires_at);
       if (expiryDate < new Date()) {
-        console.log("Trial subscription expired at:", expiryDate);
+        console.log("Trial subscription expired at:", expiryDate, "for", user.email);
         return { 
           access: false, 
           message: 'Période d\'essai expirée',
@@ -38,7 +38,7 @@ export async function checkTrialAccess(
       }
     }
     
-    console.log("Active trial subscription found, granting access");
+    console.log("Active trial subscription found, granting access to", user.email);
     return { 
       access: true, 
       type: trialSubscription.type,
