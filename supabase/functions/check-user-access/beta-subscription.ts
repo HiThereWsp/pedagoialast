@@ -64,7 +64,8 @@ export async function checkBetaAccess(
       access: true, 
       type: 'beta',
       expires_at: betaSubscription.expires_at,
-      promo_code: betaSubscription.promo_code
+      promo_code: betaSubscription.promo_code,
+      beta_user: true
     };
   }
   
