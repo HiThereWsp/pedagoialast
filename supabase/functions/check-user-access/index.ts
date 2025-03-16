@@ -100,7 +100,7 @@ serve(async (req) => {
       );
     }
 
-    // Vérifier si c'est un utilisateur beta
+    // Vérifier si c'est un utilisateur beta - PRIORITAIRE
     console.log("Checking if user is beta user");
     try {
       // Première méthode: Vérifier dans la table beta_users
@@ -155,7 +155,7 @@ serve(async (req) => {
             return new Response(
               JSON.stringify({ 
                 access: false, 
-                message: 'Abonnement beta expiré',
+                message: 'Accès beta expiré',
                 type: 'beta',
                 expires_at: betaSubscription.expires_at
               }),
@@ -186,47 +186,37 @@ serve(async (req) => {
       // Continue avec la vérification des abonnements même si la vérification beta échoue
     }
 
-    // Vérifier l'abonnement dans la table user_subscriptions
-    console.log("Checking subscription for user");
+    // Vérifier les abonnements payants - SECOND PRIORITAIRE
+    console.log("Checking paid subscription for user");
     try {
-      const { data: subscription, error: subError } = await supabaseClient
+      const { data: paidSubscription, error: paidSubError } = await supabaseClient
         .from('user_subscriptions')
         .select('status, type, expires_at, promo_code')
         .eq('user_id', user.id)
         .eq('status', 'active')
+        .eq('type', 'paid')
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
       
-      if (subError) {
-        console.error("Subscription check error:", subError);
-        return new Response(
-          JSON.stringify({ 
-            access: false, 
-            message: 'Erreur lors de la vérification de l\'abonnement',
-            error: subError.message 
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200
-          }
-        );
+      if (paidSubError) {
+        console.error("Paid subscription check error:", paidSubError);
       }
       
-      if (subscription) {
-        console.log('Abonnement trouvé:', subscription);
+      if (paidSubscription) {
+        console.log('Abonnement payant trouvé:', paidSubscription);
         
         // Vérifier si l'abonnement est expiré
-        if (subscription.expires_at) {
-          const expiryDate = new Date(subscription.expires_at);
+        if (paidSubscription.expires_at) {
+          const expiryDate = new Date(paidSubscription.expires_at);
           if (expiryDate < new Date()) {
-            console.log("Subscription expired at:", expiryDate);
+            console.log("Paid subscription expired at:", expiryDate);
             return new Response(
               JSON.stringify({ 
                 access: false, 
                 message: 'Abonnement expiré',
-                type: subscription.type,
-                expires_at: subscription.expires_at
+                type: paidSubscription.type,
+                expires_at: paidSubscription.expires_at
               }),
               { 
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -236,13 +226,13 @@ serve(async (req) => {
           }
         }
         
-        console.log("Active subscription found, granting access");
+        console.log("Active paid subscription found, granting access");
         return new Response(
           JSON.stringify({ 
             access: true, 
-            type: subscription.type,
-            expires_at: subscription.expires_at,
-            promo_code: subscription.promo_code
+            type: paidSubscription.type,
+            expires_at: paidSubscription.expires_at,
+            promo_code: paidSubscription.promo_code
           }),
           { 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -250,23 +240,70 @@ serve(async (req) => {
           }
         );
       }
-    } catch (subscriptionCheckError) {
-      console.error("Error checking subscription:", subscriptionCheckError);
-      return new Response(
-        JSON.stringify({ 
-          access: false, 
-          message: 'Erreur lors de la vérification de l\'abonnement',
-          error: subscriptionCheckError.message 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200
+    } catch (paidSubscriptionError) {
+      console.error("Error checking paid subscription:", paidSubscriptionError);
+    }
+
+    // Vérifier les abonnements d'essai - DERNIER PRIORITÉ
+    console.log("Checking trial subscription for user");
+    try {
+      const { data: trialSubscription, error: trialSubError } = await supabaseClient
+        .from('user_subscriptions')
+        .select('status, type, expires_at, promo_code')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .eq('type', 'trial')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (trialSubError) {
+        console.error("Trial subscription check error:", trialSubError);
+      }
+      
+      if (trialSubscription) {
+        console.log('Abonnement d\'essai trouvé:', trialSubscription);
+        
+        // Vérifier si l'abonnement est expiré
+        if (trialSubscription.expires_at) {
+          const expiryDate = new Date(trialSubscription.expires_at);
+          if (expiryDate < new Date()) {
+            console.log("Trial subscription expired at:", expiryDate);
+            return new Response(
+              JSON.stringify({ 
+                access: false, 
+                message: 'Période d\'essai expirée',
+                type: trialSubscription.type,
+                expires_at: trialSubscription.expires_at
+              }),
+              { 
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 200
+              }
+            );
+          }
         }
-      );
+        
+        console.log("Active trial subscription found, granting access");
+        return new Response(
+          JSON.stringify({ 
+            access: true, 
+            type: trialSubscription.type,
+            expires_at: trialSubscription.expires_at,
+            promo_code: trialSubscription.promo_code
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200
+          }
+        );
+      }
+    } catch (trialSubscriptionError) {
+      console.error("Error checking trial subscription:", trialSubscriptionError);
     }
 
     // Aucun abonnement trouvé
-    console.log('Aucun abonnement trouvé pour', user.email);
+    console.log('Aucun abonnement actif trouvé pour', user.email);
     return new Response(
       JSON.stringify({ 
         access: false, 

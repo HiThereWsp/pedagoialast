@@ -98,6 +98,9 @@ export const useSubscription = () => {
     // Toujours considérer les utilisateurs beta comme ayant un abonnement valide
     if (status.type === 'beta') return true;
     
+    // Considérer les utilisateurs en mode développement comme ayant un abonnement valide
+    if (status.type === 'dev_mode') return true;
+    
     if (!status.isActive) {
       toast.error("Abonnement requis pour accéder à cette fonctionnalité");
       window.location.href = '/pricing';
