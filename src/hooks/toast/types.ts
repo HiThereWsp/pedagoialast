@@ -9,6 +9,7 @@ export type ToastProps = {
   action?: ReactNode;
   variant?: "default" | "destructive" | "success" | "warning" | "info";
   duration?: number;
+  className?: string;
 };
 
 export type Toast = ToastProps & {
@@ -16,7 +17,14 @@ export type Toast = ToastProps & {
   open?: boolean;
 };
 
-export type ToasterToast = Required<Toast>;
+export type ToasterToast = Toast & {
+  id: string;
+  open: boolean;
+};
+
+export interface State {
+  toasts: ToasterToast[];
+}
 
 export const TOAST_DURATIONS = {
   default: 5000,

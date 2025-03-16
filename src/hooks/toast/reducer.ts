@@ -1,6 +1,6 @@
 
 import { v4 as uuidv4 } from "uuid";
-import { Toast, ToasterToast, ToastActionType } from "./types";
+import { Toast, ToasterToast, ToastActionType, State } from "./types";
 
 // Define Action Types
 export const actionTypes = {
@@ -16,16 +16,17 @@ type Action =
   | { type: typeof actionTypes.DISMISS_TOAST; toastId: string }
   | { type: typeof actionTypes.REMOVE_TOAST; toastId: string };
 
-interface State {
-  toasts: ToasterToast[];
-}
-
 export const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
-const memoryState: State = { toasts: [] };
+export const memoryState: State = { toasts: [] };
+
+export const listeners: Array<(state: State) => void> = [];
 
 export function dispatch(action: Action) {
   memoryState.toasts = reducer(memoryState.toasts, action);
+  listeners.forEach((listener) => {
+    listener(memoryState);
+  });
 }
 
 export function reducer(state: ToasterToast[], action: Action): ToasterToast[] {
@@ -33,7 +34,7 @@ export function reducer(state: ToasterToast[], action: Action): ToasterToast[] {
     case actionTypes.ADD_TOAST:
       return [
         ...state,
-        { ...action.toast, id: action.toast.id || uuidv4(), open: true },
+        { ...action.toast, id: action.toast.id || uuidv4(), open: true } as ToasterToast,
       ];
 
     case actionTypes.UPDATE_TOAST:
