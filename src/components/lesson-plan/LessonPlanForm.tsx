@@ -6,6 +6,7 @@ import { SubjectTab } from './tabs/SubjectTab';
 import { CommonFields } from './CommonFields';
 import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LessonPlanFormProps {
   formData: {
@@ -26,10 +27,12 @@ export const LessonPlanForm = memo(function LessonPlanForm({
   onInputChange,
   onGenerate
 }: LessonPlanFormProps) {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-pink-100 p-6 hover:shadow-md transition-shadow duration-200">
-      <Tabs defaultValue="subject" className="mb-6">
-        <TabsList className="grid grid-cols-2 gap-4">
+    <div className={`bg-white rounded-xl shadow-sm border border-pink-100 ${isMobile ? 'p-4' : 'p-6'} hover:shadow-md transition-shadow duration-200`}>
+      <Tabs defaultValue="subject" className={`${isMobile ? 'mb-4' : 'mb-6'}`}>
+        <TabsList className="grid grid-cols-2 gap-2">
           <TabsTrigger value="subject">Votre programme</TabsTrigger>
           <TabsTrigger value="text">Texte</TabsTrigger>
         </TabsList>
@@ -43,7 +46,7 @@ export const LessonPlanForm = memo(function LessonPlanForm({
 
       <CommonFields formData={formData} handleInputChange={onInputChange} />
 
-      <div className="mt-8">
+      <div className={`${isMobile ? 'mt-6' : 'mt-8'}`}>
         <Button 
           onClick={onGenerate} 
           disabled={isLoading} 

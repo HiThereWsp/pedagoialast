@@ -28,8 +28,8 @@ export function SidebarFooter({ onLogout, currentPath }: SidebarFooterProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <SidebarMenuButton
-                    onClick={() => navigate('/bienvenue')}
-                    data-active={currentPath === '/bienvenue'}
+                    onClick={() => navigate('/tableaudebord')}
+                    data-active={currentPath === '/tableaudebord'}
                   >
                     <Home className="h-4 w-4" />
                     <span>Accueil</span>

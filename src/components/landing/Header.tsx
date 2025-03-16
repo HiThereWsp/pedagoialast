@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -19,7 +20,7 @@ export function Header() {
   ];
   
   const handleDashboardClick = () => {
-    navigate('/bienvenue');
+    navigate('/tableaudebord');
   };
   
   return (
@@ -119,7 +120,7 @@ export function Header() {
                     className="w-full gap-2 justify-center"
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      navigate('/bienvenue');
+                      navigate('/tableaudebord');
                     }}
                   >
                     <LayoutDashboard className="h-4 w-4" />

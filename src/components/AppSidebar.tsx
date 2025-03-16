@@ -1,4 +1,5 @@
 
+
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
@@ -33,11 +34,6 @@ export function AppSidebar({
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
-
-  const handleLogout = () => {
-    onLogout();
-    navigate('/bienvenue');
-  };
 
   return (
     <>
@@ -93,7 +89,7 @@ export function AppSidebar({
             </ScrollArea>
 
             <SidebarFooter 
-              onLogout={handleLogout}
+              onLogout={onLogout}
               currentPath={location.pathname}
             />
           </div>

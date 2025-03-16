@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { LessonPlanCreator } from '@/components/lesson-plan/LessonPlanCreator';
-import { Header } from '@/components/lesson-plan/components/Header';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const LessonPlanPage = () => {
@@ -9,8 +8,8 @@ const LessonPlanPage = () => {
   
   return (
     <div className="container mx-auto py-4 px-4">
-      <div className="text-center mb-8">
-        <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl'} font-extrabold mb-2 bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent leading-tight tracking-tight text-balance max-w-lg mx-auto`}>
+      <div className="text-center mb-6">
+        <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-extrabold mb-2 bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent leading-tight tracking-tight text-balance max-w-lg mx-auto`}>
           Générateur de séquences
         </h1>
         <p className="max-w-2xl mx-auto text-slate-500">
@@ -18,8 +17,12 @@ const LessonPlanPage = () => {
         </p>
       </div>
       <div className="max-w-4xl mx-auto">
-        <div className="space-y-8">
-          <Header />
+        <div className="space-y-6">
+          {!isMobile && <img
+            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
+            alt="PedagoIA Logo"
+            className="w-[100px] h-[120px] object-contain mx-auto mb-4"
+          />}
           <LessonPlanCreator />
         </div>
       </div>
