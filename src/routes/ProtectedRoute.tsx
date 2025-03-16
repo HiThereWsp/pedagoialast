@@ -1,7 +1,8 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/auth";
+import { isAuthPage } from "@/hooks/auth/authUtils";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { toast } from "@/hooks/toast/toast";
 
@@ -16,12 +17,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const initialLoadComplete = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const failureTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Détermine si la page actuelle est une page publique d'authentification
-  const isAuthPage = () => {
-    const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password', '/confirm-email'];
-    return authPaths.some(path => location.pathname.startsWith(path));
-  };
 
   // Montrer le chargement seulement après un délai pour éviter les flashs
   useEffect(() => {
@@ -80,7 +75,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       loading, 
       authReady,
       path: location.pathname,
-      isAuthPage: isAuthPage(),
+      isAuthPage: isAuthPage(location.pathname),
       initialLoadComplete: initialLoadComplete.current
     });
     
@@ -103,14 +98,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // Si l'utilisateur est déjà connecté et essaie d'accéder à une page d'authentification,
   // rediriger vers la page d'accueil
-  if (user && isAuthPage()) {
+  if (user && isAuthPage(location.pathname)) {
     console.log("Utilisateur déjà authentifié, redirection vers /tableaudebord");
     return <Navigate to="/tableaudebord" replace />;
   }
 
   // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, 
   // rediriger vers la page de connexion, sauf si c'est déjà une page d'authentification
-  if (!user && authReady && !loading && !isAuthPage()) {
+  if (!user && authReady && !loading && !isAuthPage(location.pathname)) {
     console.log("Utilisateur non authentifié, redirection vers /login");
     return <Navigate to="/login" state={{ returnUrl: location.pathname }} replace />;
   }

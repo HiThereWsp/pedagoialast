@@ -1,56 +1,27 @@
 
-import * as React from "react"
-import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
+import { ReactNode } from "react";
 
-// Toast constants
-export const TOAST_LIMIT = 1
-export const TOAST_REMOVE_DELAY = 5000
+export type ToastActionType = "ADD_TOAST" | "UPDATE_TOAST" | "DISMISS_TOAST" | "REMOVE_TOAST";
+
+export type ToastProps = {
+  title?: string;
+  description?: ReactNode;
+  action?: ReactNode;
+  variant?: "default" | "destructive" | "success" | "warning" | "info";
+  duration?: number;
+};
+
+export type Toast = ToastProps & {
+  id?: string;
+  open?: boolean;
+};
+
+export type ToasterToast = Required<Toast>;
 
 export const TOAST_DURATIONS = {
   default: 5000,
+  destructive: 8000,
   success: 3000,
-  destructive: 6000,
-  info: 4000,
-}
-
-// Types
-export type ToasterToast = ToastProps & {
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-  duration?: number
-}
-
-export const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-} as const
-
-export type ActionType = typeof actionTypes
-
-export type Action =
-  | {
-      type: ActionType["ADD_TOAST"]
-      toast: ToasterToast
-    }
-  | {
-      type: ActionType["UPDATE_TOAST"]
-      toast: Partial<ToasterToast>
-    }
-  | {
-      type: ActionType["DISMISS_TOAST"]
-      toastId?: ToasterToast["id"]
-    }
-  | {
-      type: ActionType["REMOVE_TOAST"]
-      toastId?: ToasterToast["id"]
-    }
-
-export interface State {
-  toasts: ToasterToast[]
-}
-
-export type Toast = Omit<ToasterToast, "id">
+  warning: 6000,
+  info: 5000,
+};

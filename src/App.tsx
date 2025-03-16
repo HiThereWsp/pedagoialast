@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import AppRoutes from '@/routes/AppRoutes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AuthProvider } from '@/hooks/useAuth'
+import { AuthProvider } from '@/hooks/auth'
 import { Toaster } from '@/components/ui/toaster'
 import '@/App.css'
 
