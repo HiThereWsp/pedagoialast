@@ -1,6 +1,7 @@
+
 import React, { createContext, useContext, useEffect, useState, useRef } from "react"
 import { supabase } from "@/integrations/supabase/client"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "@/hooks/use-toast" // Utilisation directe de toast plutôt que useToast
 import { useLocation } from "react-router-dom"
 import type { User } from "@supabase/supabase-js"
 
@@ -29,7 +30,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
   const [authReady, setAuthReady] = useState(false)
   const authCheckCompleted = useRef(false)
-  const { toast } = useToast()
   const location = useLocation()
 
   // Détermine si la page actuelle est une page publique (landing, login, etc.)
@@ -77,9 +77,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         // pour éviter les vérifications de session non nécessaires
         if (isPublicPage()) {
           console.log("Page publique détectée, vérification minimale")
-          setAuthReady(true)
-          setLoading(false)
-          authCheckCompleted.current = true
+          if (mounted) {
+            setAuthReady(true)
+            setLoading(false)
+            authCheckCompleted.current = true
+          }
           return
         }
         
@@ -101,6 +103,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(user)
           authCheckCompleted.current = true
           setAuthReady(true)
+          setLoading(false)
         }
       } catch (error) {
         console.error("Exception lors de la vérification de l'utilisateur:", error)
@@ -112,9 +115,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             variant: "destructive",
           })
         }
-      } finally {
+        
         if (mounted) {
           setLoading(false)
+          setAuthReady(true) // Même en cas d'erreur, l'authentification est considérée comme "prête"
         }
       }
     }
@@ -125,12 +129,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         await checkUser()
         
         if (mounted) {
-          // N'abonnez aux changements d'authentification que si ce n'est pas une page publique
-          // ou si l'utilisateur est déjà connecté
           const { data } = supabase.auth.onAuthStateChange(
             async (event, session) => {
               if (mounted) {
                 console.log("Auth state changed:", event)
+                
                 if (session?.user) {
                   console.log("Session active:", session.user.email)
                 } else {
@@ -163,10 +166,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         subscription.unsubscribe()
       }
     }
-  }, [toast, location.pathname])
+  }, [location.pathname])
 
   // Amélioration de la gestion du chargement pour éviter de bloquer l'UI sur les pages publiques
-  if (loading) {
+  if (loading && !authReady) {
     // Sur les pages publiques, afficher le contenu même pendant le chargement
     if (isPublicPage()) {
       return (

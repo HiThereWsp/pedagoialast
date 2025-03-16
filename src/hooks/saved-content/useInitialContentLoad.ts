@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast"; // Utilisation directe de toast
 
 /**
  * Hook for handling initial content loading
@@ -11,8 +11,7 @@ export function useInitialContentLoad(
   forceRefresh: () => void,
   invalidateCache: () => void,
   authReady: boolean,
-  user: any | null,
-  toast: ReturnType<typeof useToast>["toast"]
+  user: any | null
 ) {
   // Load data once after authentication
   useEffect(() => {
@@ -64,5 +63,5 @@ export function useInitialContentLoad(
     };
     
     loadContentData();
-  }, [fetchContent, toast, forceRefresh, invalidateCache, authReady, user, didInitialFetch]);
+  }, [fetchContent, forceRefresh, invalidateCache, authReady, user, didInitialFetch]);
 }
