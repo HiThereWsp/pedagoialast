@@ -12,11 +12,11 @@ export const BackButton = () => {
     if (location.pathname === '/privacy' || location.pathname === '/terms') {
       navigate('/legal')
     } else if (location.pathname === '/legal') {
-      navigate('/home')
+      navigate('/tableaudebord')
     } else if (location.pathname === '/suggestions') {
-      navigate('/home')
+      navigate('/tableaudebord')
     } else {
-      navigate('/home')
+      navigate('/tableaudebord')
     }
   }
   

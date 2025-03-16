@@ -4,6 +4,9 @@
 
 /* /index.html 200
 
+# Redirect /home to /tableaudebord
+/home /tableaudebord 301
+
 # Redirections spéciales pour les créateurs
 /*/maitreClement /functions/redirect/*/maitreClement 302
 /*/lollieUnicorn /functions/redirect/*/lollieUnicorn 302
