@@ -75,8 +75,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Si l'utilisateur est déjà connecté et essaie d'accéder à une page d'authentification,
   // rediriger vers la page d'accueil
   if (user && isAuthPage()) {
-    console.log("Utilisateur déjà authentifié, redirection vers /home");
-    return <Navigate to="/home" replace />;
+    console.log("Utilisateur déjà authentifié, redirection vers /bienvenue");
+    return <Navigate to="/bienvenue" replace />;
   }
 
   // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, 
