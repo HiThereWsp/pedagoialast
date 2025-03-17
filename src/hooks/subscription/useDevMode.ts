@@ -1,6 +1,5 @@
 
-import { SubscriptionStatus, initialStatus } from './types';
-import { cacheSubscriptionStatus } from './useSubscriptionCache';
+import { SubscriptionStatus } from './types';
 
 /**
  * Check if user is in development mode
@@ -18,7 +17,6 @@ export const checkDevMode = (setStatus: (status: SubscriptionStatus) => void): b
       retryCount: 0
     };
     setStatus(devStatus);
-    cacheSubscriptionStatus(devStatus);
     return true;
   }
   return false;

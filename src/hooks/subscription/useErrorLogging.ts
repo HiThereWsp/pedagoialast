@@ -1,12 +1,12 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Log subscription errors
  * @param {string} errorType Error type
  * @param {any} details Error details
  */
-export const logSubscriptionError = async (errorType: string, details: any): Promise<void> => {
+export const logSubscriptionError = async (errorType: string, details: any) => {
   console.error(`Subscription error: ${errorType}`, details);
   
   try {

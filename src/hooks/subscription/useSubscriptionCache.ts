@@ -4,7 +4,7 @@ import { SubscriptionStatus, CACHE_KEY, CACHE_DURATION } from './types';
 /**
  * Cache subscription status in local storage
  */
-export const cacheSubscriptionStatus = (statusToCache: SubscriptionStatus): void => {
+export const cacheSubscriptionStatus = (statusToCache: SubscriptionStatus) => {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({
       ...statusToCache,
