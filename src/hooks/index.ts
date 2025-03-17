@@ -13,4 +13,3 @@ export * from './subscription';
 export * from './image-generation';
 export * from './lesson-plan';
 export * from './exercise';
-export * from './content';
