@@ -2,7 +2,6 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { BetaWelcomeNotification } from "@/components/beta/BetaWelcomeNotification";
 import { useAuth } from "@/hooks/useAuth";
 import { DashboardWrapper } from "@/components/dashboard/DashboardWrapper";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
@@ -58,9 +57,6 @@ const TableauDeBord = () => {
         <title>Tableau de bord | PedagoIA</title>
         <meta name="description" content="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé." />
       </Helmet>
-      
-      {/* Beta Welcome Notification */}
-      <BetaWelcomeNotification />
       
       {/* Desktop Sidebar */}
       <DashboardSidebar 
