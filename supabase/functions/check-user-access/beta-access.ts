@@ -7,13 +7,13 @@ export async function checkBetaAccess(
 ) {
   console.log("Checking if user is beta user:", user.email);
   
-  // Lista de dominios de correo específicos que siempre deben tener acceso beta
+  // Liste des domaines de courrier spécifiques qui doivent toujours avoir accès beta
   const specialBetaDomains = ['gmail.com', 'pedagogia.fr', 'gmail.fr', 'outlook.fr', 'outlook.com'];
-  const specialBetaEmails = ['andyguitteaud@gmail.com']; // Add specific emails for beta access
+  const specialBetaEmails = ['andyguitteaud@gmail.com']; // Emails spécifiques pour accès beta
   
-  // Concede acceso beta inmediato a correos específicos
-  if (specialBetaEmails.includes(user.email)) {
-    console.log('Correo específico con acceso beta encontrado:', user.email);
+  // Accorder un accès beta immédiat aux courriels spécifiques
+  if (user.email && specialBetaEmails.includes(user.email)) {
+    console.log('Email spécifique avec accès beta trouvé:', user.email);
     return { 
       access: true, 
       type: 'beta',
@@ -90,11 +90,11 @@ export async function checkBetaAccess(
     };
   }
   
-  // Search in the email domain for special domain-based beta access
+  // Rechercher dans le domaine de l'email pour un accès beta basé sur le domaine
   if (user.email) {
     const emailDomain = user.email.split('@')[1];
     if (specialBetaDomains.includes(emailDomain)) {
-      console.log('Domain-based beta access granted for:', user.email);
+      console.log('Accès beta basé sur le domaine accordé pour:', user.email);
       return { 
         access: true, 
         type: 'beta',
@@ -102,6 +102,19 @@ export async function checkBetaAccess(
         domain_access: true
       };
     }
+  }
+  
+  // Dernier recours: vérification directe des emails connus qui devraient toujours avoir accès
+  // Cette vérification est redondante avec celle du début, mais permet de s'assurer que ces utilisateurs
+  // auront toujours accès même si la première vérification échoue pour une raison quelconque
+  if (user.email === 'andyguitteaud@gmail.com') {
+    console.log('Accès beta accordé pour utilisateur spécial:', user.email);
+    return { 
+      access: true, 
+      type: 'beta',
+      expires_at: null,
+      special_access: true
+    };
   }
   
   console.log("No beta access found for", user.email);

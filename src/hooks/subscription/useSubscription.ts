@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { SubscriptionStatus, initialStatus, REFRESH_INTERVAL } from './types';
-import { getCachedStatus, cacheSubscriptionStatus } from './useSubscriptionCache';
+import { getCachedStatus, cacheSubscriptionStatus, clearSubscriptionCache } from './useSubscriptionCache';
 import { checkDevMode } from './useDevMode';
 import { checkUserSession } from './useSessionCheck';
 import { checkUserAccess } from './useAccessCheck';
@@ -13,50 +13,75 @@ import { useSubscriptionErrorHandling } from './useSubscriptionErrorHandling';
  */
 export const useSubscription = () => {
   const [status, setStatus] = useState<SubscriptionStatus>(initialStatus);
+  // Ajouter un flag pour éviter les vérifications multiples
+  const [isChecking, setIsChecking] = useState(false);
 
-  // Fonction de rappel pour checkSubscription définie en début pour useSubscriptionErrorHandling
+  // Fonction de rappel pour checkSubscription définie avec les bonnes dépendances
   const checkSubscription = useCallback(async (force = false) => {
+    // Prévenir les vérifications multiples simultanées
+    if (isChecking && !force) {
+      console.log("Une vérification est déjà en cours, ignorée");
+      return;
+    }
+    
     // Si pas de force, vérifier le cache d'abord
     if (!force) {
       const cachedStatus = getCachedStatus();
       if (cachedStatus) {
         console.log("Using cached subscription status", cachedStatus);
-        setStatus(prev => ({
-          ...cachedStatus,
-          isLoading: false,
-          error: null
-        }));
+        setStatus(cachedStatus);
         return;
       }
     }
     
     // Sinon, procéder à la vérification
+    setIsChecking(true); // Marquer comme en cours de vérification
     setStatus(prev => ({ ...prev, isLoading: true, error: null }));
     
     // En cas d'erreur pendant les vérifications, s'assurer que isLoading est correctement réinitialisé
     try {
       // Vérifier le mode développement d'abord (court-circuite les autres vérifications)
-      if (checkDevMode(setStatus)) return;
+      if (checkDevMode(setStatus)) {
+        setIsChecking(false);
+        return;
+      }
       
       // Vérifier la session utilisateur
       const session = await checkUserSession(setStatus);
-      if (!session) return;
+      if (!session) {
+        setIsChecking(false);
+        return;
+      }
       
       // Vérifier l'accès utilisateur
       await checkUserAccess(status, setStatus);
     } catch (error) {
       const criticalErrorStatus = errorHandler.handleSubscriptionError(error, status);
       setStatus(criticalErrorStatus);
+    } finally {
+      setIsChecking(false);
     }
-  }, [status]);
+  }, [status, isChecking]);
 
   // Utiliser le hook de gestion des erreurs
   const errorHandler = useSubscriptionErrorHandling(status, checkSubscription);
 
-  // Vérifier l'abonnement au chargement du composant
+  // Vérifier l'abonnement au chargement du composant, une seule fois
   useEffect(() => {
-    checkSubscription();
-  }, [checkSubscription]);
+    let mounted = true;
+    
+    // Utiliser un setTimeout pour éviter les problèmes de rendu
+    const timer = setTimeout(() => {
+      if (mounted) {
+        checkSubscription();
+      }
+    }, 0);
+    
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
+  }, []);
   
   // Actualiser périodiquement le statut de l'abonnement
   useEffect(() => {
@@ -80,7 +105,7 @@ export const useSubscription = () => {
     if (status.type === 'beta' || status.type === 'dev_mode') return true;
     
     if (!status.isActive) {
-      toast.error("Subscription required to access this feature");
+      toast.error("Abonnement requis pour accéder à cette fonctionnalité");
       window.location.href = '/pricing';
       return false;
     }

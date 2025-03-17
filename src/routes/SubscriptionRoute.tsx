@@ -30,6 +30,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
 
   // Skip verification display in development mode
   if (import.meta.env.DEV) {
+    console.log("Development mode detected, bypassing subscription verification");
     return children;
   }
   
@@ -47,8 +48,30 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     }
   };
   
-  // Only show loading during unusually long verifications
-  if (isLoading && isChecking) {
+  // Déterminer si l'utilisateur est un possible utilisateur beta connu
+  const isPossibleBetaUser = (): boolean => {
+    try {
+      // Si le type d'abonnement est déjà 'beta', c'est vrai
+      if (subscriptionType === 'beta') return true;
+      
+      // Vérifier si l'URL contient des paramètres qui pourraient indiquer un statut beta
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('beta') || urlParams.has('betaAccess')) return true;
+      
+      return false;
+    } catch (e) {
+      return false;
+    }
+  };
+  
+  // Si l'utilisateur est un possible beta, afficher le contenu même en cas d'erreur
+  if (error && isPossibleBetaUser()) {
+    console.log("Possible beta user detected, showing content despite error");
+    return children;
+  }
+  
+  // Only show loading during unusually long verifications and not in dev mode
+  if (isLoading && isChecking && !import.meta.env.DEV) {
     return (
       <div className="flex items-center justify-center min-h-[50vh] transition-opacity duration-300">
         <div className="text-center">

@@ -38,7 +38,7 @@ export const getCachedStatus = (): SubscriptionStatus | null => {
       return null;
     }
     
-    const parsedCache = JSON.parse(cached) as SubscriptionStatus;
+    const parsedCache = JSON.parse(cached) as SubscriptionStatus & { timestamp?: number };
     
     // Check cache age
     if (parsedCache.timestamp) {
@@ -46,7 +46,18 @@ export const getCachedStatus = (): SubscriptionStatus | null => {
       
       if (ageInMs < CACHE_DURATION) {
         console.log(`Using cached subscription status (age: ${Math.round(ageInMs/1000)}s)`, parsedCache);
-        return parsedCache;
+        
+        // Nettoyer la propriété timestamp pour le retour 
+        const cleanCache: SubscriptionStatus = {
+          isActive: parsedCache.isActive,
+          type: parsedCache.type,
+          expiresAt: parsedCache.expiresAt,
+          isLoading: false, // Toujours réinitialiser à false lors de l'utilisation du cache
+          error: null,      // Toujours réinitialiser à null lors de l'utilisation du cache
+          retryCount: 0     // Réinitialiser le compteur de tentatives
+        };
+        
+        return cleanCache;
       } else {
         console.log(`Cached subscription status expired (age: ${Math.round(ageInMs/1000)}s)`);
       }
