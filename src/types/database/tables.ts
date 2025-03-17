@@ -50,6 +50,8 @@ export interface ToolMetricRow {
   content_length: number | null;
   generation_time_ms: number | null;
   feedback_score: number | null;
+  content_id: string | null;
+  comment: string | null;
   created_at: string;
 }
 

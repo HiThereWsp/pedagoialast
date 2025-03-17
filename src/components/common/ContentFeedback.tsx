@@ -43,7 +43,8 @@ export const ContentFeedback = ({ contentType, contentId, className }: ContentFe
           'feedback', 
           undefined, 
           undefined, 
-          newScore
+          newScore,
+          contentId
         );
         
         toast({
@@ -65,11 +66,11 @@ export const ContentFeedback = ({ contentType, contentId, className }: ContentFe
       await logToolUsage(
         contentType,
         'feedback',
-        feedback.length,  // Use comment length as content length
+        feedback.length > 0 ? feedback.length : undefined,
         undefined,
         feedbackScore,
         contentId,
-        feedback
+        feedback.length > 0 ? feedback : undefined
       );
       
       toast({

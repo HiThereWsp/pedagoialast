@@ -23,18 +23,23 @@ export const useToolMetrics = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Prepare the data object
+      const metricData: any = {
+        user_id: user.id,
+        tool_type: toolType,
+        action_type: actionType,
+        content_length: contentLength,
+        generation_time_ms: generationTimeMs,
+        feedback_score: feedbackScore
+      };
+      
+      // Only add contentId and comment if they are provided
+      if (contentId) metricData.content_id = contentId;
+      if (comment) metricData.comment = comment;
+
       const { error } = await supabase
         .from('tool_metrics')
-        .insert({
-          user_id: user.id,
-          tool_type: toolType,
-          action_type: actionType,
-          content_length: contentLength,
-          generation_time_ms: generationTimeMs,
-          feedback_score: feedbackScore,
-          content_id: contentId,
-          comment: comment
-        });
+        .insert(metricData);
 
       if (error) throw error;
 
