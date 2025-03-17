@@ -53,7 +53,7 @@ export const BetaWelcomeNotification = () => {
             Nous souhaitons vous offrir un accès gratuit à la plateforme. Pour en bénéficier, écrivez-nous afin que nous vous expliquions la démarche à suivre.
           </p>
           <p className="font-medium">
-            Contactez-nous à l'adresse : <a href="mailto:contact@pedagogia.io" className="text-blue-600 hover:underline">contact@pedagogia.io</a>
+            Contactez-nous à l'adresse : <a href="mailto:bonjour@pedagoia.fr" className="text-blue-600 hover:underline">bonjour@pedagoia.fr</a>
           </p>
         </DialogDescription>
         <DialogFooter className="mt-4">
