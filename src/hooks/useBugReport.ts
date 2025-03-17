@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -147,21 +146,20 @@ export const useBugReport = () => {
         status: 'new',
       };
       
-      // Utiliser la méthode "as any" comme solution temporaire pour le type
+      // Utiliser la méthode "as any" comme solution temporaire pour les typages de la base de données
       const { data, error } = await supabase
         .from('bug_reports' as any)
         .insert(bugReport)
-        .select()
-        .single();
+        .select();
         
       if (error) throw error;
       
       // Nous vérifions d'abord que data existe et a une propriété id
       // Notifier l'administrateur par email
-      if (data && typeof data === 'object' && 'id' in data) {
+      if (data && Array.isArray(data) && data.length > 0 && data[0] && 'id' in data[0]) {
         await supabase.functions.invoke('send-bug-report-notification', {
           body: {
-            reportId: data.id,
+            reportId: data[0].id,
             description,
             screenshotUrl,
             url: window.location.href,
