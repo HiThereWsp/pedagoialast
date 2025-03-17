@@ -12,8 +12,7 @@ export function LimitedAccessCard() {
         Accès limité
       </h3>
       <p className="text-muted-foreground mb-4 max-w-lg">
-        Merci de vous être inscrit à PedagoIA. Vous avez actuellement un accès limité à la plateforme. 
-        Découvrez nos offres pour bénéficier de toutes les fonctionnalités.
+        Abonnez vous pour avoir accès à toutes les fonctionnalités de PedagoIA.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 mt-4">
         <Button onClick={() => navigate("/pricing")} className="w-full sm:w-auto">

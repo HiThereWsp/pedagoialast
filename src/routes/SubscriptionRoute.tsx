@@ -52,7 +52,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   const isPossibleBetaUser = (): boolean => {
     try {
       // Si le type d'abonnement est déjà 'beta', c'est vrai
-      if (subscriptionType === 'beta') return true;
+      if (subscriptionType === 'beta' || subscriptionType === 'beta_pending') return true;
       
       // Vérifier si l'URL contient des paramètres qui pourraient indiquer un statut beta
       const urlParams = new URLSearchParams(window.location.search);
@@ -68,6 +68,27 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   if (error && isPossibleBetaUser()) {
     console.log("Possible beta user detected, showing content despite error");
     return children;
+  }
+  
+  // Afficher un message spécial pour les utilisateurs beta en attente de validation
+  if (subscriptionType === 'beta_pending') {
+    return (
+      <div className="max-w-4xl mx-auto p-6 my-8">
+        <Alert className="bg-yellow-50 border-yellow-200 mb-6">
+          <Info className="h-5 w-5 text-yellow-600" />
+          <AlertTitle className="text-yellow-800 font-medium">Accès Beta en attente</AlertTitle>
+          <AlertDescription className="text-yellow-700">
+            En tant qu'utilisateur Beta, vous bénéficiez d'un accès gratuit. 
+            Écrivez "Accès Beta" à l'adresse <a href="mailto:bonjour@pedagoia.fr" className="font-semibold underline">bonjour@pedagoia.fr</a> pour en savoir plus.
+          </AlertDescription>
+        </Alert>
+        <div className="flex justify-center">
+          <Button onClick={() => window.location.href = '/tableau-de-bord'}>
+            Retour au tableau de bord
+          </Button>
+        </div>
+      </div>
+    );
   }
   
   // Only show loading during unusually long verifications and not in dev mode
@@ -144,14 +165,23 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       });
     }
     
+    // Rediriger automatiquement vers la page d'abonnement après un court délai
+    useEffect(() => {
+      const redirectTimer = setTimeout(() => {
+        window.location.href = '/pricing';
+      }, 1500);
+      
+      return () => clearTimeout(redirectTimer);
+    }, []);
+    
     return (
       <div className="max-w-4xl mx-auto p-6 my-8">
         <Alert className="bg-amber-50 border-amber-200 mb-6">
           <Info className="h-5 w-5 text-amber-800" />
           <AlertTitle className="text-amber-800 font-medium">Accès limité</AlertTitle>
           <AlertDescription className="text-amber-700">
-            Merci de vous être inscrit à PedagoIA. Cette fonctionnalité nécessite un abonnement actif.
-            Découvrez nos offres pour débloquer toutes les fonctionnalités.
+            Abonnez vous pour avoir accès à toutes les fonctionnalités de PedagoIA.
+            <div className="mt-2">Redirection vers la page d'abonnement...</div>
           </AlertDescription>
         </Alert>
         <div className="flex justify-center">

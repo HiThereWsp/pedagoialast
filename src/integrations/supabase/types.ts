@@ -92,16 +92,19 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          is_validated: boolean
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
+          is_validated?: boolean
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          is_validated?: boolean
         }
         Relationships: []
       }
