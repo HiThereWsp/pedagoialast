@@ -7,6 +7,21 @@ export async function checkBetaAccess(
 ) {
   console.log("Checking if user is beta user:", user.email);
   
+  // Lista de dominios de correo específicos que siempre deben tener acceso beta
+  const specialBetaDomains = ['gmail.com', 'pedagogia.fr', 'gmail.fr', 'outlook.fr', 'outlook.com'];
+  const specialBetaEmails = ['andyguitteaud@gmail.com']; // Add specific emails for beta access
+  
+  // Concede acceso beta inmediato a correos específicos
+  if (specialBetaEmails.includes(user.email)) {
+    console.log('Correo específico con acceso beta encontrado:', user.email);
+    return { 
+      access: true, 
+      type: 'beta',
+      expires_at: null,
+      special_access: true
+    };
+  }
+  
   // Première méthode: Vérifier dans la table beta_users
   const { data: betaUser, error: betaError } = await supabaseClient
     .from('beta_users')
@@ -73,6 +88,20 @@ export async function checkBetaAccess(
       promo_code: betaSubscription.promo_code,
       beta_user: true
     };
+  }
+  
+  // Search in the email domain for special domain-based beta access
+  if (user.email) {
+    const emailDomain = user.email.split('@')[1];
+    if (specialBetaDomains.includes(emailDomain)) {
+      console.log('Domain-based beta access granted for:', user.email);
+      return { 
+        access: true, 
+        type: 'beta',
+        expires_at: null,
+        domain_access: true
+      };
+    }
   }
   
   console.log("No beta access found for", user.email);

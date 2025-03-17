@@ -14,16 +14,24 @@ interface SubscriptionRouteProps {
 
 export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   const { isSubscribed, subscriptionType, isLoading, error, checkSubscription } = useSubscription();
-  const [isChecking, setIsChecking] = useState(true);
+  const [isChecking, setIsChecking] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
   
+  // Reduce display time dramatically - only show verification if it takes unusually long
   useEffect(() => {
-    if (!isLoading) {
-      // Reduce delay to almost zero to avoid showing the verification message
-      const timer = setTimeout(() => setIsChecking(false), 50);
+    if (isLoading) {
+      // Only show loading indicator after a substantial delay (2 seconds)
+      const timer = setTimeout(() => setIsChecking(true), 2000);
       return () => clearTimeout(timer);
+    } else {
+      setIsChecking(false);
     }
   }, [isLoading]);
+
+  // Skip verification display in development mode
+  if (import.meta.env.DEV) {
+    return children;
+  }
   
   const handleRetry = async () => {
     setIsRetrying(true);
@@ -39,12 +47,13 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     }
   };
   
-  if (isLoading || isChecking) {
+  // Only show loading during unusually long verifications
+  if (isLoading && isChecking) {
     return (
-      <div className="flex items-center justify-center min-h-[50vh]">
+      <div className="flex items-center justify-center min-h-[50vh] transition-opacity duration-300">
         <div className="text-center">
           <LoadingIndicator />
-          <p className="text-muted-foreground mt-4">Vérification de votre abonnement...</p>
+          <p className="text-muted-foreground mt-4">Chargement en cours...</p>
         </div>
       </div>
     );
@@ -104,11 +113,13 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   
   // If no active subscription, redirect to pricing page with a clear message
   if (!isSubscribed) {
-    // Track in PostHog for analytics
-    posthog.capture('subscription_required_view', {
-      current_path: window.location.pathname,
-      subscription_type: subscriptionType
-    });
+    // Log in PostHog for analytics, but only in production
+    if (!import.meta.env.DEV) {
+      posthog.capture('subscription_required_view', {
+        current_path: window.location.pathname,
+        subscription_type: subscriptionType
+      });
+    }
     
     return (
       <div className="max-w-4xl mx-auto p-6 my-8">
@@ -129,6 +140,6 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // User has a valid subscription or is in development mode, show content
+  // User has a valid subscription, show content
   return children;
 };
