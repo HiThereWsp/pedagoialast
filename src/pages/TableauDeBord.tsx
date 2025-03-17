@@ -66,7 +66,7 @@ const TableauDeBord = () => {
       />
       
       {/* Main Content Area */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-64' : 'ml-0'}`}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-0' : 'ml-0'}`}>
         {/* Mobile Header Menu Button */}
         {isMobile && (
           <div className="fixed top-0 left-0 z-30 p-4">
