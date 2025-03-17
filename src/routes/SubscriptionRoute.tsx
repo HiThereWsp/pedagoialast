@@ -12,7 +12,7 @@ interface SubscriptionRouteProps {
 }
 
 export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
-  const { isSubscribed, subscriptionType, isLoading } = useSubscription();
+  const { isSubscribed, subscriptionType, isLoading, error } = useSubscription();
   const [isChecking, setIsChecking] = useState(true);
   
   useEffect(() => {
@@ -32,6 +32,16 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
         </div>
       </div>
     );
+  }
+  
+  // Si une erreur s'est produite, afficher un message mais laisser l'utilisateur continuer
+  if (error) {
+    console.error('Erreur de vérification d\'abonnement:', error);
+    // Si nous sommes en mode développement, permettre l'accès malgré l'erreur
+    if (import.meta.env.DEV) {
+      console.log('Mode développement détecté, accès accordé malgré l\'erreur');
+      return children;
+    }
   }
   
   // Si pas d'abonnement actif, rediriger vers la page pricing avec un message clair
@@ -55,6 +65,6 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // L'utilisateur a un abonnement valide, afficher le contenu
+  // L'utilisateur a un abonnement valide ou est en mode développement, afficher le contenu
   return children;
 };

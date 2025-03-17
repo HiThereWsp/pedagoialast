@@ -9,6 +9,7 @@ type SubscriptionStatus = {
   expiresAt: string | null;
   isLoading: boolean;
   error: string | null;
+  retryCount: number;
 };
 
 const initialStatus: SubscriptionStatus = {
@@ -16,7 +17,8 @@ const initialStatus: SubscriptionStatus = {
   type: null,
   expiresAt: null,
   isLoading: true,
-  error: null
+  error: null,
+  retryCount: 0
 };
 
 /**
@@ -37,7 +39,8 @@ export const useSubscription = () => {
         type: 'dev_mode',
         expiresAt: null,
         isLoading: false,
-        error: null
+        error: null,
+        retryCount: 0
       });
       return true;
     }
@@ -85,43 +88,46 @@ export const useSubscription = () => {
   }, []);
 
   /**
-   * Gère les erreurs de fonction edge
-   * @param {any} error L'erreur retournée
-   */
-  const handleEdgeFunctionError = useCallback((error) => {
-    console.error('Erreur edge function:', error);
-    
-    // Message d'erreur plus descriptif selon le contexte
-    const errorMessage = error.message && error.message.includes("enum") 
-      ? "Erreur de configuration serveur (types manquants)" 
-      : error.message || "Erreur inattendue";
-    
-    setStatus(prev => ({
-      ...prev,
-      isLoading: false,
-      error: errorMessage
-    }));
-    
-    // Log détaillé pour aider au débogage
-    console.error('Détails erreur vérification accès:', {
-      message: error.message,
-      name: error.name,
-      status: error.status,
-      stack: error.stack
-    });
-  }, []);
-
-  /**
    * Vérifie l'abonnement de l'utilisateur via la fonction check-user-access
    * @returns {Promise<boolean>} True si l'utilisateur a un abonnement actif
    */
   const checkUserAccess = useCallback(async () => {
     try {
       console.log("Appel de la fonction check-user-access");
-      const { data, error } = await supabase.functions.invoke('check-user-access');
+      
+      // Ajout de headers explicites pour résoudre les problèmes CORS
+      const headers = {
+        "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ""}`,
+        "Content-Type": "application/json",
+      };
+      
+      const { data, error } = await supabase.functions.invoke('check-user-access', {
+        headers: headers
+      });
       
       if (error) {
-        handleEdgeFunctionError(error);
+        console.error('Erreur edge function:', error);
+        
+        // Message d'erreur plus descriptif selon le contexte
+        const errorMessage = error.message && error.message.includes("enum") 
+          ? "Erreur de configuration serveur (types manquants)" 
+          : error.message || "Erreur inattendue";
+        
+        setStatus(prev => ({
+          ...prev,
+          isLoading: false,
+          error: errorMessage,
+          retryCount: prev.retryCount + 1
+        }));
+        
+        // Log détaillé pour aider au débogage
+        console.error('Détails erreur vérification accès:', {
+          message: error.message,
+          name: error.name,
+          status: error.status,
+          stack: error.stack
+        });
+        
         return false;
       }
       
@@ -132,7 +138,8 @@ export const useSubscription = () => {
         setStatus({
           ...initialStatus,
           isLoading: false,
-          error: "Réponse invalide du serveur"
+          error: "Réponse invalide du serveur",
+          retryCount: status.retryCount + 1
         });
         return false;
       }
@@ -142,22 +149,24 @@ export const useSubscription = () => {
         type: data.type || null,
         expiresAt: data.expires_at || null,
         isLoading: false,
-        error: null
+        error: null,
+        retryCount: 0
       });
       
       return !!data.access;
     } catch (err) {
       console.error('Erreur inattendue lors de la vérification de l\'abonnement:', err);
       
-      setStatus({
+      setStatus(prev => ({
         ...initialStatus,
         isLoading: false,
-        error: err.message || "Erreur serveur inconnue"
-      });
+        error: err.message || "Erreur serveur inconnue",
+        retryCount: prev.retryCount + 1
+      }));
       
       return false;
     }
-  }, [handleEdgeFunctionError]);
+  }, [status.retryCount]);
 
   /**
    * Fonction principale pour vérifier l'abonnement
@@ -178,13 +187,29 @@ export const useSubscription = () => {
       await checkUserAccess();
     } catch (error) {
       console.error("Erreur critique lors de la vérification d'abonnement:", error);
-      setStatus({
+      setStatus(prev => ({
         ...initialStatus,
         isLoading: false,
-        error: "Erreur critique: " + (error.message || "inconnue")
-      });
+        error: "Erreur critique: " + (error.message || "inconnue"),
+        retryCount: prev.retryCount + 1
+      }));
     }
   }, [checkDevMode, checkUserSession, checkUserAccess]);
+
+  // Tentative automatique avec retard exponentiel en cas d'erreur
+  useEffect(() => {
+    if (status.error && status.retryCount < 3) {
+      const retryDelay = Math.pow(2, status.retryCount) * 1000; // 1s, 2s, 4s
+      console.log(`Nouvel essai dans ${retryDelay/1000}s... (tentative ${status.retryCount + 1}/3)`);
+      
+      const retryTimer = setTimeout(() => {
+        console.log(`Tentative de vérification #${status.retryCount + 1}`);
+        checkSubscription();
+      }, retryDelay);
+      
+      return () => clearTimeout(retryTimer);
+    }
+  }, [status.error, status.retryCount, checkSubscription]);
 
   // Vérifier l'abonnement au chargement du composant
   useEffect(() => {
