@@ -1,3 +1,5 @@
 
 export { useImageGeneration } from './useImageGeneration';
-export type { UseImageGenerationResult } from './types';
+export { useGenerateImageApi } from './useGenerateImageApi';
+export { useContentScreening } from './useContentScreening';
+export type { UseImageGenerationResult, GenerationPrompt } from './types';
