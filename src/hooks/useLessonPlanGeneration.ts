@@ -4,7 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useToolMetrics } from '@/hooks/useToolMetrics';
 import { useSavedContent } from '@/hooks/useSavedContent';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useBeforeUnload } from 'react-router-dom';
+
+// Storage keys for form data and results
+const FORM_STORAGE_KEY = 'lesson_plan_form_data';
+const RESULT_STORAGE_KEY = 'lesson_plan_result_data';
 
 interface LessonPlanFormData {
   classLevel: string;
@@ -23,24 +27,55 @@ export function useLessonPlanGeneration() {
   const location = useLocation();
   
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<LessonPlanFormData>({
-    classLevel: '',
-    additionalInstructions: '',
-    totalSessions: '',
-    subject: '',
-    subject_matter: '',
-    text: '',
-    lessonPlan: ''
+  const [formData, setFormData] = useState<LessonPlanFormData>(() => {
+    // Load saved form data from localStorage on initial mount
+    const savedFormData = localStorage.getItem(FORM_STORAGE_KEY);
+    const savedResultData = localStorage.getItem(RESULT_STORAGE_KEY);
+    
+    const initialData = {
+      classLevel: '',
+      additionalInstructions: '',
+      totalSessions: '',
+      subject: '',
+      subject_matter: '',
+      text: '',
+      lessonPlan: ''
+    };
+    
+    if (savedFormData) {
+      const parsedData = JSON.parse(savedFormData);
+      Object.assign(initialData, parsedData);
+    }
+    
+    if (savedResultData) {
+      initialData.lessonPlan = savedResultData;
+    }
+    
+    return initialData;
   });
 
-  // Clear form data when navigating to the page
+  // Save form data to localStorage whenever it changes
   useEffect(() => {
-    return () => {
-      // Clean up session storage when component unmounts
-      sessionStorage.removeItem('lesson_plan_form_data');
-      sessionStorage.removeItem('lesson_plan_result_data');
-    };
-  }, []);
+    if (formData) {
+      const dataToSave = { ...formData };
+      delete dataToSave.lessonPlan; // Don't store result in form data
+      localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(dataToSave));
+      
+      // Store lesson plan separately
+      if (formData.lessonPlan) {
+        localStorage.setItem(RESULT_STORAGE_KEY, formData.lessonPlan);
+      }
+    }
+  }, [formData]);
+
+  // Handle intentional navigation away - clean storage when user explicitly navigates away
+  useBeforeUnload(useCallback(() => {
+    // Don't clear on page refresh (will be handled by beforeunload event)
+    if (location.pathname !== '/lesson-plan') {
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      localStorage.removeItem(RESULT_STORAGE_KEY);
+    }
+  }, [location]));
 
   const handleInputChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({
@@ -58,6 +93,7 @@ export function useLessonPlanGeneration() {
       ...prev,
       lessonPlan: ''
     }));
+    localStorage.removeItem(RESULT_STORAGE_KEY);
   }, []);
 
   const generateLessonPlan = useCallback(async () => {
@@ -121,6 +157,9 @@ export function useLessonPlanGeneration() {
         ...prev,
         lessonPlan: newLessonPlan
       }));
+
+      // Save the result to localStorage
+      localStorage.setItem(RESULT_STORAGE_KEY, newLessonPlan);
 
       // Sauvegarde automatique
       const title = formatTitle(`${formData.subject_matter} - ${formData.subject || ''} - ${formData.classLevel}`.trim());

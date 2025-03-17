@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import { LessonPlanForm } from './LessonPlanForm';
 import { ScrollCard } from '@/components/exercise/result/ScrollCard';
 import { useLessonPlanGeneration } from '@/hooks/useLessonPlanGeneration';
@@ -17,8 +17,18 @@ export function LessonPlanCreator() {
     resetLessonPlan
   } = useLessonPlanGeneration();
 
+  // Memoized content ID for feedback
+  const contentId = useMemo(() => {
+    // Generate a stable content ID if there's lesson plan content
+    if (formData.lessonPlan) {
+      return `lesson-plan-${Date.now()}`;
+    }
+    return undefined;
+  }, [formData.lessonPlan]);
+
   useEffect(() => {
     if (formData.lessonPlan && scrollRef.current) {
+      // Only scroll if the user has just generated a lesson plan (isLoading just turned false)
       scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [formData.lessonPlan]);
@@ -37,7 +47,7 @@ export function LessonPlanCreator() {
       {isLoading && (
         <div className="flex justify-center py-8">
           <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-md">
-            <LoadingIndicator />
+            <LoadingIndicator message="Création de votre séquence pédagogique..." />
           </div>
         </div>
       )}
@@ -51,6 +61,7 @@ export function LessonPlanCreator() {
             customClass="text-left"
             disableInternalTabs={true}
             contentType="lesson_plan"
+            contentId={contentId}
           />
         </div>
       )}
