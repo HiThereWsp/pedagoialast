@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom"
 import { 
   BookOpen, 
@@ -8,7 +9,9 @@ import {
   Brain,
   PenTool
 } from "lucide-react"
-import { ToolCard } from "./ToolCard"
+
+// Ne plus importer le composant ToolCard puisqu'il ne sera plus utilisé
+// import { ToolCard } from "./ToolCard"
 
 const tools = [
   {
@@ -61,22 +64,6 @@ const tools = [
 export const ToolsCarousel = () => {
   const navigate = useNavigate()
 
-  return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 md:gap-8">
-        {tools.map((tool, index) => (
-          <div 
-            key={index} 
-            className="animate-fade-in transform hover:-translate-y-1 transition-all duration-300" 
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <ToolCard
-              {...tool}
-              onClick={() => navigate(tool.route)}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  // Comme nous n'avons plus besoin d'afficher ce composant, retournons simplement null
+  return null;
 }

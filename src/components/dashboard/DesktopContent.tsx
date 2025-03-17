@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { WelcomeMessage } from "@/components/home/WelcomeMessage";
-import { ToolsCarousel } from "@/components/home/ToolsCarousel";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 
 interface DesktopContentProps {
@@ -26,7 +25,7 @@ export const DesktopContent = ({ firstName, isLoading = false }: DesktopContentP
     <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 ml-0 md:ml-64">
       <div className="max-w-7xl w-full">
         <WelcomeMessage firstName={firstName} />
-        <ToolsCarousel />
+        {/* Le composant ToolsCarousel a été retiré */}
       </div>
     </div>
   );
