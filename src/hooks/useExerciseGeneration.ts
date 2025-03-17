@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -70,7 +71,7 @@ export function useExerciseGeneration() {
 
       const exercise_category = isDifferentiation ? 'differentiated' : 'standard';
 
-      const { data, error } = await saveExercise({
+      const result = await saveExercise({
         title,
         content: exerciseContent,
         subject: formData.subject,
@@ -81,19 +82,24 @@ export function useExerciseGeneration() {
         exercise_category
       });
       
-      if (error) {
-        console.error('Error saving exercise:', error);
-        setLastSaveError(error.message || 'Unknown error');
-        toast({
-          variant: "destructive",
-          description: "Une erreur est survenue lors de la sauvegarde de l'exercice. Réessayez ultérieurement."
-        });
-        return false;
-      }
-      
-      // Save the ID of the generated exercise
-      if (data?.id) {
-        setLastGeneratedId(data.id);
+      // Fixed the error by properly handling the return type
+      if (result && typeof result === 'object' && 'data' in result && 'error' in result) {
+        const { data, error } = result;
+        
+        if (error) {
+          console.error('Error saving exercise:', error);
+          setLastSaveError(error.message || 'Unknown error');
+          toast({
+            variant: "destructive",
+            description: "Une erreur est survenue lors de la sauvegarde de l'exercice. Réessayez ultérieurement."
+          });
+          return false;
+        }
+        
+        // Save the ID of the generated exercise
+        if (data?.id) {
+          setLastGeneratedId(data.id);
+        }
       }
 
       toast({
