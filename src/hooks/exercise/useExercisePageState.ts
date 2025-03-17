@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from "react";
-import { useExerciseGeneration } from "@/hooks/useExerciseGeneration";
+import { useExerciseGeneration } from "./useExerciseGeneration";
 import type { ExerciseFormData } from "@/types/saved-content";
 
 // Default form data

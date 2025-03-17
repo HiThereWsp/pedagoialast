@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import { LessonPlanForm } from './LessonPlanForm';
 import { ScrollCard } from '@/components/exercise/result/ScrollCard';
-import { useLessonPlanGeneration } from '@/hooks/useLessonPlanGeneration';
+import { useLessonPlanGeneration } from '@/hooks/lesson-plan/useLessonPlanGeneration';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { useIsMobile } from '@/hooks/use-mobile';
 
