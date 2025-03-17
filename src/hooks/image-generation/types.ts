@@ -14,8 +14,17 @@ export interface ImageStyle {
 
 export interface UseImageGenerationResult {
   isLoading: boolean;
+  isError: boolean;
+  isSuccess: boolean;
+  isInitialized: boolean;
+  error: string | null;
   generatedImageUrl: string | null;
+  lastPrompt: {
+    prompt: string;
+    style?: string;
+  } | null;
   generateImage: (prompt: GenerationPrompt) => Promise<void>;
+  retryGeneration: () => Promise<void>;
 }
 
 export interface ContentScreeningResult {

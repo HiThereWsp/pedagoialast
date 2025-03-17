@@ -60,7 +60,7 @@ serve(async (req) => {
     console.log("Generation successful, returning URL")
     
     return new Response(JSON.stringify({ 
-      output: data.data[0].url 
+      url: data.data[0].url 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
