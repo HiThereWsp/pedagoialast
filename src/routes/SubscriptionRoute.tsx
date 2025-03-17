@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useSubscription } from "@/hooks/subscription";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
@@ -83,8 +84,8 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
           >
             {isRetrying ? (
               <>
-                <LoadingIndicator className="mr-2 h-4 w-4" />
-                Vérification...
+                <LoadingIndicator size="sm" />
+                <span className="ml-2">Vérification...</span>
               </>
             ) : (
               <>
