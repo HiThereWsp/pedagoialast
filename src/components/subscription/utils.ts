@@ -22,7 +22,7 @@ export function getSubscriptionInfo(type: string | null) {
     case 'beta':
       return {
         title: 'Accès Beta',
-        description: 'Vous bénéficiez d'un accès privilégié à toutes les fonctionnalités en tant que testeur beta. Merci de votre participation au programme beta !',
+        description: 'Vous bénéficiez d\'un accès privilégié à toutes les fonctionnalités en tant que testeur beta. Merci de votre participation au programme beta !',
         icon: <Star className="h-4 w-4 mr-2 text-yellow-500" />,
         titleStyle: 'underline decoration-dashed underline-offset-4 decoration-yellow-400',
         badgeVariant: 'secondary' as const,
