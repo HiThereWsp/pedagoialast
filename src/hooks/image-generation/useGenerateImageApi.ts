@@ -34,7 +34,7 @@ export const useGenerateImageApi = () => {
       });
       
       // Appel à la fonction Edge
-      // Removed the signal property as it's not supported in FunctionInvokeOptions
+      // Note: FunctionInvokeOptions does not support the signal property
       const apiPromise = supabase.functions.invoke('generate-image', {
         body: {
           prompt: generationPrompt.prompt,
