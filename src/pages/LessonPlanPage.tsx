@@ -1,24 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { LessonPlanCreator } from '@/components/lesson-plan/LessonPlanCreator';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const LessonPlanPage = () => {
   const isMobile = useIsMobile();
-  
-  // This effect prevents clearing localStorage on direct page visits or refreshes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // If it's a page refresh, do nothing (don't clear localStorage)
-      // The data will be reloaded on page refresh
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
   
   return (
     <div className="container mx-auto py-4 px-4">
