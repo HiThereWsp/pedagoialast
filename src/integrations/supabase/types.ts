@@ -87,6 +87,45 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      beta_welcome_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_sent: boolean | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_sent?: boolean | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_sent?: boolean | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       chats: {
         Row: {
           action_type: string | null
