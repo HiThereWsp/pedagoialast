@@ -10,7 +10,7 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
   try {
     const { data, error } = await supabase
       .from('beta_users')
-      .select('id')
+      .select('id, is_validated')
       .eq('email', email.toLowerCase())
       .maybeSingle();
     
@@ -19,7 +19,8 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
       return false;
     }
     
-    return !!data;
+    // Retourner true seulement si l'utilisateur existe ET est validé
+    return !!data && !!data.is_validated;
   } catch (err) {
     console.error('Exception lors de la vérification du statut beta par email:', err);
     return false;

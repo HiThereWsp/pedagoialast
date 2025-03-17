@@ -34,12 +34,22 @@ export async function checkBetaAccess(
   }
     
   if (betaUser) {
-    console.log('Utilisateur beta trouvé dans la table beta_users:', user.email);
-    return { 
-      access: true, 
-      type: 'beta',
-      expires_at: null,
-    };
+    // NOUVELLE VÉRIFICATION: si le bêta-testeur est validé
+    if (betaUser.is_validated) {
+      console.log('Utilisateur beta validé trouvé dans la table beta_users:', user.email);
+      return { 
+        access: true, 
+        type: 'beta',
+        expires_at: null,
+      };
+    } else {
+      console.log('Utilisateur beta non validé trouvé dans la table beta_users:', user.email);
+      return {
+        access: false,
+        type: 'beta_pending',
+        message: 'Accès beta en attente de validation'
+      };
+    }
   }
 
   // Deuxième méthode: Vérifier dans user_subscriptions avec type=beta
