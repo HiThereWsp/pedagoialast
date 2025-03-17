@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,6 +18,7 @@ export function useExerciseGeneration() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaveError, setLastSaveError] = useState<string | null>(null);
+  const [lastGeneratedId, setLastGeneratedId] = useState<string | undefined>(undefined);
 
   // Fonction utilitaire pour sauvegarder dans sessionStorage
   const saveToCache = useCallback((key: string, data: any) => {
@@ -70,7 +70,7 @@ export function useExerciseGeneration() {
 
       const exercise_category = isDifferentiation ? 'differentiated' : 'standard';
 
-      await saveExercise({
+      const { data, error } = await saveExercise({
         title,
         content: exerciseContent,
         subject: formData.subject,
@@ -80,6 +80,21 @@ export function useExerciseGeneration() {
         source_type: formData.selectedLessonPlan ? 'from_lesson_plan' : 'direct',
         exercise_category
       });
+      
+      if (error) {
+        console.error('Error saving exercise:', error);
+        setLastSaveError(error.message || 'Unknown error');
+        toast({
+          variant: "destructive",
+          description: "Une erreur est survenue lors de la sauvegarde de l'exercice. Réessayez ultérieurement."
+        });
+        return false;
+      }
+      
+      // Save the ID of the generated exercise
+      if (data?.id) {
+        setLastGeneratedId(data.id);
+      }
 
       toast({
         description: "🎉 Votre exercice a été sauvegardé avec succès !"
@@ -196,6 +211,7 @@ export function useExerciseGeneration() {
     isLoading,
     isSaving,
     lastSaveError,
+    lastGeneratedId,
     generateExercises,
     getExerciseCacheState,
     clearExerciseCache,

@@ -11,9 +11,9 @@ export function LessonPlanCreator() {
   const isMobile = useIsMobile();
   const {
     formData,
-    isLoading,
+    isGenerating,
     handleInputChange,
-    generateLessonPlan,
+    generate,
     resetLessonPlan
   } = useLessonPlanGeneration();
 
@@ -38,13 +38,13 @@ export function LessonPlanCreator() {
       <div className="max-w-4xl mx-auto">
         <LessonPlanForm
           formData={formData}
-          isLoading={isLoading}
+          isLoading={isGenerating}
           onInputChange={handleInputChange}
-          onGenerate={generateLessonPlan}
+          onGenerate={generate}
         />
       </div>
       
-      {isLoading && (
+      {isGenerating && (
         <div className="flex justify-center py-8">
           <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 shadow-md">
             <LoadingIndicator message="Création de votre séquence pédagogique..." />
@@ -52,7 +52,7 @@ export function LessonPlanCreator() {
         </div>
       )}
       
-      {formData.lessonPlan && !isLoading && (
+      {formData.lessonPlan && !isGenerating && (
         <div ref={scrollRef} className="max-w-6xl mx-auto mt-10">
           <ScrollCard 
             exercises={formData.lessonPlan}
