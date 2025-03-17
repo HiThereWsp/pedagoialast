@@ -43,17 +43,17 @@ export const BetaWelcomeNotification = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogTitle className="text-2xl font-bold text-gray-900">
-          Merci d'avoir participé à la bêta !
+          Bienvenue dans votre accès gratuit à notre version Beta
         </DialogTitle>
         <DialogDescription className="mt-2 text-gray-600">
           <p className="mb-4">
             Nous tenons à vous remercier d'avoir fait partie des premiers utilisateurs de PedagoIA.
           </p>
           <p className="mb-4">
-            Nous souhaitons vous offrir un accès gratuit à la plateforme. Pour en bénéficier, écrivez-nous afin que nous vous expliquions la démarche à suivre.
+            En tant qu'utilisateur Beta validé, vous bénéficiez d'un accès complet et gratuit à toutes les fonctionnalités de la plateforme.
           </p>
           <p className="font-medium">
-            Contactez-nous à l'adresse : <a href="mailto:bonjour@pedagoia.fr" className="text-blue-600 hover:underline">bonjour@pedagoia.fr</a>
+            Pour toute question, contactez-nous à : <a href="mailto:bonjour@pedagoia.fr" className="text-blue-600 hover:underline">bonjour@pedagoia.fr</a>
           </p>
         </DialogDescription>
         <DialogFooter className="mt-4">

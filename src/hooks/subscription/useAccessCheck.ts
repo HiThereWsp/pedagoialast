@@ -87,14 +87,6 @@ export const checkUserAccess = async (
       setStatus(errorStatus);
       logSubscriptionError('check_access_error', { error, message: errorMessage });
       
-      // Detailed log to help with debugging
-      console.error('Error details during access check:', {
-        message: error.message,
-        name: error.name,
-        status: error.status,
-        stack: error.stack
-      });
-      
       return false;
     }
     
@@ -113,6 +105,23 @@ export const checkUserAccess = async (
       setStatus(invalidResponseStatus);
       logSubscriptionError('invalid_response', { data });
       return false;
+    }
+    
+    // Gestion spéciale pour les utilisateurs beta en attente
+    if (data.type === 'beta_pending') {
+      console.log("Beta user pending validation detected");
+      const pendingBetaStatus = {
+        isActive: false, // Important: ils n'ont pas encore accès complet
+        type: 'beta_pending',
+        expiresAt: null,
+        isLoading: false,
+        error: null,
+        retryCount: 0
+      };
+      
+      setStatus(pendingBetaStatus);
+      cacheSubscriptionStatus(pendingBetaStatus);
+      return false; // Ils n'ont pas encore un accès complet
     }
     
     // Valid subscription status
