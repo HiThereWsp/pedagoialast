@@ -11,6 +11,7 @@ interface GenerateExerciseFormProps {
     objective: string;
     exerciseType: string;
     additionalInstructions: string;
+    specificNeeds: string;
   };
   handleInputChange: (field: string, value: string) => void;
   isLessonPlanSelected: boolean;
@@ -23,10 +24,12 @@ export function GenerateExerciseForm({ formData, handleInputChange, isLessonPlan
         <FormFields.Subject 
           value={formData.subject} 
           onChange={handleInputChange}
+          disabled={isLessonPlanSelected}
         />
         <FormFields.ClassLevel 
           value={formData.classLevel} 
           onChange={handleInputChange}
+          disabled={isLessonPlanSelected}
         />
       </div>
       
@@ -39,6 +42,20 @@ export function GenerateExerciseForm({ formData, handleInputChange, isLessonPlan
         <FormFields.Objective value={formData.objective} onChange={handleInputChange} />
         <FormFields.ExerciseType value={formData.exerciseType} onChange={handleInputChange} />
         <FormFields.AdditionalInstructions value={formData.additionalInstructions} onChange={handleInputChange} />
+        
+        {formData.specificNeeds !== undefined && (
+          <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Besoins spécifiques des élèves
+            </label>
+            <textarea
+              placeholder="Ex: Adaptation pour élèves dyslexiques"
+              value={formData.specificNeeds}
+              onChange={(e) => handleInputChange("specificNeeds", e.target.value)}
+              className="min-h-[100px] w-full transition-colors focus:border-pink-300"
+            />
+          </div>
+        )}
       </div>
     </>
   );

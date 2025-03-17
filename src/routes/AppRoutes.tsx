@@ -63,7 +63,11 @@ function AppRoutes() {
         
         {/* Redirection de /home vers /tableaudebord */}
         <Route path="/home" element={<Navigate to="/tableaudebord" replace />} />
-        <Route path="/tableaudebord" element={<ProtectedRoute><TableauDeBord /></ProtectedRoute>} />
+        <Route path="/tableaudebord" element={
+          <ProtectedRoute>
+            <TableauDeBord />
+          </ProtectedRoute>
+        } />
         
         {/* Routes des outils pédagogiques utilisant le layout partagé */}
         <Route element={<ProtectedRoute><SubscriptionRoute><ToolsLayout /></SubscriptionRoute></ProtectedRoute>}>

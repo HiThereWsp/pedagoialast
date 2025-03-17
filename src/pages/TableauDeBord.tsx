@@ -1,97 +1,95 @@
 
-import React, { useState, useEffect } from 'react';
-import { SEO } from "@/components/SEO";
+import { Helmet } from "react-helmet-async";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { DashboardWrapper } from '@/components/dashboard/DashboardWrapper';
-import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar';
-import { MobileContent } from '@/components/dashboard/MobileContent';
-import { DesktopContent } from '@/components/dashboard/DesktopContent';
-import { SidebarToggle } from '@/components/dashboard/SidebarToggle';
-import { WelcomeEmailHandler } from '@/components/dashboard/WelcomeEmailHandler';
+import { DashboardWrapper } from "@/components/dashboard/DashboardWrapper";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
+import { DesktopContent } from "@/components/dashboard/DesktopContent";
+import { MobileContent } from "@/components/dashboard/MobileContent";
+import { useMediaQuery } from "@/hooks/use-mobile";
 
 const TableauDeBord = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const { user } = useAuth();
-  const [firstName, setFirstName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const isMobile = useIsMobile();
+  const [firstName, setFirstName] = useState<string>("");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
   
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const loadUserProfile = async () => {
       if (!user) return;
       
       try {
-        setIsLoading(true);
+        setIsProfileLoading(true);
+        
         const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('first_name')
-          .eq('id', user.id)
+          .from("profiles")
+          .select("first_name")
+          .eq("id", user.id)
           .single();
           
         if (error) {
-          console.error("Erreur lors de la récupération du profil:", error);
-        } else if (profile) {
-          setFirstName(profile.first_name || "");
+          console.error("Error fetching profile:", error);
+          return;
+        }
+        
+        if (profile) {
+          setFirstName(profile.first_name);
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des données utilisateur:", error);
+        console.error("Error in loadUserProfile:", error);
       } finally {
-        setIsLoading(false);
+        setIsProfileLoading(false);
       }
     };
     
-    fetchUserProfile();
+    loadUserProfile();
   }, [user]);
   
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-  
   return (
-    <>
-      <SEO
-        title="Tableau de bord | PedagoIA - Votre assistant pédagogique"
-        description="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé."
+    <DashboardWrapper>
+      <Helmet>
+        <title>Tableau de bord | PedagoIA</title>
+        <meta name="description" content="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé." />
+      </Helmet>
+      
+      {/* Desktop Sidebar */}
+      <DashboardSidebar 
+        sidebarOpen={sidebarOpen} 
+        toggleSidebar={toggleSidebar} 
+        firstName={firstName} 
       />
       
-      {/* Handle welcome email sending */}
-      {user && (
-        <WelcomeEmailHandler 
-          userEmail={user.email} 
-          emailConfirmedAt={user.email_confirmed_at} 
-        />
-      )}
-      
-      <div className="flex min-h-screen bg-gray-50">
-        {/* Desktop sidebar toggle */}
-        {!isMobile && (
-          <SidebarToggle 
-            sidebarOpen={sidebarOpen}
-            toggleSidebar={toggleSidebar}
-          />
+      {/* Main Content Area */}
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-0' : 'ml-0'}`}>
+        {/* Mobile Header Menu Button */}
+        {isMobile && (
+          <div className="fixed top-0 left-0 z-30 p-4">
+            <button 
+              onClick={toggleSidebar} 
+              className="p-2 rounded-md bg-white shadow-md"
+              aria-label="Menu"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="h-6 w-6">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
         )}
         
-        {/* Desktop sidebar */}
-        {!isMobile && (
-          <DashboardSidebar 
-            sidebarOpen={sidebarOpen}
-            toggleSidebar={toggleSidebar}
-            firstName={firstName}
-          />
+        {/* Content based on device */}
+        {isMobile ? (
+          <MobileContent firstName={firstName} isLoading={isProfileLoading} />
+        ) : (
+          <DesktopContent firstName={firstName} />
         )}
-        
-        {/* Main Content with adjustments for mobile */}
-        <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : 'mt-16 mb-16'}`}>
-          <DashboardWrapper>
-            {isMobile ? (
-              <MobileContent firstName={firstName} isLoading={isLoading} />
-            ) : (
-              <DesktopContent firstName={firstName} />
-            )}
-          </DashboardWrapper>
-        </div>
       </div>
-    </>
+    </DashboardWrapper>
   );
 };
 

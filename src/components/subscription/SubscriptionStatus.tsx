@@ -1,145 +1,57 @@
 
+import { useState } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CalendarIcon, Loader2, Star } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { toast } from "sonner";
+import { SubscriptionLoading } from "./SubscriptionLoading";
+import { SubscriptionError } from "./SubscriptionError";
+import { LimitedAccessCard } from "./LimitedAccessCard";
+import { ActiveSubscriptionCard } from "./ActiveSubscriptionCard";
+import { getSubscriptionInfo } from "./utils";
 
 export function SubscriptionStatus() {
-  const { isSubscribed, subscriptionType, expiresAt, isLoading, error } = useSubscription();
-  const navigate = useNavigate();
+  const { isSubscribed, subscriptionType, expiresAt, isLoading, error, checkSubscription } = useSubscription();
+  const [isRetrying, setIsRetrying] = useState(false);
+  
+  // Function to manually retry verification
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    toast.info("Vérification en cours...");
+    
+    try {
+      await checkSubscription(true); // Force verification
+      toast.success("Vérification terminée");
+    } catch (e) {
+      toast.error("La vérification a échoué");
+    } finally {
+      setIsRetrying(false);
+    }
+  };
   
   if (isLoading) {
-    return (
-      <Card className="p-4 flex items-center justify-center h-24">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Vérification de l'abonnement...</span>
-      </Card>
-    );
+    return <SubscriptionLoading />;
   }
   
   if (error) {
-    return (
-      <Card className="p-6 border-red-200 bg-red-50">
-        <h3 className="text-lg sm:text-xl font-semibold mb-3 text-red-800 leading-tight tracking-tight text-balance">
-          Erreur de vérification
-        </h3>
-        <p className="text-red-700 mb-4 max-w-lg">
-          Une erreur est survenue lors de la vérification de votre abonnement: {error}
-        </p>
-        <Button onClick={() => navigate("/contact")} variant="outline" className="border-red-300 text-red-800 hover:bg-red-100">
-          Contacter le support
-        </Button>
-      </Card>
-    );
+    return <SubscriptionError 
+      error={error} 
+      isRetrying={isRetrying} 
+      onRetry={handleRetry} 
+    />;
   }
   
   if (!isSubscribed) {
-    return (
-      <Card className="p-6">
-        <h3 className="text-lg sm:text-xl font-semibold mb-3 leading-tight tracking-tight text-balance">
-          Abonnement requis
-        </h3>
-        <p className="text-muted-foreground mb-4 max-w-lg">
-          Vous n'avez pas d'abonnement actif. Découvrez nos offres pour profiter de toutes les fonctionnalités.
-        </p>
-        <Button onClick={() => navigate("/pricing")} className="w-full sm:w-auto">
-          Voir les abonnements
-        </Button>
-      </Card>
-    );
+    return <LimitedAccessCard />;
   }
   
-  const getPlanName = () => {
-    switch (subscriptionType) {
-      case 'monthly':
-        return 'Abonnement Mensuel';
-      case 'yearly':
-        return 'Abonnement Annuel';
-      case 'trial':
-        return 'Période d\'Essai';
-      case 'beta':
-        return 'Accès Beta';
-      case 'dev_mode':
-        return 'Mode Développement';
-      default:
-        return 'Abonnement Actif';
-    }
-  };
-  
-  const getBadgeVariant = () => {
-    if (subscriptionType === 'beta') {
-      return 'secondary';
-    }
-    if (subscriptionType === 'dev_mode') {
-      return 'outline';
-    }
-    return 'default';
-  };
-  
-  const formatExpiryDate = () => {
-    if (!expiresAt) return 'Date inconnue';
-    
-    try {
-      const date = new Date(expiresAt);
-      return format(date, 'PPP', { locale: fr });
-    } catch (e) {
-      console.error('Erreur format date:', e);
-      return expiresAt;
-    }
-  };
-  
-  const renderIcon = () => {
-    if (subscriptionType === 'beta') {
-      return <Star className="h-4 w-4 mr-1 text-yellow-500" />;
-    }
-    return null;
-  };
+  // Determine subscription type and corresponding display
+  const subscriptionInfo = getSubscriptionInfo(subscriptionType);
   
   return (
-    <Card className="p-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-        <h3 className="text-xl sm:text-2xl font-bold flex items-center leading-tight tracking-tight text-balance">
-          {renderIcon()}
-          <span className={subscriptionType === 'beta' ? 'underline decoration-dashed underline-offset-4' : ''}>
-            {getPlanName()}
-          </span>
-        </h3>
-        <Badge variant={getBadgeVariant()} className={
-          subscriptionType === 'beta' 
-            ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100 font-medium rotate-1 self-start" 
-            : "bg-green-100 text-green-800 hover:bg-green-100"
-        }>
-          {subscriptionType === 'beta' ? "Accès Beta" : "Actif"}
-        </Badge>
-      </div>
-      
-      {expiresAt && (
-        <div className="flex items-center text-sm text-muted-foreground mb-3">
-          <CalendarIcon className="h-4 w-4 mr-1" />
-          Valide jusqu'au <span className="font-medium ml-1">{formatExpiryDate()}</span>
-        </div>
-      )}
-      
-      {subscriptionType === 'beta' && (
-        <p className="text-sm text-muted-foreground mb-4">
-          Vous bénéficiez d'un accès privilégié à toutes les fonctionnalités. Merci de votre participation au programme beta !
-        </p>
-      )}
-      
-      <div className="mt-4 flex flex-wrap gap-2">
-        {subscriptionType !== 'beta' && subscriptionType !== 'dev_mode' && (
-          <Button variant="outline" size="sm" onClick={() => navigate("/pricing")}>
-            Gérer l'abonnement
-          </Button>
-        )}
-        <Button variant="outline" size="sm" onClick={() => navigate("/contact")}>
-          Support
-        </Button>
-      </div>
-    </Card>
+    <ActiveSubscriptionCard
+      subscriptionInfo={subscriptionInfo}
+      expiresAt={expiresAt}
+      isRetrying={isRetrying}
+      onRetry={handleRetry}
+    />
   );
 }
