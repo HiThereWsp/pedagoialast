@@ -21,9 +21,15 @@ export const checkUserAccess = async (
       "Content-Type": "application/json",
     };
     
+    console.log("Sending request to check-user-access...");
+    const startTime = performance.now();
+    
     const { data, error } = await supabase.functions.invoke('check-user-access', {
       headers: headers
     });
+    
+    const duration = Math.round(performance.now() - startTime);
+    console.log(`check-user-access response received in ${duration}ms`);
     
     if (error) {
       console.error('Edge function error:', error);
@@ -81,6 +87,7 @@ export const checkUserAccess = async (
       retryCount: 0
     };
     
+    console.log("Setting validated subscription status:", validStatus);
     setStatus(validStatus);
     
     // Cache valid status
