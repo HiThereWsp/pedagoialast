@@ -6,6 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Info, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { posthog } from "@/integrations/posthog/client";
 
 interface SubscriptionRouteProps {
   children: JSX.Element;
@@ -18,7 +19,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   
   useEffect(() => {
     if (!isLoading) {
-      // Réduire le délai à presque zéro pour éviter l'affichage du message de vérification
+      // Reduce delay to almost zero to avoid showing the verification message
       const timer = setTimeout(() => setIsChecking(false), 50);
       return () => clearTimeout(timer);
     }
@@ -29,7 +30,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     toast.info("Vérification de l'abonnement en cours...");
     
     try {
-      await checkSubscription(true); // Forcer l'actualisation
+      await checkSubscription(true); // Force refresh
       toast.success("Vérification terminée");
     } catch (e) {
       toast.error("La vérification a échoué");
@@ -49,13 +50,13 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // Si une erreur s'est produite, afficher un message d'erreur avec possibilité de réessayer
+  // If an error occurred, display an error message with retry option
   if (error) {
-    console.error('Erreur de vérification d\'abonnement:', error);
+    console.error('Subscription verification error:', error);
     
-    // Si nous sommes en mode développement, permettre l'accès malgré l'erreur
+    // In development mode, allow access despite error
     if (import.meta.env.DEV) {
-      console.log('Mode développement détecté, accès accordé malgré l\'erreur');
+      console.log('Development mode detected, access granted despite error');
       return children;
     }
     
@@ -101,16 +102,22 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // Si pas d'abonnement actif, rediriger vers la page pricing avec un message clair
+  // If no active subscription, redirect to pricing page with a clear message
   if (!isSubscribed) {
+    // Track in PostHog for analytics
+    posthog.capture('subscription_required_view', {
+      current_path: window.location.pathname,
+      subscription_type: subscriptionType
+    });
+    
     return (
       <div className="max-w-4xl mx-auto p-6 my-8">
         <Alert className="bg-amber-50 border-amber-200 mb-6">
           <Info className="h-5 w-5 text-amber-800" />
-          <AlertTitle className="text-amber-800 font-medium">Abonnement requis</AlertTitle>
+          <AlertTitle className="text-amber-800 font-medium">Accès limité</AlertTitle>
           <AlertDescription className="text-amber-700">
-            Cette fonctionnalité nécessite un abonnement actif pour être utilisée. 
-            Consultez nos offres pour débloquer toutes les fonctionnalités.
+            Merci de vous être inscrit à PedagoIA. Cette fonctionnalité nécessite un abonnement actif.
+            Découvrez nos offres pour débloquer toutes les fonctionnalités.
           </AlertDescription>
         </Alert>
         <div className="flex justify-center">
@@ -122,6 +129,6 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // L'utilisateur a un abonnement valide ou est en mode développement, afficher le contenu
+  // User has a valid subscription or is in development mode, show content
   return children;
 };

@@ -14,16 +14,17 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { PricingHeader } from "@/components/pricing/PricingHeader";
 import { PricingPlans } from "@/components/pricing/PricingPlans";
 import { FeatureHighlights } from "@/components/pricing/FeatureHighlights";
+import { PricingPageTracking } from "@/components/pricing/PricingPageTracking";
 
 const Pricing = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
   const { isSubscribed, subscriptionType, isLoading } = useSubscription();
   
   useEffect(() => {
-    // Tracking PostHog
+    // PostHog tracking
     pricingEvents.viewPricing();
     
-    // Log pour le débogage
+    // Debug log
     console.log("Pricing page loaded", { 
       isSubscribed, 
       subscriptionType, 
@@ -43,6 +44,9 @@ const Pricing = () => {
         title="PedagoIA - Offres d'abonnement"
         description="Choisissez l'offre qui vous convient pour bénéficier des outils pédagogiques IA qui vous feront gagner du temps."
       />
+      {/* Add the tracking component */}
+      <PricingPageTracking />
+      
       <main className="container mx-auto px-4 py-20 relative z-10">
         <PricingHeader />
         
@@ -56,7 +60,7 @@ const Pricing = () => {
         <FeatureHighlights />
       </main>
 
-      {/* Dialog pour le formulaire de contact établissement */}
+      {/* Dialog for school contact form */}
       <Dialog open={showContactDialog} onOpenChange={setShowContactDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>

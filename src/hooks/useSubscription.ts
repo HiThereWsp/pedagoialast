@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { posthog } from '@/integrations/posthog/client';
 
 type SubscriptionStatus = {
   isActive: boolean;
@@ -22,19 +22,19 @@ const initialStatus: SubscriptionStatus = {
   retryCount: 0
 };
 
-// Constantes pour la gestion du cache
+// Constants for cache management
 const CACHE_KEY = 'subscription_status';
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes en millisecondes
-const REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes en millisecondes
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
+const REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes in milliseconds
 
 /**
- * Hook personnalisé pour gérer l'état et la vérification des abonnements
+ * Custom hook to manage subscription state and verification
  */
 export const useSubscription = () => {
   const [status, setStatus] = useState<SubscriptionStatus>(initialStatus);
 
   /**
-   * Enregistre les statut d'abonnement dans le cache local
+   * Cache subscription status in local storage
    */
   const cacheSubscriptionStatus = useCallback((statusToCache: SubscriptionStatus) => {
     try {
@@ -43,14 +43,14 @@ export const useSubscription = () => {
         timestamp: Date.now()
       }));
     } catch (err) {
-      console.log('Erreur lors de la mise en cache du statut:', err);
-      // Continuer même si le cache échoue
+      console.log('Error caching status:', err);
+      // Continue even if caching fails
     }
   }, []);
 
   /**
-   * Récupère le statut d'abonnement mis en cache
-   * @returns {SubscriptionStatus|null} Statut mis en cache ou null si pas de cache valide
+   * Get cached subscription status
+   * @returns {SubscriptionStatus|null} Cached status or null if no valid cache
    */
   const getCachedStatus = useCallback((): SubscriptionStatus | null => {
     try {
@@ -59,45 +59,89 @@ export const useSubscription = () => {
       
       const parsedCache = JSON.parse(cached) as SubscriptionStatus;
       
-      // Vérifier l'âge du cache
+      // Check cache age
       if (parsedCache.timestamp && (Date.now() - parsedCache.timestamp) < CACHE_DURATION) {
         return parsedCache;
       }
     } catch (err) {
-      console.log('Erreur lors de la récupération du cache:', err);
+      console.log('Error retrieving cache:', err);
     }
     
     return null;
   }, []);
 
   /**
-   * Journalise les erreurs liées à l'abonnement
-   * @param {string} errorType Type d'erreur
-   * @param {any} details Détails de l'erreur
+   * Log subscription errors
+   * @param {string} errorType Error type
+   * @param {any} details Error details
    */
   const logSubscriptionError = useCallback(async (errorType: string, details: any) => {
-    console.error(`Erreur d'abonnement: ${errorType}`, details);
+    console.error(`Subscription error: ${errorType}`, details);
     
     try {
-      // Enregistrer l'erreur dans votre système d'analyse/log
+      // Log the error in your analytics/logging system
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
       
       await supabase.functions.invoke('log-subscription-error', {
         body: { errorType, details, userId: userId || 'anonymous' }
-      }).catch(err => console.error('Échec de la journalisation de l\'erreur:', err));
+      }).catch(err => console.error('Failed to log error:', err));
     } catch (err) {
-      console.error('Erreur lors de la journalisation:', err);
+      console.error('Error logging:', err);
     }
   }, []);
 
   /**
-   * Vérifie si l'utilisateur est en mode développement
-   * @returns {boolean} True si en mode développement
+   * Track non-subscribed user for marketing purposes
+   */
+  const trackNonSubscribedUser = useCallback(async () => {
+    if (!status.isActive && !status.isLoading && !status.error) {
+      try {
+        // Get current user
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
+        
+        if (user) {
+          // Log in PostHog
+          posthog.capture('subscription_prompt_viewed', {
+            user_id: user.id,
+            source_page: window.location.pathname
+          });
+          
+          // Record that the user saw the subscription message
+          await supabase.from('user_events').insert({
+            user_id: user.id,
+            event_type: 'subscription_prompt_viewed',
+            metadata: {
+              source_page: window.location.pathname,
+              timestamp: new Date().toISOString()
+            }
+          });
+          
+          // Optional: Send to email marketing system (Brevo, etc.)
+          await supabase.functions.invoke('create-brevo-contact', {
+            body: {
+              email: user.email,
+              contactName: user.user_metadata?.first_name || 'Utilisateur',
+              userType: "lead", // New type for prospects
+              source: "app_signup"
+            }
+          });
+        }
+      } catch (err) {
+        console.error("Error tracking non-subscribed user:", err);
+        // Don't block UI in case of error
+      }
+    }
+  }, [status]);
+
+  /**
+   * Check if user is in development mode
+   * @returns {boolean} True if in development mode
    */
   const checkDevMode = useCallback(() => {
     if (import.meta.env.DEV) {
-      console.log("Mode développement détecté, simulation d'un abonnement actif");
+      console.log("Development mode detected, simulating active subscription");
       const devStatus = {
         isActive: true,
         type: 'dev_mode',
@@ -114,20 +158,20 @@ export const useSubscription = () => {
   }, [cacheSubscriptionStatus]);
 
   /**
-   * Vérifie l'état de la session utilisateur
-   * @returns {Promise<Session | null>} La session ou null si non authentifié
+   * Check user session state
+   * @returns {Promise<Session | null>} Session or null if not authenticated
    */
   const checkUserSession = useCallback(async () => {
     try {
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
-        console.error("Erreur lors de la récupération de la session:", error.message);
+        console.error("Error retrieving session:", error.message);
         
         const errorStatus = {
           ...initialStatus,
           isLoading: false,
-          error: `Erreur session: ${error.message}`
+          error: `Session error: ${error.message}`
         };
         
         setStatus(prev => errorStatus);
@@ -136,12 +180,12 @@ export const useSubscription = () => {
       }
       
       if (!session) {
-        console.log("Aucune session trouvée dans useSubscription");
+        console.log("No session found in useSubscription");
         
         const noSessionStatus = {
           ...initialStatus,
           isLoading: false,
-          error: 'Non authentifié'
+          error: 'Not authenticated'
         };
         
         setStatus(noSessionStatus);
@@ -150,7 +194,7 @@ export const useSubscription = () => {
       
       return session;
     } catch (err) {
-      console.error("Exception lors de la vérification de session:", err);
+      console.error("Exception during session check:", err);
       
       const exceptionStatus = {
         ...initialStatus,
@@ -165,14 +209,14 @@ export const useSubscription = () => {
   }, [logSubscriptionError]);
 
   /**
-   * Vérifie l'abonnement de l'utilisateur via la fonction check-user-access
-   * @returns {Promise<boolean>} True si l'utilisateur a un abonnement actif
+   * Check user access via check-user-access function
+   * @returns {Promise<boolean>} True if user has active subscription
    */
   const checkUserAccess = useCallback(async () => {
     try {
-      console.log("Appel de la fonction check-user-access");
+      console.log("Calling check-user-access function");
       
-      // Ajout de headers explicites pour résoudre les problèmes CORS
+      // Add explicit headers to resolve CORS issues
       const headers = {
         "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ""}`,
         "Content-Type": "application/json",
@@ -183,12 +227,12 @@ export const useSubscription = () => {
       });
       
       if (error) {
-        console.error('Erreur edge function:', error);
+        console.error('Edge function error:', error);
         
-        // Message d'erreur plus descriptif selon le contexte
+        // More descriptive error message based on context
         const errorMessage = error.message && error.message.includes("enum") 
-          ? "Erreur de configuration serveur (types manquants)" 
-          : error.message || "Erreur inattendue";
+          ? "Server configuration error (missing types)" 
+          : error.message || "Unexpected error";
         
         const errorStatus = {
           ...initialStatus,
@@ -200,8 +244,8 @@ export const useSubscription = () => {
         setStatus(prev => errorStatus);
         logSubscriptionError('check_access_error', { error, message: errorMessage });
         
-        // Log détaillé pour aider au débogage
-        console.error('Détails erreur vérification accès:', {
+        // Detailed log to help with debugging
+        console.error('Error details during access check:', {
           message: error.message,
           name: error.name,
           status: error.status,
@@ -211,15 +255,15 @@ export const useSubscription = () => {
         return false;
       }
       
-      console.log("Réponse check-user-access:", data);
+      console.log("Response from check-user-access:", data);
       
       if (!data) {
-        console.error("Aucune donnée reçue de check-user-access");
+        console.error("No data received from check-user-access");
         
         const invalidResponseStatus = {
           ...initialStatus,
           isLoading: false,
-          error: "Réponse invalide du serveur",
+          error: "Invalid response from server",
           retryCount: status.retryCount + 1
         };
         
@@ -228,7 +272,7 @@ export const useSubscription = () => {
         return false;
       }
       
-      // Statut d'abonnement valide
+      // Valid subscription status
       const validStatus = {
         isActive: !!data.access,
         type: data.type || null,
@@ -240,17 +284,17 @@ export const useSubscription = () => {
       
       setStatus(validStatus);
       
-      // Mettre en cache le statut valide
+      // Cache valid status
       cacheSubscriptionStatus(validStatus);
       
       return !!data.access;
     } catch (err) {
-      console.error('Erreur inattendue lors de la vérification de l\'abonnement:', err);
+      console.error('Unexpected error during subscription check:', err);
       
       const unexpectedErrorStatus = {
         ...initialStatus,
         isLoading: false,
-        error: err.message || "Erreur serveur inconnue",
+        error: err.message || "Unknown server error",
         retryCount: status.retryCount + 1
       };
       
@@ -262,14 +306,14 @@ export const useSubscription = () => {
   }, [status.retryCount, cacheSubscriptionStatus, logSubscriptionError]);
 
   /**
-   * Fonction principale pour vérifier l'abonnement
+   * Main function to check subscription
    */
   const checkSubscription = useCallback(async (force = false) => {
-    // Si on ne force pas la vérification, vérifier le cache d'abord
+    // If not forcing the check, check the cache first
     if (!force) {
       const cachedStatus = getCachedStatus();
       if (cachedStatus) {
-        console.log("Utilisation du statut d'abonnement mis en cache", cachedStatus);
+        console.log("Using cached subscription status", cachedStatus);
         setStatus(prev => ({
           ...cachedStatus,
           isLoading: false,
@@ -279,27 +323,27 @@ export const useSubscription = () => {
       }
     }
     
-    // Sinon procéder à la vérification
+    // Otherwise proceed with the check
     setStatus(prev => ({ ...prev, isLoading: true, error: null }));
     
-    // En cas d'erreur lors des vérifications, assurer que isLoading est correctement réinitialisé
+    // In case of error during checks, ensure isLoading is properly reset
     try {
-      // Vérifier le mode développement en priorité (court-circuite les autres vérifications)
+      // Check development mode first (short-circuits other checks)
       if (checkDevMode()) return;
       
-      // Vérifier la session utilisateur
+      // Check user session
       const session = await checkUserSession();
       if (!session) return;
       
-      // Vérifier l'accès utilisateur
+      // Check user access
       await checkUserAccess();
     } catch (error) {
-      console.error("Erreur critique lors de la vérification d'abonnement:", error);
+      console.error("Critical error during subscription check:", error);
       
       const criticalErrorStatus = {
         ...initialStatus,
         isLoading: false,
-        error: "Erreur critique: " + (error.message || "inconnue"),
+        error: "Critical error: " + (error.message || "unknown"),
         retryCount: status.retryCount + 1
       };
       
@@ -308,49 +352,49 @@ export const useSubscription = () => {
     }
   }, [checkDevMode, checkUserSession, checkUserAccess, getCachedStatus, status.retryCount, logSubscriptionError]);
 
-  // Tentative automatique avec retard exponentiel en cas d'erreur
+  // Automatic retry with exponential delay on error
   useEffect(() => {
     if (status.error && status.retryCount < 3) {
       const retryDelay = Math.pow(2, status.retryCount) * 1000; // 1s, 2s, 4s
-      console.log(`Nouvel essai dans ${retryDelay/1000}s... (tentative ${status.retryCount + 1}/3)`);
+      console.log(`Retrying in ${retryDelay/1000}s... (attempt ${status.retryCount + 1}/3)`);
       
       const retryTimer = setTimeout(() => {
-        console.log(`Tentative de vérification #${status.retryCount + 1}`);
-        checkSubscription(true); // Force la vérification sans utiliser le cache
+        console.log(`Attempting check #${status.retryCount + 1}`);
+        checkSubscription(true); // Force check without using cache
       }, retryDelay);
       
       return () => clearTimeout(retryTimer);
     }
   }, [status.error, status.retryCount, checkSubscription]);
 
-  // Vérifier l'abonnement au chargement du composant
+  // Check subscription on component load
   useEffect(() => {
     checkSubscription();
   }, [checkSubscription]);
   
-  // Rafraîchir le statut d'abonnement périodiquement
+  // Periodically refresh subscription status
   useEffect(() => {
-    // Rafraîchir le statut toutes les 30 minutes
+    // Refresh status every 30 minutes
     const refreshInterval = setInterval(() => {
-      console.log('Rafraîchissement périodique du statut d\'abonnement');
-      checkSubscription(true); // Force une vérification complète
+      console.log('Periodic subscription status refresh');
+      checkSubscription(true); // Force a complete check
     }, REFRESH_INTERVAL);
     
     return () => clearInterval(refreshInterval);
   }, [checkSubscription]);
 
   /**
-   * Vérifie si l'utilisateur a un abonnement valide, sinon redirige vers la page d'abonnement
-   * @returns {boolean} True si l'utilisateur peut accéder à la fonctionnalité
+   * Check if user has valid subscription, otherwise redirect to pricing page
+   * @returns {boolean} True if user can access feature
    */
   const requireSubscription = useCallback(() => {
-    if (status.isLoading) return true; // Attendre le chargement
+    if (status.isLoading) return true; // Wait for loading
     
-    // Considérer les accès spéciaux comme valides
+    // Consider special accesses as valid
     if (status.type === 'beta' || status.type === 'dev_mode') return true;
     
     if (!status.isActive) {
-      toast.error("Abonnement requis pour accéder à cette fonctionnalité");
+      toast.error("Subscription required to access this feature");
       window.location.href = '/pricing';
       return false;
     }

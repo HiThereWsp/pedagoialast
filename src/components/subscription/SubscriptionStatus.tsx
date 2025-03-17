@@ -15,13 +15,13 @@ export function SubscriptionStatus() {
   const navigate = useNavigate();
   const [isRetrying, setIsRetrying] = useState(false);
   
-  // Fonction pour retenter la vérification manuellement
+  // Function to manually retry verification
   const handleRetry = async () => {
     setIsRetrying(true);
     toast.info("Vérification en cours...");
     
     try {
-      await checkSubscription(true); // Forcer la vérification
+      await checkSubscription(true); // Force verification
       toast.success("Vérification terminée");
     } catch (e) {
       toast.error("La vérification a échoué");
@@ -100,19 +100,28 @@ export function SubscriptionStatus() {
     return (
       <Card className="p-6">
         <h3 className="text-xl sm:text-2xl font-bold mb-3 leading-tight tracking-tight text-balance">
-          Abonnement requis
+          Accès limité
         </h3>
         <p className="text-muted-foreground mb-4 max-w-lg">
-          Vous n'avez pas d'abonnement actif. Découvrez nos offres pour profiter de toutes les fonctionnalités.
+          Merci de vous être inscrit à PedagoIA. Vous avez actuellement un accès limité à la plateforme. 
+          Découvrez nos offres pour bénéficier de toutes les fonctionnalités.
         </p>
-        <Button onClick={() => navigate("/pricing")} className="w-full sm:w-auto">
-          Voir les abonnements
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3 mt-4">
+          <Button onClick={() => navigate("/pricing")} className="w-full sm:w-auto">
+            Voir les abonnements
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate("/tableau-de-bord")} 
+            className="w-full sm:w-auto">
+            Explorer la plateforme
+          </Button>
+        </div>
       </Card>
     );
   }
   
-  // Déterminer le type d'abonnement et l'affichage correspondant
+  // Determine subscription type and corresponding display
   const subscriptionInfo = getSubscriptionInfo(subscriptionType);
   
   return (
@@ -173,7 +182,7 @@ export function SubscriptionStatus() {
   );
 }
 
-// Fonction pour formater la date d'expiration
+// Function to format expiration date
 function formatExpiryDate(dateStr: string) {
   if (!dateStr) return 'Date inconnue';
   
@@ -181,12 +190,12 @@ function formatExpiryDate(dateStr: string) {
     const date = new Date(dateStr);
     return format(date, 'PPP', { locale: fr });
   } catch (e) {
-    console.error('Erreur format date:', e);
+    console.error('Date format error:', e);
     return dateStr;
   }
 }
 
-// Fonction pour obtenir les informations d'affichage selon le type d'abonnement
+// Function to get display information based on subscription type
 function getSubscriptionInfo(type: string | null) {
   switch (type) {
     case 'beta':

@@ -23,10 +23,9 @@ serve(async (req) => {
     console.error(`[${timestamp}] Erreur d'abonnement: Type=${errorType}, User=${userId}`)
     console.error('Détails:', JSON.stringify(details, null, 2))
     
-    // On pourrait ici enregistrer dans une table Supabase, envoyer les erreurs vers 
-    // un service externe comme Sentry, etc.
+    // Here we could record in a Supabase table, send errors to an external service like Sentry, etc.
     
-    // TODO: Implémenter la persistance des erreurs si nécessaire
+    // TODO: Implement error persistence if needed
     
     return new Response(
       JSON.stringify({ success: true, logged: true }),
