@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { exercisesService } from "@/services/exercises";
@@ -19,14 +18,14 @@ export function useExerciseContent() {
         content: params.content.length > 50 ? `${params.content.substring(0, 50)}...` : params.content
       });
       
-      await exercisesService.save(params);
+      const result = await exercisesService.save(params);
       
       toast({
         title: "Exercice sauvegardé",
         description: "Votre exercice a été sauvegardé avec succès"
       });
       
-      return true;
+      return { data: result };
     } catch (error) {
       console.error('Error saving exercise:', error);
       
@@ -44,7 +43,7 @@ export function useExerciseContent() {
         });
       }
       
-      throw error;
+      return { error };
     } finally {
       setIsLoading(false);
     }

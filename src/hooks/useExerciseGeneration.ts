@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -81,21 +82,36 @@ export function useExerciseGeneration() {
         exercise_category
       });
       
-      // Fixed handling of possibly null result
-      if (result) {
-        if ('error' in result && result.error) {
-          console.error('Error saving exercise:', result.error);
-          setLastSaveError(result.error.message || 'Unknown error');
-          toast({
-            variant: "destructive",
-            description: "Une erreur est survenue lors de la sauvegarde de l'exercice. Réessayez ultérieurement."
-          });
-          return false;
-        }
-        
-        // Save the ID of the generated exercise if it exists
-        if ('data' in result && result.data?.id) {
-          setLastGeneratedId(result.data.id);
+      // Check if result exists first
+      if (!result) {
+        console.error('Save exercise returned null or undefined');
+        setLastSaveError('Erreur de sauvegarde inconnue');
+        toast({
+          variant: "destructive",
+          description: "Une erreur est survenue lors de la sauvegarde de l'exercice. Réessayez ultérieurement."
+        });
+        return false;
+      }
+      
+      // Handle error case - result could be an object with error property
+      if (typeof result === 'object' && 'error' in result && result.error) {
+        console.error('Error saving exercise:', result.error);
+        const errorMessage = typeof result.error === 'object' && result.error !== null && 'message' in result.error 
+          ? String(result.error.message) 
+          : 'Erreur inconnue';
+        setLastSaveError(errorMessage);
+        toast({
+          variant: "destructive",
+          description: "Une erreur est survenue lors de la sauvegarde de l'exercice. Réessayez ultérieurement."
+        });
+        return false;
+      }
+      
+      // Handle success case - result could be a boolean true or an object with data property
+      if (typeof result === 'object' && 'data' in result && result.data) {
+        // If result.data has an id property, save it
+        if (typeof result.data === 'object' && result.data !== null && 'id' in result.data) {
+          setLastGeneratedId(String(result.data.id));
         }
       }
 
