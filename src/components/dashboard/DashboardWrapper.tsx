@@ -12,15 +12,17 @@ export const DashboardWrapper = ({ children }: DashboardWrapperProps) => {
       {/* Grid Pattern Background */}
       <div className="fixed inset-0 overflow-hidden">
         <Tiles
-          rows={50}
-          cols={8}
+          rows={20}
+          cols={5}
           tileSize="md"
           className="opacity-30"
         />
       </div>
       
       {/* Main content */}
-      {children}
+      <div className="relative z-10">
+        {children}
+      </div>
     </div>
   );
 };

@@ -1,19 +1,22 @@
 
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface LoadingIndicatorProps {
   message?: string;
   submessage?: string;
   size?: "sm" | "md" | "lg";
   type?: "dots" | "spinner";
+  className?: string;
 }
 
 export const LoadingIndicator = ({ 
   message, 
   submessage, 
   size = "md",
-  type = "dots" 
+  type = "dots",
+  className 
 }: LoadingIndicatorProps) => {
   const sizeClasses = {
     sm: "w-1.5 h-1.5",
@@ -28,7 +31,7 @@ export const LoadingIndicator = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-4">
+    <div className={cn("flex flex-col items-center justify-center gap-4", className)}>
       {type === "dots" ? (
         <div className="flex items-center justify-center space-x-2">
           <motion.div 
@@ -48,7 +51,7 @@ export const LoadingIndicator = ({
           />
         </div>
       ) : (
-        <Loader2 className={`${spinnerSizes[size]} animate-spin text-[#FFA800]`} />
+        <Loader2 className={cn(spinnerSizes[size], "animate-spin text-[#FFA800]", className)} />
       )}
       
       {message && <p className="text-sm text-gray-600 dark:text-gray-400 text-center">{message}</p>}

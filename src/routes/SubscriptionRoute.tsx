@@ -84,8 +84,8 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
           >
             {isRetrying ? (
               <>
-                <LoadingIndicator size="sm" />
-                <span className="ml-2">Vérification...</span>
+                <LoadingIndicator size="sm" type="spinner" className="mr-2" />
+                <span>Vérification...</span>
               </>
             ) : (
               <>
