@@ -14,7 +14,7 @@ const RETRY_DELAY = 1500;
 export const useImageGeneration = (): UseImageGenerationResult => {
   const { state, setLoading, setSuccess, setError, resetState, incrementRetry } = useImageGenerationState();
   const { toast } = useToast();
-  const { generateImage, cancelPendingRequests } = useGenerateImageApi();
+  const { generateImage: generateImageApi, cancelPendingRequests } = useGenerateImageApi();
   const { containsInappropriateContent } = useContentScreening();
   const { saveToCache, getFromCache } = useImageCache();
   const operationInProgress = useRef(false);
@@ -51,13 +51,13 @@ export const useImageGeneration = (): UseImageGenerationResult => {
     }
 
     incrementRetry();
-    await generateImage({
+    await handleGenerateImage({
       prompt: state.lastPrompt.prompt,
       style: state.lastPrompt.style
     });
   };
 
-  const generateImageWithRetry = async (generationPrompt: GenerationPrompt): Promise<void> => {
+  const handleGenerateImage = async (generationPrompt: GenerationPrompt): Promise<void> => {
     try {
       // Nettoyage des tentatives précédentes
       if (retryTimeoutRef.current) {
@@ -67,7 +67,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
       
       setLoading();
       
-      const imageUrl = await generateImage(generationPrompt);
+      const imageUrl = await generateImageApi(generationPrompt);
       
       if (imageUrl) {
         console.log('Image générée avec succès:', imageUrl);
@@ -136,7 +136,7 @@ export const useImageGeneration = (): UseImageGenerationResult => {
       }
 
       // Génération de l'image avec mécanisme de retry
-      await generateImageWithRetry(generationPrompt);
+      await handleGenerateImage(generationPrompt);
       
     } catch (error) {
       console.error('Error in generateImage:', error);

@@ -34,13 +34,13 @@ export const useGenerateImageApi = () => {
       });
       
       // Appel à la fonction Edge
+      // Removed the signal property as it's not supported in FunctionInvokeOptions
       const apiPromise = supabase.functions.invoke('generate-image', {
         body: {
           prompt: generationPrompt.prompt,
           style: generationPrompt.style,
           userId: user?.id
-        },
-        signal: abortControllerRef.current.signal
+        }
       });
       
       // Race entre le timeout et l'appel API
