@@ -23,7 +23,7 @@ export function getSubscriptionInfo(type: string | null) {
       return {
         title: 'Accès Beta',
         description: 'Vous bénéficiez d\'un accès privilégié à toutes les fonctionnalités en tant que testeur beta. Merci de votre participation au programme beta !',
-        icon: <Star className="h-4 w-4 mr-2 text-yellow-500" />,
+        icon: Star ? <Star className="h-4 w-4 mr-2 text-yellow-500" /> : null,
         titleStyle: 'underline decoration-dashed underline-offset-4 decoration-yellow-400',
         badgeVariant: 'secondary' as const,
         badgeText: 'Bêta',
@@ -35,7 +35,7 @@ export function getSubscriptionInfo(type: string | null) {
       return {
         title: 'Période d\'Essai',
         description: 'Vous profitez actuellement d\'une période d\'essai avec accès à toutes les fonctionnalités premium. Découvrez tous les avantages avant de choisir un abonnement.',
-        icon: <Clock className="h-4 w-4 mr-2 text-blue-500" />,
+        icon: Clock ? <Clock className="h-4 w-4 mr-2 text-blue-500" /> : null,
         titleStyle: '',
         badgeVariant: 'default' as const,
         badgeText: 'Essai',
@@ -49,7 +49,7 @@ export function getSubscriptionInfo(type: string | null) {
       return {
         title: type === 'yearly' ? 'Abonnement Annuel' : 'Abonnement Mensuel',
         description: 'Vous bénéficiez d\'un accès complet à toutes les fonctionnalités premium de PedagoIA. Merci pour votre soutien !',
-        icon: <Sparkles className="h-4 w-4 mr-2 text-green-500" />,
+        icon: Sparkles ? <Sparkles className="h-4 w-4 mr-2 text-green-500" /> : null,
         titleStyle: '',
         badgeVariant: 'default' as const,
         badgeText: 'Premium',
