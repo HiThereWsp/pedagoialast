@@ -94,3 +94,16 @@ export interface UserSubscriptionRow {
   created_at: string;
   updated_at: string;
 }
+
+// Ajout de l'interface pour la table bug_reports
+export interface BugReportRow {
+  id: string;
+  user_id: string | null;
+  description: string;
+  screenshot_url: string | null;
+  browser_info: Json | null;
+  url: string | null;
+  status: 'new' | 'in_progress' | 'resolved';
+  created_at: string;
+  updated_at: string;
+}

@@ -147,18 +147,19 @@ export const useBugReport = () => {
         status: 'new',
       };
       
+      // Utiliser la méthode "as any" comme solution temporaire pour le type
       const { data, error } = await supabase
-        .from('bug_reports')
+        .from('bug_reports' as any)
         .insert(bugReport)
         .select()
         .single();
         
       if (error) throw error;
       
-      // Notifier l'administrateur par email
+      // Notifier l'administrateur par email - utilisation de "as any" pour éviter les erreurs de type
       await supabase.functions.invoke('send-bug-report-notification', {
         body: {
-          reportId: data.id,
+          reportId: data?.id, // Utilisation de l'opérateur optionnel
           description,
           screenshotUrl,
           url: window.location.href,
