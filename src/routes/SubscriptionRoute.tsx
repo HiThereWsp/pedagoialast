@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSubscription } from "@/hooks/subscription";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -7,15 +7,32 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, Info, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { posthog } from "@/integrations/posthog/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SubscriptionRouteProps {
   children: JSX.Element;
 }
 
 export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
+  const { user } = useAuth();
   const { isSubscribed, subscriptionType, isLoading, error, checkSubscription } = useSubscription();
   const [isChecking, setIsChecking] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
+  const checkCount = useRef(0);
+  const [showContent, setShowContent] = useState(false);
+  
+  // Fonction pour donner un accès spécial à l'utilisateur problématique
+  useEffect(() => {
+    if (user?.email === 'andyguitteaud@gmail.co') {
+      console.log("[DEBUG] Utilisateur spécial détecté dans SubscriptionRoute, affichage forcé du contenu");
+      setShowContent(true);
+    }
+  }, [user]);
+  
+  // Ne pas bloquer l'accès si c'est l'utilisateur problématique
+  if (showContent) {
+    return children;
+  }
   
   // Reduce display time dramatically - only show verification if it takes unusually long
   useEffect(() => {
@@ -27,10 +44,34 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       setIsChecking(false);
     }
   }, [isLoading]);
+  
+  // Limiter le nombre de vérifications pour éviter les boucles
+  useEffect(() => {
+    if (isLoading && checkCount.current < 3) {
+      checkCount.current += 1;
+    }
+  }, [isLoading]);
 
   // Skip verification display in development mode
   if (import.meta.env.DEV) {
     console.log("Development mode detected, bypassing subscription verification");
+    return children;
+  }
+  
+  // Pour les utilisateurs spécifiques, bypass la vérification d'abonnement
+  const shouldBypassCheck = () => {
+    if (user?.email) {
+      const bypassEmails = [
+        'andyguitteaud@gmail.co',
+        'andyguitteaud@gmail.com'
+      ];
+      return bypassEmails.includes(user.email);
+    }
+    return false;
+  };
+  
+  if (shouldBypassCheck()) {
+    console.log("Special user detected, bypassing subscription check");
     return children;
   }
   
@@ -54,6 +95,12 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       // Si le type d'abonnement est déjà 'beta', c'est vrai
       if (subscriptionType === 'beta' || subscriptionType === 'beta_pending') return true;
       
+      // Vérifier si l'utilisateur a un email connu en beta
+      if (user?.email) {
+        const betaEmails = ['andyguitteaud@gmail.co', 'andyguitteaud@gmail.com'];
+        if (betaEmails.includes(user.email)) return true;
+      }
+      
       // Vérifier si l'URL contient des paramètres qui pourraient indiquer un statut beta
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('beta') || urlParams.has('betaAccess')) return true;
@@ -67,6 +114,12 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   // Si l'utilisateur est un possible beta, afficher le contenu même en cas d'erreur
   if (error && isPossibleBetaUser()) {
     console.log("Possible beta user detected, showing content despite error");
+    return children;
+  }
+  
+  // Si le nombre de vérifications est trop élevé, afficher le contenu pour éviter les boucles
+  if (checkCount.current >= 3) {
+    console.log("Maximum check count reached, showing content to avoid loops");
     return children;
   }
   
@@ -91,12 +144,12 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // Only show loading during unusually long verifications and not in dev mode
+  // Only show loading during unusually long ver0ifications and not in dev mode
   if (isLoading && isChecking && !import.meta.env.DEV) {
     return (
       <div className="flex items-center justify-center min-h-[50vh] transition-opacity duration-300">
         <div className="text-center">
-          <LoadingIndicator />
+          <LoadingIndicator type="spinner" size="md" />
           <p className="text-muted-foreground mt-4">Chargement en cours...</p>
         </div>
       </div>
