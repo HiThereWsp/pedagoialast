@@ -15,6 +15,44 @@ export const checkUserAccess = async (
   try {
     console.log("Calling check-user-access function");
     
+    // Vérification simplifiée pour les emails beta connus
+    const checkKnownBetaEmail = async (): Promise<boolean> => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const email = data.session?.user?.email;
+        
+        if (email) {
+          const betaEmails = ['andyguitteaud@gmail.com'];
+          if (betaEmails.includes(email)) {
+            console.log("Email beta connu détecté, accès accordé:", email);
+            
+            // Définir le statut d'abonnement beta
+            const betaStatus = {
+              isActive: true,
+              type: 'beta',
+              expiresAt: null,
+              isLoading: false,
+              error: null,
+              retryCount: 0
+            };
+            
+            setStatus(betaStatus);
+            cacheSubscriptionStatus(betaStatus);
+            return true;
+          }
+        }
+      } catch (err) {
+        console.error("Erreur lors de la vérification d'email beta:", err);
+      }
+      return false;
+    };
+    
+    // Si c'est un email beta connu, court-circuiter le reste de la vérification
+    const isBetaEmail = await checkKnownBetaEmail();
+    if (isBetaEmail) {
+      return true;
+    }
+    
     // Add explicit headers to resolve CORS issues
     const headers = {
       "Authorization": `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ""}`,

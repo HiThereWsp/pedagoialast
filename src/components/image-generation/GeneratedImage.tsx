@@ -3,20 +3,21 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { LoadingIndicator } from '@/components/ui/loading-indicator'
 import { DownloadButton } from './DownloadButton'
-import { FeedbackButtons } from './FeedbackButtons'
 import { RefreshCw } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 import { useSavedContent } from '@/hooks/useSavedContent'
 import { useAuth } from '@/hooks/useAuth'
+import { ContentFeedback } from '@/components/common/ContentFeedback'
 
 interface GeneratedImageProps {
   imageUrl: string
   onRegenerate: () => void
   isLoading: boolean
   prompt?: string
+  imageId?: string
 }
 
-export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading, prompt }: GeneratedImageProps) => {
+export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading, prompt, imageId }: GeneratedImageProps) => {
   const { toast } = useToast()
   const { saveImage } = useSavedContent()
   const { user } = useAuth()
@@ -100,21 +101,23 @@ export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading, prompt }: Ge
               alt="Generated image" 
               className="w-full h-auto rounded-lg shadow-lg"
             />
-            <div className="flex flex-wrap gap-2">
-              <Button 
-                variant="secondary"
-                onClick={onRegenerate}
-                disabled={isLoading || isSaving}
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Régénérer
-              </Button>
-              <DownloadButton imageUrl={imageUrl} />
-              <FeedbackButtons imageUrl={imageUrl} />
+            <div className="flex flex-wrap justify-between gap-2">
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  variant="secondary"
+                  onClick={onRegenerate}
+                  disabled={isLoading || isSaving}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Régénérer
+                </Button>
+                <DownloadButton imageUrl={imageUrl} />
+              </div>
+              <ContentFeedback contentType="image_generation" contentId={imageId} />
             </div>
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

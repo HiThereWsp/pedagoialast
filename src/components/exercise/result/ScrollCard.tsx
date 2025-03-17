@@ -1,11 +1,12 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, ThumbsUp, ThumbsDown, Printer } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import { ProgressiveContent } from './ProgressiveContent';
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ContentFeedback } from '@/components/common/ContentFeedback';
 
 interface ScrollCardProps {
   exercises: string | null;
@@ -15,6 +16,8 @@ interface ScrollCardProps {
   customClass?: string;
   hideActions?: boolean;
   disableInternalTabs?: boolean;
+  contentType?: 'lesson_plan' | 'exercise' | 'correspondence' | 'image_generation';
+  contentId?: string;
 }
 
 export const ScrollCard = ({ 
@@ -24,7 +27,9 @@ export const ScrollCard = ({
   className, 
   customClass,
   hideActions = false,
-  disableInternalTabs = false
+  disableInternalTabs = false,
+  contentType = 'exercise',
+  contentId
 }: ScrollCardProps) => {
   const { toast } = useToast();
   const contentRef = useRef<HTMLDivElement>(null);
@@ -83,41 +88,19 @@ export const ScrollCard = ({
     }
   };
 
-  const handleFeedback = (isPositive: boolean) => {
-    toast({
-      description: isPositive 
-        ? "Merci pour votre retour positif !" 
-        : "Merci pour votre retour, nous allons nous améliorer.",
-    });
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  // Déterminer le contenu à afficher en fonction des onglets
-  const contentToShow = activeTab === 'correction' ? correction : student;
+  // Determine content to show based on tabs
+  const showTabs = !disableInternalTabs && student && correction;
+  const contentToShow = showTabs ? (activeTab === 'correction' ? correction : student) : exercises;
 
   return (
     <div ref={contentRef} className={`w-full max-w-4xl mx-auto p-4 animate-fade-in ${className || ''}`}>
       {!hideActions && (
-        <div className="flex justify-end items-center mb-6 gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => handleFeedback(true)}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <ThumbsUp className="h-5 w-5" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => handleFeedback(false)}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <ThumbsDown className="h-5 w-5" />
-          </Button>
+        <div className="flex justify-between items-center mb-6">
+          <ContentFeedback 
+            contentType={contentType}
+            contentId={contentId}
+          />
+          
           <Button 
             variant="ghost" 
             size="icon"
@@ -126,18 +109,10 @@ export const ScrollCard = ({
           >
             <Copy className="h-5 w-5" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={handlePrint}
-            className="text-gray-600 hover:text-gray-800 print:hidden"
-          >
-            <Printer className="h-5 w-5" />
-          </Button>
         </div>
       )}
 
-      {!disableInternalTabs && student && correction && (
+      {showTabs && (
         <Tabs 
           value={activeTab} 
           onValueChange={(v) => setActiveTab(v as 'student' | 'correction')}
@@ -153,7 +128,7 @@ export const ScrollCard = ({
       <Card className="w-full bg-white shadow-lg print:shadow-none print:border-none">
         <CardContent className="h-[600px] md:h-[800px] lg:h-[900px] overflow-y-auto p-8 print:h-auto print:overflow-visible">
           <ProgressiveContent
-            content={contentToShow}
+            content={contentToShow || ''}
             className={`prose prose-sm max-w-none print:block ${customClass || ''}`}
           />
         </CardContent>

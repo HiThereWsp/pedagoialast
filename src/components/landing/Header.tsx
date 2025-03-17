@@ -1,5 +1,4 @@
 
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -52,10 +51,10 @@ export function Header() {
         {/* Actions de droite (login/dashboard) */}
         <div className="flex items-center gap-3">
           {user ? (
-            // Bouton Tableau de bord pour utilisateurs connectés
+            // Bouton Tableau de bord pour utilisateurs connectés - caché sur mobile
             <Button 
               variant="outline" 
-              className="flex gap-2"
+              className="hidden md:flex gap-2"
               onClick={handleDashboardClick}
             >
               <LayoutDashboard className="h-4 w-4" />

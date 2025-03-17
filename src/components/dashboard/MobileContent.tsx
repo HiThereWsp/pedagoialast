@@ -23,8 +23,8 @@ export const MobileContent = ({ firstName, isLoading }: MobileContentProps) => {
         </div>
       </div>
       
-      {/* Mobile centered content */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center z-10 w-full px-6">
+      {/* Mobile centered content with fixed positioning instead of absolute */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center w-full px-6 z-30">
         <h1 className="text-4xl font-extrabold mb-4 text-gray-800 leading-tight tracking-tight text-balance">
           Bonjour {isLoading ? "..." : (firstName || "Enseignant")} 👋
         </h1>

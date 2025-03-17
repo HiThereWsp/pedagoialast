@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
@@ -12,7 +13,9 @@ export const useToolMetrics = () => {
     actionType: ToolMetricRow['action_type'],
     contentLength?: number,
     generationTimeMs?: number,
-    feedbackScore?: -1 | 1
+    feedbackScore?: -1 | 1,
+    contentId?: string,
+    comment?: string
   ) => {
     try {
       setIsLoading(true);
@@ -20,16 +23,23 @@ export const useToolMetrics = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Prepare the data object
+      const metricData: any = {
+        user_id: user.id,
+        tool_type: toolType,
+        action_type: actionType,
+        content_length: contentLength,
+        generation_time_ms: generationTimeMs,
+        feedback_score: feedbackScore
+      };
+      
+      // Only add contentId and comment if they are provided
+      if (contentId) metricData.content_id = contentId;
+      if (comment) metricData.comment = comment;
+
       const { error } = await supabase
         .from('tool_metrics')
-        .insert({
-          user_id: user.id,
-          tool_type: toolType,
-          action_type: actionType,
-          content_length: contentLength,
-          generation_time_ms: generationTimeMs,
-          feedback_score: feedbackScore
-        });
+        .insert(metricData);
 
       if (error) throw error;
 
@@ -39,6 +49,7 @@ export const useToolMetrics = () => {
         variant: "destructive",
         description: "Une erreur est survenue lors de l'enregistrement des métriques",
       });
+      throw err; // Re-throw to allow caller to handle
     } finally {
       setIsLoading(false);
     }
