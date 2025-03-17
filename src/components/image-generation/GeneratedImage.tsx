@@ -23,6 +23,7 @@ export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading, prompt, imag
   const { user } = useAuth()
   const [isSaving, setIsSaving] = useState(false)
   const [hasSaved, setHasSaved] = useState(false)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   useEffect(() => {
     // Fonction de sauvegarde avec backoff exponentiel
@@ -82,6 +83,7 @@ export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading, prompt, imag
   // Réinitialiser l'état de sauvegarde lorsque l'URL de l'image change
   useEffect(() => {
     setHasSaved(false)
+    setImageLoaded(false)
   }, [imageUrl])
 
   return (
@@ -96,10 +98,23 @@ export const GeneratedImage = ({ imageUrl, onRegenerate, isLoading, prompt, imag
             {prompt && (
               <p className="text-sm text-muted-foreground">"{prompt}"</p>
             )}
+            {!imageLoaded && (
+              <div className="flex items-center justify-center min-h-[512px] bg-muted/50 rounded-lg">
+                <LoadingIndicator />
+              </div>
+            )}
             <img 
               src={imageUrl} 
-              alt="Generated image" 
-              className="w-full h-auto rounded-lg shadow-lg"
+              alt="Image générée" 
+              className={`w-full h-auto rounded-lg shadow-lg ${!imageLoaded ? 'hidden' : ''}`}
+              onLoad={() => setImageLoaded(true)}
+              onError={(e) => {
+                console.error('Erreur de chargement de l\'image:', e);
+                toast({
+                  variant: "destructive",
+                  description: "L'image n'a pas pu être chargée. Veuillez réessayer."
+                });
+              }}
             />
             <div className="flex flex-wrap justify-between gap-2">
               <div className="flex flex-wrap gap-2">

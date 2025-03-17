@@ -1,30 +1,41 @@
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ImageStyleSelector } from './ImageStyleSelector'
-import { GenerationPrompt } from './types'
+import { GenerationPrompt } from '@/hooks/image-generation/types'
 import { Loader2 } from 'lucide-react'
 
 interface GenerationFormProps {
   onSubmit: (prompt: GenerationPrompt) => void
   isLoading: boolean
+  selectedStyle: string
+  onStyleChange: (style: string) => void
 }
 
-export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => {
+export const GenerationForm = ({ 
+  onSubmit, 
+  isLoading, 
+  selectedStyle, 
+  onStyleChange 
+}: GenerationFormProps) => {
   const [userPrompt, setUserPrompt] = useState('')
-  const [selectedStyle, setSelectedStyle] = useState<string>('auto')
   const [isClicked, setIsClicked] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!userPrompt.trim()) return;
+    
     setIsClicked(true)
+    
     await onSubmit({
       context: '',
       prompt: userPrompt,
       user_prompt: userPrompt,
       style: selectedStyle
     })
+    
     setIsClicked(false)
   }
 
@@ -46,7 +57,7 @@ export const GenerationForm = ({ onSubmit, isLoading }: GenerationFormProps) => 
 
       <ImageStyleSelector 
         selectedStyle={selectedStyle}
-        onStyleChange={setSelectedStyle}
+        onStyleChange={onStyleChange}
       />
 
       <Button 
