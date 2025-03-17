@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './use-toast';
@@ -12,7 +13,9 @@ export const useToolMetrics = () => {
     actionType: ToolMetricRow['action_type'],
     contentLength?: number,
     generationTimeMs?: number,
-    feedbackScore?: -1 | 1
+    feedbackScore?: -1 | 1,
+    contentId?: string,
+    comment?: string
   ) => {
     try {
       setIsLoading(true);
@@ -28,7 +31,9 @@ export const useToolMetrics = () => {
           action_type: actionType,
           content_length: contentLength,
           generation_time_ms: generationTimeMs,
-          feedback_score: feedbackScore
+          feedback_score: feedbackScore,
+          content_id: contentId,
+          comment: comment
         });
 
       if (error) throw error;
@@ -39,6 +44,7 @@ export const useToolMetrics = () => {
         variant: "destructive",
         description: "Une erreur est survenue lors de l'enregistrement des métriques",
       });
+      throw err; // Re-throw to allow caller to handle
     } finally {
       setIsLoading(false);
     }

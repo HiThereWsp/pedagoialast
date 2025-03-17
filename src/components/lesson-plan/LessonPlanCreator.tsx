@@ -49,6 +49,8 @@ export function LessonPlanCreator() {
             showCorrection={false}
             className={`min-h-[800px] ${isMobile ? 'p-4' : 'p-8 md:p-12'} animate-fade-in`}
             customClass="text-left"
+            disableInternalTabs={true}
+            contentType="lesson_plan"
           />
         </div>
       )}

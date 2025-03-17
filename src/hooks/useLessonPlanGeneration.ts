@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useToolMetrics } from '@/hooks/useToolMetrics';
 import { useSavedContent } from '@/hooks/useSavedContent';
+import { useLocation } from 'react-router-dom';
 
 interface LessonPlanFormData {
   classLevel: string;
@@ -15,54 +16,31 @@ interface LessonPlanFormData {
   lessonPlan: string;
 }
 
-// Clé utilisée pour stocker le formulaire dans sessionStorage
-const FORM_STORAGE_KEY = 'lesson_plan_form_data';
-const RESULT_STORAGE_KEY = 'lesson_plan_result_data';
-
 export function useLessonPlanGeneration() {
   const { toast } = useToast();
   const { logToolUsage } = useToolMetrics();
   const { saveLessonPlan } = useSavedContent();
+  const location = useLocation();
   
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState<LessonPlanFormData>(() => {
-    // Récupérer les données de formulaire depuis sessionStorage au chargement
-    const savedForm = sessionStorage.getItem(FORM_STORAGE_KEY);
-    const savedResult = sessionStorage.getItem(RESULT_STORAGE_KEY);
-    
-    if (savedForm) {
-      const parsedForm = JSON.parse(savedForm) as LessonPlanFormData;
-      // Si nous avons un résultat sauvegardé, l'ajouter au formulaire
-      if (savedResult) {
-        parsedForm.lessonPlan = savedResult;
-      }
-      return parsedForm;
-    }
-    
-    return {
-      classLevel: '',
-      additionalInstructions: '',
-      totalSessions: '',
-      subject: '',
-      subject_matter: '',
-      text: '',
-      lessonPlan: ''
-    };
+  const [formData, setFormData] = useState<LessonPlanFormData>({
+    classLevel: '',
+    additionalInstructions: '',
+    totalSessions: '',
+    subject: '',
+    subject_matter: '',
+    text: '',
+    lessonPlan: ''
   });
 
-  // Sauvegarder les données du formulaire dans sessionStorage à chaque changement
+  // Clear form data when navigating to the page
   useEffect(() => {
-    const formToSave = { ...formData };
-    // Ne pas stocker le plan de leçon dans la sauvegarde du formulaire
-    const { lessonPlan, ...formWithoutResult } = formToSave;
-    
-    sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(formWithoutResult));
-    
-    // Sauvegarder le résultat séparément s'il existe
-    if (lessonPlan) {
-      sessionStorage.setItem(RESULT_STORAGE_KEY, lessonPlan);
-    }
-  }, [formData]);
+    return () => {
+      // Clean up session storage when component unmounts
+      sessionStorage.removeItem('lesson_plan_form_data');
+      sessionStorage.removeItem('lesson_plan_result_data');
+    };
+  }, []);
 
   const handleInputChange = useCallback((field: string, value: string) => {
     setFormData(prev => ({
@@ -80,7 +58,6 @@ export function useLessonPlanGeneration() {
       ...prev,
       lessonPlan: ''
     }));
-    sessionStorage.removeItem(RESULT_STORAGE_KEY);
   }, []);
 
   const generateLessonPlan = useCallback(async () => {
@@ -144,9 +121,6 @@ export function useLessonPlanGeneration() {
         ...prev,
         lessonPlan: newLessonPlan
       }));
-      
-      // Sauvegarde du résultat dans sessionStorage
-      sessionStorage.setItem(RESULT_STORAGE_KEY, newLessonPlan);
 
       // Sauvegarde automatique
       const title = formatTitle(`${formData.subject_matter} - ${formData.subject || ''} - ${formData.classLevel}`.trim());
