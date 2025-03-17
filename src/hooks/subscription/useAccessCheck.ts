@@ -22,7 +22,13 @@ export const checkUserAccess = async (
         const email = data.session?.user?.email;
         
         if (email) {
-          const betaEmails = ['andyguitteaud@gmail.co', 'andyguitteaud@gmail.com'];
+          // Liste d'emails et de domaines qui ont accès beta
+          const betaEmails = [
+            'andyguitteaud@gmail.co', 
+            'andyguitteaud@gmail.com',
+            // Ajouter d'autres emails ici si nécessaire
+          ];
+          
           if (betaEmails.includes(email)) {
             console.log("Email beta connu détecté, accès accordé:", email);
             
@@ -62,12 +68,13 @@ export const checkUserAccess = async (
     console.log("Sending request to check-user-access...");
     const startTime = performance.now();
     
+    // Appel à notre fonction edge pour vérifier l'accès
     const { data, error } = await supabase.functions.invoke('check-user-access', {
       headers: headers
     });
     
     const duration = Math.round(performance.now() - startTime);
-    console.log(`check-user-access response received in ${duration}ms`);
+    console.log(`check-user-access response received in ${duration}ms:`, data);
     
     if (error) {
       console.error('Edge function error:', error);
@@ -89,8 +96,6 @@ export const checkUserAccess = async (
       
       return false;
     }
-    
-    console.log("Response from check-user-access:", data);
     
     if (!data) {
       console.error("No data received from check-user-access");

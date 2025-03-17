@@ -4,7 +4,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 
 // Fonction pour gérer la création d'abonnement
 export async function handleSubscriptionCreated(subscription: Stripe.Subscription, stripe: Stripe) {
-  console.log('Traitement de customer.subscription.created');
+  console.log('Traitement de customer.subscription.created', subscription.id);
   
   const customerId = subscription.customer as string;
   const subscriptionId = subscription.id;
@@ -24,10 +24,16 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
     console.log('Promo code from metadata:', promoCode);
     
     if (!customerEmail) {
+      console.error('Email client non trouvé pour le client Stripe:', customerId);
       throw new Error('Email client non trouvé');
     }
     
-    // Trouver l'utilisateur par email
+    // Trouver l'utilisateur par ID utilisateur dans les métadonnées du client
+    if (!customer.metadata?.userId) {
+      console.error('ID utilisateur non trouvé dans les métadonnées du client Stripe:', customerId);
+      throw new Error('ID utilisateur non trouvé dans les métadonnées');
+    }
+    
     const { data: userData, error: userError } = await supabase
       .from('profiles')
       .select('id')
@@ -81,14 +87,15 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
     }
     
   } catch (error) {
-    console.error('Erreur dans handleSubscriptionCreated:', error);
+    console.error('Erreur dans handleSubscriptionCreated:', error.message);
+    // Rethrow to allow top-level error handler to handle it
     throw error;
   }
 }
 
 // Fonction pour gérer les mises à jour d'abonnement
 export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  console.log('Traitement de customer.subscription.updated');
+  console.log('Traitement de customer.subscription.updated', subscription.id);
   
   const subscriptionId = subscription.id;
   const status = subscription.status;
@@ -150,14 +157,14 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
       }
     }
   } catch (error) {
-    console.error('Erreur dans handleSubscriptionUpdated:', error);
+    console.error('Erreur dans handleSubscriptionUpdated:', error.message);
     throw error;
   }
 }
 
 // Fonction pour gérer la suppression d'abonnement
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  console.log('Traitement de customer.subscription.deleted');
+  console.log('Traitement de customer.subscription.deleted', subscription.id);
   
   const subscriptionId = subscription.id;
   const supabase = getSupabaseClient();
@@ -214,14 +221,14 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
       }
     }
   } catch (error) {
-    console.error('Erreur dans handleSubscriptionDeleted:', error);
+    console.error('Erreur dans handleSubscriptionDeleted:', error.message);
     throw error;
   }
 }
 
 // Fonction pour gérer la complétion d'un paiement via checkout
 export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, stripe: Stripe) {
-  console.log('Traitement de checkout.session.completed');
+  console.log('Traitement de checkout.session.completed', session.id);
   const supabase = getSupabaseClient();
   
   try {
@@ -271,7 +278,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, 
     
     console.log('Checkout traité avec succès');
   } catch (error) {
-    console.error('Erreur dans handleCheckoutCompleted:', error);
+    console.error('Erreur dans handleCheckoutCompleted:', error.message);
     throw error;
   }
 }
