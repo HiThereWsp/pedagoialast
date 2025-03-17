@@ -1,113 +1,113 @@
 
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast";
 import { useLessonPlanForm } from './useLessonPlanForm';
 import { useStorageCleanup } from './useStorageCleanup';
 import { useLessonPlanUtils } from './useLessonPlanUtils';
-import { LessonPlanFormData } from './types';
+import { generateLessonPlan } from '@/api/lesson-plan';
+import type { SaveLessonPlanParams } from './types';
 
+/**
+ * Hook for managing the lesson plan generation workflow
+ */
 export function useLessonPlanGeneration() {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [lastGenerationTime, setLastGenerationTime] = useState<number>(0);
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  
   const { formData, handleInputChange, resetLessonPlan, setLessonPlanResult } = useLessonPlanForm();
   const { savePlan } = useLessonPlanUtils();
   
-  // Setup storage cleanup
+  // Setup localStorage cleanup on navigation
   useStorageCleanup();
 
-  const validateForm = useCallback((data: LessonPlanFormData): boolean => {
-    // Validation des champs obligatoires
-    if (!data.classLevel || !data.totalSessions || !data.subject_matter) {
-      toast({
-        variant: "destructive",
-        description: "Veuillez remplir tous les champs obligatoires de niveau, matière et nombre de séances."
-      });
-      return false;
-    }
+  const generate = useCallback(async () => {
+    if (isGenerating) return null;
 
-    // Ajout de la validation des objectifs d'apprentissage (champ subject)
-    if (!data.subject || data.subject.trim() === '') {
-      toast({
-        variant: "destructive",
-        description: "Veuillez définir les objectifs d'apprentissage de votre séquence."
-      });
-      return false;
-    }
-
-    return true;
-  }, [toast]);
-
-  const generateLessonPlan = useCallback(async () => {
-    // Validate the form
-    if (!validateForm(formData)) {
-      return;
-    }
-
-    setIsLoading(true);
-    const startTime = performance.now();
-
+    setIsGenerating(true);
+    const generationStartTime = performance.now();
+    
     try {
-      const { data: functionData, error: functionError } = await supabase.functions.invoke('generate-lesson-plan', {
-        body: {
-          classLevel: formData.classLevel,
-          totalSessions: formData.totalSessions,
-          subject: formData.subject,
-          subject_matter: formData.subject_matter,
-          text: formData.text,
-          additionalInstructions: formData.additionalInstructions
-        }
-      });
-
-      if (functionError) throw functionError;
-
-      // Vérifier si nous avons une erreur spécifique renvoyée par la fonction
-      if (functionData.error) {
-        if (functionData.error === 'TIMEOUT_ERROR') {
-          toast({
-            variant: "destructive",
-            title: "Temps de génération dépassé",
-            description: "La génération est trop complexe. Essayez de réduire la complexité ou le nombre de séances."
-          });
-        } else {
-          toast({
-            variant: "destructive",
-            description: functionData.message || "Une erreur est survenue lors de la génération."
-          });
-        }
-        return;
+      // Validation
+      if (!formData.classLevel.trim()) {
+        toast({
+          variant: "destructive",
+          description: "Veuillez choisir un niveau de classe.",
+        });
+        return null;
       }
 
-      const generationTime = Math.round(performance.now() - startTime);
-      
-      // Mise à jour du state avec le nouveau plan de leçon
-      const newLessonPlan = functionData.lessonPlan;
-      setLessonPlanResult(newLessonPlan);
+      if (!formData.subject.trim()) {
+        toast({
+          variant: "destructive",
+          description: "Veuillez choisir une matière.",
+        });
+        return null;
+      }
 
-      // Sauvegarde automatique et log d'utilisation
-      await savePlan(formData, newLessonPlan, generationTime);
+      if (!formData.subject_matter.trim()) {
+        toast({
+          variant: "destructive",
+          description: "Veuillez indiquer l'objet d'étude.",
+        });
+        return null;
+      }
 
-      toast({
-        description: "🎉 Votre séquence a été générée et sauvegardée dans 'Mes ressources' !"
+      // Reset any previous generation
+      resetLessonPlan();
+
+      // Call the API
+      const response = await generateLessonPlan({
+        class_level: formData.classLevel,
+        subject: formData.subject,
+        subject_matter: formData.subject_matter,
+        total_sessions: parseInt(formData.totalSessions) || 5,
+        additional_instructions: formData.additionalInstructions
       });
+
+      // Process the response and calculate generation time
+      const generationEndTime = performance.now();
+      const generationTime = generationEndTime - generationStartTime;
+      setLastGenerationTime(generationTime);
+
+      if (response) {
+        // Save the result
+        setLessonPlanResult(response);
+        
+        // Save to database
+        await savePlan(formData, response, generationTime);
+        
+        return response;
+      } else {
+        toast({
+          variant: "destructive",
+          description: "Une erreur est survenue lors de la génération de la séquence.",
+        });
+        return null;
+      }
     } catch (error) {
       console.error('Error generating lesson plan:', error);
       toast({
         variant: "destructive",
-        title: "Erreur de génération",
-        description: "Une erreur est survenue lors de la génération de la séquence. Veuillez réessayer."
+        description: "Une erreur est survenue lors de la génération de la séquence.",
       });
+      return null;
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
-  }, [formData, toast, setLessonPlanResult, savePlan, validateForm]);
+  }, [
+    isGenerating, 
+    formData, 
+    toast, 
+    resetLessonPlan, 
+    setLessonPlanResult, 
+    savePlan
+  ]);
 
   return {
     formData,
-    isLoading,
+    isGenerating,
+    generate,
     handleInputChange,
-    generateLessonPlan,
     resetLessonPlan
   };
 }

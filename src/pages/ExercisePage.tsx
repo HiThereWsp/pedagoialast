@@ -8,6 +8,7 @@ import DifferentiateExerciseForm from "@/components/exercise/form/DifferentiateE
 import { AlertTriangle, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Formulaire par défaut vide
 const defaultFormData: ExerciseFormData = {
@@ -34,13 +35,15 @@ export default function ExercisePage() {
     lastSaveError,
     getExerciseCacheState,
     clearExerciseCache,
-    retrySaveExercise
+    retrySaveExercise,
+    lastGeneratedId
   } = useExerciseGeneration();
   
   const [exercises, setExercises] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"create" | "differentiate">("create");
   const [formData, setFormData] = useState<ExerciseFormData>(defaultFormData);
   const [isCachedDataLoaded, setIsCachedDataLoaded] = useState(false);
+  const isMobile = useIsMobile();
 
   // Charger les données du cache lors du premier rendu
   useEffect(() => {
@@ -133,8 +136,8 @@ export default function ExercisePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h1 className="text-5xl font-extrabold mb-2 tracking-tight text-balance">
-          Générateur d'exercices
+        <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl'} font-extrabold mb-2 tracking-tight text-balance`}>
+          <span className="rotate-1 inline-block">Générateur</span> <span className="-rotate-1 inline-block">d'exercices</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-lg mx-auto">
           Créez des exercices adaptés à vos besoins pédagogiques
@@ -190,7 +193,7 @@ export default function ExercisePage() {
           </TabsContent>
         </Tabs>
 
-        {exercises && <ResultDisplay exercises={exercises} />}
+        {exercises && <ResultDisplay exercises={exercises} exerciseId={lastGeneratedId} />}
       </div>
     </div>
   );

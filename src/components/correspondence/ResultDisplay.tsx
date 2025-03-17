@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Copy, CopyCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useSavedContent } from "@/hooks/useSavedContent";
-import { FeedbackButtons } from "@/components/image-generation/FeedbackButtons";
+import { ContentFeedback } from "@/components/common/ContentFeedback";
 
 interface ResultDisplayProps {
   text: string;
@@ -82,7 +82,7 @@ export function ResultDisplay({ text, recipientType, tone }: ResultDisplayProps)
             )}
             <span>Copier</span>
           </button>
-          <FeedbackButtons imageUrl="" />
+          <ContentFeedback contentType="correspondence" />
         </div>
       </div>
       <div className="whitespace-pre-wrap">{text}</div>
