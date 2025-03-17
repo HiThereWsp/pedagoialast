@@ -1,6 +1,13 @@
 
 import React from 'react';
-import { FormFields } from './FormFields';
+import { Subject } from './fields/Subject';
+import { ClassLevel } from './fields/ClassLevel';
+import { NumberOfExercises } from './fields/NumberOfExercises';
+import { QuestionsPerExercise } from './fields/QuestionsPerExercise';
+import { Objective } from './fields/Objective';
+import { ExerciseType } from './fields/ExerciseType';
+import { AdditionalInstructions } from './fields/AdditionalInstructions';
+import { Textarea } from "@/components/ui/textarea";
 
 interface GenerateExerciseFormProps {
   formData: {
@@ -21,12 +28,12 @@ export function GenerateExerciseForm({ formData, handleInputChange, isLessonPlan
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <FormFields.Subject 
+        <Subject 
           value={formData.subject} 
           onChange={handleInputChange}
           disabled={isLessonPlanSelected}
         />
-        <FormFields.ClassLevel 
+        <ClassLevel 
           value={formData.classLevel} 
           onChange={handleInputChange}
           disabled={isLessonPlanSelected}
@@ -34,21 +41,21 @@ export function GenerateExerciseForm({ formData, handleInputChange, isLessonPlan
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <FormFields.NumberOfExercises value={formData.numberOfExercises} onChange={handleInputChange} />
-        <FormFields.QuestionsPerExercise value={formData.questionsPerExercise} onChange={handleInputChange} />
+        <NumberOfExercises value={formData.numberOfExercises} onChange={handleInputChange} />
+        <QuestionsPerExercise value={formData.questionsPerExercise} onChange={handleInputChange} />
       </div>
 
       <div className="space-y-6">
-        <FormFields.Objective value={formData.objective} onChange={handleInputChange} />
-        <FormFields.ExerciseType value={formData.exerciseType} onChange={handleInputChange} />
-        <FormFields.AdditionalInstructions value={formData.additionalInstructions} onChange={handleInputChange} />
+        <Objective value={formData.objective} onChange={handleInputChange} />
+        <ExerciseType value={formData.exerciseType} onChange={handleInputChange} />
+        <AdditionalInstructions value={formData.additionalInstructions} onChange={handleInputChange} />
         
         {formData.specificNeeds !== undefined && (
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Besoins spécifiques des élèves
             </label>
-            <textarea
+            <Textarea
               placeholder="Ex: Adaptation pour élèves dyslexiques"
               value={formData.specificNeeds}
               onChange={(e) => handleInputChange("specificNeeds", e.target.value)}

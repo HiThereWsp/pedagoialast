@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -82,13 +81,11 @@ export function useExerciseGeneration() {
         exercise_category
       });
       
-      // Fixed the error by properly handling the return type
-      if (result && typeof result === 'object' && 'data' in result && 'error' in result) {
-        const { data, error } = result;
-        
-        if (error) {
-          console.error('Error saving exercise:', error);
-          setLastSaveError(error.message || 'Unknown error');
+      // Fixed handling of possibly null result
+      if (result) {
+        if ('error' in result && result.error) {
+          console.error('Error saving exercise:', result.error);
+          setLastSaveError(result.error.message || 'Unknown error');
           toast({
             variant: "destructive",
             description: "Une erreur est survenue lors de la sauvegarde de l'exercice. Réessayez ultérieurement."
@@ -96,9 +93,9 @@ export function useExerciseGeneration() {
           return false;
         }
         
-        // Save the ID of the generated exercise
-        if (data?.id) {
-          setLastGeneratedId(data.id);
+        // Save the ID of the generated exercise if it exists
+        if ('data' in result && result.data?.id) {
+          setLastGeneratedId(result.data.id);
         }
       }
 
