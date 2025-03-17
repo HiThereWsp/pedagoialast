@@ -33,14 +33,16 @@ serve(async (req) => {
 
     // Enregistrer l'événement de début de paiement
     const { error: insertError } = await supabaseClient
-      .from('payment_events')
+      .from('user_events')
       .insert({
         user_id: userId,
         email: email,
-        plan_type: planType,
         event_type: 'payment_started',
-        payment_method: 'stripe_checkout',
-        promo_code: promoCode || null
+        metadata: {
+          plan_type: planType,
+          payment_method: 'stripe_checkout',
+          promo_code: promoCode || null
+        }
       });
       
     if (insertError) {
