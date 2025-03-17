@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { useSubscription } from "@/hooks/useSubscription";
+import { useSubscription } from "@/hooks/subscription";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
