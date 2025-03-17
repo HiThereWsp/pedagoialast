@@ -10,6 +10,7 @@ type SubscriptionStatus = {
   isLoading: boolean;
   error: string | null;
   retryCount: number;
+  timestamp?: number;
 };
 
 const initialStatus: SubscriptionStatus = {
@@ -21,11 +22,74 @@ const initialStatus: SubscriptionStatus = {
   retryCount: 0
 };
 
+// Constantes pour la gestion du cache
+const CACHE_KEY = 'subscription_status';
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes en millisecondes
+const REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes en millisecondes
+
 /**
  * Hook personnalisé pour gérer l'état et la vérification des abonnements
  */
 export const useSubscription = () => {
   const [status, setStatus] = useState<SubscriptionStatus>(initialStatus);
+
+  /**
+   * Enregistre les statut d'abonnement dans le cache local
+   */
+  const cacheSubscriptionStatus = useCallback((statusToCache: SubscriptionStatus) => {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        ...statusToCache,
+        timestamp: Date.now()
+      }));
+    } catch (err) {
+      console.log('Erreur lors de la mise en cache du statut:', err);
+      // Continuer même si le cache échoue
+    }
+  }, []);
+
+  /**
+   * Récupère le statut d'abonnement mis en cache
+   * @returns {SubscriptionStatus|null} Statut mis en cache ou null si pas de cache valide
+   */
+  const getCachedStatus = useCallback((): SubscriptionStatus | null => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (!cached) return null;
+      
+      const parsedCache = JSON.parse(cached) as SubscriptionStatus;
+      
+      // Vérifier l'âge du cache
+      if (parsedCache.timestamp && (Date.now() - parsedCache.timestamp) < CACHE_DURATION) {
+        return parsedCache;
+      }
+    } catch (err) {
+      console.log('Erreur lors de la récupération du cache:', err);
+    }
+    
+    return null;
+  }, []);
+
+  /**
+   * Journalise les erreurs liées à l'abonnement
+   * @param {string} errorType Type d'erreur
+   * @param {any} details Détails de l'erreur
+   */
+  const logSubscriptionError = useCallback(async (errorType: string, details: any) => {
+    console.error(`Erreur d'abonnement: ${errorType}`, details);
+    
+    try {
+      // Enregistrer l'erreur dans votre système d'analyse/log
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      await supabase.functions.invoke('log-subscription-error', {
+        body: { errorType, details, userId: userId || 'anonymous' }
+      }).catch(err => console.error('Échec de la journalisation de l\'erreur:', err));
+    } catch (err) {
+      console.error('Erreur lors de la journalisation:', err);
+    }
+  }, []);
 
   /**
    * Vérifie si l'utilisateur est en mode développement
@@ -34,18 +98,20 @@ export const useSubscription = () => {
   const checkDevMode = useCallback(() => {
     if (import.meta.env.DEV) {
       console.log("Mode développement détecté, simulation d'un abonnement actif");
-      setStatus({
+      const devStatus = {
         isActive: true,
         type: 'dev_mode',
         expiresAt: null,
         isLoading: false,
         error: null,
         retryCount: 0
-      });
+      };
+      setStatus(devStatus);
+      cacheSubscriptionStatus(devStatus);
       return true;
     }
     return false;
-  }, []);
+  }, [cacheSubscriptionStatus]);
 
   /**
    * Vérifie l'état de la session utilisateur
@@ -57,35 +123,46 @@ export const useSubscription = () => {
       
       if (error) {
         console.error("Erreur lors de la récupération de la session:", error.message);
-        setStatus(prev => ({
-          ...prev,
+        
+        const errorStatus = {
+          ...initialStatus,
           isLoading: false,
           error: `Erreur session: ${error.message}`
-        }));
+        };
+        
+        setStatus(prev => errorStatus);
+        logSubscriptionError('session_error', error);
         return null;
       }
       
       if (!session) {
         console.log("Aucune session trouvée dans useSubscription");
-        setStatus({
+        
+        const noSessionStatus = {
           ...initialStatus,
           isLoading: false,
           error: 'Non authentifié'
-        });
+        };
+        
+        setStatus(noSessionStatus);
         return null;
       }
       
       return session;
     } catch (err) {
       console.error("Exception lors de la vérification de session:", err);
-      setStatus(prev => ({
-        ...prev,
+      
+      const exceptionStatus = {
+        ...initialStatus,
         isLoading: false,
         error: `Exception: ${err.message}`
-      }));
+      };
+      
+      setStatus(exceptionStatus);
+      logSubscriptionError('session_exception', err);
       return null;
     }
-  }, []);
+  }, [logSubscriptionError]);
 
   /**
    * Vérifie l'abonnement de l'utilisateur via la fonction check-user-access
@@ -113,12 +190,15 @@ export const useSubscription = () => {
           ? "Erreur de configuration serveur (types manquants)" 
           : error.message || "Erreur inattendue";
         
-        setStatus(prev => ({
-          ...prev,
+        const errorStatus = {
+          ...initialStatus,
           isLoading: false,
           error: errorMessage,
-          retryCount: prev.retryCount + 1
-        }));
+          retryCount: status.retryCount + 1
+        };
+        
+        setStatus(prev => errorStatus);
+        logSubscriptionError('check_access_error', { error, message: errorMessage });
         
         // Log détaillé pour aider au débogage
         console.error('Détails erreur vérification accès:', {
@@ -135,43 +215,71 @@ export const useSubscription = () => {
       
       if (!data) {
         console.error("Aucune donnée reçue de check-user-access");
-        setStatus({
+        
+        const invalidResponseStatus = {
           ...initialStatus,
           isLoading: false,
           error: "Réponse invalide du serveur",
           retryCount: status.retryCount + 1
-        });
+        };
+        
+        setStatus(invalidResponseStatus);
+        logSubscriptionError('invalid_response', { data });
         return false;
       }
       
-      setStatus({
+      // Statut d'abonnement valide
+      const validStatus = {
         isActive: !!data.access,
         type: data.type || null,
         expiresAt: data.expires_at || null,
         isLoading: false,
         error: null,
         retryCount: 0
-      });
+      };
+      
+      setStatus(validStatus);
+      
+      // Mettre en cache le statut valide
+      cacheSubscriptionStatus(validStatus);
       
       return !!data.access;
     } catch (err) {
       console.error('Erreur inattendue lors de la vérification de l\'abonnement:', err);
       
-      setStatus(prev => ({
+      const unexpectedErrorStatus = {
         ...initialStatus,
         isLoading: false,
         error: err.message || "Erreur serveur inconnue",
-        retryCount: prev.retryCount + 1
-      }));
+        retryCount: status.retryCount + 1
+      };
+      
+      setStatus(prev => unexpectedErrorStatus);
+      logSubscriptionError('unexpected_error', err);
       
       return false;
     }
-  }, [status.retryCount]);
+  }, [status.retryCount, cacheSubscriptionStatus, logSubscriptionError]);
 
   /**
    * Fonction principale pour vérifier l'abonnement
    */
-  const checkSubscription = useCallback(async () => {
+  const checkSubscription = useCallback(async (force = false) => {
+    // Si on ne force pas la vérification, vérifier le cache d'abord
+    if (!force) {
+      const cachedStatus = getCachedStatus();
+      if (cachedStatus) {
+        console.log("Utilisation du statut d'abonnement mis en cache", cachedStatus);
+        setStatus(prev => ({
+          ...cachedStatus,
+          isLoading: false,
+          error: null
+        }));
+        return;
+      }
+    }
+    
+    // Sinon procéder à la vérification
     setStatus(prev => ({ ...prev, isLoading: true, error: null }));
     
     // En cas d'erreur lors des vérifications, assurer que isLoading est correctement réinitialisé
@@ -187,14 +295,18 @@ export const useSubscription = () => {
       await checkUserAccess();
     } catch (error) {
       console.error("Erreur critique lors de la vérification d'abonnement:", error);
-      setStatus(prev => ({
+      
+      const criticalErrorStatus = {
         ...initialStatus,
         isLoading: false,
         error: "Erreur critique: " + (error.message || "inconnue"),
-        retryCount: prev.retryCount + 1
-      }));
+        retryCount: status.retryCount + 1
+      };
+      
+      setStatus(criticalErrorStatus);
+      logSubscriptionError('critical_error', error);
     }
-  }, [checkDevMode, checkUserSession, checkUserAccess]);
+  }, [checkDevMode, checkUserSession, checkUserAccess, getCachedStatus, status.retryCount, logSubscriptionError]);
 
   // Tentative automatique avec retard exponentiel en cas d'erreur
   useEffect(() => {
@@ -204,7 +316,7 @@ export const useSubscription = () => {
       
       const retryTimer = setTimeout(() => {
         console.log(`Tentative de vérification #${status.retryCount + 1}`);
-        checkSubscription();
+        checkSubscription(true); // Force la vérification sans utiliser le cache
       }, retryDelay);
       
       return () => clearTimeout(retryTimer);
@@ -214,6 +326,17 @@ export const useSubscription = () => {
   // Vérifier l'abonnement au chargement du composant
   useEffect(() => {
     checkSubscription();
+  }, [checkSubscription]);
+  
+  // Rafraîchir le statut d'abonnement périodiquement
+  useEffect(() => {
+    // Rafraîchir le statut toutes les 30 minutes
+    const refreshInterval = setInterval(() => {
+      console.log('Rafraîchissement périodique du statut d\'abonnement');
+      checkSubscription(true); // Force une vérification complète
+    }, REFRESH_INTERVAL);
+    
+    return () => clearInterval(refreshInterval);
   }, [checkSubscription]);
 
   /**

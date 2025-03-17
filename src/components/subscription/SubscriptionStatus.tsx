@@ -3,14 +3,32 @@ import { useSubscription } from "@/hooks/useSubscription";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Loader2, Star, Sparkles, Clock } from "lucide-react";
+import { CalendarIcon, Loader2, Star, Sparkles, Clock, RefreshCw, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function SubscriptionStatus() {
-  const { isSubscribed, subscriptionType, expiresAt, isLoading, error } = useSubscription();
+  const { isSubscribed, subscriptionType, expiresAt, isLoading, error, checkSubscription } = useSubscription();
   const navigate = useNavigate();
+  const [isRetrying, setIsRetrying] = useState(false);
+  
+  // Fonction pour retenter la vérification manuellement
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    toast.info("Vérification en cours...");
+    
+    try {
+      await checkSubscription(true); // Forcer la vérification
+      toast.success("Vérification terminée");
+    } catch (e) {
+      toast.error("La vérification a échoué");
+    } finally {
+      setIsRetrying(false);
+    }
+  };
   
   if (isLoading) {
     return (
@@ -24,19 +42,56 @@ export function SubscriptionStatus() {
   if (error) {
     return (
       <Card className="p-6 border-red-200 bg-red-50">
-        <h3 className="text-lg sm:text-xl font-semibold mb-3 text-red-800 leading-tight tracking-tight text-balance">
+        <h3 className="text-xl sm:text-2xl font-bold mb-3 text-red-800 leading-tight tracking-tight text-balance flex items-center">
+          <AlertTriangle className="h-5 w-5 mr-2 text-red-600" />
           Erreur de vérification
         </h3>
         <p className="text-red-700 mb-4 max-w-lg">
-          Une erreur est survenue lors de la vérification de votre abonnement. Veuillez réessayer ultérieurement.
+          Une erreur est survenue lors de la vérification de votre abonnement.
         </p>
+        
         <details className="mb-4 text-xs text-red-600">
-          <summary>Détails techniques</summary>
-          <p className="mt-1">{error}</p>
+          <summary className="cursor-pointer font-medium">Détails techniques</summary>
+          <p className="mt-1 p-2 bg-red-100 rounded">{error}</p>
         </details>
-        <Button onClick={() => navigate("/contact")} variant="outline" className="border-red-300 text-red-800 hover:bg-red-100">
-          Contacter le support
-        </Button>
+        
+        <div className="space-y-3 mb-4">
+          <p className="text-sm font-medium text-red-800">Essayez ces solutions :</p>
+          <ul className="list-disc pl-5 text-sm text-red-700 space-y-1">
+            <li>Rafraîchissez la page</li>
+            <li>Déconnectez-vous puis reconnectez-vous</li>
+            <li>Videz le cache de votre navigateur</li>
+          </ul>
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          <Button 
+            onClick={handleRetry} 
+            variant="outline" 
+            className="border-red-300 text-red-800 hover:bg-red-100"
+            disabled={isRetrying}
+          >
+            {isRetrying ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                Vérification...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Réessayer
+              </>
+            )}
+          </Button>
+          
+          <Button 
+            onClick={() => navigate("/contact")} 
+            variant="outline" 
+            className="border-red-300 text-red-800 hover:bg-red-100"
+          >
+            Contacter le support
+          </Button>
+        </div>
       </Card>
     );
   }
@@ -44,7 +99,7 @@ export function SubscriptionStatus() {
   if (!isSubscribed) {
     return (
       <Card className="p-6">
-        <h3 className="text-lg sm:text-xl font-semibold mb-3 leading-tight tracking-tight text-balance">
+        <h3 className="text-xl sm:text-2xl font-bold mb-3 leading-tight tracking-tight text-balance">
           Abonnement requis
         </h3>
         <p className="text-muted-foreground mb-4 max-w-lg">
@@ -93,6 +148,25 @@ export function SubscriptionStatus() {
         )}
         <Button variant="outline" size="sm" onClick={() => navigate("/contact")}>
           Support
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={handleRetry}
+          disabled={isRetrying}
+          className="ml-auto"
+        >
+          {isRetrying ? (
+            <>
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+              Vérification...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="h-3 w-3 mr-1" />
+              Actualiser
+            </>
+          )}
         </Button>
       </div>
     </Card>
