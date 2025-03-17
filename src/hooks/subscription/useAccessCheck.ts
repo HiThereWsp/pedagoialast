@@ -22,7 +22,7 @@ export const checkUserAccess = async (
         const email = data.session?.user?.email;
         
         if (email) {
-          const betaEmails = ['andyguitteaud@gmail.com'];
+          const betaEmails = ['andyguitteaud@gmail.co', 'andyguitteaud@gmail.com'];
           if (betaEmails.includes(email)) {
             console.log("Email beta connu détecté, accès accordé:", email);
             

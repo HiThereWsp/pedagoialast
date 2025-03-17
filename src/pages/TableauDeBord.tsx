@@ -1,6 +1,6 @@
 
 import { Helmet } from "react-helmet-async";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { DashboardWrapper } from "@/components/dashboard/DashboardWrapper";
@@ -8,25 +8,40 @@ import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DesktopContent } from "@/components/dashboard/DesktopContent";
 import { MobileContent } from "@/components/dashboard/MobileContent";
 import { useMediaQuery } from "@/hooks/use-mobile";
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
 
 const TableauDeBord = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading, authReady } = useAuth();
   const [firstName, setFirstName] = useState<string>("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const hasFetchedProfile = useRef(false);
   
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
   };
   
   useEffect(() => {
+    // Fonction optimisée pour charger le profil
     const loadUserProfile = async () => {
-      if (!user) return;
+      if (!user || hasFetchedProfile.current) return;
       
       try {
         setIsProfileLoading(true);
         
+        // Vérifier le cache local d'abord
+        const cachedFirstName = localStorage.getItem(`profile_firstName_${user.id}`);
+        const cacheExpiry = localStorage.getItem(`profile_expiry_${user.id}`);
+        
+        if (cachedFirstName && cacheExpiry && Date.now() < parseInt(cacheExpiry)) {
+          setFirstName(cachedFirstName);
+          setIsProfileLoading(false);
+          hasFetchedProfile.current = true;
+          return;
+        }
+        
+        // Sinon, charger depuis Supabase
         const { data: profile, error } = await supabase
           .from("profiles")
           .select("first_name")
@@ -40,6 +55,12 @@ const TableauDeBord = () => {
         
         if (profile) {
           setFirstName(profile.first_name);
+          
+          // Mettre en cache pour 30 minutes
+          localStorage.setItem(`profile_firstName_${user.id}`, profile.first_name);
+          localStorage.setItem(`profile_expiry_${user.id}`, (Date.now() + 30 * 60 * 1000).toString());
+          
+          hasFetchedProfile.current = true;
         }
       } catch (error) {
         console.error("Error in loadUserProfile:", error);
@@ -48,8 +69,38 @@ const TableauDeBord = () => {
       }
     };
     
-    loadUserProfile();
-  }, [user]);
+    if (authReady && !authLoading && user && !hasFetchedProfile.current) {
+      loadUserProfile();
+    }
+  }, [user, authReady, authLoading]);
+  
+  // Journalisation spécifique pour l'utilisateur problématique
+  useEffect(() => {
+    if (user?.email === 'andyguitteaud@gmail.co') {
+      console.log('[DEBUG] État utilisateur problématique:', { 
+        userId: user.id,
+        email: user.email,
+        authReady,
+        firstName,
+        isProfileLoading,
+        currentPath: window.location.pathname
+      });
+    }
+  }, [user, authReady, firstName, isProfileLoading]);
+
+  // Si l'authentification est encore en cours, afficher un indicateur de chargement
+  if (authLoading || !authReady) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingIndicator 
+          message="Vérification de l'authentification..." 
+          submessage="Veuillez patienter"
+          type="spinner"
+          size="lg"
+        />
+      </div>
+    );
+  }
   
   return (
     <DashboardWrapper>
@@ -86,7 +137,7 @@ const TableauDeBord = () => {
         {isMobile ? (
           <MobileContent firstName={firstName} isLoading={isProfileLoading} />
         ) : (
-          <DesktopContent firstName={firstName} />
+          <DesktopContent firstName={firstName} isLoading={isProfileLoading} />
         )}
       </div>
     </DashboardWrapper>
