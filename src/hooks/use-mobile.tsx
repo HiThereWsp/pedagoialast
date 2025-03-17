@@ -1,19 +1,41 @@
-import * as React from "react"
 
-const MOBILE_BREAKPOINT = 768
+import { useState, useEffect } from 'react';
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+/**
+ * Hook pour détecter si un media query correspond
+ * @param query Media query à vérifier
+ * @returns boolean Indique si le media query correspond
+ */
+export const useMediaQuery = (query: string): boolean => {
+  const [matches, setMatches] = useState(false);
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    
+    // Définir la valeur initiale
+    setMatches(media.matches);
+    
+    // Définir un gestionnaire pour les changements
+    const listener = (event: MediaQueryListEvent) => {
+      setMatches(event.matches);
+    };
+    
+    // Ajouter l'écouteur
+    media.addEventListener('change', listener);
+    
+    // Nettoyer
+    return () => {
+      media.removeEventListener('change', listener);
+    };
+  }, [query]);
 
-  return !!isMobile
-}
+  return matches;
+};
+
+/**
+ * Hook pour détecter si l'appareil est mobile
+ * @returns boolean True si l'appareil est considéré comme mobile
+ */
+export const useMobile = (): boolean => {
+  return useMediaQuery('(max-width: 768px)');
+};

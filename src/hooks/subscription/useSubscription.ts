@@ -1,11 +1,12 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { SubscriptionStatus, initialStatus, REFRESH_INTERVAL } from './types';
 import { getCachedStatus, cacheSubscriptionStatus } from './useSubscriptionCache';
-import { logSubscriptionError } from './useErrorLogging';
 import { checkDevMode } from './useDevMode';
 import { checkUserSession } from './useSessionCheck';
 import { checkUserAccess } from './useAccessCheck';
+import { useSubscriptionErrorHandling } from './useSubscriptionErrorHandling';
 
 /**
  * Custom hook to manage subscription state and verification
@@ -13,11 +14,9 @@ import { checkUserAccess } from './useAccessCheck';
 export const useSubscription = () => {
   const [status, setStatus] = useState<SubscriptionStatus>(initialStatus);
 
-  /**
-   * Main function to check subscription
-   */
+  // Fonction de rappel pour checkSubscription définie en début pour useSubscriptionErrorHandling
   const checkSubscription = useCallback(async (force = false) => {
-    // If not forcing the check, check the cache first
+    // Si pas de force, vérifier le cache d'abord
     if (!force) {
       const cachedStatus = getCachedStatus();
       if (cachedStatus) {
@@ -31,74 +30,53 @@ export const useSubscription = () => {
       }
     }
     
-    // Otherwise proceed with the check
+    // Sinon, procéder à la vérification
     setStatus(prev => ({ ...prev, isLoading: true, error: null }));
     
-    // In case of error during checks, ensure isLoading is properly reset
+    // En cas d'erreur pendant les vérifications, s'assurer que isLoading est correctement réinitialisé
     try {
-      // Check development mode first (short-circuits other checks)
+      // Vérifier le mode développement d'abord (court-circuite les autres vérifications)
       if (checkDevMode(setStatus)) return;
       
-      // Check user session
+      // Vérifier la session utilisateur
       const session = await checkUserSession(setStatus);
       if (!session) return;
       
-      // Check user access
+      // Vérifier l'accès utilisateur
       await checkUserAccess(status, setStatus);
     } catch (error) {
-      console.error("Critical error during subscription check:", error);
-      
-      const criticalErrorStatus = {
-        ...initialStatus,
-        isLoading: false,
-        error: "Critical error: " + (error.message || "unknown"),
-        retryCount: status.retryCount + 1
-      };
-      
+      const criticalErrorStatus = errorHandler.handleSubscriptionError(error, status);
       setStatus(criticalErrorStatus);
-      logSubscriptionError('critical_error', error);
     }
   }, [status]);
 
-  // Automatic retry with exponential delay on error
-  useEffect(() => {
-    if (status.error && status.retryCount < 3) {
-      const retryDelay = Math.pow(2, status.retryCount) * 1000; // 1s, 2s, 4s
-      console.log(`Retrying in ${retryDelay/1000}s... (attempt ${status.retryCount + 1}/3)`);
-      
-      const retryTimer = setTimeout(() => {
-        console.log(`Attempting check #${status.retryCount + 1}`);
-        checkSubscription(true); // Force check without using cache
-      }, retryDelay);
-      
-      return () => clearTimeout(retryTimer);
-    }
-  }, [status.error, status.retryCount, checkSubscription]);
+  // Utiliser le hook de gestion des erreurs
+  const errorHandler = useSubscriptionErrorHandling(status, checkSubscription);
 
-  // Check subscription on component load
+  // Vérifier l'abonnement au chargement du composant
   useEffect(() => {
     checkSubscription();
   }, [checkSubscription]);
   
-  // Periodically refresh subscription status
+  // Actualiser périodiquement le statut de l'abonnement
   useEffect(() => {
-    // Refresh status every 30 minutes
+    // Actualiser le statut toutes les 30 minutes
     const refreshInterval = setInterval(() => {
       console.log('Periodic subscription status refresh');
-      checkSubscription(true); // Force a complete check
+      checkSubscription(true); // Forcer une vérification complète
     }, REFRESH_INTERVAL);
     
     return () => clearInterval(refreshInterval);
   }, [checkSubscription]);
 
   /**
-   * Check if user has valid subscription, otherwise redirect to pricing page
-   * @returns {boolean} True if user can access feature
+   * Vérifier si l'utilisateur a un abonnement valide, sinon rediriger vers la page de tarification
+   * @returns {boolean} True si l'utilisateur peut accéder à la fonctionnalité
    */
   const requireSubscription = useCallback(() => {
-    if (status.isLoading) return true; // Wait for loading
+    if (status.isLoading) return true; // Attendre le chargement
     
-    // Consider special accesses as valid
+    // Considérer les accès spéciaux comme valides
     if (status.type === 'beta' || status.type === 'dev_mode') return true;
     
     if (!status.isActive) {
