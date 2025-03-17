@@ -156,16 +156,21 @@ export const useBugReport = () => {
         
       if (error) throw error;
       
-      // Notifier l'administrateur par email - utilisation de "as any" pour éviter les erreurs de type
-      await supabase.functions.invoke('send-bug-report-notification', {
-        body: {
-          reportId: data?.id, // Utilisation de l'opérateur optionnel
-          description,
-          screenshotUrl,
-          url: window.location.href,
-          userId: user?.id || 'Utilisateur non connecté',
-        }
-      });
+      // Nous vérifions d'abord que data existe et a une propriété id
+      // Notifier l'administrateur par email
+      if (data && typeof data === 'object' && 'id' in data) {
+        await supabase.functions.invoke('send-bug-report-notification', {
+          body: {
+            reportId: data.id,
+            description,
+            screenshotUrl,
+            url: window.location.href,
+            userId: user?.id || 'Utilisateur non connecté',
+          }
+        });
+      } else {
+        console.warn('Report created but data.id is not available');
+      }
       
       // Réinitialiser le formulaire après la soumission
       resetForm();
