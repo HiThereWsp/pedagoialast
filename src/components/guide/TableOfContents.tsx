@@ -22,7 +22,15 @@ export function TableOfContents() {
           </li>
           <li className="flex items-center">
             <div className="mr-3 text-purple-500"><Check size={18} /></div>
+            <a href="#differentiation" className="text-blue-600 hover:underline text-lg">Faire votre différenciation pédagogique</a>
+          </li>
+          <li className="flex items-center">
+            <div className="mr-3 text-purple-500"><Check size={18} /></div>
             <a href="#generateur-images" className="text-blue-600 hover:underline text-lg">Générateur d'images pédagogiques</a>
+          </li>
+          <li className="flex items-center">
+            <div className="mr-3 text-purple-500"><Check size={18} /></div>
+            <a href="#suggestions" className="text-blue-600 hover:underline text-lg">Contribuez à l'évolution de PedagoIA</a>
           </li>
           <li className="flex items-center">
             <div className="mr-3 text-purple-500"><Check size={18} /></div>

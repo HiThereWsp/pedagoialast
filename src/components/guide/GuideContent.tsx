@@ -6,6 +6,8 @@ import { FirstStepsSection } from './FirstStepsSection';
 import { SequenceGeneratorSection } from './SequenceGeneratorSection';
 import { ExercisesSection } from './ExercisesSection';
 import { ImageGeneratorSection } from './ImageGeneratorSection';
+import { DifferentiationSection } from './DifferentiationSection';
+import { SuggestionsSection } from './SuggestionsSection';
 import { GuideFAQSection } from './FAQSection';
 import { ConclusionSection } from './ConclusionSection';
 
@@ -19,7 +21,9 @@ export function GuideContent() {
           <FirstStepsSection />
           <SequenceGeneratorSection />
           <ExercisesSection />
+          <DifferentiationSection />
           <ImageGeneratorSection />
+          <SuggestionsSection />
           <GuideFAQSection />
           <ConclusionSection />
           
