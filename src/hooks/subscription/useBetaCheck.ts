@@ -25,28 +25,6 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
     
     if (!profile) {
       console.log(`Aucun profil trouvé pour l'email: ${email}`);
-      
-      // Try fallback - direct user lookup in auth.users (requires service_role)
-      // This is a special case only for debugging
-      if (email === 'moienseignant3.0@gmail.com') {
-        console.log('Email special détecté, vérification directe des abonnements');
-        
-        // Check if email directly exists in user_subscriptions via join
-        const { data: directCheck, error: directError } = await supabase
-          .from('user_subscriptions')
-          .select('id, user_id, profiles:profiles(email)')
-          .eq('type', 'beta')
-          .eq('status', 'active')
-          .maybeSingle();
-        
-        if (directError) {
-          console.error('Erreur lors de la vérification directe:', directError);
-        } else if (directCheck) {
-          console.log('Abonnement beta trouvé directement:', directCheck);
-          return true;
-        }
-      }
-      
       return false;
     }
     
