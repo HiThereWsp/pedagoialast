@@ -1,33 +1,47 @@
+
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { Check, KeyRound, Lock } from "lucide-react"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+const passwordSchema = z.object({
+  newPassword: z.string().min(6, {
+    message: "Le mot de passe doit contenir au moins 6 caractères.",
+  }),
+  confirmPassword: z.string().min(6, {
+    message: "Le mot de passe doit contenir au moins 6 caractères.",
+  }),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas.",
+  path: ["confirmPassword"],
+})
 
 export const PasswordForm = () => {
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  const form = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      newPassword: "",
+      confirmPassword: "",
+    },
+  })
 
-    if (newPassword !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas."
-      })
-      setLoading(false)
-      return
-    }
+  const handleSubmit = async (values: z.infer<typeof passwordSchema>) => {
+    setLoading(true)
+    setSuccess(false)
 
     try {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword
+        password: values.newPassword
       })
 
       if (error) throw error
@@ -36,8 +50,12 @@ export const PasswordForm = () => {
         title: "Succès",
         description: "Votre mot de passe a été mis à jour avec succès."
       })
-      setNewPassword("")
-      setConfirmPassword("")
+      
+      form.reset({
+        newPassword: "",
+        confirmPassword: "",
+      })
+      setSuccess(true)
     } catch (error) {
       console.error('Error updating password:', error)
       toast({
@@ -47,36 +65,89 @@ export const PasswordForm = () => {
       })
     } finally {
       setLoading(false)
+      setTimeout(() => setSuccess(false), 2000)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="newPassword">Nouveau mot de passe</Label>
-          <Input
-            id="newPassword"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Nouveau mot de passe"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <div className="space-y-1">
+          <h3 className="text-lg font-medium flex items-center gap-2">
+            <KeyRound className="h-5 w-5 text-muted-foreground" />
+            Sécurité
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Mettez à jour votre mot de passe pour sécuriser votre compte.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="newPassword"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Nouveau mot de passe</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      type="password"
+                      placeholder="Nouveau mot de passe"
+                      className="pl-10"
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <Lock className="h-4 w-4" />
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel>Confirmer le mot de passe</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      type="password"
+                      placeholder="Confirmer le mot de passe"
+                      className="pl-10"
+                    />
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      <Lock className="h-4 w-4" />
+                    </div>
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirmer le mot de passe"
-          />
-        </div>
-      </div>
-      <Button type="submit" disabled={loading}>
-        {loading ? "Mise à jour..." : "Mettre à jour le mot de passe"}
-      </Button>
-    </form>
+        
+        <Button 
+          type="submit" 
+          disabled={loading}
+          className="w-full sm:w-auto transition-all duration-300 relative"
+        >
+          {loading ? (
+            "Mise à jour..."
+          ) : success ? (
+            <>
+              <Check className="mr-2 h-4 w-4" /> Mot de passe mis à jour
+            </>
+          ) : (
+            "Mettre à jour le mot de passe"
+          )}
+        </Button>
+      </form>
+    </Form>
   )
 }
