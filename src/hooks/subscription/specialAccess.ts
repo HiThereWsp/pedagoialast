@@ -52,6 +52,57 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
         retryCount: 0
       };
       
+      // Send welcome email for new ambassadors if they haven't received one yet
+      try {
+        const { data: userSub } = await supabase
+          .from('user_subscriptions')
+          .select('type')
+          .eq('user_id', data.session?.user?.id)
+          .single();
+        
+        if (userSub?.type === 'ambassador') {
+          console.log("Ambassador detected, checking if welcome email needs to be sent");
+          
+          // Check if the user has "ambassador_welcome_sent" in metadata
+          // If not, trigger the welcome email
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          if (user && (!user.user_metadata?.ambassador_welcome_sent)) {
+            console.log("Sending ambassador welcome email...");
+            
+            try {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('first_name')
+                .eq('id', user.id)
+                .single();
+              
+              await supabase.functions.invoke('send-ambassador-welcome', {
+                body: {
+                  email: email,
+                  firstName: profileData?.first_name || user.user_metadata?.first_name || null,
+                  userId: user.id
+                }
+              });
+              
+              // Update user metadata to mark welcome email as sent
+              await supabase.auth.updateUser({
+                data: {
+                  ambassador_welcome_sent: true,
+                  ambassador_welcome_date: new Date().toISOString()
+                }
+              });
+              
+              console.log("Ambassador welcome email sent and user metadata updated");
+            } catch (err) {
+              console.error("Failed to send ambassador welcome email:", err);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error checking ambassador status:", err);
+      }
+      
       return betaStatus;
     }
   } catch (err) {

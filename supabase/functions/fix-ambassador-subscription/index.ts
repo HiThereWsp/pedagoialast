@@ -145,6 +145,38 @@ serve(async (req) => {
       console.error("Exception during event recording:", e);
     }
     
+    // 4. Envoyer l'email de bienvenue pour l'ambassadeur
+    try {
+      // Récupérer le prénom depuis le profil ou user metadata
+      let firstName = null;
+      try {
+        const { data: profileData } = await supabaseClient
+          .from('profiles')
+          .select('first_name')
+          .eq('id', user.id)
+          .single();
+          
+        firstName = profileData?.first_name || 
+                   user.user_metadata?.first_name || 
+                   user.user_metadata?.name?.split(' ')[0] || 
+                   null;
+      } catch (e) {
+        console.log('Impossible de récupérer le prénom:', e);
+      }
+      
+      await supabaseClient.functions.invoke('send-ambassador-welcome', {
+        body: {
+          email: email,
+          firstName: firstName,
+          userId: user.id,
+          manualSend: true // Forcer l'envoi même si déjà envoyé avant
+        }
+      });
+      console.log(`Email de bienvenue ambassadeur envoyé à: ${email}`);
+    } catch (emailError) {
+      console.error("Erreur lors de l'envoi de l'email de bienvenue:", emailError);
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: true, 

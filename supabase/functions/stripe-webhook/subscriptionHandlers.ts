@@ -1,3 +1,4 @@
+
 import { getSupabaseClient } from './utils.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
@@ -115,6 +116,20 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
     if (isAmbassadorProduct) {
       console.log('Ajout de l\'utilisateur au programme ambassadeur');
       
+      // Essayer de récupérer le prénom de l'utilisateur
+      let firstName = null;
+      try {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', userId)
+          .single();
+          
+        firstName = profileData?.first_name || null;
+      } catch (e) {
+        console.log('Impossible de récupérer le prénom de l\'utilisateur:', e);
+      }
+      
       const { error: ambassadorError } = await supabase
         .from('ambassador_program')
         .upsert({
@@ -133,6 +148,20 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
         // On continue malgré l'erreur pour ne pas bloquer l'activation de l'abonnement
       } else {
         console.log('Utilisateur ajouté avec succès au programme ambassadeur');
+        
+        // Envoyer l'email de bienvenue pour les ambassadeurs
+        try {
+          await supabase.functions.invoke('send-ambassador-welcome', {
+            body: { 
+              email: customerEmail,
+              firstName: firstName || customer.name?.split(' ')[0] || null,
+              userId: userId
+            }
+          });
+          console.log(`Email de bienvenue ambassadeur envoyé à: ${customerEmail}`);
+        } catch (emailError) {
+          console.error('Erreur lors de l\'envoi de l\'email de bienvenue ambassadeur:', emailError);
+        }
       }
     }
     
