@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
@@ -145,7 +144,41 @@ serve(async (req) => {
       console.error("Exception during event recording:", e);
     }
     
-    // 4. Envoyer l'email de bienvenue pour l'ambassadeur
+    // 4. Ajouter l'ambassadeur à la liste Brevo
+    try {
+      console.log(`Adding ambassador to Brevo list (ID 10): ${email}`);
+      
+      // Récupérer le prénom depuis le profil ou user metadata
+      let firstName = null;
+      try {
+        const { data: profileData } = await supabaseClient
+          .from('profiles')
+          .select('first_name')
+          .eq('id', user.id)
+          .single();
+          
+        firstName = profileData?.first_name || 
+                   user.user_metadata?.first_name || 
+                   user.user_metadata?.name?.split(' ')[0] || 
+                   null;
+      } catch (e) {
+        console.log('Impossible de récupérer le prénom:', e);
+      }
+      
+      await supabaseClient.functions.invoke('create-brevo-contact', {
+        body: {
+          email: email,
+          contactName: firstName || email.split('@')[0] || 'Ambassadeur',
+          userType: "ambassador",
+          source: "manual_fix"
+        }
+      });
+      console.log(`Ambassador contact added to Brevo: ${email}`);
+    } catch (brevoError) {
+      console.error("Error adding contact to Brevo:", brevoError);
+    }
+    
+    // 5. Envoyer l'email de bienvenue pour l'ambassadeur
     try {
       // Récupérer le prénom depuis le profil ou user metadata
       let firstName = null;

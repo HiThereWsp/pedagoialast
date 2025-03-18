@@ -6,7 +6,8 @@ import { corsHeaders } from '../_shared/cors.ts';
 const BREVO_LISTS = {
   BETA_USERS: 7,      // Liste existante des utilisateurs beta
   FREE_USERS: 8,      // Nouvelle liste pour les utilisateurs inscrits non payants
-  PREMIUM_USERS: 9    // Nouvelle liste pour les utilisateurs payants
+  PREMIUM_USERS: 9,   // Nouvelle liste pour les utilisateurs payants
+  AMBASSADORS: 10     // Nouvelle liste pour les ambassadeurs
 };
 
 Deno.serve(async (req) => {
@@ -42,7 +43,7 @@ Deno.serve(async (req) => {
             taille, 
             phone, 
             source = "signup",
-            userType = "free" // Peut être 'free', 'premium', 'beta', ou 'school'
+            userType = "free" // Peut être 'free', 'premium', 'beta', 'ambassador' ou 'school'
         } = await req.json();
         
         if (!email) {
@@ -63,6 +64,9 @@ Deno.serve(async (req) => {
                 break;
             case 'premium':
                 listIds = [BREVO_LISTS.PREMIUM_USERS];
+                break;
+            case 'ambassador':
+                listIds = [BREVO_LISTS.AMBASSADORS];
                 break;
             case 'school':
                 // Pour les établissements scolaires, on peut les mettre dans une liste spécifique
@@ -94,7 +98,7 @@ Deno.serve(async (req) => {
             attributes = {
                 PRENOM: contactName || "Utilisateur",
                 EMAIL: email,
-                SOURCE: "Inscription site web",
+                SOURCE: source || "Inscription site web",
                 TYPE_UTILISATEUR: userType // Stocker le type d'utilisateur dans Brevo
             };
         }

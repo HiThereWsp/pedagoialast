@@ -4,7 +4,7 @@ import { SubscriptionStatus } from './types';
 import { shouldSendAmbassadorWelcome, sendAmbassadorWelcomeEmail } from './ambassador-welcome';
 
 /**
- * Process ambassador welcome email if needed
+ * Process ambassador welcome email if needed and ensure Brevo synchronization
  */
 export const processAmbassadorWelcome = async (userId: string, email: string): Promise<void> => {
   if (!userId || !email) return;
@@ -15,6 +15,33 @@ export const processAmbassadorWelcome = async (userId: string, email: string): P
     if (isAmbassador) {
       console.log(`Ambassador subscription confirmed for user: ${userId}`);
       
+      // First, ensure the contact is added to the Brevo ambassador list
+      try {
+        console.log(`Adding ambassador to Brevo list: ${email}`);
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', userId)
+          .single();
+          
+        const firstName = profileData?.first_name || null;
+        
+        // Add to Brevo list
+        await supabase.functions.invoke('create-brevo-contact', {
+          body: {
+            email: email,
+            contactName: firstName || email.split('@')[0],
+            userType: "ambassador",
+            source: "ambassador_confirmation"
+          }
+        });
+        console.log(`Successfully added ambassador to Brevo list: ${email}`);
+      } catch (brevoErr) {
+        console.error("Error adding ambassador to Brevo list:", brevoErr);
+        // Continue with welcome email despite Brevo error
+      }
+      
+      // Then check if we need to send a welcome email
       const shouldSendEmail = await shouldSendAmbassadorWelcome(userId, email);
       
       if (shouldSendEmail) {

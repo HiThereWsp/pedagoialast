@@ -12,6 +12,23 @@ export const sendAmbassadorWelcomeEmail = async (
   console.log(`Sending welcome email to ambassador: ${email}, userId: ${userId}`);
   
   try {
+    // First, add the contact to the Brevo ambassador list
+    try {
+      await supabase.functions.invoke('create-brevo-contact', {
+        body: {
+          email: email,
+          contactName: firstName || email.split('@')[0],
+          userType: "ambassador",
+          source: "ambassador_welcome"
+        }
+      });
+      console.log(`Contact successfully added to Brevo ambassador list: ${email}`);
+    } catch (brevoErr) {
+      console.error("Failed to add contact to Brevo ambassador list:", brevoErr);
+      // Continue with welcome email despite Brevo error
+    }
+    
+    // Then send the welcome email
     const welcomeResponse = await supabase.functions.invoke('send-ambassador-welcome', {
       body: {
         email: email,
