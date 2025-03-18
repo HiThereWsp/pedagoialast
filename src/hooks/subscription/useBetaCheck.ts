@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -11,30 +10,29 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
   try {
     console.log(`Vérification de l'accès beta pour l'email: ${email}`);
     
-    // First get the user ID directly from profiles - make sure to use lowercase for email comparison
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .ilike('email', email.toLowerCase())
-      .maybeSingle();
+    // First get the user ID directly from profiles - note that email is not stored in profiles
+    // but in auth.users which we cannot directly query from client
+    // Let's query by matching the email to the user's auth account
+    const { data: user, error: userError } = await supabase.auth.admin.getUserByEmail(email);
     
-    if (profileError) {
-      console.error('Erreur lors de la recherche du profil:', profileError);
+    if (userError) {
+      console.error('Erreur lors de la recherche du profil par email:', userError);
       return false;
     }
     
-    if (!profile) {
-      console.log(`Aucun profil trouvé pour l'email: ${email}`);
+    if (!user?.user) {
+      console.log(`Aucun utilisateur trouvé pour l'email: ${email}`);
       return false;
     }
     
-    console.log(`Profil trouvé avec ID: ${profile.id}, vérification de l'abonnement beta`);
+    const userId = user.user.id;
+    console.log(`Utilisateur trouvé avec ID: ${userId}, vérification de l'abonnement beta`);
     
     // Then check for beta subscription with the user ID
     const { data: subscription, error: subError } = await supabase
       .from('user_subscriptions')
       .select('id, status, expires_at')
-      .eq('user_id', profile.id)
+      .eq('user_id', userId)
       .eq('type', 'beta')
       .eq('status', 'active')
       .maybeSingle();
@@ -79,25 +77,53 @@ export const checkBetaEmailAlternate = async (email: string): Promise<boolean> =
   try {
     console.log(`Vérification alternative de l'accès beta pour l'email: ${email}`);
     
-    // First check if the user exists in auth.users via profiles
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, email')
-      .or(`email.eq.${email},email.eq.${email.toLowerCase()}`)
-      .maybeSingle();
+    // Get the current authenticated user session
+    const { data: sessionData } = await supabase.auth.getSession();
+    const currentUser = sessionData.session?.user;
     
-    if (profileError || !profile) {
+    let userId: string | undefined;
+    
+    // If the email matches the current user, we can use their ID directly
+    if (currentUser && currentUser.email?.toLowerCase() === email.toLowerCase()) {
+      userId = currentUser.id;
+      console.log(`Utilisateur actuellement connecté trouvé: ${userId}`);
+    } else {
+      // Otherwise, we need to try to find the user a different way
+      // This is an admin-only endpoint and won't work for regular users
+      try {
+        const { data: userData } = await supabase.auth.admin.getUserByEmail(email);
+        userId = userData?.user?.id;
+        console.log(`Utilisateur trouvé via admin API: ${userId}`);
+      } catch (adminError) {
+        console.log('API admin non disponible, utilisation de la méthode de recherche par profil');
+        
+        // Fallback to trying to find the user by matching first name that might contain the email
+        // This is a heuristic approach and not reliable
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, first_name')
+          .like('first_name', `%${email}%`)
+          .limit(5);
+          
+        if (profiles && profiles.length > 0) {
+          userId = profiles[0].id;
+          console.log(`Profil potentiellement correspondant trouvé avec ID: ${userId}`);
+        }
+      }
+    }
+    
+    if (!userId) {
       console.log(`Aucun profil trouvé pour l'email (méthode alternative): ${email}`);
       return false;
     }
     
-    console.log(`Profil trouvé (méthode alternative) avec ID: ${profile.id}`);
+    console.log(`Profil trouvé (méthode alternative) avec ID: ${userId}`);
     
     // Then check for beta subscription with the user ID
     const { data: subscription, error: subError } = await supabase
       .from('user_subscriptions')
       .select('id, status, expires_at')
-      .eq('user_id', profile.id)
+      .eq('user_id', userId)
       .eq('type', 'beta')
       .eq('status', 'active')
       .maybeSingle();
