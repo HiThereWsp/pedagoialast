@@ -1,11 +1,9 @@
-
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { SubscriptionRoute } from './SubscriptionRoute'
 import ErrorBoundary from '@/components/ErrorBoundary'
 
 // Import pages from the correct paths
-import Landing from '@/pages/Landing'
 import Login from '@/pages/Login'
 import SignupPage from '@/pages/SignupPage'
 import PricingPage from '@/pages/PricingPage'
@@ -34,8 +32,7 @@ function AppRoutes() {
         <Route path="/legal" element={<Legal />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
-        <Route path="/" element={<Landing />} />
-        <Route path="/bienvenue" element={<Bienvenue />} />
+        <Route path="/" element={<Bienvenue />} />
 
         {/* Routes protégées - avec vérification d'abonnement */}
         {/* Adjust the Generator routes */}
