@@ -14,10 +14,20 @@ export const logSubscriptionError = async (errorType: string, details: any) => {
     const { data: { session } } = await supabase.auth.getSession();
     const userId = session?.user?.id;
     
-    await supabase.functions.invoke('log-subscription-error', {
-      body: { errorType, details, userId: userId || 'anonymous' }
-    }).catch(err => console.error('Failed to log error:', err));
+    // Log to console first to ensure we have some trace
+    console.error(`Subscription error for user ${userId || 'anonymous'}:`, {
+      errorType,
+      details,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Only try to invoke the function if we have a userId
+    if (userId) {
+      await supabase.functions.invoke('log-subscription-error', {
+        body: { errorType, details, userId }
+      }).catch(err => console.error('Failed to log error to function:', err));
+    }
   } catch (err) {
-    console.error('Error logging:', err);
+    console.error('Error during error logging:', err);
   }
 };
