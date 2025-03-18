@@ -70,6 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Pages d'information
       '/contact', 
       '/pricing',
+      '/guide',
       
       // Pages légales
       '/terms',
