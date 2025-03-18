@@ -43,7 +43,8 @@ Deno.serve(async (req) => {
             taille, 
             phone, 
             source = "signup",
-            userType = "free" // Peut être 'free', 'premium', 'beta', 'ambassador' ou 'school'
+            userType = "free", // Peut être 'free', 'premium', 'beta', 'ambassador' ou 'school'
+            userId = null // Nouvel attribut pour stocker l'ID de l'utilisateur
         } = await req.json();
         
         if (!email) {
@@ -53,7 +54,7 @@ Deno.serve(async (req) => {
             });
         }
         
-        console.log(`Creating/updating Brevo contact for: ${contactName}, ${email}, type: ${userType}, from ${source}`);
+        console.log(`Creating/updating Brevo contact for: ${contactName}, ${email}, type: ${userType}, from ${source}, userId: ${userId || 'none'}`);
         
         // Déterminer les listes appropriées en fonction du type d'utilisateur
         let listIds = [];
@@ -93,6 +94,10 @@ Deno.serve(async (req) => {
                 TYPE_DEMANDE: "Établissement scolaire",
                 TYPE_UTILISATEUR: "school"
             };
+            
+            if (userId) {
+                attributes.UUID = userId;
+            }
         } else {
             // Pour les inscriptions régulières
             attributes = {
@@ -101,7 +106,14 @@ Deno.serve(async (req) => {
                 SOURCE: source || "Inscription site web",
                 TYPE_UTILISATEUR: userType // Stocker le type d'utilisateur dans Brevo
             };
+            
+            if (userId) {
+                attributes.UUID = userId;
+            }
         }
+        
+        // Log the request details
+        console.log(`Adding contact to Brevo lists: ${listIds.join(', ')} with attributes:`, attributes);
         
         // Create/Update Brevo contact
         const response = await fetch("https://api.brevo.com/v3/contacts", {
