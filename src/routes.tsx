@@ -1,22 +1,23 @@
+
 import { createBrowserRouter } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
+import Landing from "./pages/Landing";
 import PricingPage from "./pages/PricingPage";
-import LoginPage from "./pages/LoginPage";
+import Login from "./pages/Login";
 import SignupPage from "./pages/SignupPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import ConfirmEmailPage from "./pages/ConfirmEmailPage";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import ConfirmEmail from "./pages/ConfirmEmail";
 import ContactPage from "./pages/ContactPage";
-import TermsPage from "./pages/TermsPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import LegalPage from "./pages/LegalPage";
-import DashboardPage from "./pages/DashboardPage";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Legal from "./pages/Legal";
+import TableauDeBord from "./pages/TableauDeBord";
 import ExercisePage from "./pages/ExercisePage";
 import LessonPlanPage from "./pages/LessonPlanPage";
 import CorrespondencePage from "./pages/CorrespondencePage";
 import ImageGenerationPage from "./pages/ImageGenerationPage";
 import BugReportPage from "./pages/BugReportPage";
-import WelcomePage from "./pages/WelcomePage";
+import Bienvenue from "./pages/Bienvenue";
 
 // Import the new admin page
 import BrevoSyncPage from "./pages/admin/BrevoSyncPage";
@@ -24,11 +25,11 @@ import BrevoSyncPage from "./pages/admin/BrevoSyncPage";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <LandingPage />,
+    element: <Landing />,
   },
   {
     path: "/bienvenue",
-    element: <WelcomePage />,
+    element: <Bienvenue />,
   },
   {
     path: "/pricing",
@@ -36,7 +37,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/login",
-    element: <LoginPage />,
+    element: <Login />,
   },
   {
     path: "/signup",
@@ -44,15 +45,15 @@ const router = createBrowserRouter([
   },
   {
     path: "/forgot-password",
-    element: <ForgotPasswordPage />,
+    element: <ForgotPassword />,
   },
   {
     path: "/reset-password",
-    element: <ResetPasswordPage />,
+    element: <ResetPassword />,
   },
   {
     path: "/confirm-email",
-    element: <ConfirmEmailPage />,
+    element: <ConfirmEmail />,
   },
   {
     path: "/contact",
@@ -60,19 +61,19 @@ const router = createBrowserRouter([
   },
   {
     path: "/terms",
-    element: <TermsPage />,
+    element: <Terms />,
   },
   {
     path: "/privacy",
-    element: <PrivacyPage />,
+    element: <Privacy />,
   },
   {
     path: "/legal",
-    element: <LegalPage />,
+    element: <Legal />,
   },
   {
     path: "/dashboard",
-    element: <DashboardPage />,
+    element: <TableauDeBord />,
   },
   {
     path: "/exercise",
