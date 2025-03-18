@@ -55,6 +55,18 @@ export async function checkBetaAccess(
     };
   }
   
+  // Special bypass for specific test email
+  if (user.email === 'moienseignant3.0@gmail.com') {
+    console.log("Special test email detected, granting beta access");
+    return {
+      access: true,
+      type: 'beta',
+      expires_at: null,
+      beta_user: true,
+      special_handling: true
+    };
+  }
+  
   console.log("No beta access found for", user.email);
   return null;
 }

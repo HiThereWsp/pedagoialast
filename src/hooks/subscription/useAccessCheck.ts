@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { logSubscriptionError } from './useErrorLogging';
 import { cacheSubscriptionStatus } from './useSubscriptionCache';
 import { checkSpecialEmails } from './specialAccess';
-import { withTimeout } from './accessUtils';
+import { withTimeout, hasAdminAccess } from './accessUtils';
 
 /**
  * Check user access via check-user-access function with prioritization
@@ -28,6 +28,27 @@ export const checkUserAccess = async (
       };
       setStatus(devStatus);
       cacheSubscriptionStatus(devStatus);
+      return true;
+    }
+    
+    // Get current session
+    const { data: sessionData } = await supabase.auth.getSession();
+    const email = sessionData.session?.user?.email;
+    
+    // Override for special admin accounts
+    if (email && hasAdminAccess(email)) {
+      console.log(`Admin access override for ${email}`);
+      const adminStatus = {
+        isActive: true,
+        type: 'admin',
+        expiresAt: null,
+        isLoading: false,
+        error: null,
+        retryCount: 0,
+        special_handling: true
+      };
+      setStatus(adminStatus);
+      cacheSubscriptionStatus(adminStatus);
       return true;
     }
     
