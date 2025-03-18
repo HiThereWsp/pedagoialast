@@ -7,7 +7,7 @@ import { isSpecialBetaEmail, isSpecialBetaDomain } from './email-matchers';
 import { processAmbassadorWelcome } from './ambassador-check';
 
 /**
- * Check special user emails for immediate access
+ * Check special user emails for access with appropriate priority
  * @returns {Promise<SubscriptionStatus | null>} Special status or null
  */
 export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> => {
@@ -18,21 +18,43 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     
     if (!email) return null;
     
+    // Check if user has paid or trial subscription first
+    // If they do, don't apply beta or ambassador status
+    if (userId) {
+      const { data: userSub } = await supabase
+        .from('user_subscriptions')
+        .select('type, status')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+        .in('type', ['paid', 'trial'])
+        .maybeSingle();
+        
+      if (userSub) {
+        console.log(`User has active ${userSub.type} subscription, skipping special access checks`);
+        return null;
+      }
+    }
+    
+    // Check for ambassador status first (higher priority than beta)
+    if (userId) {
+      const isAmbassador = await checkAmbassadorSubscription(userId, email);
+      if (isAmbassador) {
+        console.log("Ambassador status detected, providing ambassador access:", email);
+        await processAmbassadorWelcome(userId, email);
+        return createAmbassadorStatus();
+      }
+    }
+    
+    // Then check for beta status
     // Check if user has a special beta email
     if (isSpecialBetaEmail(email)) {
-      console.log("Beta email detected, providing immediate access:", email);
+      console.log("Beta email detected, providing beta access:", email);
       return createBetaStatus();
     }
     
     // Check if user has a special beta domain
     if (isSpecialBetaDomain(email)) {
-      console.log("Beta domain detected, providing immediate access:", email);
-      
-      // Process ambassador welcome email if needed
-      if (userId) {
-        await processAmbassadorWelcome(userId, email);
-      }
-      
+      console.log("Beta domain detected, providing beta access:", email);
       return createBetaStatus();
     }
   } catch (err) {
@@ -40,6 +62,27 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
   }
   
   return null;
+};
+
+/**
+ * Check if a user has ambassador status in user_subscriptions
+ */
+export const checkAmbassadorSubscription = async (userId: string, email: string): Promise<boolean> => {
+  try {
+    console.log(`Checking ambassador subscription for user: ${userId}, email: ${email}`);
+    const { data: userSub } = await supabase
+      .from('user_subscriptions')
+      .select('type')
+      .eq('user_id', userId)
+      .eq('type', 'ambassador')
+      .eq('status', 'active')
+      .single();
+    
+    return !!userSub;
+  } catch (err) {
+    console.error("Error checking ambassador subscription:", err);
+    return false;
+  }
 };
 
 /**
@@ -53,5 +96,20 @@ function createBetaStatus(): SubscriptionStatus {
     isLoading: false,
     error: null,
     retryCount: 0
+  };
+}
+
+/**
+ * Create an ambassador status object
+ */
+function createAmbassadorStatus(): SubscriptionStatus {
+  return {
+    isActive: true,
+    type: 'ambassador',
+    expiresAt: null,
+    isLoading: false,
+    error: null,
+    retryCount: 0,
+    special_handling: true
   };
 }

@@ -9,7 +9,7 @@ const betaEmails = [
   'andyguitteaud@gmail.com',
 ];
 
-// Beta domains
+// Beta domains - only used if user doesn't have a paid or trial subscription
 const betaDomains = ['gmail.com', 'pedagogia.fr', 'gmail.fr', 'outlook.fr', 'outlook.com'];
 
 /**

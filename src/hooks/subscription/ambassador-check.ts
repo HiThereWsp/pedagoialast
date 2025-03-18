@@ -4,25 +4,6 @@ import { SubscriptionStatus } from './types';
 import { shouldSendAmbassadorWelcome, sendAmbassadorWelcomeEmail } from './ambassador-welcome';
 
 /**
- * Check if a user has ambassador status in user_subscriptions
- */
-export const checkAmbassadorSubscription = async (userId: string, email: string): Promise<boolean> => {
-  try {
-    console.log(`Checking ambassador subscription for user: ${userId}, email: ${email}`);
-    const { data: userSub } = await supabase
-      .from('user_subscriptions')
-      .select('type')
-      .eq('user_id', userId)
-      .single();
-    
-    return userSub?.type === 'ambassador';
-  } catch (err) {
-    console.error("Error checking ambassador subscription:", err);
-    return false;
-  }
-};
-
-/**
  * Process ambassador welcome email if needed
  */
 export const processAmbassadorWelcome = async (userId: string, email: string): Promise<void> => {
@@ -56,5 +37,40 @@ export const processAmbassadorWelcome = async (userId: string, email: string): P
     }
   } catch (err) {
     console.error("Error processing ambassador welcome:", err);
+  }
+};
+
+/**
+ * Check if a user has ambassador status in user_subscriptions
+ */
+export const checkAmbassadorSubscription = async (userId: string, email: string): Promise<boolean> => {
+  try {
+    console.log(`Checking ambassador subscription for user: ${userId}, email: ${email}`);
+    
+    // First check user_subscriptions table
+    const { data: userSub } = await supabase
+      .from('user_subscriptions')
+      .select('type')
+      .eq('user_id', userId)
+      .eq('type', 'ambassador')
+      .eq('status', 'active')
+      .single();
+      
+    if (userSub) {
+      return true;
+    }
+    
+    // Then check ambassador_program table
+    const { data: ambassador } = await supabase
+      .from('ambassador_program')
+      .select('status')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .single();
+      
+    return !!ambassador;
+  } catch (err) {
+    console.error("Error checking ambassador subscription:", err);
+    return false;
   }
 };
