@@ -18,3 +18,5 @@ export const SidebarToggle = ({ sidebarOpen, toggleSidebar }: SidebarToggleProps
     </button>
   );
 };
+
+export default SidebarToggle;
