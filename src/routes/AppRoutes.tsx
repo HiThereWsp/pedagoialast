@@ -9,7 +9,6 @@ import ConfirmEmail from '@/pages/ConfirmEmail';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import Bienvenue from '@/pages/Bienvenue';
 import ToolsLayout from '@/components/layout/ToolsLayout';
-import Guide from '@/pages/Guide';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
@@ -63,7 +62,7 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/pricing" element={<Pricing />} />
-        <Route path="/guide" element={<Guide />} />
+        {/* Route du guide temporairement supprimée */}
         <Route path="/legal" element={<Legal />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
