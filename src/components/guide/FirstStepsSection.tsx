@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Clock } from 'lucide-react';
+import { UserPlus, CreditCard, FileText, ArrowRight, Clock } from 'lucide-react';
 
 export function FirstStepsSection() {
   return (
@@ -9,38 +9,39 @@ export function FirstStepsSection() {
         Premiers pas avec PedagoIA
       </h2>
       
-      <h3 className="text-2xl font-semibold mt-12 mb-6 text-[#3d4852]">Création de votre compte enseignant</h3>
+      <p className="text-lg leading-relaxed text-gray-700 mb-8">Démarrer avec PedagoIA est simple et rapide. Suivez ces 3 étapes :</p>
       
-      <div className="bg-gray-50 rounded-xl p-6 text-center my-12 shadow-inner">
-        <p className="text-gray-500">[Vidéo/GIF montrant le processus d'inscription]</p>
-      </div>
-      
-      <p className="text-lg leading-relaxed text-gray-700 mb-8">PedagoIA est spécialement conçu pour les enseignants francophone, de la maternelle au lycée. Pour commencer :</p>
-      
-      <ol className="list-none space-y-6 mb-12 pl-0">
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">1</span>
-          <span className="text-lg">Rendez-vous sur <a href="https://pedagoia.fr" className="text-blue-600 hover:underline font-medium">PedagoIA.fr</a></span>
+      <ol className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex flex-col items-center text-center">
+          <div className="bg-purple-100 p-4 rounded-full mb-4">
+            <UserPlus className="h-8 w-8 text-purple-600" />
+          </div>
+          <h3 className="text-xl font-semibold mb-3 text-[#3d4852]">1. Créez un compte</h3>
+          <p className="text-gray-700">Inscrivez-vous gratuitement en quelques secondes avec votre email professionnel ou personnel</p>
+          <div className="mt-4 text-purple-600 flex items-center justify-center">
+            <ArrowRight className="animate-pulse" />
+          </div>
         </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">2</span>
-          <span className="text-lg">Cliquez sur "S'inscrire" en haut à droite</span>
+        
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex flex-col items-center text-center">
+          <div className="bg-purple-100 p-4 rounded-full mb-4">
+            <CreditCard className="h-8 w-8 text-purple-600" />
+          </div>
+          <h3 className="text-xl font-semibold mb-3 text-[#3d4852]">2. Choisissez votre plan</h3>
+          <p className="text-gray-700">Sélectionnez le forfait qui vous convient <strong className="text-purple-700">avec un essai gratuit</strong> sans engagement</p>
+          <div className="mt-4 text-purple-600 flex items-center justify-center">
+            <ArrowRight className="animate-pulse" />
+          </div>
         </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">3</span>
-          <span className="text-lg">Renseignez votre adresse email professionnelle ou personnelle</span>
-        </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">4</span>
-          <span className="text-lg">Créez un mot de passe sécurisé</span>
-        </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">5</span>
-          <span className="text-lg">Complétez votre profil en indiquant votre prénom, niveau d'enseignement et matières</span>
+        
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex flex-col items-center text-center">
+          <div className="bg-purple-100 p-4 rounded-full mb-4">
+            <FileText className="h-8 w-8 text-purple-600" />
+          </div>
+          <h3 className="text-xl font-semibold mb-3 text-[#3d4852]">3. Générez vos cours</h3>
+          <p className="text-gray-700">Accédez immédiatement à tous les outils et commencez à créer vos ressources pédagogiques</p>
         </li>
       </ol>
-      
-      <p className="text-lg leading-relaxed text-gray-700 mb-8">Une fois inscrit, vous accédez au tableau de bord personnalisé où tous vos outils sont accessibles en un clic.</p>
       
       <div className="relative overflow-hidden bg-white border-l-4 border-green-400 rounded-lg shadow-md p-6 my-12 hover:-translate-y-1 transition-all duration-300">
         <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
