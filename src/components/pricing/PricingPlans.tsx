@@ -65,12 +65,14 @@ export const PricingPlans = ({
   const handleLongTrialSubscription = async () => {
     if (!await checkAuth()) return;
     
-    // Tracking PostHog
+    // Tracking PostHog - traiter comme un plan premium pour le tracking
     pricingEvents.selectPlan('trial');
-    subscriptionEvents.subscriptionStarted('trial', 0.50);
     
-    // Tracking Facebook
-    facebookEvents.initiateCheckout('trial', 0.50);
+    // Utiliser monthly comme type pour la compatibilité avec les types existants
+    subscriptionEvents.subscriptionStarted('monthly' as 'monthly', 0.50);
+    
+    // Tracking Facebook - également utiliser monthly pour la compatibilité
+    facebookEvents.initiateCheckout('monthly' as 'monthly', 0.50);
     
     // Redirection vers Stripe avec l'essai de 200 jours
     handleTrialSubscription();

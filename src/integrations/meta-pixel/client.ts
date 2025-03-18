@@ -50,7 +50,7 @@ export const facebookEvents = {
   },
   
   // Initier le checkout - Pixel SUBSCRIBE
-  initiateCheckout: (plan: 'monthly' | 'yearly', price: number) => {
+  initiateCheckout: (plan: 'monthly' | 'yearly' | 'trial', price: number) => {
     event('InitiateCheckout', {
       content_name: `premium_${plan}`,
       value: price,
@@ -60,7 +60,7 @@ export const facebookEvents = {
   },
   
   // Succès d'abonnement - Pixel SUCCESS
-  subscriptionSuccess: (plan: 'monthly' | 'yearly', price: number, yearlyValue: number) => {
+  subscriptionSuccess: (plan: 'monthly' | 'yearly' | 'trial', price: number, yearlyValue: number) => {
     event('Subscribe', {
       content_name: `premium_${plan}`,
       content_category: 'subscription',
@@ -73,7 +73,7 @@ export const facebookEvents = {
   },
   
   // Échec d'abonnement - Pixel SUBSCRIBE
-  subscriptionFailed: (plan: 'monthly' | 'yearly', price: number, errorType: string) => {
+  subscriptionFailed: (plan: 'monthly' | 'yearly' | 'trial', price: number, errorType: string) => {
     event('Subscribe', {
       content_name: `premium_${plan}`,
       content_category: 'subscription',
@@ -86,7 +86,7 @@ export const facebookEvents = {
   },
   
   // Abandon du processus - Pixel SUBSCRIBE
-  checkoutCanceled: (plan: 'monthly' | 'yearly') => {
+  checkoutCanceled: (plan: 'monthly' | 'yearly' | 'trial') => {
     event('Subscribe', {
       content_name: `premium_${plan}`,
       content_category: 'subscription',
