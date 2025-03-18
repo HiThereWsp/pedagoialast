@@ -71,7 +71,7 @@ serve(async (req) => {
     console.log(`Found user with ID: ${user.id} for email: ${email}`);
     
     // Définir la date d'expiration pour l'ambassadeur (2 ans dans le futur)
-    const expiresAt = new Date('2025-08-28').toISOString();
+    const expiresAt = new Date(Date.now() + (2 * 365 * 24 * 60 * 60 * 1000)).toISOString();
     
     // 1. Mettre à jour l'abonnement dans user_subscriptions
     try {

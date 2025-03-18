@@ -15,44 +15,6 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     
     if (!email) return null;
     
-    // Special case for known ambassador
-    if (email === 'ag.tradeunion@gmail.com') {
-      console.log("Special ambassador email detected, providing immediate access:", email);
-      
-      const ambassadorStatus = {
-        isActive: true,
-        type: 'ambassador',
-        expiresAt: new Date('2025-08-28').toISOString(),
-        isLoading: false,
-        error: null,
-        retryCount: 0,
-        special_handling: true,
-        ambassador_email: email
-      };
-      
-      // Try to update database but don't block on it
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user && user.id) {
-          await supabase.from('user_subscriptions')
-            .upsert({
-              user_id: user.id,
-              type: 'ambassador',
-              status: 'active',
-              expires_at: new Date('2025-08-28').toISOString(),
-            }, {
-              onConflict: 'user_id'
-            });
-          console.log("Ambassador subscription data updated in database");
-        }
-      } catch (dbErr) {
-        console.error("Error updating ambassador subscription in database:", dbErr);
-        // Continue despite error
-      }
-      
-      return ambassadorStatus;
-    }
-    
     // Beta email list
     const betaEmails = [
       'andyguitteaud@gmail.co', 
