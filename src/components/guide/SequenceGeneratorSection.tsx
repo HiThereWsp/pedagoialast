@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Clock, Settings, FileText, Download, ArrowRight } from 'lucide-react';
 export function SequenceGeneratorSection() {
@@ -59,7 +60,7 @@ export function SequenceGeneratorSection() {
           <div className="space-y-2 text-left">
             <h4 className="text-xl font-semibold text-green-700">Temps économisé</h4>
             <p className="text-lg leading-relaxed text-gray-700">
-              Création d'une séquence complète en <strong className="text-green-800 text-xl">15 minutes</strong>, contre <span className="line-through text-gray-500">3 à 4 heures</span> habituellement.
+              Création d'une séquence complète en <strong className="text-green-800 text-xl">5 minutes</strong>, contre <span className="line-through text-gray-500">3 à 4 heures</span> habituellement.
             </p>
           </div>
         </div>
