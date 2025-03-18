@@ -4,8 +4,8 @@ import { Route } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { SubscriptionRoute } from "./SubscriptionRoute";
 
-// Protected Pages
-import Tableaudebord from "@/pages/Tableaudebord";
+// Protected Pages - Fixed import paths with correct capitalization
+import TableauDeBord from "@/pages/TableauDeBord";
 import Account from "@/pages/Account";
 import EditProfile from "@/pages/EditProfile";
 import Billing from "@/pages/Billing";
@@ -19,7 +19,7 @@ export const ProtectedRoutes = () => {
         element={
           <ProtectedRoute>
             <SubscriptionRoute>
-              <Tableaudebord />
+              <TableauDeBord />
             </SubscriptionRoute>
           </ProtectedRoute>
         }

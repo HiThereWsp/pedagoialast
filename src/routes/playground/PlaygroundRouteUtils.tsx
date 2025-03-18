@@ -15,20 +15,24 @@ export const generatePlaygroundRoutes = ({ startIndex, endIndex }: PlaygroundRou
   for (let i = startIndex; i <= endIndex; i++) {
     // For the base Playground (no version number)
     if (i === 1) {
-      const Playground = require("@/pages/Playground").default;
-      routes.push(
-        <Route
-          key={`playground`}
-          path={`/playground`}
-          element={
-            <ProtectedRoute>
-              <SubscriptionRoute>
-                <Playground />
-              </SubscriptionRoute>
-            </ProtectedRoute>
-          }
-        />
-      );
+      try {
+        const Playground = require("@/pages/Playground").default;
+        routes.push(
+          <Route
+            key={`playground`}
+            path={`/playground`}
+            element={
+              <ProtectedRoute>
+                <SubscriptionRoute>
+                  <Playground />
+                </SubscriptionRoute>
+              </ProtectedRoute>
+            }
+          />
+        );
+      } catch (e) {
+        console.warn(`Could not load Playground`);
+      }
       continue;
     }
 
