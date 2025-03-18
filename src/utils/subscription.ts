@@ -84,7 +84,7 @@ export const handleTrialSubscription = async () => {
   return handleSubscription('trial', true); // On utilise 'trial' comme base, mais avec isTrial=true
 }
 
-// Nouvelle fonction spécifique pour les ambassadeurs
+// Fonction spécifique pour les ambassadeurs
 export const handleAmbassadorSubscription = async () => {
   return handleSubscription('ambassador', false, true); // On utilise 'ambassador' comme base, avec isAmbassador=true
 }

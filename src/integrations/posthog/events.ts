@@ -1,4 +1,3 @@
-
 import { posthog } from './client'
 
 export const pricingEvents = {

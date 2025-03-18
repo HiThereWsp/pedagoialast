@@ -78,7 +78,8 @@ export const PricingPlans = ({
     handleTrialSubscription();
   };
   
-  // Nouvelle fonction pour gérer l'abonnement ambassadeur
+  // Note: La fonction handleAmbassadorPlan est conservée dans le code mais n'est plus exposée dans l'UI
+  // Elle reste disponible pour être appelée via d'autres moyens (lien direct, etc.)
   const handleAmbassadorPlan = async () => {
     if (!await checkAuth()) return;
     
@@ -104,11 +105,11 @@ export const PricingPlans = ({
       return planType === 'yearly' ? "Passer à l'annuel" : "Changer de formule";
     }
     
-    if (planType === 'ambassador') {
-      return "Devenir ambassadeur";
+    if (planType === 'trial') {
+      return "Essayer sans engagement";
     }
     
-    return planType === 'trial' ? "Essayer sans engagement" : "Démarrer l'essai gratuit";
+    return "Démarrer l'essai gratuit";
   };
 
   // Modification: Ne pas désactiver les boutons en mode dev pour des tests
@@ -189,24 +190,7 @@ export const PricingPlans = ({
           fullWidth={true}
         />
       </div>
-      <div className="md:col-span-3">
-        <PricingCard
-          title="Programme Ambassadeur"
-          price="Gratuit"
-          period="pour 200 jours"
-          badge="Réservé"
-          features={[
-            "Bénéficiez de tous les avantages du plan premium",
-            "Accédez à la communauté privée d'ambassadeurs",
-            "Participez à la co-construction de PedagoIA",
-            "Proposez vos idées de fonctionnalités en priorité"
-          ]}
-          ctaText={getButtonText('ambassador')}
-          onSubscribe={handleAmbassadorPlan}
-          disabled={isButtonDisabled('ambassador')}
-          fullWidth={true}
-        />
-      </div>
+      {/* La carte pour le plan Ambassadeur a été supprimée */}
     </div>
   );
 };
