@@ -3,7 +3,7 @@ import { PricingCard } from "@/components/pricing/PricingCard";
 import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
-import { handleSubscription } from "@/utils/subscription";
+import { handleSubscription, handleTrialSubscription } from "@/utils/subscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -61,6 +61,21 @@ export const PricingPlans = ({
     handleSubscription('yearly');
   };
 
+  // Fonction pour gérer l'abonnement d'essai de 200 jours
+  const handleLongTrialSubscription = async () => {
+    if (!await checkAuth()) return;
+    
+    // Tracking PostHog
+    pricingEvents.selectPlan('trial');
+    subscriptionEvents.subscriptionStarted('trial_200days', 0.50);
+    
+    // Tracking Facebook
+    facebookEvents.initiateCheckout('trial', 0.50);
+    
+    // Redirection vers Stripe avec l'essai de 200 jours
+    handleTrialSubscription();
+  };
+
   // Texte du bouton selon l'état de l'abonnement
   const getButtonText = (planType) => {
     if (isLoading) return "Chargement...";
@@ -73,7 +88,7 @@ export const PricingPlans = ({
       return planType === 'yearly' ? "Passer à l'annuel" : "Changer de formule";
     }
     
-    return "Démarrer l'essai gratuit";
+    return planType === 'trial' ? "Essayer sans engagement" : "Démarrer l'essai gratuit";
   };
 
   // Modification: Ne pas désactiver les boutons en mode dev pour des tests
@@ -89,6 +104,22 @@ export const PricingPlans = ({
 
   return (
     <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
+      <PricingCard
+        title="Essai 200 jours"
+        price="0,50€"
+        period="sans engagement"
+        badge="Exclusif"
+        features={[
+          "Essayez pendant 200 jours sans engagement",
+          "Accédez à l'assistant pédagogique via le chat sans limite",
+          "Utilisez plus de 10 outils pédagogiques",
+          "Sauvegardez tous vos supports de cours générés",
+          "Aucun moyen de paiement requis"
+        ]}
+        ctaText={getButtonText('trial')}
+        onSubscribe={handleLongTrialSubscription}
+        disabled={isButtonDisabled('trial')}
+      />
       <PricingCard
         title="Plan mensuel"
         price="11,90€"
@@ -120,18 +151,21 @@ export const PricingPlans = ({
         onSubscribe={handleYearlySubscription}
         disabled={isButtonDisabled('yearly')}
       />
-      <PricingCard
-        title="Établissement scolaire"
-        price="Sur mesure"
-        features={[
-          "Bénéficiez de tout ce qui est inclus dans le plan annuel",
-          "Créez des outils personnalisés pour votre établissement",
-          "Accédez au tableau de suivi pour la direction",
-          "Adaptez les outils à votre projet d'établissement"
-        ]}
-        ctaText="Prendre contact"
-        onSubscribe={onSchoolContactRequest}
-      />
+      <div className="md:col-span-3">
+        <PricingCard
+          title="Établissement scolaire"
+          price="Sur mesure"
+          features={[
+            "Bénéficiez de tout ce qui est inclus dans le plan annuel",
+            "Créez des outils personnalisés pour votre établissement",
+            "Accédez au tableau de suivi pour la direction",
+            "Adaptez les outils à votre projet d'établissement"
+          ]}
+          ctaText="Prendre contact"
+          onSubscribe={onSchoolContactRequest}
+          fullWidth
+        />
+      </div>
     </div>
   );
 };

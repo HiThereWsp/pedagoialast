@@ -5,7 +5,8 @@ import {
   Medal,
   BadgeCheck, 
   BugOff, 
-  Crown 
+  Crown,
+  Calendar 
 } from "lucide-react";
 
 export const getSubscriptionInfo = (type: string | null) => {
@@ -25,6 +26,14 @@ export const getSubscriptionInfo = (type: string | null) => {
         icon: <Sparkles className="h-8 w-8 text-purple-500" />,
         color: 'bg-gradient-to-br from-purple-400 to-purple-600',
         textClass: 'text-purple-600'
+      };
+    case 'trial_long':
+      return {
+        title: 'Essai 200 jours',
+        description: 'Vous bénéficiez d\'une période d\'essai étendue de 200 jours.',
+        icon: <Calendar className="h-8 w-8 text-indigo-500" />,
+        color: 'bg-gradient-to-br from-indigo-400 to-indigo-600',
+        textClass: 'text-indigo-600'
       };
     case 'beta':
       return {

@@ -10,7 +10,7 @@ export async function checkTrialAccess(
   try {
     const { data: trialSubscription, error: trialSubError } = await supabaseClient
       .from('user_subscriptions')
-      .select('status, type, expires_at, promo_code')
+      .select('status, type, expires_at, promo_code, is_long_trial, trial_end')
       .eq('user_id', user.id)
       .eq('status', 'active')
       .eq('type', 'trial')
@@ -25,26 +25,33 @@ export async function checkTrialAccess(
     if (trialSubscription) {
       console.log('Abonnement d\'essai trouvé pour', user.email, ':', trialSubscription);
       
+      // Use trial_end for long trials if available
+      const expiryDate = trialSubscription.trial_end 
+        ? new Date(trialSubscription.trial_end) 
+        : (trialSubscription.expires_at ? new Date(trialSubscription.expires_at) : null);
+      
       // Check if trial is expired
-      if (trialSubscription.expires_at) {
-        const expiryDate = new Date(trialSubscription.expires_at);
-        if (expiryDate < new Date()) {
-          console.log("Trial subscription expired at:", expiryDate, "for", user.email);
-          return { 
-            access: false, 
-            message: 'Période d\'essai expirée',
-            type: trialSubscription.type,
-            expires_at: trialSubscription.expires_at
-          };
-        }
+      if (expiryDate && expiryDate < new Date()) {
+        console.log("Trial subscription expired at:", expiryDate, "for", user.email);
+        return { 
+          access: false, 
+          message: 'Période d\'essai expirée',
+          type: trialSubscription.type,
+          expires_at: trialSubscription.trial_end || trialSubscription.expires_at,
+          is_long_trial: trialSubscription.is_long_trial || false
+        };
       }
       
-      console.log("Active trial subscription found, granting access to", user.email);
+      // Determine trial type for display purposes
+      const trialType = trialSubscription.is_long_trial ? 'trial_long' : 'trial';
+      
+      console.log(`Active ${trialSubscription.is_long_trial ? 'long ' : ''}trial subscription found, granting access to`, user.email);
       return { 
         access: true, 
-        type: trialSubscription.type,
-        expires_at: trialSubscription.expires_at,
-        promo_code: trialSubscription.promo_code
+        type: trialType,
+        expires_at: trialSubscription.trial_end || trialSubscription.expires_at,
+        promo_code: trialSubscription.promo_code,
+        is_long_trial: trialSubscription.is_long_trial || false
       };
     }
     

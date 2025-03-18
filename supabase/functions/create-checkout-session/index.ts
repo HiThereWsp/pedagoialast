@@ -19,12 +19,13 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, subscriptionType = 'monthly', productId, promoCode } = await req.json()
+    const { priceId, subscriptionType = 'monthly', productId, promoCode, isTrial = false } = await req.json()
     console.log('Received request with:', { 
       priceId, 
       subscriptionType, 
       productId,
       promoCode,
+      isTrial,
       headers: Object.fromEntries(req.headers.entries())
     })
     
@@ -65,7 +66,8 @@ serve(async (req) => {
       productId,
       userEmail: user.email,
       subscriptionType,
-      promoCode
+      promoCode,
+      isTrial
     })
 
     // Vérifier si le client existe déjà
@@ -133,10 +135,21 @@ serve(async (req) => {
         userId: user.id,
         subscriptionType,
         productId,
-        promoCode: promoCode || 'none'
+        promoCode: promoCode || 'none',
+        isTrial: isTrial ? 'true' : 'false'
       },
       // Autoriser les codes promo pré-définis dans Stripe
-      allow_promotion_codes: true
+      allow_promotion_codes: true,
+      // Pour l'offre de 200 jours d'essai gratuit
+      subscription_data: isTrial ? {
+        trial_period_days: 200,
+        metadata: {
+          is_long_trial: 'true',
+          trial_length: '200_days'
+        }
+      } : undefined,
+      // Ne pas collecter la méthode de paiement pendant la période d'essai
+      payment_method_collection: isTrial ? 'if_required' : 'always'
     };
 
     const session = await stripe.checkout.sessions.create(sessionParams);
@@ -148,8 +161,8 @@ serve(async (req) => {
         body: {
           email: user.email,
           contactName: user.user_metadata?.first_name || 'Utilisateur',
-          userType: "free", // Encore gratuit jusqu'à confirmation du paiement
-          source: "checkout_started"
+          userType: isTrial ? "trial" : "free", // Type spécifique pour les utilisateurs en période d'essai longue
+          source: isTrial ? "200day_trial_started" : "checkout_started"
         }
       });
       console.log('User prepared for premium list transfer in Brevo');
