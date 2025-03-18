@@ -10,6 +10,8 @@ export type SubscriptionStatus = {
   previousType?: string | null;
   forceReload?: boolean; // Add this flag to handle forced reloads
   cachedUntil?: number; // Add explicit cache expiration timestamp
+  special_handling?: boolean; // Add for ambassador accounts
+  ambassador_email?: string; // Add for ambassador email tracking
 };
 
 export const initialStatus: SubscriptionStatus = {

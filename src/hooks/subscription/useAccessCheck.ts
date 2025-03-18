@@ -256,12 +256,16 @@ export const checkUserAccess = async (
     console.error('Unexpected error during subscription check:', err);
     
     // Try special email handling as fallback for any error
-    const fallbackStatus = await checkSpecialEmails();
-    if (fallbackStatus) {
-      console.log("Using fallback special status after exception");
-      setStatus(fallbackStatus);
-      cacheSubscriptionStatus(fallbackStatus);
-      return true;
+    try {
+      const fallbackStatus = await checkSpecialEmails();
+      if (fallbackStatus) {
+        console.log("Using fallback special status after exception");
+        setStatus(fallbackStatus);
+        cacheSubscriptionStatus(fallbackStatus);
+        return true;
+      }
+    } catch (checkErr) {
+      console.error("Error checking special emails after exception:", checkErr);
     }
     
     const unexpectedErrorStatus = {
