@@ -18,6 +18,7 @@ import ImageGenerationPage from "./pages/ImageGenerationPage";
 import Bienvenue from "./pages/Bienvenue";
 import SavedContentPage from "./pages/SavedContentPage";
 import Settings from "./pages/Settings";
+import Guide from "./pages/Guide";
 
 // Import the new admin page
 import BrevoSyncPage from "./pages/admin/BrevoSyncPage";
@@ -94,6 +95,10 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: <Settings />,
+  },
+  {
+    path: "/guide",
+    element: <Guide />,
   },
   
   // Add the admin route for Brevo sync

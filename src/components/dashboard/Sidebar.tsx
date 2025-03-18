@@ -12,7 +12,8 @@ import {
   HelpCircle,
   LogOut,
   MessageCircle,
-  Mail
+  Mail,
+  BookOpen as BookGuide
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -141,6 +142,14 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
               label="Mes ressources" 
               path="/saved-content"
               onClick={() => navigate("/saved-content")}
+            />
+            
+            {/* Ajout du lien vers le guide */}
+            <SidebarButton 
+              icon={<BookGuide className="h-5 w-5" />} 
+              label="Guide d'utilisation" 
+              path="/guide"
+              onClick={() => navigate("/guide")}
             />
           </div>
           
