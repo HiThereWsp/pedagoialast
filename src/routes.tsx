@@ -18,6 +18,7 @@ import CorrespondencePage from "./pages/CorrespondencePage";
 import ImageGenerationPage from "./pages/ImageGenerationPage";
 import BugReportPage from "./pages/BugReportPage";
 import Bienvenue from "./pages/Bienvenue";
+import SavedContentPage from "./pages/SavedContentPage";
 
 // Import the new admin page
 import BrevoSyncPage from "./pages/admin/BrevoSyncPage";
@@ -94,6 +95,10 @@ const router = createBrowserRouter([
   {
     path: "/bug-report",
     element: <BugReportPage />,
+  },
+  {
+    path: "/saved-content",
+    element: <SavedContentPage />,
   },
   
   // Add the admin route for Brevo sync

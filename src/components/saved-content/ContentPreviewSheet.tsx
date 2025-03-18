@@ -21,11 +21,9 @@ export const ContentPreviewSheet = React.memo(({
   onOpenChange,
   onDelete
 }: ContentPreviewSheetProps) => {
+  // Always declare hooks at the top level, before any conditionals
   const [activeTab, setActiveTab] = useState('student');
   const { toast } = useToast();
-
-  // Protection supplémentaire contre les valeurs null
-  if (!content || !isOpen) return null;
 
   const handleCopy = useCallback(async () => {
     if (!content) return;
@@ -53,10 +51,10 @@ export const ContentPreviewSheet = React.memo(({
     setActiveTab(value);
   }, []);
 
-  const renderContent = useMemo(() => {
-    // Vérification de sécurité supplémentaire
-    if (!content) return null;
+  // Now we can have our conditional rendering after all hooks are defined
+  if (!content || !isOpen) return null;
 
+  const renderContent = () => {
     switch (content.type) {
       case 'Image':
         return (
@@ -108,7 +106,7 @@ export const ContentPreviewSheet = React.memo(({
         console.warn('Type de contenu non reconnu:', content.type);
         return null;
     }
-  }, [content, activeTab, handleTabChange]);
+  };
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
@@ -135,7 +133,7 @@ export const ContentPreviewSheet = React.memo(({
           </div>
         </SheetHeader>
 
-        {renderContent}
+        {renderContent()}
       </SheetContent>
     </Sheet>
   );
