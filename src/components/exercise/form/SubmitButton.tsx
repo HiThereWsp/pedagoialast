@@ -12,7 +12,7 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({ isLoading }) => {
   return (
     <Button 
       type="submit" 
-      className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 rounded-lg font-medium transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-lg flex items-center justify-center gap-2"
+      className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white py-3 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-2"
       disabled={isLoading}
     >
       {isLoading ? (
