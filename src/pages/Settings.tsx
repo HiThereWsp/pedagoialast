@@ -11,6 +11,8 @@ import { PasswordForm } from "@/components/settings/PasswordForm"
 import { SEO } from "@/components/SEO"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { User } from "lucide-react"
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
+import { DashboardWrapper } from "@/components/dashboard/DashboardWrapper"
 
 const Settings = () => {
   const navigate = useNavigate()
@@ -68,40 +70,42 @@ const Settings = () => {
         title="Paramètres | PedagoIA - Gérez votre compte"
         description="Personnalisez votre expérience PedagoIA en gérant vos paramètres de compte et vos préférences."
       />
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-md mx-auto space-y-6">
-          <BackButton />
+      <DashboardWrapper>
+        <div className="min-h-screen p-6">
+          <div className="max-w-md mx-auto space-y-6">
+            <BackButton />
 
-          <Card className="border-0 shadow-sm">
-            <CardHeader className="relative pb-0 space-y-2">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 bg-primary/5">
-                  <AvatarFallback className="text-primary text-sm">
-                    {firstName ? firstName.charAt(0).toUpperCase() : <User className="h-4 w-4" />}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-muted-foreground text-sm">
-                  {loading ? (
-                    <div className="h-5 w-32 bg-muted animate-pulse rounded"></div>
-                  ) : (
-                    <span>
-                      {firstName || "Votre Profil"}
-                    </span>
-                  )}
+            <Card className="shadow-sm border overflow-hidden relative">
+              <CardHeader className="flex items-center justify-center pb-2">
+                <div className="flex flex-col items-center space-y-2">
+                  <Avatar className="h-16 w-16 bg-primary/5">
+                    <AvatarFallback className="text-primary">
+                      <User className="h-8 w-8 text-muted-foreground" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-center">
+                    {loading ? (
+                      <div className="h-5 w-32 bg-muted animate-pulse rounded"></div>
+                    ) : (
+                      <span className="text-lg font-medium text-muted-foreground">
+                        {firstName || "Votre Profil"}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-6 pt-4">
-              <ProfileForm initialFirstName={firstName} onUpdate={setFirstName} />
+              </CardHeader>
               
-              <Separator className="my-6" />
-              
-              <PasswordForm />
-            </CardContent>
-          </Card>
+              <CardContent className="space-y-6 pt-4">
+                <ProfileForm initialFirstName={firstName} onUpdate={setFirstName} />
+                
+                <Separator className="my-6" />
+                
+                <PasswordForm />
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </DashboardWrapper>
     </>
   )
 }
