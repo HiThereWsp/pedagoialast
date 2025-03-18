@@ -9,7 +9,7 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
   if (!email) return false;
   
   try {
-    // Get user by email from profiles table
+    // Get user by email from profiles table - using explicit type annotation to help TypeScript
     const { data: userData, error: userError } = await supabase
       .from('profiles')
       .select('id')
@@ -21,7 +21,7 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
       return false;
     }
     
-    // Vérifier si l'utilisateur a un abonnement beta actif
+    // Vérifier si l'utilisateur a un abonnement beta actif - using explicit type annotation
     const { data, error } = await supabase
       .from('user_subscriptions')
       .select('id')
