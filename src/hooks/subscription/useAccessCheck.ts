@@ -146,23 +146,6 @@ export const checkUserAccess = async (
       return !!data.access;
     }
     
-    // Gestion spéciale pour l'essai long de 200 jours
-    if (data.type === 'trial_long' || (data.type === 'trial' && data.is_long_trial)) {
-      console.log("Long trial user detected");
-      const longTrialStatus = {
-        isActive: !!data.access,
-        type: 'trial_long',
-        expiresAt: data.expires_at || null,
-        isLoading: false,
-        error: null,
-        retryCount: 0
-      };
-      
-      setStatus(longTrialStatus);
-      cacheSubscriptionStatus(longTrialStatus);
-      return !!data.access;
-    }
-    
     // Valid subscription status
     const validStatus = {
       isActive: !!data.access,

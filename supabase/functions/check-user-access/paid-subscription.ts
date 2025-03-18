@@ -10,7 +10,7 @@ export async function checkPaidAccess(
   try {
     const { data: paidSubscription, error: paidSubError } = await supabaseClient
       .from('user_subscriptions')
-      .select('status, type, expires_at, promo_code, is_long_trial, trial_end')
+      .select('status, type, expires_at, promo_code')
       .eq('user_id', user.id)
       .eq('status', 'active')
       .eq('type', 'paid')

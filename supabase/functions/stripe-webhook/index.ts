@@ -11,8 +11,7 @@ import {
   handleSubscriptionCreated,
   handleSubscriptionUpdated,
   handleSubscriptionDeleted,
-  handleCheckoutCompleted,
-  handleTrialWillEnd
+  handleCheckoutCompleted
 } from './subscriptionHandlers.ts';
 
 serve(async (req) => {
@@ -76,9 +75,6 @@ serve(async (req) => {
         break;
       case 'customer.subscription.deleted':
         await handleSubscriptionDeleted(event.data.object);
-        break;
-      case 'customer.subscription.trial_will_end':
-        await handleTrialWillEnd(event.data.object);
         break;
       case 'checkout.session.completed':
         await handleCheckoutCompleted(event.data.object, stripe);

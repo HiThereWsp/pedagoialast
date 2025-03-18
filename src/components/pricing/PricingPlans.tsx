@@ -3,7 +3,7 @@ import { PricingCard } from "@/components/pricing/PricingCard";
 import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
-import { handleSubscription, handleTrialSubscription, handleAmbassadorSubscription } from "@/utils/subscription";
+import { handleSubscription } from "@/utils/subscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -61,38 +61,6 @@ export const PricingPlans = ({
     handleSubscription('yearly');
   };
 
-  // Fonction pour gérer l'abonnement d'essai de 200 jours
-  const handleLongTrialSubscription = async () => {
-    if (!await checkAuth()) return;
-    
-    // Tracking PostHog - traiter comme un plan premium pour le tracking
-    pricingEvents.selectPlan('trial');
-    
-    // Utiliser monthly comme type pour la compatibilité avec les types existants
-    subscriptionEvents.subscriptionStarted('monthly' as 'monthly', 0.50);
-    
-    // Tracking Facebook - également utiliser monthly pour la compatibilité
-    facebookEvents.initiateCheckout('monthly' as 'monthly', 0.50);
-    
-    // Redirection vers Stripe avec l'essai de 200 jours
-    handleTrialSubscription();
-  };
-  
-  // Note: La fonction handleAmbassadorPlan est conservée dans le code mais n'est plus exposée dans l'UI
-  // Elle reste disponible pour être appelée via d'autres moyens (lien direct, etc.)
-  const handleAmbassadorPlan = async () => {
-    if (!await checkAuth()) return;
-    
-    // Tracking PostHog
-    pricingEvents.selectPlan('ambassador');
-    
-    // Tracking minimal pour les ambassadeurs
-    subscriptionEvents.subscriptionStarted('ambassador' as any, 0);
-    
-    // Redirection vers Stripe pour l'abonnement ambassadeur
-    handleAmbassadorSubscription();
-  };
-
   // Texte du bouton selon l'état de l'abonnement
   const getButtonText = (planType) => {
     if (isLoading) return "Chargement...";
@@ -103,10 +71,6 @@ export const PricingPlans = ({
         return "Votre abonnement actuel";
       }
       return planType === 'yearly' ? "Passer à l'annuel" : "Changer de formule";
-    }
-    
-    if (planType === 'trial') {
-      return "Essayer sans engagement";
     }
     
     return "Démarrer l'essai gratuit";
@@ -126,23 +90,6 @@ export const PricingPlans = ({
   return (
     <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
       <PricingCard
-        title="Essai 200 jours"
-        price="0,50€"
-        period="sans engagement"
-        badge="Exclusif"
-        features={[
-          "Essayez pendant 200 jours sans engagement",
-          "Accédez à l'assistant pédagogique via le chat sans limite",
-          "Utilisez plus de 10 outils pédagogiques",
-          "Sauvegardez tous vos supports de cours générés",
-          "Aucun moyen de paiement requis"
-        ]}
-        ctaText={getButtonText('trial')}
-        onSubscribe={handleLongTrialSubscription}
-        disabled={isButtonDisabled('trial')}
-        fullWidth={false}
-      />
-      <PricingCard
         title="Plan mensuel"
         price="11,90€"
         period="/mois"
@@ -156,7 +103,6 @@ export const PricingPlans = ({
         ctaText={getButtonText('monthly')}
         onSubscribe={handleMonthlySubscription}
         disabled={isButtonDisabled('monthly')}
-        fullWidth={false}
       />
       <PricingCard
         title="Plan annuel"
@@ -173,24 +119,19 @@ export const PricingPlans = ({
         ctaText={getButtonText('yearly')}
         onSubscribe={handleYearlySubscription}
         disabled={isButtonDisabled('yearly')}
-        fullWidth={false}
       />
-      <div className="md:col-span-3">
-        <PricingCard
-          title="Établissement scolaire"
-          price="Sur mesure"
-          features={[
-            "Bénéficiez de tout ce qui est inclus dans le plan annuel",
-            "Créez des outils personnalisés pour votre établissement",
-            "Accédez au tableau de suivi pour la direction",
-            "Adaptez les outils à votre projet d'établissement"
-          ]}
-          ctaText="Prendre contact"
-          onSubscribe={onSchoolContactRequest}
-          fullWidth={true}
-        />
-      </div>
-      {/* La carte pour le plan Ambassadeur a été supprimée */}
+      <PricingCard
+        title="Établissement scolaire"
+        price="Sur mesure"
+        features={[
+          "Bénéficiez de tout ce qui est inclus dans le plan annuel",
+          "Créez des outils personnalisés pour votre établissement",
+          "Accédez au tableau de suivi pour la direction",
+          "Adaptez les outils à votre projet d'établissement"
+        ]}
+        ctaText="Prendre contact"
+        onSubscribe={onSchoolContactRequest}
+      />
     </div>
   );
 };

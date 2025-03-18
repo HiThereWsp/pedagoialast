@@ -7,8 +7,6 @@ export type SubscriptionStatus = {
   error: string | null;
   retryCount: number;
   timestamp?: number;
-  isLongTrial?: boolean;
-  trialEnd?: string | null;
 };
 
 export const initialStatus: SubscriptionStatus = {
@@ -17,9 +15,7 @@ export const initialStatus: SubscriptionStatus = {
   expiresAt: null,
   isLoading: true,
   error: null,
-  retryCount: 0,
-  isLongTrial: false,
-  trialEnd: null
+  retryCount: 0
 };
 
 // Constants for cache management

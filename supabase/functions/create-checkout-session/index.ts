@@ -19,14 +19,12 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, subscriptionType = 'monthly', productId, promoCode, isTrial = false, isAmbassador = false } = await req.json()
+    const { priceId, subscriptionType = 'monthly', productId, promoCode } = await req.json()
     console.log('Received request with:', { 
       priceId, 
       subscriptionType, 
       productId,
       promoCode,
-      isTrial,
-      isAmbassador,
       headers: Object.fromEntries(req.headers.entries())
     })
     
@@ -67,9 +65,7 @@ serve(async (req) => {
       productId,
       userEmail: user.email,
       subscriptionType,
-      promoCode,
-      isTrial,
-      isAmbassador
+      promoCode
     })
 
     // Vérifier si le client existe déjà
@@ -89,8 +85,7 @@ serve(async (req) => {
         metadata: {
           userId: user.id,
           subscriptionType,
-          productId,
-          isAmbassador: isAmbassador ? 'true' : 'false'
+          productId
         }
       })
       customerId = customer.id
@@ -101,8 +96,7 @@ serve(async (req) => {
         metadata: {
           userId: user.id,
           subscriptionType,
-          productId,
-          isAmbassador: isAmbassador ? 'true' : 'false'
+          productId
         }
       });
       console.log('Updated existing customer metadata');
@@ -123,8 +117,8 @@ serve(async (req) => {
       )
     }
 
-    // Configuration de base pour la session
-    const sessionConfig = {
+    // Créer la session de paiement
+    const sessionParams = {
       customer: customerId,
       line_items: [
         {
@@ -139,58 +133,26 @@ serve(async (req) => {
         userId: user.id,
         subscriptionType,
         productId,
-        promoCode: promoCode || 'none',
-        isTrial: isTrial ? 'true' : 'false',
-        isAmbassador: isAmbassador ? 'true' : 'false'
+        promoCode: promoCode || 'none'
       },
       // Autoriser les codes promo pré-définis dans Stripe
-      allow_promotion_codes: true,
-      payment_method_collection: 'if_required' // Par défaut ne pas demander de paiement
+      allow_promotion_codes: true
     };
 
-    // Pour l'offre de 200 jours d'essai gratuit
-    if (isTrial) {
-      sessionConfig.subscription_data = {
-        trial_period_days: 200,
-        metadata: {
-          is_long_trial: 'true',
-          trial_length: '200_days'
-        }
-      };
-    }
-    
-    // Pour l'offre ambassadeur (200 jours d'accès complet)
-    if (isAmbassador) {
-      sessionConfig.subscription_data = {
-        trial_period_days: 200,
-        metadata: {
-          is_ambassador: 'true',
-          ambassador_special: 'true'
-        }
-      };
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionConfig);
+    const session = await stripe.checkout.sessions.create(sessionParams);
     console.log('Checkout session created:', session.id)
 
     // Préparer l'utilisateur pour le transfert vers la liste premium une fois le paiement réussi
     try {
-      let userType = "free";
-      if (isAmbassador) {
-        userType = "ambassador";
-      } else if (isTrial) {
-        userType = "trial";
-      }
-      
       await supabaseClient.functions.invoke('create-brevo-contact', {
         body: {
           email: user.email,
           contactName: user.user_metadata?.first_name || 'Utilisateur',
-          userType: userType,
-          source: isAmbassador ? "ambassador_program" : (isTrial ? "200day_trial_started" : "checkout_started")
+          userType: "free", // Encore gratuit jusqu'à confirmation du paiement
+          source: "checkout_started"
         }
       });
-      console.log(`User prepared for ${userType} list transfer in Brevo`);
+      console.log('User prepared for premium list transfer in Brevo');
     } catch (brevoError) {
       console.error('Error preparing user in Brevo:', brevoError);
       // Continue despite Brevo error

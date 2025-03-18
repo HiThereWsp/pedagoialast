@@ -1,3 +1,4 @@
+
 declare global {
   interface Window {
     fbq: any;
@@ -49,7 +50,7 @@ export const facebookEvents = {
   },
   
   // Initier le checkout - Pixel SUBSCRIBE
-  initiateCheckout: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador', price: number) => {
+  initiateCheckout: (plan: 'monthly' | 'yearly', price: number) => {
     event('InitiateCheckout', {
       content_name: `premium_${plan}`,
       value: price,
@@ -59,7 +60,7 @@ export const facebookEvents = {
   },
   
   // Succès d'abonnement - Pixel SUCCESS
-  subscriptionSuccess: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador', price: number, yearlyValue: number) => {
+  subscriptionSuccess: (plan: 'monthly' | 'yearly', price: number, yearlyValue: number) => {
     event('Subscribe', {
       content_name: `premium_${plan}`,
       content_category: 'subscription',
@@ -72,7 +73,7 @@ export const facebookEvents = {
   },
   
   // Échec d'abonnement - Pixel SUBSCRIBE
-  subscriptionFailed: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador', price: number, errorType: string) => {
+  subscriptionFailed: (plan: 'monthly' | 'yearly', price: number, errorType: string) => {
     event('Subscribe', {
       content_name: `premium_${plan}`,
       content_category: 'subscription',
@@ -85,7 +86,7 @@ export const facebookEvents = {
   },
   
   // Abandon du processus - Pixel SUBSCRIBE
-  checkoutCanceled: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador') => {
+  checkoutCanceled: (plan: 'monthly' | 'yearly') => {
     event('Subscribe', {
       content_name: `premium_${plan}`,
       content_category: 'subscription',

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useSubscription } from "@/hooks/subscription";
+import { useSubscription } from "@/hooks/useSubscription";
 import { toast } from "sonner";
 import { SubscriptionLoading } from "./SubscriptionLoading";
 import { SubscriptionError } from "./SubscriptionError";

@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import PricingForm from "@/components/pricing/PricingForm";
-import { useSubscription } from "@/hooks/subscription";
+import { useSubscription } from "@/hooks/useSubscription";
 import { PricingHeader } from "@/components/pricing/PricingHeader";
 import { PricingPlans } from "@/components/pricing/PricingPlans";
 import { FeatureHighlights } from "@/components/pricing/FeatureHighlights";
