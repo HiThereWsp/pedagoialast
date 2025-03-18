@@ -1,10 +1,7 @@
-
 import React from 'react';
 import { Clock, FileText, User, ArrowRight } from 'lucide-react';
-
 export function DifferentiationSection() {
-  return (
-    <section id="differentiation" className="space-y-8">
+  return <section id="differentiation" className="space-y-8">
       <h2 className="text-3xl font-bold text-slate-800 border-b border-gray-100 pb-4">
         Faire votre différenciation pédagogique
       </h2>
@@ -28,7 +25,7 @@ export function DifferentiationSection() {
                 <span className="bg-purple-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold mr-3">1</span>
                 <h3 className="text-xl font-semibold mb-2 text-gray-800">Importez un exercice existant</h3>
               </div>
-              <p className="text-gray-700 mt-2">Utilisez un exercice créé avec PedagoIA ou copiez simplement un exercice existant</p>
+              <p className="text-gray-700 mt-2">Utilisez un exercice créé avec PedagoIA ou copiez simplement votre exercice</p>
             </div>
             <div className="ml-4 text-purple-600">
               <ArrowRight className="animate-pulse" />
@@ -46,7 +43,7 @@ export function DifferentiationSection() {
                 <span className="bg-purple-600 text-white w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold mr-3">2</span>
                 <h3 className="text-xl font-semibold mb-2 text-gray-800">Renseignez les spécificités de l'élève</h3>
               </div>
-              <p className="text-gray-700 mt-2">Décrivez les besoins particuliers, les difficultés ou points forts de l'élève et quelques précisions de contexte</p>
+              <p className="text-gray-700 mt-2">Décrivez les besoins particuliers, les difficultés et des précisions de contexte</p>
             </div>
             <div className="ml-4 text-purple-600">
               <ArrowRight className="animate-pulse" />
@@ -84,6 +81,5 @@ export function DifferentiationSection() {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 }
