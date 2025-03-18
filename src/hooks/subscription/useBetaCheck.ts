@@ -9,9 +9,9 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
   if (!email) return false;
   
   try {
-    // Rechercher un utilisateur par email
+    // Get user by email from profiles table instead of auth.users
     const { data: userData, error: userError } = await supabase
-      .from('auth.users')
+      .from('profiles')
       .select('id')
       .eq('email', email.toLowerCase())
       .maybeSingle();
