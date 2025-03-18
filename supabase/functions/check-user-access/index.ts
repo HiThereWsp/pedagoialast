@@ -6,7 +6,7 @@ import { checkPaidAccess } from "./paid-subscription.ts";
 import { checkTrialAccess } from "./trial-subscription.ts";
 import { authenticateUser, createResponse } from "./auth.ts";
 
-// Headers CORS explicites et complets
+// Explicit CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -14,7 +14,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400'
 };
 
-// Fonction pour vérifier le mode développement
+// Function to check development mode
 function checkDevelopmentMode(environment) {
   if (environment === 'development') {
     console.log("Development environment detected, granting access");
@@ -29,12 +29,12 @@ function checkDevelopmentMode(environment) {
   return null;
 }
 
-// Fonction pour vérifier le statut d'ambassadeur
+// Function to check ambassador status
 async function checkAmbassadorAccess(supabaseClient, user) {
   console.log("Checking ambassador status for user:", user.email);
   
   try {
-    // Vérifier dans la table ambassador_program
+    // Check in ambassador_program table
     const { data: ambassador, error: ambassadorError } = await supabaseClient
       .from('ambassador_program')
       .select('*')
@@ -49,7 +49,7 @@ async function checkAmbassadorAccess(supabaseClient, user) {
     if (ambassador) {
       console.log('Ambassador found for', user.email, ':', ambassador);
       
-      // Vérifier si l'accès ambassadeur est expiré
+      // Check if ambassador access is expired
       if (ambassador.expires_at) {
         const expiryDate = new Date(ambassador.expires_at);
         if (expiryDate < new Date()) {
@@ -71,7 +71,7 @@ async function checkAmbassadorAccess(supabaseClient, user) {
       };
     }
     
-    // Vérifier également dans user_subscriptions pour type=ambassador
+    // Also check in user_subscriptions for type=ambassador
     const { data: ambassadorSub, error: ambassadorSubError } = await supabaseClient
       .from('user_subscriptions')
       .select('*')
@@ -87,7 +87,7 @@ async function checkAmbassadorAccess(supabaseClient, user) {
     if (ambassadorSub) {
       console.log('Ambassador subscription found for', user.email, ':', ambassadorSub);
       
-      // Vérifier si l'abonnement ambassadeur est expiré
+      // Check if ambassador subscription is expired
       if (ambassadorSub.expires_at) {
         const expiryDate = new Date(ambassadorSub.expires_at);
         if (expiryDate < new Date()) {
@@ -116,9 +116,9 @@ async function checkAmbassadorAccess(supabaseClient, user) {
   }
 }
 
-// Point d'entrée principal de l'Edge Function
+// Main entry point for the Edge Function
 serve(async (req) => {
-  // Gérer les requêtes CORS preflight
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     console.log("Handling OPTIONS request");
     return new Response(null, { 
@@ -130,17 +130,17 @@ serve(async (req) => {
   try {
     console.log("Starting check-user-access function");
     
-    // Obtenir le token d'authentification
+    // Get authentication token
     const authHeader = req.headers.get('Authorization');
     
-    // Initialiser le client Supabase
+    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
     );
     console.log("Supabase client initialized");
 
-    // Authentifier l'utilisateur
+    // Authenticate user
     const authResult = await authenticateUser(supabaseClient, authHeader);
     if (authResult.error) {
       console.log("Authentication error:", authResult.body);
@@ -150,25 +150,39 @@ serve(async (req) => {
     const user = authResult.user;
     console.log("Authenticated user:", user.email);
 
-    // Vérifier le mode développement
+    // Check for development mode
     const devModeResult = checkDevelopmentMode(Deno.env.get('ENVIRONMENT'));
     if (devModeResult) {
       console.log("Development mode detected, granting access");
       return createResponse(devModeResult);
     }
 
-    // Vérifier l'accès dans l'ordre de priorité: 
-    // Ambassador -> Beta -> Paid -> Trial
+    // Check access in priority order:
+    // 1. Paid (HIGHEST PRIORITY)
+    console.log("Checking paid access for", user.email);
+    const paidResult = await checkPaidAccess(supabaseClient, user);
+    if (paidResult) {
+      console.log("Paid access result for", user.email, ":", paidResult);
+      return createResponse(paidResult);
+    }
     
-    // 1. Vérifier d'abord l'accès ambassadeur (PRIORITÉ LA PLUS HAUTE)
+    // 2. Trial (SECOND PRIORITY)
+    console.log("Checking trial access for", user.email);
+    const trialResult = await checkTrialAccess(supabaseClient, user);
+    if (trialResult) {
+      console.log("Trial access result for", user.email, ":", trialResult);
+      return createResponse(trialResult);
+    }
+    
+    // 3. Ambassador (THIRD PRIORITY)
     console.log("Checking ambassador access for", user.email);
     const ambassadorResult = await checkAmbassadorAccess(supabaseClient, user);
     if (ambassadorResult) {
       console.log("Ambassador access result for", user.email, ":", ambassadorResult);
       return createResponse(ambassadorResult);
     }
-
-    // 2. Vérifier l'accès beta (DEUXIÈME PRIORITÉ)
+    
+    // 4. Beta (FOURTH PRIORITY)
     console.log("Checking beta access for", user.email);
     const betaResult = await checkBetaAccess(supabaseClient, user);
     if (betaResult) {
@@ -176,36 +190,20 @@ serve(async (req) => {
       return createResponse(betaResult);
     }
 
-    // 3. Vérifier l'abonnement payant (TROISIÈME PRIORITÉ)
-    console.log("Checking paid access for", user.email);
-    const paidResult = await checkPaidAccess(supabaseClient, user);
-    if (paidResult) {
-      console.log("Paid access result for", user.email, ":", paidResult);
-      return createResponse(paidResult);
-    }
-
-    // 4. Vérifier l'abonnement d'essai (PRIORITÉ LA PLUS BASSE)
-    console.log("Checking trial access for", user.email);
-    const trialResult = await checkTrialAccess(supabaseClient, user);
-    if (trialResult) {
-      console.log("Trial access result for", user.email, ":", trialResult);
-      return createResponse(trialResult);
-    }
-
-    // Aucun abonnement trouvé
-    console.log('Aucun abonnement actif trouvé pour', user.email);
+    // No subscription found
+    console.log('No active subscription found for', user.email);
     return createResponse({ 
       access: false, 
-      message: 'Aucun abonnement actif' 
+      message: 'No active subscription' 
     });
 
   } catch (error) {
-    console.error('Erreur générale:', error);
+    console.error('General error:', error);
     return createResponse({ 
       error: error.message,
       stack: error.stack,
       access: false,
-      message: 'Erreur serveur lors de la vérification de l\'accès'
+      message: 'Server error while checking access'
     }, 500);
   }
 });

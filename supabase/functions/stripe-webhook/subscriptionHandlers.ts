@@ -417,16 +417,120 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, 
     const subscriptionType = session.metadata?.subscriptionType || 'monthly';
     const promoCode = session.metadata?.promoCode || session.metadata?.applied_promo_code;
     
-    // Vérifier si c'est un produit gratuit (0$) - potentiellement un ambassadeur
-    const isZeroAmount = session.amount_total === 0;
-    console.log(`Montant total de la session: ${session.amount_total} - Produit gratuit: ${isZeroAmount}`);
+    // Vérifier si provient du lien beta testeur
+    const isBetaSignup = session.metadata?.isBeta === 'true' || 
+                         session.success_url?.includes('beta=true') ||
+                         session.success_url?.includes('beta_signup') ||
+                         (session.client_reference_id === 'beta_signup') ||
+                         // Check the specific Stripe link for beta testers
+                         session.payment_link === 'plink_1RWOKPIqXQKnGj4mxbQXkHDK' ||
+                         session.success_url?.includes('fZe7vKe8G2nP2SA6ou');
+    
+    // Si c'est un signup beta, traiter différemment
+    if (isBetaSignup) {
+      console.log('Détection d\'un signup beta pour:', customerEmail);
+      
+      // Vérifier si l'utilisateur existe déjà
+      let existingUserId = userId;
+      
+      if (!existingUserId) {
+        // Essayer de trouver l'utilisateur par email
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', customerEmail)
+          .maybeSingle();
+          
+        if (!userError && userData) {
+          existingUserId = userData.id;
+        }
+      }
+      
+      // Enregistrer l'événement de paiement réussi
+      try {
+        await supabase.from('payment_events').insert({
+          user_id: existingUserId || 'unknown',
+          email: customerEmail,
+          plan_type: 'beta',
+          event_type: 'payment_completed',
+          payment_method: 'stripe_checkout',
+          promo_code: promoCode || null
+        });
+        console.log('Événement de paiement beta enregistré avec succès');
+      } catch (eventError) {
+        console.error('Erreur lors de l\'enregistrement de l\'événement:', eventError);
+      }
+      
+      // Si l'utilisateur existe, créer directement l'abonnement beta
+      if (existingUserId) {
+        console.log('Création d\'un abonnement beta pour l\'utilisateur existant:', existingUserId);
+        
+        const { error: subError } = await supabase
+          .from('user_subscriptions')
+          .upsert({
+            user_id: existingUserId,
+            type: 'beta',
+            status: 'active',
+            expires_at: '2025-08-28 23:59:59+00',
+            stripe_customer_id: session.customer as string,
+            stripe_subscription_id: session.subscription as string,
+            promo_code: promoCode || null
+          }, {
+            onConflict: 'user_id,type'
+          });
+          
+        if (subError) {
+          console.error('Erreur lors de la création de l\'abonnement beta:', subError);
+        } else {
+          console.log('Abonnement beta créé avec succès');
+        }
+      } else {
+        // Stocker temporairement l'email dans une table de pending beta users
+        // pour le lier à un compte quand l'utilisateur créera son compte
+        console.log('Utilisateur non trouvé, stockage pour activation ultérieure:', customerEmail);
+        
+        // Dans ce cas, on peut soit créer une table spéciale, soit utiliser beta_users comme table temporaire
+        const { error: pendingError } = await supabase
+          .from('beta_users')
+          .upsert({
+            email: customerEmail.toLowerCase(),
+            is_validated: true
+          }, {
+            onConflict: 'email'
+          });
+          
+        if (pendingError) {
+          console.error('Erreur lors du stockage de l\'email beta en attente:', pendingError);
+        } else {
+          console.log('Email beta en attente stocké avec succès');
+        }
+      }
+      
+      // Synchroniser avec Brevo
+      try {
+        await supabase.functions.invoke('create-brevo-contact', {
+          body: { 
+            email: customerEmail,
+            contactName: 'Beta Tester',
+            userType: "beta",
+            source: "beta_signup"
+          }
+        });
+        console.log('Contact beta ajouté à Brevo');
+      } catch (brevoError) {
+        console.error('Erreur lors de la synchronisation avec Brevo:', brevoError);
+      }
+      
+      // Arrêter ici pour les signups beta
+      return;
+    }
     
     // Enregistrer l'événement de paiement réussi
     try {
       await supabase.from('payment_events').insert({
         user_id: userId,
         email: customerEmail,
-        plan_type: isZeroAmount ? 'ambassador' : subscriptionType,
+        plan_type: subscriptionType,
         event_type: 'payment_completed',
         payment_method: 'stripe_checkout',
         promo_code: promoCode || null
@@ -443,6 +547,9 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, 
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
       
       // Déterminer si c'est un abonnement ambassadeur
+      const isZeroAmount = subscription.items.data.some(item => 
+        item.price.unit_amount === 0 || item.price.unit_amount === null
+      );
       const isAmbassador = isZeroAmount || await isAmbassadorSubscription(subscription, stripe);
       
       if (isAmbassador) {
