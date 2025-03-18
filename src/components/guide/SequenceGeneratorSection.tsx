@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Clock } from 'lucide-react';
 
 export function SequenceGeneratorSection() {
   return (
@@ -45,11 +46,17 @@ export function SequenceGeneratorSection() {
         </li>
       </ol>
       
-      <div className="pl-8 border-l-4 border-green-300 py-6 my-12">
-        <h4 className="text-xl font-semibold text-green-800 mb-3">Temps économisé</h4>
-        <p className="text-lg leading-relaxed text-green-700">
-          Une séquence pédagogique complète générée en moins d'une minute, contre 3 à 5 heures de préparation traditionnelle. Soit une économie moyenne de 4h30 par séquence !
-        </p>
+      <div className="relative overflow-hidden bg-white border-l-4 border-green-400 rounded-lg shadow-md p-6 my-12 hover:-translate-y-1 transition-all duration-300">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 opacity-50"></div>
+        <div className="flex items-start gap-4 relative z-10">
+          <Clock className="text-green-600 flex-shrink-0 mt-1" size={28} />
+          <div className="space-y-2 text-left">
+            <h4 className="text-xl font-semibold text-green-700">Temps économisé</h4>
+            <p className="text-lg leading-relaxed text-gray-700">
+              Une séquence pédagogique complète générée en <strong className="text-green-800 text-xl">moins d'une minute</strong>, contre <span className="line-through text-gray-500">3 à 5 heures</span> de préparation traditionnelle. Soit une économie moyenne de <strong className="text-green-800 text-xl">4h30</strong> par séquence !
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
