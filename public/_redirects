@@ -1,4 +1,7 @@
 
+# Redirect root to bienvenue page
+/ /bienvenue 301
+
 # Redirect old home to tableaudebord
 /home /tableaudebord 301
 

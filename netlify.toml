@@ -1,3 +1,4 @@
+
 [build]
   publish = "dist"
   command = "npm run build"
@@ -7,6 +8,12 @@
 
 [context.production.environment]
   BRANCH = "Second-branch"
+
+# Redirect root to bienvenue page
+[[redirects]]
+  from = "/"
+  to = "/bienvenue"
+  status = 301
 
 # Redirect old home to tableaudebord
 [[redirects]]
