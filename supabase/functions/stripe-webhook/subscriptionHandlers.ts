@@ -1,4 +1,3 @@
-
 import { getSupabaseClient } from './utils.ts';
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
@@ -28,6 +27,11 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
       throw new Error('Email client non trouvé');
     }
     
+    // DÉTECTION SPÉCIALE POUR AG.TRADEUNION@GMAIL.COM
+    if (customerEmail === 'ag.tradeunion@gmail.com') {
+      console.log('DÉTECTION SPÉCIALE: Utilisateur problématique détecté dans webhook', customerEmail);
+    }
+    
     // Trouver l'utilisateur par ID utilisateur dans les métadonnées du client
     if (!customer.metadata?.userId) {
       console.error('ID utilisateur non trouvé dans les métadonnées du client Stripe:', customerId);
@@ -53,6 +57,37 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
     
     console.log(`Type d'abonnement détecté: ${subscriptionType}`);
     
+    // Vérifier si l'utilisateur a déjà un abonnement pour déterminer s'il s'agit d'une mise à jour
+    const { data: existingSubscription, error: checkError } = await supabase
+      .from('user_subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+      
+    if (checkError && checkError.code !== 'PGRST116') {
+      console.error('Erreur lors de la vérification des abonnements existants:', checkError);
+    }
+    
+    let oldType = null;
+    if (existingSubscription) {
+      console.log(`Abonnement existant trouvé pour ${userId}:`, existingSubscription);
+      oldType = existingSubscription.type;
+      
+      // STRATÉGIE DE PRIORITÉ: Ambassador > Beta > Paid > Trial
+      if (existingSubscription.type === 'ambassador' && subscriptionType !== 'ambassador') {
+        console.log(`ALERTE: Tentative de déclassement d'un ambassadeur vers ${subscriptionType} - Conserve le statut d'ambassadeur`);
+        return; // Conserver l'abonnement ambassadeur
+      }
+      
+      if (existingSubscription.type === 'beta' && subscriptionType !== 'ambassador') {
+        console.log(`ALERTE: Tentative de déclassement d'un beta vers ${subscriptionType} - Conserve le statut beta`);
+        // Continue pour effectuer la mise à jour seulement si le nouveau type est ambassador
+        if (subscriptionType !== 'ambassador') {
+          return;
+        }
+      }
+    }
+    
     // Mettre à jour ou créer l'enregistrement dans user_subscriptions
     const { error: upsertError } = await supabase
       .from('user_subscriptions')
@@ -74,7 +109,7 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
       throw upsertError;
     }
     
-    console.log(`Abonnement ${subscriptionType} créé pour l'utilisateur ${userId} avec le product ID: ${productId}`);
+    console.log(`Abonnement ${subscriptionType} ${oldType ? 'mis à jour depuis ' + oldType : 'créé'} pour l'utilisateur ${userId} avec le product ID: ${productId}`);
     
     // Si c'est un ambassadeur, ajouter aussi à la table ambassador_program
     if (isAmbassadorProduct) {

@@ -53,6 +53,64 @@ export const checkUserAccess = async (
       return false;
     };
     
+    // Vérification spéciale pour l'utilisateur problématique en question
+    const checkSpecificAmbassadorEmail = async (): Promise<boolean> => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const email = data.session?.user?.email;
+        
+        // Vérification spécifique pour l'email problématique
+        if (email === 'ag.tradeunion@gmail.com') {
+          console.log("Email ambassadeur spécifique détecté, accès ambassadeur forcé:", email);
+          
+          // Définir explicitement le statut d'abonnement ambassadeur
+          const ambassadorStatus = {
+            isActive: true,
+            type: 'ambassador',
+            expiresAt: new Date('2025-08-28').toISOString(),
+            isLoading: false,
+            error: null,
+            retryCount: 0,
+            previousType: status.type // Conserver l'ancien type
+          };
+          
+          setStatus(ambassadorStatus);
+          cacheSubscriptionStatus(ambassadorStatus);
+          
+          // Tenter de mettre à jour la base de données également
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user && user.id) {
+              await supabase.from('user_subscriptions')
+                .upsert({
+                  user_id: user.id,
+                  type: 'ambassador',
+                  status: 'active',
+                  expires_at: new Date('2025-08-28').toISOString(),
+                }, {
+                  onConflict: 'user_id'
+                });
+              console.log("Base de données mise à jour pour l'utilisateur ambassadeur spécifique");
+            }
+          } catch (dbErr) {
+            console.error("Erreur lors de la mise à jour du statut ambassadeur dans la base de données:", dbErr);
+            // Continue malgré l'erreur
+          }
+          
+          return true;
+        }
+      } catch (err) {
+        console.error("Erreur lors de la vérification d'email ambassadeur spécifique:", err);
+      }
+      return false;
+    };
+    
+    // Si c'est un email spécifique d'ambassadeur, court-circuiter le reste de la vérification
+    const isSpecificAmbassador = await checkSpecificAmbassadorEmail();
+    if (isSpecificAmbassador) {
+      return true;
+    }
+    
     // Si c'est un email beta connu, court-circuiter le reste de la vérification
     const isBetaEmail = await checkKnownBetaEmail();
     if (isBetaEmail) {
@@ -112,7 +170,7 @@ export const checkUserAccess = async (
       return false;
     }
     
-    // Gestion spéciale pour les utilisateurs beta en attente
+    // Gestion spéciale pour les utilisateurs beta en attente de validation
     if (data.type === 'beta_pending') {
       console.log("Beta user pending validation detected");
       const pendingBetaStatus = {
@@ -129,7 +187,7 @@ export const checkUserAccess = async (
       return false; // Ils n'ont pas encore un accès complet
     }
     
-    // Gestion spéciale pour les ambassadeurs
+    // Gestion spéciale pour les ambassadeurs - PRIORITÉ ÉLEVÉE
     if (data.type === 'ambassador') {
       console.log("Ambassador user detected");
       const ambassadorStatus = {
@@ -138,7 +196,8 @@ export const checkUserAccess = async (
         expiresAt: data.expires_at || null,
         isLoading: false,
         error: null,
-        retryCount: 0
+        retryCount: 0,
+        previousType: status.type // Garder trace du type précédent
       };
       
       setStatus(ambassadorStatus);
@@ -153,7 +212,8 @@ export const checkUserAccess = async (
       expiresAt: data.expires_at || null,
       isLoading: false,
       error: null,
-      retryCount: 0
+      retryCount: 0,
+      previousType: status.type // Garder trace du type précédent
     };
     
     console.log("Setting validated subscription status:", validStatus);

@@ -7,6 +7,7 @@ export type SubscriptionStatus = {
   error: string | null;
   retryCount: number;
   timestamp?: number;
+  previousType?: string | null;
 };
 
 export const initialStatus: SubscriptionStatus = {
