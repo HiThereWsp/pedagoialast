@@ -20,6 +20,7 @@ import LessonPlanPage from '@/pages/LessonPlanPage'
 import ExercisePage from '@/pages/ExercisePage'
 import SavedContentPage from '@/pages/SavedContentPage'
 import ImageGenerationPage from '@/pages/ImageGenerationPage'
+import Bienvenue from '@/pages/Bienvenue'
 
 function AppRoutes() {
   return (
@@ -34,6 +35,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/" element={<Landing />} />
+        <Route path="/bienvenue" element={<Bienvenue />} />
 
         {/* Routes protégées - avec vérification d'abonnement */}
         {/* Adjust the Generator routes */}
