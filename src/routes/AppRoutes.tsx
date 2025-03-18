@@ -9,6 +9,7 @@ import ConfirmEmail from '@/pages/ConfirmEmail';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import Bienvenue from '@/pages/Bienvenue';
 import ToolsLayout from '@/components/layout/ToolsLayout';
+import Guide from '@/pages/Guide';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
@@ -37,6 +38,7 @@ const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage
 const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
 const ContactPage = lazy(() => import('@/pages/ContactPage'));
+const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
 
 // Composant de chargement pour Suspense
 const LoadingPage = () => (
@@ -52,6 +54,7 @@ function AppRoutes() {
   return (
     <Suspense fallback={<LoadingPage />}>
       <Routes>
+        {/* Pages publiques */}
         <Route path="/" element={<Navigate to="/bienvenue" replace />} />
         <Route path="/bienvenue" element={<Bienvenue />} />
         <Route path="/landing" element={<LandingPage />} />
@@ -60,6 +63,11 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/guide" element={<Guide />} />
+        <Route path="/legal" element={<Legal />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/contact" element={<ContactPage />} />
         
         {/* Redirection de /home vers /tableaudebord */}
         <Route path="/home" element={<Navigate to="/tableaudebord" replace />} />
@@ -86,12 +94,11 @@ function AppRoutes() {
         <Route path="/delete-account" element={<ProtectedRoute><DeleteAccount /></ProtectedRoute>} />
         <Route path="/utm-links" element={<ProtectedRoute><UTMLinksPage /></ProtectedRoute>} />
         <Route path="/redirects" element={<ProtectedRoute><RedirectsPage /></ProtectedRoute>} />
-        <Route path="/legal" element={<Legal />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
         <Route path="/suggestions" element={<ProtectedRoute><SuggestionsPage /></ProtectedRoute>} />
         <Route path="/marketing" element={<ProtectedRoute><MarketingPage /></ProtectedRoute>} />
-        <Route path="/contact" element={<ContactPage />} />
+
+        {/* Admin routes */}
+        <Route path="/admin/brevo-sync" element={<ProtectedRoute><BrevoSyncPage /></ProtectedRoute>} />
         
         {/* Routes de suivi des conversions */}
         <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />

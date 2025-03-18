@@ -31,8 +31,11 @@ export function useLessonPlanUtils() {
       additional_instructions: formData.additionalInstructions
     });
 
-    // Log the tool usage
-    await logToolUsage('lesson_plan', 'generate', lessonPlan.length, generationTime);
+    // Round the generation time to an integer to avoid type errors
+    const roundedGenerationTime = Math.round(generationTime);
+    
+    // Log the tool usage with integer generation time
+    await logToolUsage('lesson_plan', 'generate', lessonPlan.length, roundedGenerationTime);
   }, [formatTitle, saveLessonPlan, logToolUsage]);
 
   return {

@@ -23,13 +23,16 @@ export const useToolMetrics = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      // Ensure generation_time_ms is an integer
+      const validatedGenerationTime = generationTimeMs ? Math.round(generationTimeMs) : null;
+
       // Prepare the data object
       const metricData: any = {
         user_id: user.id,
         tool_type: toolType,
         action_type: actionType,
         content_length: contentLength,
-        generation_time_ms: generationTimeMs,
+        generation_time_ms: validatedGenerationTime,
         feedback_score: feedbackScore
       };
       
@@ -49,7 +52,7 @@ export const useToolMetrics = () => {
         variant: "destructive",
         description: "Une erreur est survenue lors de l'enregistrement des métriques",
       });
-      throw err; // Re-throw to allow caller to handle
+      // Don't re-throw the error to avoid blocking the main flow
     } finally {
       setIsLoading(false);
     }

@@ -8,34 +8,34 @@ const corsHeaders = {
 }
 
 interface RequestBody {
-  classLevel: string;
-  totalSessions: string;
+  class_level: string;
+  total_sessions: number;
   subject: string;
   subject_matter: string;
   text?: string;
-  additionalInstructions?: string;
+  additional_instructions?: string;
 }
 
 async function generateLessonPlan(body: RequestBody): Promise<string> {
-  const { classLevel, totalSessions, subject, subject_matter, text, additionalInstructions } = body;
+  const { class_level, total_sessions, subject, subject_matter, text, additional_instructions } = body;
   
   console.log('Generating lesson plan with params:', {
-    classLevel, 
-    totalSessions, 
+    class_level, 
+    total_sessions, 
     subject,
     subject_matter,
     textLength: text ? text.length : 0,
-    additionalInstructionsLength: additionalInstructions ? additionalInstructions.length : 0
+    additional_instructionsLength: additional_instructions ? additional_instructions.length : 0
   });
 
   // Validation des entrées
-  if (!classLevel) throw new Error('Le niveau de classe est requis');
-  if (!totalSessions) throw new Error('Le nombre de séances est requis');
+  if (!class_level) throw new Error('Le niveau de classe est requis');
+  if (!total_sessions) throw new Error('Le nombre de séances est requis');
   if (!subject) throw new Error('Les objectifs d\'apprentissage sont requis');
   if (!subject_matter) throw new Error('La matière est requise');
 
   // Construction du prompt avec une introduction simplifiée
-  let prompt = `En tant qu'enseignant expert de l'Éducation Nationale française, créez une séquence pédagogique détaillée pour une classe de ${classLevel} en ${subject_matter}, centrée sur ${subject}.`;
+  let prompt = `En tant qu'enseignant expert de l'Éducation Nationale française, créez une séquence pédagogique détaillée pour une classe de ${class_level} en ${subject_matter}, centrée sur ${subject}.`;
 
   // Ajout des objectifs d'apprentissage (maintenant obligatoires)
   prompt += `\n\nObjectifs d'apprentissage précis : ${subject}`;
@@ -46,12 +46,12 @@ async function generateLessonPlan(body: RequestBody): Promise<string> {
   }
 
   // Ajout des instructions supplémentaires
-  if (additionalInstructions) {
-    prompt += `\n\nInstructions particulières : ${additionalInstructions}`;
+  if (additional_instructions) {
+    prompt += `\n\nInstructions particulières : ${additional_instructions}`;
   }
 
   // Structure simplifiée
-  prompt += `\n\nStructurez votre séquence en ${totalSessions || '4'} séances, avec les sections suivantes OBLIGATOIRES :
+  prompt += `\n\nStructurez votre séquence en ${total_sessions || '4'} séances, avec les sections suivantes OBLIGATOIRES :
 1. Objectifs et prérequis
 2. Organisation (durée et matériel)
 3. Déroulement détaillé des séances
@@ -77,7 +77,7 @@ Important : Concentrez-vous sur des contenus directement utilisables en classe. 
         'Authorization': `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4-turbo',
         messages: [
           { 
             role: 'system', 
@@ -124,10 +124,29 @@ serve(async (req) => {
   }
 
   try {
-    const { classLevel, totalSessions, subject, subject_matter, text, additionalInstructions } = await req.json();
+    const body = await req.json();
+    console.log('Request body received:', body);
+    
+    // Extraction et validation des champs
+    const class_level = body.class_level || body.classLevel;
+    const total_sessions = body.total_sessions || body.totalSessions;
+    const subject = body.subject;
+    const subject_matter = body.subject_matter || body.subjectMatter;
+    const text = body.text;
+    const additional_instructions = body.additional_instructions || body.additionalInstructions;
+
+    // Conversion à des types attendus
+    const parsedTotalSessions = typeof total_sessions === 'string' ? parseInt(total_sessions) : total_sessions;
 
     // Vérification des champs obligatoires
-    if (!classLevel || !totalSessions || !subject || !subject_matter) {
+    if (!class_level || !total_sessions || !subject || !subject_matter) {
+      console.error('Missing required fields:', { 
+        class_level, 
+        total_sessions: parsedTotalSessions, 
+        subject, 
+        subject_matter 
+      });
+      
       return new Response(
         JSON.stringify({
           error: 'MISSING_FIELDS',
@@ -142,12 +161,12 @@ serve(async (req) => {
 
     try {
       const lessonPlan = await generateLessonPlan({
-        classLevel,
-        totalSessions,
+        class_level,
+        total_sessions: parsedTotalSessions,
         subject,
         subject_matter,
         text,
-        additionalInstructions
+        additional_instructions
       });
 
       return new Response(
@@ -158,7 +177,7 @@ serve(async (req) => {
       console.error('Error generating lesson plan:', error);
 
       // Gestion spécifique pour l'erreur de timeout
-      if (error.message.includes('trop de temps')) {
+      if (error.message && error.message.includes('trop de temps')) {
         return new Response(
           JSON.stringify({
             error: 'TIMEOUT_ERROR',

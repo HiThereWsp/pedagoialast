@@ -2,7 +2,7 @@
 import { corsHeaders } from '../_shared/cors.ts';
 
 // Constants
-export const BREVO_AMBASSADOR_LIST_ID = 7;
+export const BREVO_AMBASSADOR_LIST_ID = 10; // Updated to match the new ambassador list ID
 
 /**
  * Checks if a welcome email was already sent to the contact

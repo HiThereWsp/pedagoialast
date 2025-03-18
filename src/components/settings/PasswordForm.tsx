@@ -1,82 +1,142 @@
+
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
+import { Check } from "lucide-react"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+const passwordSchema = z.object({
+  newPassword: z.string().min(6, {
+    message: "Le mot de passe doit contenir au moins 6 caractères.",
+  }),
+  confirmPassword: z.string().min(6, {
+    message: "Le mot de passe doit contenir au moins 6 caractères.",
+  }),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas.",
+  path: ["confirmPassword"],
+})
 
 export const PasswordForm = () => {
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
   const { toast } = useToast()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+  const form = useForm<z.infer<typeof passwordSchema>>({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: {
+      newPassword: "",
+      confirmPassword: "",
+    },
+  })
 
-    if (newPassword !== confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Les mots de passe ne correspondent pas."
-      })
-      setLoading(false)
-      return
-    }
+  const handleSubmit = async (values: z.infer<typeof passwordSchema>) => {
+    setLoading(true)
+    setSuccess(false)
 
     try {
       const { error } = await supabase.auth.updateUser({
-        password: newPassword
+        password: values.newPassword
       })
 
       if (error) throw error
 
       toast({
         title: "Succès",
-        description: "Votre mot de passe a été mis à jour avec succès."
+        description: "Votre mot de passe a été mis à jour."
       })
-      setNewPassword("")
-      setConfirmPassword("")
+      
+      form.reset({
+        newPassword: "",
+        confirmPassword: "",
+      })
+      setSuccess(true)
     } catch (error) {
       console.error('Error updating password:', error)
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du mot de passe."
+        description: "Une erreur est survenue lors de la mise à jour."
       })
     } finally {
       setLoading(false)
+      setTimeout(() => setSuccess(false), 2000)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-4">
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="newPassword">Nouveau mot de passe</Label>
-          <Input
-            id="newPassword"
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Nouveau mot de passe"
+          <h3 className="text-base font-medium text-muted-foreground">Sécurité</h3>
+        </div>
+
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="newPassword"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm text-muted-foreground">Nouveau mot de passe</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      type="password"
+                      placeholder="Nouveau mot de passe"
+                      className="h-10 text-sm"
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm text-muted-foreground">Confirmer le mot de passe</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Input
+                      {...field}
+                      type="password"
+                      placeholder="Confirmer le mot de passe"
+                      className="h-10 text-sm"
+                    />
+                  </div>
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
           />
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Confirmer le mot de passe"
-          />
-        </div>
-      </div>
-      <Button type="submit" disabled={loading}>
-        {loading ? "Mise à jour..." : "Mettre à jour le mot de passe"}
-      </Button>
-    </form>
+        
+        <Button 
+          type="submit" 
+          disabled={loading}
+          size="sm"
+          className="w-full transition-all duration-200 mt-2"
+        >
+          {loading ? (
+            "Mise à jour..."
+          ) : success ? (
+            <>
+              <Check className="mr-1 h-4 w-4" /> Mot de passe mis à jour
+            </>
+          ) : (
+            "Mettre à jour le mot de passe"
+          )}
+        </Button>
+      </form>
+    </Form>
   )
 }

@@ -17,6 +17,7 @@ export function ResultDisplay({ text, recipientType, tone }: ResultDisplayProps)
   const { saveCorrespondence } = useSavedContent();
   const [isCopied, setIsCopied] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [contentId, setContentId] = React.useState<string | undefined>();
 
   useEffect(() => {
     const saveContent = async () => {
@@ -24,12 +25,15 @@ export function ResultDisplay({ text, recipientType, tone }: ResultDisplayProps)
 
       try {
         setIsSaving(true);
-        await saveCorrespondence({
+        const savedContent = await saveCorrespondence({
           title: `Correspondance ${recipientType || ''} ${new Date().toLocaleDateString()}`,
           content: text,
           recipient_type: recipientType || 'non spécifié',
           tone: tone
         });
+
+        // Generate a content ID for feedback
+        setContentId(`correspondence-${Date.now()}`);
 
         toast({
           title: "Succès",
@@ -82,7 +86,7 @@ export function ResultDisplay({ text, recipientType, tone }: ResultDisplayProps)
             )}
             <span>Copier</span>
           </button>
-          <ContentFeedback contentType="correspondence" />
+          <ContentFeedback contentType="correspondence" contentId={contentId} />
         </div>
       </div>
       <div className="whitespace-pre-wrap">{text}</div>

@@ -1,21 +1,28 @@
+
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
 import { useToast } from "@/hooks/use-toast"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { BackButton } from "@/components/settings/BackButton"
 import { ProfileForm } from "@/components/settings/ProfileForm"
 import { PasswordForm } from "@/components/settings/PasswordForm"
 import { SEO } from "@/components/SEO"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { User } from "lucide-react"
+import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
+import { DashboardWrapper } from "@/components/dashboard/DashboardWrapper"
 
 const Settings = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const [firstName, setFirstName] = useState("")
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const getProfile = async () => {
+      setLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         navigate('/login')
@@ -49,6 +56,8 @@ const Settings = () => {
           title: "Erreur",
           description: "Impossible de charger votre profil."
         })
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -61,27 +70,42 @@ const Settings = () => {
         title="Paramètres | PedagoIA - Gérez votre compte"
         description="Personnalisez votre expérience PedagoIA en gérant vos paramètres de compte et vos préférences."
       />
-      <div className="min-h-screen bg-background p-6">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <BackButton />
+      <DashboardWrapper>
+        <div className="min-h-screen p-6 py-12">
+          <div className="max-w-md mx-auto space-y-8">
+            <BackButton />
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres du profil</CardTitle>
-              <CardDescription>
-                Gérez vos informations personnelles et vos préférences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <ProfileForm initialFirstName={firstName} />
+            <Card className="shadow-md border overflow-hidden relative bg-card/95 backdrop-blur-sm">
+              <CardHeader className="flex items-center justify-center pb-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <Avatar className="h-20 w-20 bg-primary/5 shadow-sm">
+                    <AvatarFallback className="text-primary">
+                      <User className="h-9 w-9 text-muted-foreground" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="text-center">
+                    {loading ? (
+                      <div className="h-6 w-36 bg-muted animate-pulse rounded"></div>
+                    ) : (
+                      <span className="text-xl font-medium text-muted-foreground">
+                        {firstName || "Votre Profil"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
               
-              <Separator className="my-6" />
-              
-              <PasswordForm />
-            </CardContent>
-          </Card>
+              <CardContent className="space-y-8 pt-2 px-6 pb-8">
+                <ProfileForm initialFirstName={firstName} onUpdate={setFirstName} />
+                
+                <Separator className="my-8" />
+                
+                <PasswordForm />
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
+      </DashboardWrapper>
     </>
   )
 }

@@ -42,7 +42,10 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
       const isAmbassador = await checkAmbassadorSubscription(userId, email);
       if (isAmbassador) {
         console.log("Ambassador status detected, providing ambassador access:", email);
+        
+        // Ensure ambassador is added to Brevo list and welcome email is sent
         await processAmbassadorWelcome(userId, email);
+        
         return createAmbassadorStatus();
       }
     }

@@ -824,6 +824,8 @@ export type Database = {
       tool_metrics: {
         Row: {
           action_type: string
+          comment: string | null
+          content_id: string | null
           content_length: number | null
           created_at: string
           feedback_score: number | null
@@ -834,6 +836,8 @@ export type Database = {
         }
         Insert: {
           action_type: string
+          comment?: string | null
+          content_id?: string | null
           content_length?: number | null
           created_at?: string
           feedback_score?: number | null
@@ -844,6 +848,8 @@ export type Database = {
         }
         Update: {
           action_type?: string
+          comment?: string | null
+          content_id?: string | null
           content_length?: number | null
           created_at?: string
           feedback_score?: number | null
