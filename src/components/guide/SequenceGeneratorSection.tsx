@@ -1,10 +1,7 @@
-
 import React from 'react';
 import { Clock, Settings, FileText, Download, ArrowRight } from 'lucide-react';
-
 export function SequenceGeneratorSection() {
-  return (
-    <section id="generateur-sequences" className="space-y-8">
+  return <section id="generateur-sequences" className="space-y-8">
       <h2 className="text-3xl font-bold text-[#2c3e50] border-b border-gray-100 pb-4">
         Créateur de séquences pédagogiques
       </h2>
@@ -37,7 +34,7 @@ export function SequenceGeneratorSection() {
           </div>
           <div className="flex-1">
             <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">2. Générez votre contenu</h3>
-            <p className="text-gray-700">Notre IA crée une séquence complète avec progression, objectifs et supports de cours</p>
+            <p className="text-gray-700">Notre IA crée une séquence complète avec progression, objectifs, recommandations et supports de cours</p>
           </div>
           <div className="ml-4 text-purple-600">
             <ArrowRight className="animate-pulse" />
@@ -50,7 +47,7 @@ export function SequenceGeneratorSection() {
           </div>
           <div className="flex-1">
             <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">3. Téléchargez et adaptez</h3>
-            <p className="text-gray-700">Exportez votre séquence complète au format Word ou PDF et personnalisez-la selon vos besoins</p>
+            <p className="text-gray-700">Exportez votre séquence complète dans votre logiciel de traitement de texte favori</p>
           </div>
         </li>
       </ol>
@@ -67,6 +64,5 @@ export function SequenceGeneratorSection() {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 }
