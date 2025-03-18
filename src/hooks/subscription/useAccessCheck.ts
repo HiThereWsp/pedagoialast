@@ -129,6 +129,23 @@ export const checkUserAccess = async (
       return false; // Ils n'ont pas encore un accès complet
     }
     
+    // Gestion spéciale pour les ambassadeurs
+    if (data.type === 'ambassador') {
+      console.log("Ambassador user detected");
+      const ambassadorStatus = {
+        isActive: !!data.access,
+        type: 'ambassador',
+        expiresAt: data.expires_at || null,
+        isLoading: false,
+        error: null,
+        retryCount: 0
+      };
+      
+      setStatus(ambassadorStatus);
+      cacheSubscriptionStatus(ambassadorStatus);
+      return !!data.access;
+    }
+    
     // Valid subscription status
     const validStatus = {
       isActive: !!data.access,

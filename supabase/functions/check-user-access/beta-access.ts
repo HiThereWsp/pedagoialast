@@ -99,6 +99,86 @@ export async function checkBetaAccess(
       beta_user: true
     };
   }
+
+  // NOUVEAU: vérifier si l'utilisateur est un ambassadeur
+  console.log("Vérification du statut d'ambassadeur pour", user.email);
+  
+  // Vérifier d'abord dans ambassador_program
+  const { data: ambassador, error: ambassadorError } = await supabaseClient
+    .from('ambassador_program')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .maybeSingle();
+    
+  if (ambassadorError) {
+    console.error("Erreur lors de la vérification du statut d'ambassadeur:", ambassadorError);
+  }
+  
+  if (ambassador) {
+    console.log('Ambassadeur trouvé dans ambassador_program:', ambassador);
+    
+    // Vérifier si l'accès ambassadeur est expiré
+    if (ambassador.expires_at) {
+      const expiryDate = new Date(ambassador.expires_at);
+      if (expiryDate < new Date()) {
+        console.log("Accès ambassadeur expiré le:", expiryDate, "pour", user.email);
+        return { 
+          access: false, 
+          message: 'Accès ambassadeur expiré',
+          type: 'ambassador',
+          expires_at: ambassador.expires_at
+        };
+      }
+    }
+    
+    return {
+      access: true,
+      type: 'ambassador',
+      expires_at: ambassador.expires_at,
+      ambassador_user: true
+    };
+  }
+  
+  // Vérifier aussi dans user_subscriptions pour type=ambassador
+  const { data: ambassadorSub, error: ambassadorSubError } = await supabaseClient
+    .from('user_subscriptions')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('type', 'ambassador')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+    
+  if (ambassadorSubError) {
+    console.error("Erreur lors de la vérification de l'abonnement ambassadeur:", ambassadorSubError);
+  }
+  
+  if (ambassadorSub) {
+    console.log('Abonnement ambassadeur trouvé dans user_subscriptions pour', user.email);
+    
+    // Vérifier si l'abonnement ambassadeur est expiré
+    if (ambassadorSub.expires_at) {
+      const expiryDate = new Date(ambassadorSub.expires_at);
+      if (expiryDate < new Date()) {
+        console.log("Abonnement ambassadeur expiré le:", expiryDate, "pour", user.email);
+        return { 
+          access: false, 
+          message: 'Accès ambassadeur expiré',
+          type: 'ambassador',
+          expires_at: ambassadorSub.expires_at
+        };
+      }
+    }
+    
+    return {
+      access: true,
+      type: 'ambassador',
+      expires_at: ambassadorSub.expires_at,
+      ambassador_user: true
+    };
+  }
   
   // Rechercher dans le domaine de l'email pour un accès beta basé sur le domaine
   if (user.email) {

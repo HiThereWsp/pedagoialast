@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ambassador_program: {
+        Row: {
+          approved_at: string | null
+          created_at: string | null
+          email: string
+          expires_at: string | null
+          full_name: string | null
+          id: string
+          notes: string | null
+          requested_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string | null
+          email: string
+          expires_at?: string | null
+          full_name?: string | null
+          id?: string
+          notes?: string | null
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string | null
+          email?: string
+          expires_at?: string | null
+          full_name?: string | null
+          id?: string
+          notes?: string | null
+          requested_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       backup_saved_exercises: {
         Row: {
           class_level: string | null
@@ -1226,6 +1268,12 @@ export type Database = {
             }
             Returns: unknown
           }
+      check_ambassador_status: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
+      }
       delete_url_redirect: {
         Args: {
           p_id: string
@@ -1505,7 +1553,7 @@ export type Database = {
       app_role: "admin" | "user"
       feedback_type: "like" | "dislike"
       subscription_status: "active" | "expired"
-      subscription_type: "beta" | "trial" | "paid"
+      subscription_type: "beta" | "trial" | "paid" | "ambassador"
       tool_type:
         | "differentiation"
         | "sequence"
