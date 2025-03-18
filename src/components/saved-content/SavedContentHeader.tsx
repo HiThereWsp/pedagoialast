@@ -1,3 +1,4 @@
+
 import React, { useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/settings/BackButton";
@@ -27,11 +28,13 @@ export const savedContentTabs = [{
   buttonText: 'Générer une correspondance',
   path: '/correspondence'
 }] as const;
+
 interface SavedContentHeaderProps {
   activeTab: string;
   onRefresh: () => Promise<void>;
   isRefreshing: boolean;
 }
+
 export const SavedContentHeader: React.FC<SavedContentHeaderProps> = React.memo(({
   activeTab,
   onRefresh,
@@ -39,25 +42,27 @@ export const SavedContentHeader: React.FC<SavedContentHeaderProps> = React.memo(
 }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  
   const currentTab = useMemo(() => {
     return savedContentTabs.find(tab => tab.id === activeTab) || savedContentTabs[0];
   }, [activeTab]);
+  
   const handleCreate = useCallback(() => {
     navigate(currentTab.path);
   }, [navigate, currentTab]);
+  
   const handleRefresh = useCallback(async () => {
     if (!isRefreshing) {
       await onRefresh();
     }
   }, [onRefresh, isRefreshing]);
+  
   return <>
       <div className="mb-3 md:mb-4">
-        <BackButton />
+        <BackButton fallbackPath="/tableaudebord" />
       </div>
       
       <div className="flex items-center justify-between mb-4 md:mb-8">
-        
-        
         <div className="flex items-center gap-1 sm:gap-2">
           <Button onClick={handleRefresh} variant="outline" size={isMobile ? "sm" : "icon"} className="rounded-full" disabled={isRefreshing}>
             <RefreshCw className={`h-3.5 w-3.5 md:h-4 md:w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -72,4 +77,5 @@ export const SavedContentHeader: React.FC<SavedContentHeaderProps> = React.memo(
       </div>
     </>;
 });
+
 SavedContentHeader.displayName = "SavedContentHeader";

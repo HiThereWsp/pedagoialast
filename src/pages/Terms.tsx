@@ -9,7 +9,7 @@ export default function Terms() {
         description="Découvrez les conditions d'utilisation de PedagoIA, l'assistant qui révolutionne la préparation des cours grâce à l'intelligence artificielle."
       />
       
-      <BackButton />
+      <BackButton fallbackPath="/legal" />
       
       <article className="prose prose-slate max-w-none">
         <h1 className="text-3xl font-bold mb-8">Conditions Générales d'Utilisation - PedagoIA</h1>

@@ -1,4 +1,3 @@
-
 import { SEO } from "@/components/SEO"
 import { BackButton } from "@/components/settings/BackButton"
 import { LegalCard } from "@/components/legal/LegalCard"
@@ -26,7 +25,7 @@ export default function Legal() {
         description="Découvrez les mentions légales de PedagoIA, incluant nos conditions d'utilisation et notre politique de confidentialité."
       />
       
-      <BackButton />
+      <BackButton fallbackPath="/tableaudebord" />
       
       <article className="prose prose-slate max-w-none">
         <h1 className="text-3xl font-bold mb-8">Mentions Légales - PedagoIA</h1>

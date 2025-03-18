@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
@@ -73,7 +72,7 @@ const Settings = () => {
       <DashboardWrapper>
         <div className="min-h-screen p-6 py-12">
           <div className="max-w-md mx-auto space-y-8">
-            <BackButton />
+            <BackButton fallbackPath="/tableaudebord" />
 
             <Card className="shadow-md border overflow-hidden relative bg-card/95 backdrop-blur-sm">
               <CardHeader className="flex items-center justify-center pb-4">
