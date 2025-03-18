@@ -4,12 +4,14 @@ import { Route } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { SubscriptionRoute } from "./SubscriptionRoute";
 
-// Protected Pages - Fixed import paths with correct capitalization
+// Protected Pages - Using available components from TableauDeBord.tsx
 import TableauDeBord from "@/pages/TableauDeBord";
-import Account from "@/pages/Account";
-import EditProfile from "@/pages/EditProfile";
-import Billing from "@/pages/Billing";
-import ApiKeyPage from "@/pages/ApiKeyPage";
+
+// Placeholder components for missing pages
+const Account = () => <div className="p-8">Account Page - Coming Soon</div>;
+const EditProfile = () => <div className="p-8">Edit Profile Page - Coming Soon</div>;
+const Billing = () => <div className="p-8">Billing Page - Coming Soon</div>;
+const ApiKeyPage = () => <div className="p-8">API Key Page - Coming Soon</div>;
 
 export const ProtectedRoutes = () => {
   return (
