@@ -3,7 +3,6 @@ import { createBrowserRouter } from "react-router-dom";
 import Landing from "./pages/Landing";
 import PricingPage from "./pages/PricingPage";
 import Login from "./pages/Login";
-import SignupPage from "./pages/SignupPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import ConfirmEmail from "./pages/ConfirmEmail";
@@ -16,7 +15,6 @@ import ExercisePage from "./pages/ExercisePage";
 import LessonPlanPage from "./pages/LessonPlanPage";
 import CorrespondencePage from "./pages/CorrespondencePage";
 import ImageGenerationPage from "./pages/ImageGenerationPage";
-import BugReportPage from "./pages/BugReportPage";
 import Bienvenue from "./pages/Bienvenue";
 import SavedContentPage from "./pages/SavedContentPage";
 import Settings from "./pages/Settings";
@@ -40,10 +38,6 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />,
-  },
-  {
-    path: "/signup",
-    element: <SignupPage />,
   },
   {
     path: "/forgot-password",
@@ -92,10 +86,6 @@ const router = createBrowserRouter([
   {
     path: "/image-generation",
     element: <ImageGenerationPage />,
-  },
-  {
-    path: "/bug-report",
-    element: <BugReportPage />,
   },
   {
     path: "/saved-content",

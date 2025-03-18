@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
-import { Check, KeyRound, Lock } from "lucide-react"
+import { Check } from "lucide-react"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -48,7 +48,7 @@ export const PasswordForm = () => {
 
       toast({
         title: "Succès",
-        description: "Votre mot de passe a été mis à jour avec succès."
+        description: "Votre mot de passe a été mis à jour."
       })
       
       form.reset({
@@ -61,7 +61,7 @@ export const PasswordForm = () => {
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour du mot de passe."
+        description: "Une erreur est survenue lors de la mise à jour."
       })
     } finally {
       setLoading(false)
@@ -73,36 +73,27 @@ export const PasswordForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="space-y-1">
-          <h3 className="text-lg font-medium flex items-center gap-2">
-            <KeyRound className="h-5 w-5 text-muted-foreground" />
-            Sécurité
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            Mettez à jour votre mot de passe pour sécuriser votre compte.
-          </p>
+          <h3 className="text-sm font-medium text-muted-foreground">Sécurité</h3>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <FormField
             control={form.control}
             name="newPassword"
             render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Nouveau mot de passe</FormLabel>
+              <FormItem className="space-y-1">
+                <FormLabel className="text-xs text-muted-foreground">Nouveau mot de passe</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       {...field}
                       type="password"
                       placeholder="Nouveau mot de passe"
-                      className="pl-10"
+                      className="h-9 text-sm"
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      <Lock className="h-4 w-4" />
-                    </div>
                   </div>
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -111,22 +102,19 @@ export const PasswordForm = () => {
             control={form.control}
             name="confirmPassword"
             render={({ field }) => (
-              <FormItem className="space-y-2">
-                <FormLabel>Confirmer le mot de passe</FormLabel>
+              <FormItem className="space-y-1">
+                <FormLabel className="text-xs text-muted-foreground">Confirmer le mot de passe</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       {...field}
                       type="password"
                       placeholder="Confirmer le mot de passe"
-                      className="pl-10"
+                      className="h-9 text-sm"
                     />
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      <Lock className="h-4 w-4" />
-                    </div>
                   </div>
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="text-xs" />
               </FormItem>
             )}
           />
@@ -135,13 +123,15 @@ export const PasswordForm = () => {
         <Button 
           type="submit" 
           disabled={loading}
-          className="w-full sm:w-auto transition-all duration-300 relative"
+          size="sm"
+          variant="outline"
+          className="w-full transition-all duration-200 text-xs"
         >
           {loading ? (
             "Mise à jour..."
           ) : success ? (
             <>
-              <Check className="mr-2 h-4 w-4" /> Mot de passe mis à jour
+              <Check className="mr-1 h-3 w-3" /> Mot de passe mis à jour
             </>
           ) : (
             "Mettre à jour le mot de passe"

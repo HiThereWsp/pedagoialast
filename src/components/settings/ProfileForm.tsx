@@ -3,7 +3,6 @@ import { useState, useEffect } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Check, User } from "lucide-react"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -55,7 +54,7 @@ export const ProfileForm = ({ initialFirstName, onUpdate }: ProfileFormProps) =>
 
       toast({
         title: "Succès",
-        description: "Votre profil a été mis à jour avec succès."
+        description: "Votre profil a été mis à jour."
       })
       
       setSuccess(true)
@@ -67,7 +66,7 @@ export const ProfileForm = ({ initialFirstName, onUpdate }: ProfileFormProps) =>
       toast({
         variant: "destructive",
         title: "Erreur",
-        description: "Une erreur est survenue lors de la mise à jour de votre profil."
+        description: "Une erreur est survenue lors de la mise à jour."
       })
     } finally {
       setLoading(false)
@@ -79,31 +78,25 @@ export const ProfileForm = ({ initialFirstName, onUpdate }: ProfileFormProps) =>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
         <div className="space-y-1">
-          <h3 className="text-lg font-medium">Informations personnelles</h3>
-          <p className="text-sm text-muted-foreground">
-            Ces informations seront utilisées pour personnaliser votre expérience.
-          </p>
+          <h3 className="text-sm font-medium text-muted-foreground">Votre profil</h3>
         </div>
         
         <FormField
           control={form.control}
           name="firstName"
           render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>Prénom</FormLabel>
+            <FormItem className="space-y-1">
+              <FormLabel className="text-xs text-muted-foreground">Prénom</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input
                     {...field}
                     placeholder="Votre prénom"
-                    className="pl-10"
+                    className="h-9 text-sm"
                   />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    <User className="h-4 w-4" />
-                  </div>
                 </div>
               </FormControl>
-              <FormMessage />
+              <FormMessage className="text-xs" />
             </FormItem>
           )}
         />
@@ -111,13 +104,15 @@ export const ProfileForm = ({ initialFirstName, onUpdate }: ProfileFormProps) =>
         <Button 
           type="submit" 
           disabled={loading}
-          className="w-full sm:w-auto transition-all duration-300 relative"
+          size="sm"
+          variant="outline"
+          className="w-full transition-all duration-200 text-xs"
         >
           {loading ? (
             "Mise à jour..."
           ) : success ? (
             <>
-              <Check className="mr-2 h-4 w-4" /> Mis à jour
+              <Check className="mr-1 h-3 w-3" /> Mis à jour
             </>
           ) : (
             "Mettre à jour"
