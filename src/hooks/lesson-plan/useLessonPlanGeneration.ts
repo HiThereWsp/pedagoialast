@@ -44,7 +44,7 @@ export function useLessonPlanGeneration() {
         return null;
       }
 
-      if (!formData.subject_matter.trim()) {
+      if (!formData.subject_matter?.trim()) {
         toast({
           variant: "destructive",
           description: "Veuillez indiquer l'objet d'étude.",
@@ -55,13 +55,26 @@ export function useLessonPlanGeneration() {
       // Reset any previous generation
       resetLessonPlan();
 
-      // Call the API
+      // Convert totalSessions to a number and ensure proper parameter naming
+      const totalSessions = parseInt(formData.totalSessions) || 5;
+      
+      console.log('Preparing lesson plan request with data:', {
+        class_level: formData.classLevel,
+        subject: formData.subject,
+        subject_matter: formData.subject_matter,
+        total_sessions: totalSessions,
+        text: formData.text || undefined,
+        additionalInstructions: formData.additionalInstructions || undefined,
+      });
+      
+      // Call the API with underscore_case parameters to match the edge function
       const response = await generateLessonPlan({
         class_level: formData.classLevel,
         subject: formData.subject,
         subject_matter: formData.subject_matter,
-        total_sessions: parseInt(formData.totalSessions) || 5,
-        additional_instructions: formData.additionalInstructions
+        total_sessions: totalSessions,
+        additional_instructions: formData.additionalInstructions,
+        text: formData.text
       });
 
       // Process the response and calculate generation time

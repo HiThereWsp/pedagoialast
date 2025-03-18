@@ -14,6 +14,8 @@ interface LessonPlanParams {
  * Generates a lesson plan using the Supabase Edge Function
  */
 export async function generateLessonPlan(params: LessonPlanParams): Promise<string> {
+  console.log('Sending lesson plan generation request with params:', params);
+  
   const { data, error } = await supabase.functions.invoke('generate-lesson-plan', {
     body: params
   });
