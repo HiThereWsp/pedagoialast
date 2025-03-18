@@ -84,7 +84,8 @@ export const useSubscriptionErrorHandling = (
               isLoading: false,
               error: null,
               retryCount: 0,
-              special_handling: true
+              special_handling: true,
+              ambassador_email: email
             };
           }
           

@@ -24,7 +24,15 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Special handling for known users
+  // Special handling for development mode - always called regardless of conditions
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      console.log("Development mode detected in SubscriptionRoute, showing content");
+      setShowContent(true);
+    }
+  }, []);
+  
+  // Special handling for known users - always called regardless of conditions
   useEffect(() => {
     // List of emails that should always see content
     const specialEmails = [
@@ -39,20 +47,8 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     }
   }, [user]);
   
-  // Special flag for development mode
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log("Development mode detected in SubscriptionRoute, showing content");
-      setShowContent(true);
-    }
-  }, []);
-  
-  // If special handling is active, show content without subscription check
-  if (showContent) {
-    return children;
-  }
-  
   // Reduce display time - only show verification if it takes unusually long
+  // Always call this hook regardless of conditions
   useEffect(() => {
     if (isLoading) {
       // Only show loading indicator after a delay (2 seconds)
@@ -63,27 +59,26 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     }
   }, [isLoading]);
   
-  // Limit check count to avoid infinite loops
+  // Limit check count to avoid infinite loops - always called regardless of conditions
   useEffect(() => {
     if (isLoading && checkCount.current < 3) {
       checkCount.current += 1;
     }
-  }, [isLoading]);
-
-  // Safety measure to always show content if too many checks are happening
-  useEffect(() => {
+    
+    // Safety measure to always show content if too many checks are happening
     if (checkCount.current >= 3) {
       console.log("Maximum check count reached, forcing content display");
       setShowContent(true);
     }
-  }, [checkCount.current]);
+  }, [isLoading, checkCount.current]);
 
-  // React Router navigation for redirects
+  // React Router navigation for redirects - always defined regardless of conditions
   const safeNavigate = (path: string) => {
     console.log(`Safe navigation to: ${path} from: ${location.pathname}`);
     setTimeout(() => navigate(path), 50);
   };
   
+  // Retry handler - always defined regardless of conditions
   const handleRetry = async () => {
     setIsRetrying(true);
     toast.info("Vérification de l'abonnement en cours...");
@@ -97,6 +92,34 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       setIsRetrying(false);
     }
   };
+  
+  // Effect for handling non-subscribed users
+  useEffect(() => {
+    // This effect is only for redirecting unsubscribed users
+    if (!isLoading && !error && !isSubscribed && !showContent) {
+      const redirectTimer = setTimeout(() => {
+        safeNavigate('/pricing');
+      }, 1500);
+      
+      // Log in PostHog for analytics, but only in production
+      if (!import.meta.env.DEV) {
+        posthog.capture('subscription_required_view', {
+          current_path: location.pathname,
+          subscription_type: subscriptionType
+        });
+      }
+      
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [isLoading, error, isSubscribed, showContent, location.pathname, subscriptionType, safeNavigate]);
+  
+  // Rendering logic based on conditions - but all hooks are always called above
+  // Now we can use early returns without breaking hooks rules
+  
+  // If special access is granted, show content immediately
+  if (showContent) {
+    return children;
+  }
   
   // Only show loading during unusually long verifications and not in dev mode
   if (isLoading && isChecking && !import.meta.env.DEV) {
@@ -168,25 +191,8 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // If no active subscription, redirect to pricing page with a clear message
+  // If no active subscription, show subscription required message
   if (!isSubscribed) {
-    // Log in PostHog for analytics, but only in production
-    if (!import.meta.env.DEV) {
-      posthog.capture('subscription_required_view', {
-        current_path: location.pathname,
-        subscription_type: subscriptionType
-      });
-    }
-    
-    // Rediriger via React Router après un court délai
-    useEffect(() => {
-      const redirectTimer = setTimeout(() => {
-        safeNavigate('/pricing');
-      }, 1500);
-      
-      return () => clearTimeout(redirectTimer);
-    }, []);
-    
     return (
       <div className="max-w-4xl mx-auto p-6 my-8">
         <Alert className="bg-amber-50 border-amber-200 mb-6">

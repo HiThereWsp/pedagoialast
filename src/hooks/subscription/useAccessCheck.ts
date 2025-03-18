@@ -34,7 +34,8 @@ export const checkUserAccess = async (
             isLoading: false,
             error: null,
             retryCount: 0,
-            special_handling: true
+            special_handling: true,
+            ambassador_email: email
           };
           
           // Try to update database but don't block on it
