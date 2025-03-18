@@ -21,32 +21,24 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   const checkCount = useRef(0);
   const [showContent, setShowContent] = useState(false);
   
-  // Liste des utilisateurs spéciaux qui ont accès même en cas de problème
-  const specialUsers = [
-    'andyguitteaud@gmail.co',
-    'andyguitteaud@gmail.com',
-    'ag.tradeunion@gmail.com' // Ambassador email
-  ];
-  
-  // Vérifier si c'est un utilisateur spécial
+  // Fonction pour donner un accès spécial à l'utilisateur problématique
   useEffect(() => {
-    if (user?.email && specialUsers.includes(user.email)) {
-      console.log("[DEBUG] Utilisateur spécial détecté dans SubscriptionRoute, affichage forcé du contenu:", user.email);
+    if (user?.email === 'andyguitteaud@gmail.co') {
+      console.log("[DEBUG] Utilisateur spécial détecté dans SubscriptionRoute, affichage forcé du contenu");
       setShowContent(true);
     }
   }, [user]);
   
-  // Si c'est un utilisateur spécial, afficher directement le contenu
+  // Ne pas bloquer l'accès si c'est l'utilisateur problématique
   if (showContent) {
-    console.log("[DEBUG] Contenu forcé pour utilisateur spécial");
     return children;
   }
   
-  // Réduire le temps d'affichage de la vérification - seulement montrer l'indicateur si ça prend trop longtemps
+  // Reduce display time dramatically - only show verification if it takes unusually long
   useEffect(() => {
     if (isLoading) {
-      // Afficher l'indicateur de chargement seulement après un délai substantiel (1 seconde)
-      const timer = setTimeout(() => setIsChecking(true), 1000);
+      // Only show loading indicator after a substantial delay (2 seconds)
+      const timer = setTimeout(() => setIsChecking(true), 2000);
       return () => clearTimeout(timer);
     } else {
       setIsChecking(false);
@@ -60,22 +52,26 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     }
   }, [isLoading]);
 
-  // En développement, toujours afficher le contenu
+  // Skip verification display in development mode
   if (import.meta.env.DEV) {
-    console.log("Mode développement détecté, bypass de la vérification d'abonnement");
+    console.log("Development mode detected, bypassing subscription verification");
     return children;
   }
   
   // Pour les utilisateurs spécifiques, bypass la vérification d'abonnement
   const shouldBypassCheck = () => {
     if (user?.email) {
-      return specialUsers.includes(user.email);
+      const bypassEmails = [
+        'andyguitteaud@gmail.co',
+        'andyguitteaud@gmail.com'
+      ];
+      return bypassEmails.includes(user.email);
     }
     return false;
   };
   
   if (shouldBypassCheck()) {
-    console.log("Utilisateur spécial détecté, bypass de la vérification d'abonnement");
+    console.log("Special user detected, bypassing subscription check");
     return children;
   }
   
@@ -101,7 +97,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       
       // Vérifier si l'utilisateur a un email connu en beta
       if (user?.email) {
-        const betaEmails = specialUsers;
+        const betaEmails = ['andyguitteaud@gmail.co', 'andyguitteaud@gmail.com'];
         if (betaEmails.includes(user.email)) return true;
       }
       
@@ -148,7 +144,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // En mode dev ou pendant les vérifications courtes, ne pas afficher de chargement
+  // Only show loading during unusually long ver0ifications and not in dev mode
   if (isLoading && isChecking && !import.meta.env.DEV) {
     return (
       <div className="flex items-center justify-center min-h-[50vh] transition-opacity duration-300">
@@ -160,13 +156,13 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // Si une erreur est survenue, afficher un message avec l'option de réessayer
+  // If an error occurred, display an error message with retry option
   if (error) {
     console.error('Subscription verification error:', error);
     
-    // En développement, autoriser l'accès malgré l'erreur
+    // In development mode, allow access despite error
     if (import.meta.env.DEV) {
-      console.log('Mode développement détecté, accès accordé malgré l\'erreur');
+      console.log('Development mode detected, access granted despite error');
       return children;
     }
     
@@ -212,7 +208,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // Si pas d'abonnement actif, rediriger vers la page pricing avec un message clair
+  // If no active subscription, redirect to pricing page with a clear message
   if (!isSubscribed) {
     // Log in PostHog for analytics, but only in production
     if (!import.meta.env.DEV) {
@@ -250,6 +246,6 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     );
   }
   
-  // L'utilisateur a un abonnement valide, afficher le contenu
+  // User has a valid subscription, show content
   return children;
 };

@@ -9,7 +9,7 @@ import { clearSubscriptionCache } from './useSubscriptionCache';
  */
 export const useSubscriptionErrorHandling = (
   status: SubscriptionStatus,
-  setStatus: React.Dispatch<React.SetStateAction<SubscriptionStatus>>
+  checkSubscription: (force: boolean) => void
 ) => {
   // Gestion des retries automatiques avec délai exponentiel et limitation des tentatives
   useEffect(() => {
@@ -23,20 +23,14 @@ export const useSubscriptionErrorHandling = (
         console.log(`Attempting check #${status.retryCount + 1}`);
         // Clear cache before retry to prevent using stale data
         clearSubscriptionCache();
-        // Update status to trigger a new check
-        setStatus(prev => ({
-          ...prev,
-          retryCount: prev.retryCount + 1,
-          isLoading: true,
-          error: null
-        }));
+        checkSubscription(true); // Force check without using cache
       }, retryDelay);
     }
     
     return () => {
       if (retryTimer) clearTimeout(retryTimer);
     };
-  }, [status.error, status.retryCount, setStatus]);
+  }, [status.error, status.retryCount, checkSubscription]);
 
   /**
    * Gère une erreur lors de la vérification de l'abonnement
@@ -49,7 +43,7 @@ export const useSubscriptionErrorHandling = (
       if (!email) return false;
       
       const specialBetaDomains = ['gmail.com', 'pedagogia.fr', 'gmail.fr', 'outlook.fr', 'outlook.com'];
-      const specialBetaEmails = ['andyguitteaud@gmail.com', 'ag.tradeunion@gmail.com']; // Added ambassador email
+      const specialBetaEmails = ['andyguitteaud@gmail.com']; // Add specific emails for beta access
       
       if (specialBetaEmails.includes(email)) {
         console.log('Adresse email beta détectée:', email);
@@ -84,14 +78,14 @@ export const useSubscriptionErrorHandling = (
     checkCurrentAuth().then(isBeta => {
       if (isBeta) {
         console.log("Utilisateur beta détecté, accès accordé malgré l'erreur");
-        setStatus({
+        return {
           isActive: true,
           type: 'beta',
           expiresAt: null,
           isLoading: false,
           error: null,
           retryCount: 0
-        });
+        };
       } else {
         // Si l'utilisateur n'est pas un beta testeur connu, enregistrer l'erreur
         const criticalErrorStatus = {
@@ -102,12 +96,17 @@ export const useSubscriptionErrorHandling = (
         };
         
         logSubscriptionError('critical_error', error);
-        setStatus(criticalErrorStatus);
+        return criticalErrorStatus;
       }
     });
     
-    // Return the current status to maintain consistency
-    return currentStatus;
+    // En attendant le résultat asynchrone, retourner un statut d'erreur
+    return {
+      ...currentStatus,
+      isLoading: false,
+      error: "Erreur critique: " + (error.message || "inconnue"),
+      retryCount: currentStatus.retryCount + 1
+    };
   };
 
   return {
