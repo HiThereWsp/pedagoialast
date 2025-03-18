@@ -54,6 +54,7 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
       
       // Send welcome email for new ambassadors if they haven't received one yet
       try {
+        console.log(`Checking ambassador status for user: ${data.session?.user?.id}, email: ${email}`);
         const { data: userSub } = await supabase
           .from('user_subscriptions')
           .select('type')
@@ -61,14 +62,15 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
           .single();
         
         if (userSub?.type === 'ambassador') {
-          console.log("Ambassador detected, checking if welcome email needs to be sent");
+          console.log(`Ambassador subscription detected for user: ${data.session?.user?.id}`);
           
           // Check if the user has "ambassador_welcome_sent" in metadata
           // If not, trigger the welcome email
           const { data: { user } } = await supabase.auth.getUser();
           
           if (user && (!user.user_metadata?.ambassador_welcome_sent)) {
-            console.log("Sending ambassador welcome email...");
+            console.log(`Ambassador welcome email not sent yet for: ${email}`);
+            console.log("Initiating ambassador welcome email...");
             
             try {
               const { data: profileData } = await supabase
@@ -77,27 +79,47 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
                 .eq('id', user.id)
                 .single();
               
-              await supabase.functions.invoke('send-ambassador-welcome', {
+              const firstName = profileData?.first_name || user.user_metadata?.first_name || null;
+              console.log(`Sending welcome email to ${email} with firstName: ${firstName || 'null'}`);
+              
+              const welcomeResponse = await supabase.functions.invoke('send-ambassador-welcome', {
                 body: {
                   email: email,
-                  firstName: profileData?.first_name || user.user_metadata?.first_name || null,
+                  firstName: firstName,
                   userId: user.id
                 }
               });
               
-              // Update user metadata to mark welcome email as sent
-              await supabase.auth.updateUser({
-                data: {
-                  ambassador_welcome_sent: true,
-                  ambassador_welcome_date: new Date().toISOString()
-                }
-              });
+              console.log("Ambassador welcome email function response:", welcomeResponse);
               
-              console.log("Ambassador welcome email sent and user metadata updated");
+              if (welcomeResponse.error) {
+                console.error("Failed to send ambassador welcome email:", welcomeResponse.error);
+              } else {
+                // Update user metadata to mark welcome email as sent
+                const updateResponse = await supabase.auth.updateUser({
+                  data: {
+                    ambassador_welcome_sent: true,
+                    ambassador_welcome_date: new Date().toISOString()
+                  }
+                });
+                
+                if (updateResponse.error) {
+                  console.error("Failed to update user metadata:", updateResponse.error);
+                } else {
+                  console.log("Ambassador welcome email sent and user metadata updated");
+                }
+              }
             } catch (err) {
-              console.error("Failed to send ambassador welcome email:", err);
+              console.error("Exception during ambassador welcome email process:", err);
+            }
+          } else {
+            console.log(`Ambassador welcome email already sent to: ${email}`);
+            if (user?.user_metadata?.ambassador_welcome_date) {
+              console.log(`Welcome email sent on: ${user.user_metadata.ambassador_welcome_date}`);
             }
           }
+        } else {
+          console.log(`User ${data.session?.user?.id} is not an ambassador, has type: ${userSub?.type || 'none'}`);
         }
       } catch (err) {
         console.error("Error checking ambassador status:", err);

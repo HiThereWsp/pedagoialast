@@ -69,14 +69,19 @@ const getAmbassadorWelcomeTemplate = (firstName: string) => `
 `
 
 serve(async (req) => {
+  // Generate request ID for tracing this specific request through logs
+  const requestId = `req-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+  console.log(`[${requestId}] 🚀 Ambassador welcome email request received`);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log(`[${requestId}] Handling CORS preflight request`);
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     if (!BREVO_API_KEY) {
-      console.error("BREVO_API_KEY is missing");
+      console.error(`[${requestId}] ❌ BREVO_API_KEY is missing`);
       return new Response(JSON.stringify({ error: "API key configuration missing" }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -85,6 +90,7 @@ serve(async (req) => {
 
     // Only allow POST requests
     if (req.method !== "POST") {
+      console.log(`[${requestId}] ❌ Method not allowed: ${req.method}`);
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -95,18 +101,21 @@ serve(async (req) => {
     const { email, firstName, userId, manualSend = false } = await req.json();
     
     if (!email) {
+      console.log(`[${requestId}] ❌ Email is required but was missing`);
       return new Response(JSON.stringify({ error: "Email is required" }), {
         status: 400,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
     
-    console.log(`Sending ambassador welcome email to: ${email}, name: ${firstName || 'Ambassadeur'}`);
+    console.log(`[${requestId}] 📧 Processing ambassador welcome email request for: ${email}, name: ${firstName || 'Ambassadeur'}, userId: ${userId || 'unknown'}`);
+    console.log(`[${requestId}] Manual send mode: ${manualSend ? 'YES' : 'NO'}`);
     
     // Check if welcome email was already sent (unless this is a manual send)
     if (!manualSend) {
-      // Use Brevo API to check if the user already has the WELCOME_EMAIL_SENT attribute
+      console.log(`[${requestId}] 🔍 Checking if welcome email was already sent to ${email}`);
       try {
+        const checkStartTime = Date.now();
         const checkResponse = await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`, {
           method: "GET",
           headers: {
@@ -115,25 +124,44 @@ serve(async (req) => {
           }
         });
         
+        console.log(`[${requestId}] Brevo contact check response status: ${checkResponse.status} (took ${Date.now() - checkStartTime}ms)`);
+        
         if (checkResponse.ok) {
           const contactData = await checkResponse.json();
+          console.log(`[${requestId}] Contact data retrieved for ${email}`, {
+            attributes: contactData.attributes || 'none',
+            listIds: contactData.listIds || 'none',
+          });
+          
           if (contactData.attributes && contactData.attributes.WELCOME_EMAIL_SENT === "true") {
-            console.log(`Welcome email already sent to ${email}, skipping.`);
+            console.log(`[${requestId}] ⚠️ Welcome email already sent to ${email}, skipping.`);
             return new Response(JSON.stringify({ 
               message: "Welcome email already sent to this user", 
-              skipped: true 
+              skipped: true,
+              requestId: requestId
             }), {
               headers: { "Content-Type": "application/json", ...corsHeaders },
             });
+          } else {
+            console.log(`[${requestId}] ✅ Welcome email not sent yet to ${email}, proceeding.`);
           }
+        } else {
+          // If contact doesn't exist or there's an error, we'll proceed with sending
+          const errorText = await checkResponse.text();
+          console.log(`[${requestId}] Could not check contact status (${checkResponse.status}): ${errorText}. Will send email anyway.`);
         }
       } catch (e) {
         // If we can't check, we'll proceed with sending anyway
-        console.error("Error checking contact attributes:", e);
+        console.error(`[${requestId}] ❌ Error checking contact attributes:`, e);
+        console.log(`[${requestId}] Will proceed with sending email despite check error`);
       }
+    } else {
+      console.log(`[${requestId}] 🔄 Manual send mode - skipping previous send check`);
     }
     
     // Send email via Brevo transactional email API
+    console.log(`[${requestId}] 📤 Attempting to send welcome email to ${email}`);
+    const sendStartTime = Date.now();
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
@@ -158,9 +186,11 @@ serve(async (req) => {
       }),
     });
 
+    console.log(`[${requestId}] Brevo email API response status: ${response.status} (took ${Date.now() - sendStartTime}ms)`);
+
     if (!response.ok) {
       const errorDetail = await response.text();
-      console.error("Brevo API error:", {
+      console.error(`[${requestId}] ❌ Brevo API error:`, {
         status: response.status,
         statusText: response.statusText,
         error: errorDetail
@@ -169,7 +199,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         error: "Failed to send welcome email", 
         details: errorDetail,
-        status: response.status
+        status: response.status,
+        requestId: requestId
       }), {
         status: response.status,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -177,8 +208,10 @@ serve(async (req) => {
     }
 
     // Mark the contact as having received the welcome email
+    console.log(`[${requestId}] 📝 Updating contact attributes in Brevo to mark welcome email as sent`);
     try {
-      await fetch("https://api.brevo.com/v3/contacts", {
+      const updateStartTime = Date.now();
+      const updateResponse = await fetch("https://api.brevo.com/v3/contacts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -195,22 +228,41 @@ serve(async (req) => {
           updateEnabled: true
         }),
       });
-      console.log(`Contact ${email} updated with WELCOME_EMAIL_SENT=true`);
+      
+      const updateStatus = updateResponse.status;
+      console.log(`[${requestId}] Brevo contact update response status: ${updateStatus} (took ${Date.now() - updateStartTime}ms)`);
+      
+      if (updateResponse.ok) {
+        console.log(`[${requestId}] ✅ Contact ${email} successfully updated with WELCOME_EMAIL_SENT=true`);
+      } else {
+        const updateError = await updateResponse.text();
+        console.error(`[${requestId}] ⚠️ Error updating contact attributes:`, {
+          status: updateStatus,
+          error: updateError
+        });
+        console.log(`[${requestId}] Will continue despite contact update error`);
+      }
     } catch (e) {
-      console.error("Error updating contact attributes:", e);
+      console.error(`[${requestId}] ❌ Exception updating contact attributes:`, e);
       // Continue even if this fails
     }
 
     // Success response
+    console.log(`[${requestId}] ✅ Ambassador welcome email successfully sent to ${email}`);
     return new Response(JSON.stringify({ 
       success: true, 
-      message: `Ambassador welcome email sent to ${email}` 
+      message: `Ambassador welcome email sent to ${email}`,
+      requestId: requestId
     }), {
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error) {
-    console.error("Internal server error:", error.message);
-    return new Response(JSON.stringify({ error: "Internal Server Error", details: error.message }), {
+    console.error(`[${requestId}] ❌ Internal server error:`, error.message, error.stack);
+    return new Response(JSON.stringify({ 
+      error: "Internal Server Error", 
+      details: error.message,
+      requestId: requestId
+    }), {
       status: 500,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
