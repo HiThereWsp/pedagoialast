@@ -5,9 +5,8 @@ import { TableOfContents } from './TableOfContents';
 import { FirstStepsSection } from './FirstStepsSection';
 import { SequenceGeneratorSection } from './SequenceGeneratorSection';
 import { ExercisesSection } from './ExercisesSection';
-import { ImageGeneratorSection } from './ImageGeneratorSection';
 import { DifferentiationSection } from './DifferentiationSection';
-import { SuggestionsSection } from './SuggestionsSection';
+import { ImageGeneratorSection } from './ImageGeneratorSection';
 import { GuideFAQSection } from './FAQSection';
 import { ConclusionSection } from './ConclusionSection';
 
@@ -15,7 +14,7 @@ export function GuideContent() {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto space-y-16">
+        <div className="max-w-3xl mx-auto space-y-24">
           <IntroductionSection />
           <TableOfContents />
           <FirstStepsSection />
@@ -23,7 +22,6 @@ export function GuideContent() {
           <ExercisesSection />
           <DifferentiationSection />
           <ImageGeneratorSection />
-          <SuggestionsSection />
           <GuideFAQSection />
           <ConclusionSection />
           
