@@ -8,6 +8,8 @@ export type SubscriptionStatus = {
   retryCount: number;
   timestamp?: number;
   previousType?: string | null;
+  forceReload?: boolean; // Add this flag to handle forced reloads
+  cachedUntil?: number; // Add explicit cache expiration timestamp
 };
 
 export const initialStatus: SubscriptionStatus = {
@@ -21,5 +23,6 @@ export const initialStatus: SubscriptionStatus = {
 
 // Constants for cache management
 export const CACHE_KEY = 'subscription_status';
-export const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds (increased from 10 minutes)
-export const REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds (increased from 30 minutes)
+export const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+export const REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
+export const VERIFICATION_TIMEOUT = 10 * 1000; // 10 seconds timeout for verification

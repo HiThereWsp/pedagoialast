@@ -1,5 +1,4 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { SEO } from "@/components/SEO";
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -9,7 +8,6 @@ import { Tiles } from "@/components/ui/tiles";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { Menu, ArrowLeft } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BottomBar } from '@/components/mobile/BottomBar';
 
@@ -52,9 +50,16 @@ export const ToolsLayout = () => {
     fetchUserProfile();
   }, [user]);
 
-  // Fonction pour revenir à la page précédente
+  // Fonction pour revenir à la page précédente en utilisant React Router
   const handleGoBack = () => {
+    console.log("Going back from location:", location.pathname);
     navigate(-1);
+  };
+  
+  // Safe navigation using React Router
+  const safeNavigate = (path: string) => {
+    console.log(`Safe navigation to: ${path} from: ${location.pathname}`);
+    navigate(path);
   };
   
   return (
@@ -70,13 +75,13 @@ export const ToolsLayout = () => {
             <div className="flex flex-col h-full">
               {/* Logo centré avec taille réduite */}
               <div className="flex justify-center items-center py-4 border-b border-gray-200">
-                <a href="/tableaudebord" className="flex items-center justify-center">
+                <div onClick={() => safeNavigate('/tableaudebord')} className="flex items-center justify-center cursor-pointer">
                   <img 
                     src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                     alt="PedagoIA Logo" 
                     className="h-16 w-16" 
                   />
-                </a>
+                </div>
               </div>
               
               {/* Sidebar content */}
@@ -98,13 +103,13 @@ export const ToolsLayout = () => {
             </Button>
             
             <div className="flex-1 flex justify-center">
-              <a href="/tableaudebord" className="flex items-center justify-center">
+              <div onClick={() => safeNavigate('/tableaudebord')} className="flex items-center justify-center cursor-pointer">
                 <img 
                   src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
                   alt="PedagoIA Logo" 
                   className="h-12 w-12" 
                 />
-              </a>
+              </div>
             </div>
           </div>
         )}

@@ -15,55 +15,18 @@ export const checkUserAccess = async (
   try {
     console.log("Calling check-user-access function");
     
-    // Vérification simplifiée pour les emails beta connus
-    const checkKnownBetaEmail = async (): Promise<boolean> => {
+    // Vérification simplifiée pour les emails beta et ambassadeur connus
+    const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> => {
       try {
         const { data } = await supabase.auth.getSession();
         const email = data.session?.user?.email;
         
-        if (email) {
-          // Liste d'emails et de domaines qui ont accès beta
-          const betaEmails = [
-            'andyguitteaud@gmail.co', 
-            'andyguitteaud@gmail.com',
-            // Ajouter d'autres emails ici si nécessaire
-          ];
-          
-          if (betaEmails.includes(email)) {
-            console.log("Email beta connu détecté, accès accordé:", email);
-            
-            // Définir le statut d'abonnement beta
-            const betaStatus = {
-              isActive: true,
-              type: 'beta',
-              expiresAt: null,
-              isLoading: false,
-              error: null,
-              retryCount: 0
-            };
-            
-            setStatus(betaStatus);
-            cacheSubscriptionStatus(betaStatus);
-            return true;
-          }
-        }
-      } catch (err) {
-        console.error("Erreur lors de la vérification d'email beta:", err);
-      }
-      return false;
-    };
-    
-    // Vérification spéciale pour l'utilisateur problématique en question
-    const checkSpecificAmbassadorEmail = async (): Promise<boolean> => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        const email = data.session?.user?.email;
+        if (!email) return null;
         
-        // Vérification spécifique pour l'email problématique
+        // Special case for known ambassador
         if (email === 'ag.tradeunion@gmail.com') {
-          console.log("Email ambassadeur spécifique détecté, accès ambassadeur forcé:", email);
+          console.log("Special ambassador email detected, providing immediate access:", email);
           
-          // Définir explicitement le statut d'abonnement ambassadeur
           const ambassadorStatus = {
             isActive: true,
             type: 'ambassador',
@@ -71,13 +34,10 @@ export const checkUserAccess = async (
             isLoading: false,
             error: null,
             retryCount: 0,
-            previousType: status.type // Conserver l'ancien type
+            special_handling: true
           };
           
-          setStatus(ambassadorStatus);
-          cacheSubscriptionStatus(ambassadorStatus);
-          
-          // Tenter de mettre à jour la base de données également
+          // Try to update database but don't block on it
           try {
             const { data: { user } } = await supabase.auth.getUser();
             if (user && user.id) {
@@ -90,30 +50,68 @@ export const checkUserAccess = async (
                 }, {
                   onConflict: 'user_id'
                 });
-              console.log("Base de données mise à jour pour l'utilisateur ambassadeur spécifique");
+              console.log("Ambassador subscription data updated in database");
             }
           } catch (dbErr) {
-            console.error("Erreur lors de la mise à jour du statut ambassadeur dans la base de données:", dbErr);
-            // Continue malgré l'erreur
+            console.error("Error updating ambassador subscription in database:", dbErr);
+            // Continue despite error
           }
           
-          return true;
+          return ambassadorStatus;
+        }
+        
+        // Beta email list
+        const betaEmails = [
+          'andyguitteaud@gmail.co', 
+          'andyguitteaud@gmail.com',
+        ];
+        
+        if (betaEmails.includes(email)) {
+          console.log("Beta email detected, providing immediate access:", email);
+          
+          const betaStatus = {
+            isActive: true,
+            type: 'beta',
+            expiresAt: null,
+            isLoading: false,
+            error: null,
+            retryCount: 0
+          };
+          
+          return betaStatus;
+        }
+        
+        // Beta domains
+        const betaDomains = ['gmail.com', 'pedagogia.fr', 'gmail.fr', 'outlook.fr', 'outlook.com'];
+        const emailDomain = email.split('@')[1];
+        
+        if (betaDomains.includes(emailDomain)) {
+          console.log("Beta domain detected, providing immediate access:", emailDomain);
+          
+          const betaStatus = {
+            isActive: true,
+            type: 'beta',
+            expiresAt: null,
+            isLoading: false,
+            error: null,
+            retryCount: 0
+          };
+          
+          return betaStatus;
         }
       } catch (err) {
-        console.error("Erreur lors de la vérification d'email ambassadeur spécifique:", err);
+        console.error("Error checking special emails:", err);
       }
-      return false;
+      
+      return null;
     };
     
-    // Si c'est un email spécifique d'ambassadeur, court-circuiter le reste de la vérification
-    const isSpecificAmbassador = await checkSpecificAmbassadorEmail();
-    if (isSpecificAmbassador) {
-      return true;
-    }
-    
-    // Si c'est un email beta connu, court-circuiter le reste de la vérification
-    const isBetaEmail = await checkKnownBetaEmail();
-    if (isBetaEmail) {
+    // Check for special emails first (short-circuit full verification)
+    const specialStatus = await checkSpecialEmails();
+    if (specialStatus) {
+      console.log("Special status found, skipping regular verification");
+      setStatus(specialStatus);
+      cacheSubscriptionStatus(specialStatus);
       return true;
     }
     
@@ -126,16 +124,38 @@ export const checkUserAccess = async (
     console.log("Sending request to check-user-access...");
     const startTime = performance.now();
     
-    // Appel à notre fonction edge pour vérifier l'accès
-    const { data, error } = await supabase.functions.invoke('check-user-access', {
+    // Set a timeout for the function call to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("check-user-access timeout")), 8000);
+    });
+    
+    // Call edge function with timeout
+    const responsePromise = supabase.functions.invoke('check-user-access', {
       headers: headers
     });
+    
+    // Race the function call against the timeout
+    const { data, error } = await Promise.race([
+      responsePromise,
+      timeoutPromise.then(() => {
+        throw new Error("check-user-access timed out after 8 seconds");
+      })
+    ]) as any;
     
     const duration = Math.round(performance.now() - startTime);
     console.log(`check-user-access response received in ${duration}ms:`, data);
     
     if (error) {
       console.error('Edge function error:', error);
+      
+      // Try special email handling as fallback
+      const fallbackStatus = await checkSpecialEmails();
+      if (fallbackStatus) {
+        console.log("Using fallback special status after edge function error");
+        setStatus(fallbackStatus);
+        cacheSubscriptionStatus(fallbackStatus);
+        return true;
+      }
       
       // More descriptive error message based on context
       const errorMessage = error.message && error.message.includes("enum") 
@@ -157,6 +177,15 @@ export const checkUserAccess = async (
     
     if (!data) {
       console.error("No data received from check-user-access");
+      
+      // Try special email handling as fallback
+      const fallbackStatus = await checkSpecialEmails();
+      if (fallbackStatus) {
+        console.log("Using fallback special status after no data response");
+        setStatus(fallbackStatus);
+        cacheSubscriptionStatus(fallbackStatus);
+        return true;
+      }
       
       const invalidResponseStatus = {
         ...initialStatus,
@@ -187,7 +216,7 @@ export const checkUserAccess = async (
       return false; // Ils n'ont pas encore un accès complet
     }
     
-    // Gestion spéciale pour les ambassadeurs - PRIORITÉ ÉLEVÉE
+    // Gestion spéciale pour les ambassadeurs
     if (data.type === 'ambassador') {
       console.log("Ambassador user detected");
       const ambassadorStatus = {
@@ -197,7 +226,7 @@ export const checkUserAccess = async (
         isLoading: false,
         error: null,
         retryCount: 0,
-        previousType: status.type // Garder trace du type précédent
+        previousType: status.type
       };
       
       setStatus(ambassadorStatus);
@@ -213,7 +242,7 @@ export const checkUserAccess = async (
       isLoading: false,
       error: null,
       retryCount: 0,
-      previousType: status.type // Garder trace du type précédent
+      previousType: status.type
     };
     
     console.log("Setting validated subscription status:", validStatus);
@@ -225,6 +254,15 @@ export const checkUserAccess = async (
     return !!data.access;
   } catch (err) {
     console.error('Unexpected error during subscription check:', err);
+    
+    // Try special email handling as fallback for any error
+    const fallbackStatus = await checkSpecialEmails();
+    if (fallbackStatus) {
+      console.log("Using fallback special status after exception");
+      setStatus(fallbackStatus);
+      cacheSubscriptionStatus(fallbackStatus);
+      return true;
+    }
     
     const unexpectedErrorStatus = {
       ...initialStatus,
