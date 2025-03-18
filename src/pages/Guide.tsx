@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { SEO } from "@/components/SEO";
@@ -10,7 +9,6 @@ import { Tiles } from "@/components/ui/tiles";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
 import { posthog } from '@/integrations/posthog/client';
-
 const Guide = () => {
   const [searchParams] = useSearchParams();
 
@@ -24,15 +22,8 @@ const Guide = () => {
       utm_term: searchParams.get('utm_term')
     });
   }, [searchParams]);
-  
-  return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <SEO 
-        title="Guide Complet PedagoIA : L'Assistant IA qui Révolutionne la Préparation des Cours"
-        description="Découvrez comment l'assistant pédagogique intelligent PedagoIA vous permet d'économiser jusqu'à 60% de votre temps de préparation tout en créant des contenus plus personnalisés pour vos élèves."
-        image="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
-        article={true}
-      />
+  return <div className="min-h-screen flex flex-col bg-white">
+      <SEO title="Guide Complet PedagoIA : L'Assistant IA qui Révolutionne la Préparation des Cours" description="Découvrez comment l'assistant pédagogique intelligent PedagoIA vous permet d'économiser jusqu'à 60% de votre temps de préparation tout en créant des contenus plus personnalisés pour vos élèves." image="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" article={true} />
       
       <Header />
       
@@ -46,11 +37,7 @@ const Guide = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-4xl mx-auto text-center">
               <div className="inline-block mb-8">
-                <img 
-                  src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
-                  alt="PedagoIA Logo" 
-                  className="h-24 mx-auto"
-                />
+                <img src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" alt="PedagoIA Logo" className="h-24 mx-auto" />
               </div>
               
               <h1 className="text-4xl md:text-5xl font-bold mb-2 text-balance leading-tight tracking-tight text-[#1a365d]">
@@ -160,7 +147,7 @@ const Guide = () => {
                   <p className="text-gray-500">[Vidéo/GIF montrant le processus d'inscription]</p>
                 </div>
                 
-                <p className="text-lg leading-relaxed text-gray-700 mb-8">PedagoIA est spécialement conçu pour les enseignants français, de la maternelle au lycée. Pour commencer :</p>
+                <p className="text-lg leading-relaxed text-gray-700 mb-8">PedagoIA est spécialement conçu pour les enseignants francophone, de la maternelle au lycée. Pour commencer :</p>
                 
                 <ol className="list-none space-y-6 mb-12 pl-0">
                   <li className="flex items-start">
@@ -354,11 +341,7 @@ const Guide = () => {
                 <p className="text-lg leading-relaxed text-gray-700 mb-12">Prêt à transformer votre pratique enseignante et à redécouvrir le plaisir d'enseigner ?</p>
                 
                 <div className="text-center my-16">
-                  <Link 
-                    to="/login" 
-                    className="inline-block bg-purple-600 hover:bg-purple-700 text-white py-4 px-8 rounded-lg font-medium transition-colors text-lg shadow-md hover:shadow-lg"
-                    onClick={() => posthog.capture('guide_cta_clicked')}
-                  >
+                  <Link to="/login" className="inline-block bg-purple-600 hover:bg-purple-700 text-white py-4 px-8 rounded-lg font-medium transition-colors text-lg shadow-md hover:shadow-lg" onClick={() => posthog.capture('guide_cta_clicked')}>
                     Essayer PedagoIA gratuitement pendant 3 jours
                   </Link>
                 </div>
@@ -381,8 +364,6 @@ const Guide = () => {
       </main>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default Guide;
