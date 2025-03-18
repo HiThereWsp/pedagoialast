@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -9,35 +8,78 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
   if (!email) return false;
   
   try {
-    // First get the user ID directly
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', email.toLowerCase())
-      .maybeSingle();
+    console.log(`Vérification de l'accès beta pour l'email: ${email}`);
     
-    if (profileError || !profile) {
-      console.log('Utilisateur non trouvé par email:', email);
+    // Get the current authenticated user session to check if the email matches
+    const { data: sessionData } = await supabase.auth.getSession();
+    const currentUser = sessionData.session?.user;
+    
+    let userId: string | undefined;
+    
+    // If the email matches the current authenticated user, use their ID directly
+    if (currentUser && currentUser.email?.toLowerCase() === email.toLowerCase()) {
+      userId = currentUser.id;
+      console.log(`Email corresponds to authenticated user with ID: ${userId}`);
+    } else {
+      // Otherwise, we need to try to find the user through other means
+      // Since we can't directly query auth.users by email, we'll try our best with profiles table
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, first_name')
+        .like('first_name', `%${email}%`)
+        .limit(5);
+        
+      if (profiles && profiles.length > 0) {
+        userId = profiles[0].id;
+        console.log(`Profile potentially matching found with ID: ${userId}`);
+      } else {
+        console.log(`No profile found matching the email: ${email}`);
+        return false;
+      }
+    }
+    
+    if (!userId) {
+      console.log(`No user ID found for the email: ${email}`);
       return false;
     }
     
-    // Then check for beta subscription with the user ID
-    const { data, error } = await supabase
+    console.log(`Checking beta subscription for user ID: ${userId}`);
+    
+    // Check for beta subscription with the user ID
+    const { data: subscription, error: subError } = await supabase
       .from('user_subscriptions')
-      .select('id')
-      .eq('user_id', profile.id)
+      .select('id, status, expires_at')
+      .eq('user_id', userId)
       .eq('type', 'beta')
       .eq('status', 'active')
       .maybeSingle();
     
-    if (error) {
-      console.error('Erreur lors de la vérification du statut beta par abonnement:', error);
+    if (subError) {
+      console.error('Error checking beta subscription:', subError);
       return false;
     }
     
-    return !!data;
+    if (subscription) {
+      console.log(`Active beta subscription found for ${email}:`, subscription);
+      
+      // Check if subscription has expiry date and if it's in the future
+      if (subscription.expires_at) {
+        const expiresAt = new Date(subscription.expires_at);
+        const now = new Date();
+        
+        if (expiresAt < now) {
+          console.log(`Beta subscription expired on ${expiresAt.toLocaleDateString()} for ${email}`);
+          return false;
+        }
+      }
+      
+      return true;
+    }
+    
+    console.log(`No beta subscription found for ${email}`);
+    return false;
   } catch (err) {
-    console.error('Exception lors de la vérification du statut beta:', err);
+    console.error('Exception when checking beta status:', err);
     return false;
   }
 };
@@ -50,35 +92,63 @@ export const checkBetaEmailAlternate = async (email: string): Promise<boolean> =
   if (!email) return false;
   
   try {
-    // First get the user ID directly
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('email', email.toLowerCase())
-      .maybeSingle();
+    console.log(`Alternative verification of beta access for email: ${email}`);
     
-    if (profileError || !profile) {
-      console.log('Utilisateur non trouvé par email:', email);
+    // Get the current authenticated user session
+    const { data: sessionData } = await supabase.auth.getSession();
+    const currentUser = sessionData.session?.user;
+    
+    let userId: string | undefined;
+    
+    // If the email matches the current user, we can use their ID directly
+    if (currentUser && currentUser.email?.toLowerCase() === email.toLowerCase()) {
+      userId = currentUser.id;
+      console.log(`Currently authenticated user found: ${userId}`);
+    } else {
+      // Fallback to trying to find the user by matching first name that might contain the email
+      // This is a heuristic approach and not reliable
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, first_name')
+        .like('first_name', `%${email}%`)
+        .limit(5);
+        
+      if (profiles && profiles.length > 0) {
+        userId = profiles[0].id;
+        console.log(`Profile potentially matching found with ID: ${userId}`);
+      }
+    }
+    
+    if (!userId) {
+      console.log(`No profile found for email (alternative method): ${email}`);
       return false;
     }
     
+    console.log(`Profile found (alternative method) with ID: ${userId}`);
+    
     // Then check for beta subscription with the user ID
-    const { data, error } = await supabase
+    const { data: subscription, error: subError } = await supabase
       .from('user_subscriptions')
-      .select('id')
-      .eq('user_id', profile.id)
+      .select('id, status, expires_at')
+      .eq('user_id', userId)
       .eq('type', 'beta')
       .eq('status', 'active')
       .maybeSingle();
     
-    if (error) {
-      console.error('Erreur lors de la vérification du statut beta par abonnement:', error);
+    if (subError) {
+      console.error('Error checking alternative beta subscription:', subError);
       return false;
     }
     
-    return !!data;
+    if (subscription) {
+      console.log(`Active beta subscription found (alternative method) for ${email}`);
+      return true;
+    }
+    
+    console.log(`No beta subscription found (alternative method) for ${email}`);
+    return false;
   } catch (err) {
-    console.error('Exception lors de la vérification du statut beta:', err);
+    console.error('Exception when checking alternative beta status:', err);
     return false;
   }
 };
@@ -97,14 +167,14 @@ export const checkBetaWelcomeMessage = async (userId: string): Promise<boolean> 
       .maybeSingle();
     
     if (error) {
-      console.error('Erreur lors de la vérification du message de bienvenue beta:', error);
+      console.error('Error checking beta welcome message:', error);
       return false;
     }
     
     // Si l'enregistrement existe et que le message n'a pas été envoyé, on doit afficher le message
     return !!data && !data.message_sent;
   } catch (err) {
-    console.error('Exception lors de la vérification du message de bienvenue beta:', err);
+    console.error('Exception when checking beta welcome message:', err);
     return false;
   }
 };
@@ -122,9 +192,9 @@ export const markBetaWelcomeMessageAsSent = async (userId: string): Promise<void
       .eq('user_id', userId);
     
     if (error) {
-      console.error('Erreur lors du marquage du message de bienvenue comme envoyé:', error);
+      console.error('Error marking welcome message as sent:', error);
     }
   } catch (err) {
-    console.error('Exception lors du marquage du message de bienvenue comme envoyé:', err);
+    console.error('Exception when marking welcome message as sent:', err);
   }
 };

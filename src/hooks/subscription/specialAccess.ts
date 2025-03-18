@@ -18,6 +18,8 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     
     if (!email) return null;
     
+    console.log(`Vérification des accès spéciaux pour: ${email}`);
+    
     // Check if user has paid or trial subscription first
     // If they do, don't apply beta or ambassador status
     if (userId) {
@@ -64,7 +66,7 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     // Fallback: legacy check for emails in beta_users (backward compatibility)
     const isBetaUser = await checkBetaEmailAlternate(email);
     if (isBetaUser) {
-      console.log("Validated beta user detected via legacy method, providing beta access:", email);
+      console.log("Validated beta user detected via alternative method, providing beta access:", email);
       return createBetaStatus();
     }
   } catch (err) {
