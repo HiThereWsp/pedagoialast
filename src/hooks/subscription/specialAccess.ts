@@ -53,7 +53,7 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
         .eq('user_id', userId)
         .eq('type', 'beta')
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
         
       if (betaSubscription) {
         console.log("Beta subscription detected, providing beta access:", email);
@@ -86,7 +86,7 @@ export const checkAmbassadorSubscription = async (userId: string, email: string)
       .eq('user_id', userId)
       .eq('type', 'ambassador')
       .eq('status', 'active')
-      .single();
+      .maybeSingle();
     
     return !!userSub;
   } catch (err) {
