@@ -6,7 +6,9 @@ import { cacheSubscriptionStatus } from './useSubscriptionCache';
  * Check if user is in development mode
  * @returns {boolean} True if in development mode
  */
-export const checkDevMode = (setStatus: (status: SubscriptionStatus) => void): boolean => {
+export const checkDevMode = (
+  setStatus: React.Dispatch<React.SetStateAction<SubscriptionStatus>>
+): boolean => {
   if (import.meta.env.DEV) {
     console.log("Development mode detected, simulating active subscription");
     const devStatus = {

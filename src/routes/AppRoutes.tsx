@@ -1,58 +1,89 @@
+
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { SubscriptionRoute } from './SubscriptionRoute'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import LandingPage from '@/pages/LandingPage'
-import LoginPage from '@/pages/LoginPage'
+
+// Import pages from the correct paths
+import Landing from '@/pages/Landing'
+import Login from '@/pages/Login'
 import SignupPage from '@/pages/SignupPage'
 import PricingPage from '@/pages/PricingPage'
 import ContactPage from '@/pages/ContactPage'
-import LegalPage from '@/pages/LegalPage'
-import PrivacyPage from '@/pages/PrivacyPage'
-import TermsPage from '@/pages/TermsPage'
-import DashboardPage from '@/pages/Home'
-import SettingsLayout from '@/components/layout/SettingsLayout'
-import AccountLayout from '@/components/layout/AccountLayout'
-import GeneratorLayout from '@/components/layout/GeneratorLayout'
+import Legal from '@/pages/Legal'
+import Privacy from '@/pages/Privacy'
+import Terms from '@/pages/Terms'
+import TableauDeBord from '@/pages/TableauDeBord'
+import Settings from '@/pages/Settings'
+import CorrespondencePage from '@/pages/CorrespondencePage'
+import LessonPlanPage from '@/pages/LessonPlanPage'
+import ExercisePage from '@/pages/ExercisePage'
+import SavedContentPage from '@/pages/SavedContentPage'
+import ImageGenerationPage from '@/pages/ImageGenerationPage'
 
 function AppRoutes() {
   return (
     <ErrorBoundary>
       <Routes>
         {/* Routes publiques - pas besoin de vérification d'abonnement */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/legal" element={<LegalPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/legal" element={<Legal />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/" element={<Landing />} />
 
         {/* Routes protégées - avec vérification d'abonnement */}
-        <Route path="/generateur-*" element={
+        {/* Adjust the Generator routes */}
+        <Route path="/generateur-de-sequence" element={
           <SubscriptionRoute>
             <ErrorBoundary>
-              <GeneratorLayout />
+              <LessonPlanPage />
+            </ErrorBoundary>
+          </SubscriptionRoute>
+        } />
+        
+        <Route path="/generateur-exercices" element={
+          <SubscriptionRoute>
+            <ErrorBoundary>
+              <ExercisePage />
+            </ErrorBoundary>
+          </SubscriptionRoute>
+        } />
+        
+        <Route path="/generateur-images" element={
+          <SubscriptionRoute>
+            <ErrorBoundary>
+              <ImageGenerationPage />
+            </ErrorBoundary>
+          </SubscriptionRoute>
+        } />
+        
+        <Route path="/generateur-correspondance" element={
+          <SubscriptionRoute>
+            <ErrorBoundary>
+              <CorrespondencePage />
             </ErrorBoundary>
           </SubscriptionRoute>
         } />
         
         <Route path="/tableau-de-bord" element={
           <ErrorBoundary>
-            <DashboardPage />
+            <TableauDeBord />
           </ErrorBoundary>
         } />
         
         <Route path="/settings/*" element={
           <ErrorBoundary>
-            <SettingsLayout />
+            <Settings />
           </ErrorBoundary>
         } />
         
-        <Route path="/account/*" element={
+        <Route path="/contenu-sauvegarde" element={
           <ErrorBoundary>
-            <AccountLayout />
+            <SavedContentPage />
           </ErrorBoundary>
         } />
 

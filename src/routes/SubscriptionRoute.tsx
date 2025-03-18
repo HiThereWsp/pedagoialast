@@ -25,7 +25,7 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   const specialUsers = [
     'andyguitteaud@gmail.co',
     'andyguitteaud@gmail.com',
-    'ag.tradeunion@gmail.com'
+    'ag.tradeunion@gmail.com' // Ambassador email
   ];
   
   // Vérifier si c'est un utilisateur spécial
@@ -38,14 +38,15 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   
   // Si c'est un utilisateur spécial, afficher directement le contenu
   if (showContent) {
+    console.log("[DEBUG] Contenu forcé pour utilisateur spécial");
     return children;
   }
   
   // Réduire le temps d'affichage de la vérification - seulement montrer l'indicateur si ça prend trop longtemps
   useEffect(() => {
     if (isLoading) {
-      // Afficher l'indicateur de chargement seulement après un délai substantiel (2 secondes)
-      const timer = setTimeout(() => setIsChecking(true), 2000);
+      // Afficher l'indicateur de chargement seulement après un délai substantiel (1 seconde)
+      const timer = setTimeout(() => setIsChecking(true), 1000);
       return () => clearTimeout(timer);
     } else {
       setIsChecking(false);
