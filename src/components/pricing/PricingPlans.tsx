@@ -67,7 +67,7 @@ export const PricingPlans = ({
     
     // Tracking PostHog
     pricingEvents.selectPlan('trial');
-    subscriptionEvents.subscriptionStarted('trial_200days', 0.50);
+    subscriptionEvents.subscriptionStarted('trial', 0.50);
     
     // Tracking Facebook
     facebookEvents.initiateCheckout('trial', 0.50);

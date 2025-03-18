@@ -16,6 +16,7 @@ interface PricingCardProps {
   isPremium?: boolean;
   badge?: string;
   disabled?: boolean;
+  fullWidth?: boolean;
 }
 
 export const PricingCard = ({
@@ -28,10 +29,11 @@ export const PricingCard = ({
   onSubscribe,
   isPremium = false,
   badge,
-  disabled = false
+  disabled = false,
+  fullWidth = false
 }: PricingCardProps) => {
   return (
-    <div className="relative pt-5">
+    <div className={`relative pt-5 ${fullWidth ? 'w-full' : ''}`}>
       {badge && (
         <Badge className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-[#FFA500] to-[#FF69B4] text-white font-semibold border-none shadow-md z-10">
           {badge}

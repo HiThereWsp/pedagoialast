@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 
-type SubscriptionType = 'monthly' | 'yearly';
+type SubscriptionType = 'monthly' | 'yearly' | 'trial' | 'trial_200days';
 
 const PRICE_IDS = {
   monthly: 'price_1R22GyIqXQKnGj4mvQpgJUIR',
@@ -69,5 +69,5 @@ export const handleSubscription = async (planType: SubscriptionType, isTrial = f
 
 // Nouvelle fonction spécifique pour l'essai de 200 jours
 export const handleTrialSubscription = async () => {
-  return handleSubscription('monthly', true); // On utilise 'monthly' comme base, mais avec isTrial=true
+  return handleSubscription('trial', true); // On utilise 'trial' comme base, mais avec isTrial=true
 }
