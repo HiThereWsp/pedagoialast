@@ -31,12 +31,12 @@ export function GenerateExerciseForm({ formData, handleInputChange, isLessonPlan
         <Subject 
           value={formData.subject} 
           onChange={handleInputChange}
-          disabled={isLessonPlanSelected}
+          disabled={false} // Always allow editing the subject
         />
         <ClassLevel 
           value={formData.classLevel} 
           onChange={handleInputChange}
-          disabled={isLessonPlanSelected}
+          disabled={false} // Always allow editing the class level
         />
       </div>
       

@@ -23,7 +23,7 @@ export const SavedContentError: React.FC<SavedContentErrorProps> = React.memo(({
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-4">
-        <BackButton />
+        <BackButton fallbackPath="/tableaudebord" />
       </div>
       
       <Card className="p-6 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800">

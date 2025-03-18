@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,6 +28,7 @@ export const LessonPlanSelect = ({ value, onChange }: LessonPlanSelectProps) => 
     const selectedPlan = lessonPlans.find(plan => plan.id === value);
     if (selectedPlan) {
       setLastSelectedPlan(value);
+      // Set subject to the lesson plan's subject
       onChange('subject', selectedPlan.subject || '');
       onChange('classLevel', selectedPlan.class_level || '');
     }
@@ -40,9 +40,8 @@ export const LessonPlanSelect = ({ value, onChange }: LessonPlanSelectProps) => 
     
     if (newValue === "none") {
       setLastSelectedPlan(null);
-      // Réinitialiser les champs
-      onChange('subject', '');
-      onChange('classLevel', '');
+      // Do NOT reset the subject and classLevel fields when deselecting
+      // This allows the user to keep editing them
     }
   };
 

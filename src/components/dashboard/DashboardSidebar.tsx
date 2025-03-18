@@ -1,6 +1,8 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Sidebar from "@/components/dashboard/Sidebar";
+import { useSidebar } from "@/hooks/use-sidebar";
 
 interface DashboardSidebarProps {
   sidebarOpen: boolean;
@@ -29,3 +31,5 @@ export const DashboardSidebar = ({ sidebarOpen, toggleSidebar, firstName }: Dash
     </div>
   );
 };
+
+export default DashboardSidebar;

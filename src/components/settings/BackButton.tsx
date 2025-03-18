@@ -3,12 +3,22 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 
-export const BackButton = () => {
+interface BackButtonProps {
+  fallbackPath?: string;
+}
+
+export const BackButton = ({ fallbackPath = "/tableaudebord" }: BackButtonProps) => {
   const navigate = useNavigate()
   const location = useLocation()
   
   const handleBack = () => {
-    // Si on est sur une page spécifique, définir un comportement personnalisé
+    // Check if we have a history to go back to
+    if (window.history.length > 2) {
+      navigate(-1)
+      return
+    }
+    
+    // If no history, use these specific routes
     if (location.pathname === '/privacy' || location.pathname === '/terms') {
       navigate('/legal')
     } else if (location.pathname === '/legal') {
@@ -16,7 +26,8 @@ export const BackButton = () => {
     } else if (location.pathname === '/suggestions') {
       navigate('/tableaudebord')
     } else {
-      navigate('/tableaudebord')
+      // Default fallback
+      navigate(fallbackPath)
     }
   }
   
