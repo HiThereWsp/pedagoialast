@@ -1,481 +1,106 @@
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "./ProtectedRoute";
-import { SubscriptionRoute } from "./SubscriptionRoute";
 
-// Public Pages
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import ForgotPassword from "@/pages/ForgotPassword";
-import ResetPassword from "@/pages/ResetPassword";
-import ConfirmEmail from "@/pages/ConfirmEmail";
-import Bienvenue from "@/pages/Bienvenue";
-import Legal from "@/pages/Legal";
-import Terms from "@/pages/Terms";
-import Privacy from "@/pages/Privacy";
-import PricingPage from "@/pages/PricingPage";
-import Landing from "@/pages/Landing";
-import ContactPage from "@/pages/ContactPage";
-import DiscoverPage from "@/pages/DiscoverPage";
-import BetaAccessPage from "@/pages/BetaAccessPage";
-import NotFound from "@/pages/NotFound";
+import React, { Suspense, lazy } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from './ProtectedRoute';
+import { SubscriptionRoute } from './SubscriptionRoute';
+import LandingPage from '@/pages/Landing';
+import NotFound from '@/pages/NotFound';
+import ConfirmEmail from '@/pages/ConfirmEmail';
+import { LoadingIndicator } from '@/components/ui/loading-indicator';
+import Bienvenue from '@/pages/Bienvenue';
+import ToolsLayout from '@/components/layout/ToolsLayout';
 
-// Protected Pages
-import Tableaudebord from "@/pages/Tableaudebord";
-import Account from "@/pages/Account";
-import EditProfile from "@/pages/EditProfile";
-import Billing from "@/pages/Billing";
-import ApiKeyPage from "@/pages/ApiKeyPage";
-import Playground from "@/pages/Playground";
-import PlaygroundV2 from "@/pages/PlaygroundV2";
-import PlaygroundV3 from "@/pages/PlaygroundV3";
-import PlaygroundV4 from "@/pages/PlaygroundV4";
-import PlaygroundV5 from "@/pages/PlaygroundV5";
-import PlaygroundV6 from "@/pages/PlaygroundV6";
-import PlaygroundV7 from "@/pages/PlaygroundV7";
-import PlaygroundV8 from "@/pages/PlaygroundV8";
-import PlaygroundV9 from "@/pages/PlaygroundV9";
-import PlaygroundV10 from "@/pages/PlaygroundV10";
-import PlaygroundV11 from "@/pages/PlaygroundV11";
-import PlaygroundV12 from "@/pages/PlaygroundV12";
-import PlaygroundV13 from "@/pages/PlaygroundV13";
-import PlaygroundV14 from "@/pages/PlaygroundV14";
-import PlaygroundV15 from "@/pages/PlaygroundV15";
-import PlaygroundV16 from "@/pages/PlaygroundV16";
-import PlaygroundV17 from "@/pages/PlaygroundV17";
-import PlaygroundV18 from "@/pages/PlaygroundV18";
-import PlaygroundV19 from "@/pages/PlaygroundV19";
-import PlaygroundV20 from "@/pages/PlaygroundV20";
-import PlaygroundV21 from "@/pages/PlaygroundV21";
-import PlaygroundV22 from "@/pages/PlaygroundV22";
-import PlaygroundV23 from "@/pages/PlaygroundV23";
-import PlaygroundV24 from "@/pages/PlaygroundV24";
-import PlaygroundV25 from "@/pages/PlaygroundV25";
-import PlaygroundV26 from "@/pages/PlaygroundV26";
-import PlaygroundV27 from "@/pages/PlaygroundV27";
-import PlaygroundV28 from "@/pages/PlaygroundV28";
-import PlaygroundV29 from "@/pages/PlaygroundV29";
-import PlaygroundV30 from "@/pages/PlaygroundV30";
-import PlaygroundV31 from "@/pages/PlaygroundV31";
-import PlaygroundV32 from "@/pages/PlaygroundV32";
-import PlaygroundV33 from "@/pages/PlaygroundV33";
-import PlaygroundV34 from "@/pages/PlaygroundV34";
-import PlaygroundV35 from "@/pages/PlaygroundV35";
-import PlaygroundV36 from "@/pages/PlaygroundV36";
-import PlaygroundV37 from "@/pages/PlaygroundV37";
-import PlaygroundV38 from "@/pages/PlaygroundV38";
-import PlaygroundV39 from "@/pages/PlaygroundV39";
-import PlaygroundV40 from "@/pages/PlaygroundV40";
-import PlaygroundV41 from "@/pages/PlaygroundV41";
-import PlaygroundV42 from "@/pages/PlaygroundV42";
-import PlaygroundV43 from "@/pages/PlaygroundV43";
-import PlaygroundV44 from "@/pages/PlaygroundV44";
-import PlaygroundV45 from "@/pages/PlaygroundV45";
-import PlaygroundV46 from "@/pages/PlaygroundV46";
-import PlaygroundV47 from "@/pages/PlaygroundV47";
-import PlaygroundV48 from "@/pages/PlaygroundV48";
-import PlaygroundV49 from "@/pages/PlaygroundV49";
-import PlaygroundV50 from "@/pages/PlaygroundV50";
-import PlaygroundV51 from "@/pages/PlaygroundV51";
-import PlaygroundV52 from "@/pages/PlaygroundV52";
-import PlaygroundV53 from "@/pages/PlaygroundV53";
-import PlaygroundV54 from "@/pages/PlaygroundV54";
-import PlaygroundV55 from "@/pages/PlaygroundV55";
-import PlaygroundV56 from "@/pages/PlaygroundV56";
-import PlaygroundV57 from "@/pages/PlaygroundV57";
-import PlaygroundV58 from "@/pages/PlaygroundV58";
-import PlaygroundV59 from "@/pages/PlaygroundV59";
-import PlaygroundV60 from "@/pages/PlaygroundV60";
-import PlaygroundV61 from "@/pages/PlaygroundV61";
-import PlaygroundV62 from "@/pages/PlaygroundV62";
-import PlaygroundV63 from "@/pages/PlaygroundV63";
-import PlaygroundV64 from "@/pages/PlaygroundV64";
-import PlaygroundV65 from "@/pages/PlaygroundV65";
-import PlaygroundV66 from "@/pages/PlaygroundV66";
-import PlaygroundV67 from "@/pages/PlaygroundV67";
-import PlaygroundV68 from "@/pages/PlaygroundV68";
-import PlaygroundV69 from "@/pages/PlaygroundV69";
-import PlaygroundV70 from "@/pages/PlaygroundV70";
-import PlaygroundV71 from "@/pages/PlaygroundV71";
-import PlaygroundV72 from "@/pages/PlaygroundV72";
-import PlaygroundV73 from "@/pages/PlaygroundV73";
-import PlaygroundV74 from "@/pages/PlaygroundV74";
-import PlaygroundV75 from "@/pages/PlaygroundV75";
-import PlaygroundV76 from "@/pages/PlaygroundV76";
-import PlaygroundV77 from "@/pages/PlaygroundV77";
-import PlaygroundV78 from "@/pages/PlaygroundV78";
-import PlaygroundV79 from "@/pages/PlaygroundV79";
-import PlaygroundV80 from "@/pages/PlaygroundV80";
-import PlaygroundV81 from "@/pages/PlaygroundV81";
-import PlaygroundV82 from "@/pages/PlaygroundV82";
-import PlaygroundV83 from "@/pages/PlaygroundV83";
-import PlaygroundV84 from "@/pages/PlaygroundV84";
-import PlaygroundV85 from "@/pages/PlaygroundV85";
-import PlaygroundV86 from "@/pages/PlaygroundV86";
-import PlaygroundV87 from "@/pages/PlaygroundV87";
-import PlaygroundV88 from "@/pages/PlaygroundV88";
-import PlaygroundV89 from "@/pages/PlaygroundV89";
-import PlaygroundV90 from "@/pages/PlaygroundV90";
-import PlaygroundV91 from "@/pages/PlaygroundV91";
-import PlaygroundV92 from "@/pages/PlaygroundV92";
-import PlaygroundV93 from "@/pages/PlaygroundV93";
-import PlaygroundV94 from "@/pages/PlaygroundV94";
-import PlaygroundV95 from "@/pages/PlaygroundV95";
-import PlaygroundV96 from "@/pages/PlaygroundV96";
-import PlaygroundV97 from "@/pages/PlaygroundV97";
-import PlaygroundV98 from "@/pages/PlaygroundV98";
-import PlaygroundV99 from "@/pages/PlaygroundV99";
-import PlaygroundV100 from "@/pages/PlaygroundV100";
-import PlaygroundV101 from "@/pages/PlaygroundV101";
-import PlaygroundV102 from "@/pages/PlaygroundV102";
-import PlaygroundV103 from "@/pages/PlaygroundV103";
-import PlaygroundV104 from "@/pages/PlaygroundV104";
-import PlaygroundV105 from "@/pages/PlaygroundV105";
-import PlaygroundV106 from "@/pages/PlaygroundV106";
-import PlaygroundV107 from "@/pages/PlaygroundV107";
-import PlaygroundV108 from "@/pages/PlaygroundV108";
-import PlaygroundV109 from "@/pages/PlaygroundV109";
-import PlaygroundV110 from "@/pages/PlaygroundV110";
-import PlaygroundV111 from "@/pages/PlaygroundV111";
-import PlaygroundV112 from "@/pages/PlaygroundV112";
-import PlaygroundV113 from "@/pages/PlaygroundV113";
-import PlaygroundV114 from "@/pages/PlaygroundV114";
-import PlaygroundV115 from "@/pages/PlaygroundV115";
-import PlaygroundV116 from "@/pages/PlaygroundV116";
-import PlaygroundV117 from "@/pages/PlaygroundV117";
-import PlaygroundV118 from "@/pages/PlaygroundV118";
-import PlaygroundV119 from "@/pages/PlaygroundV119";
-import PlaygroundV120 from "@/pages/PlaygroundV120";
-import PlaygroundV121 from "@/pages/PlaygroundV121";
-import PlaygroundV122 from "@/pages/PlaygroundV122";
-import PlaygroundV123 from "@/pages/PlaygroundV123";
-import PlaygroundV124 from "@/pages/PlaygroundV124";
-import PlaygroundV125 from "@/pages/PlaygroundV125";
-import PlaygroundV126 from "@/pages/PlaygroundV126";
-import PlaygroundV127 from "@/pages/PlaygroundV127";
-import PlaygroundV128 from "@/pages/PlaygroundV128";
-import PlaygroundV129 from "@/pages/PlaygroundV129";
-import PlaygroundV130 from "@/pages/PlaygroundV130";
-import PlaygroundV131 from "@/pages/PlaygroundV131";
-import PlaygroundV132 from "@/pages/PlaygroundV132";
-import PlaygroundV133 from "@/pages/PlaygroundV133";
-import PlaygroundV134 from "@/pages/PlaygroundV134";
-import PlaygroundV135 from "@/pages/PlaygroundV135";
-import PlaygroundV136 from "@/pages/PlaygroundV136";
-import PlaygroundV137 from "@/pages/PlaygroundV137";
-import PlaygroundV138 from "@/pages/PlaygroundV138";
-import PlaygroundV139 from "@/pages/PlaygroundV139";
-import PlaygroundV140 from "@/pages/PlaygroundV140";
-import PlaygroundV141 from "@/pages/PlaygroundV141";
-import PlaygroundV142 from "@/pages/PlaygroundV142";
-import PlaygroundV143 from "@/pages/PlaygroundV143";
-import PlaygroundV144 from "@/pages/PlaygroundV144";
-import PlaygroundV145 from "@/pages/PlaygroundV145";
-import PlaygroundV146 from "@/pages/PlaygroundV146";
-import PlaygroundV147 from "@/pages/PlaygroundV147";
-import PlaygroundV148 from "@/pages/PlaygroundV148";
-import PlaygroundV149 from "@/pages/PlaygroundV149";
-import PlaygroundV150 from "@/pages/PlaygroundV150";
-import PlaygroundV151 from "@/pages/PlaygroundV151";
-import PlaygroundV152 from "@/pages/PlaygroundV152";
-import PlaygroundV153 from "@/pages/PlaygroundV153";
-import PlaygroundV154 from "@/pages/PlaygroundV154";
-import PlaygroundV155 from "@/pages/PlaygroundV155";
-import PlaygroundV156 from "@/pages/PlaygroundV156";
-import PlaygroundV157 from "@/pages/PlaygroundV157";
-import PlaygroundV158 from "@/pages/PlaygroundV158";
-import PlaygroundV159 from "@/pages/PlaygroundV159";
-import PlaygroundV160 from "@/pages/PlaygroundV160";
-import PlaygroundV161 from "@/pages/PlaygroundV161";
-import PlaygroundV162 from "@/pages/PlaygroundV162";
-import PlaygroundV163 from "@/pages/PlaygroundV163";
-import PlaygroundV164 from "@/pages/PlaygroundV164";
-import PlaygroundV165 from "@/pages/PlaygroundV165";
-import PlaygroundV166 from "@/pages/PlaygroundV166";
-import PlaygroundV167 from "@/pages/PlaygroundV167";
-import PlaygroundV168 from "@/pages/PlaygroundV168";
-import PlaygroundV169 from "@/pages/PlaygroundV169";
-import PlaygroundV170 from "@/pages/PlaygroundV170";
-import PlaygroundV171 from "@/pages/PlaygroundV171";
-import PlaygroundV172 from "@/pages/PlaygroundV172";
-import PlaygroundV173 from "@/pages/PlaygroundV173";
-import PlaygroundV174 from "@/pages/PlaygroundV174";
-import PlaygroundV175 from "@/pages/PlaygroundV175";
-import PlaygroundV176 from "@/pages/PlaygroundV176";
-import PlaygroundV177 from "@/pages/PlaygroundV177";
-import PlaygroundV178 from "@/pages/PlaygroundV178";
-import PlaygroundV179 from "@/pages/PlaygroundV179";
-import PlaygroundV180 from "@/pages/PlaygroundV180";
-import PlaygroundV181 from "@/pages/PlaygroundV181";
-import PlaygroundV182 from "@/pages/PlaygroundV182";
-import PlaygroundV183 from "@/pages/PlaygroundV183";
-import PlaygroundV184 from "@/pages/PlaygroundV184";
-import PlaygroundV185 from "@/pages/PlaygroundV185";
-import PlaygroundV186 from "@/pages/PlaygroundV186";
-import PlaygroundV187 from "@/pages/PlaygroundV187";
-import PlaygroundV188 from "@/pages/PlaygroundV188";
-import PlaygroundV189 from "@/pages/PlaygroundV189";
-import PlaygroundV190 from "@/pages/PlaygroundV190";
-import PlaygroundV191 from "@/pages/PlaygroundV191";
-import PlaygroundV192 from "@/pages/PlaygroundV192";
-import PlaygroundV193 from "@/pages/PlaygroundV193";
-import PlaygroundV194 from "@/pages/PlaygroundV194";
-import PlaygroundV195 from "@/pages/PlaygroundV195";
-import PlaygroundV196 from "@/pages/PlaygroundV196";
-import PlaygroundV197 from "@/pages/PlaygroundV197";
-import PlaygroundV198 from "@/pages/PlaygroundV198";
-import PlaygroundV199 from "@/pages/PlaygroundV199";
-import PlaygroundV200 from "@/pages/PlaygroundV200";
-import PlaygroundV201 from "@/pages/PlaygroundV201";
-import PlaygroundV202 from "@/pages/PlaygroundV202";
-import PlaygroundV203 from "@/pages/PlaygroundV203";
-import PlaygroundV204 from "@/pages/PlaygroundV204";
-import PlaygroundV205 from "@/pages/PlaygroundV205";
-import PlaygroundV206 from "@/pages/PlaygroundV206";
-import PlaygroundV207 from "@/pages/PlaygroundV207";
-import PlaygroundV208 from "@/pages/PlaygroundV208";
-import PlaygroundV209 from "@/pages/PlaygroundV209";
-import PlaygroundV210 from "@/pages/PlaygroundV210";
-import PlaygroundV211 from "@/pages/PlaygroundV211";
-import PlaygroundV212 from "@/pages/PlaygroundV212";
-import PlaygroundV213 from "@/pages/PlaygroundV213";
-import PlaygroundV214 from "@/pages/PlaygroundV214";
-import PlaygroundV215 from "@/pages/PlaygroundV215";
-import PlaygroundV216 from "@/pages/PlaygroundV216";
-import PlaygroundV217 from "@/pages/PlaygroundV217";
-import PlaygroundV218 from "@/pages/PlaygroundV218";
-import PlaygroundV219 from "@/pages/PlaygroundV219";
-import PlaygroundV220 from "@/pages/PlaygroundV220";
-import PlaygroundV221 from "@/pages/PlaygroundV221";
-import PlaygroundV222 from "@/pages/PlaygroundV222";
-import PlaygroundV223 from "@/pages/PlaygroundV223";
-import PlaygroundV224 from "@/pages/PlaygroundV224";
-import PlaygroundV225 from "@/pages/PlaygroundV225";
-import PlaygroundV226 from "@/pages/PlaygroundV226";
-import PlaygroundV227 from "@/pages/PlaygroundV227";
-import PlaygroundV228 from "@/pages/PlaygroundV228";
-import PlaygroundV229 from "@/pages/PlaygroundV229";
-import PlaygroundV230 from "@/pages/PlaygroundV230";
-import PlaygroundV231 from "@/pages/PlaygroundV231";
-import PlaygroundV232 from "@/pages/PlaygroundV232";
-import PlaygroundV233 from "@/pages/PlaygroundV233";
-import PlaygroundV234 from "@/pages/PlaygroundV234";
-import PlaygroundV235 from "@/pages/PlaygroundV235";
-import PlaygroundV236 from "@/pages/PlaygroundV236";
-import PlaygroundV237 from "@/pages/PlaygroundV237";
-import PlaygroundV238 from "@/pages/PlaygroundV238";
-import PlaygroundV239 from "@/pages/PlaygroundV239";
-import PlaygroundV240 from "@/pages/PlaygroundV240";
-import PlaygroundV241 from "@/pages/PlaygroundV241";
-import PlaygroundV242 from "@/pages/PlaygroundV242";
-import PlaygroundV243 from "@/pages/PlaygroundV243";
-import PlaygroundV244 from "@/pages/PlaygroundV244";
-import PlaygroundV245 from "@/pages/PlaygroundV245";
-import PlaygroundV246 from "@/pages/PlaygroundV246";
-import PlaygroundV247 from "@/pages/PlaygroundV247";
-import PlaygroundV248 from "@/pages/PlaygroundV248";
-import PlaygroundV249 from "@/pages/PlaygroundV249";
-import PlaygroundV250 from "@/pages/PlaygroundV250";
-import PlaygroundV251 from "@/pages/PlaygroundV251";
-import PlaygroundV252 from "@/pages/PlaygroundV252";
-import PlaygroundV253 from "@/pages/PlaygroundV253";
-import PlaygroundV254 from "@/pages/PlaygroundV254";
-import PlaygroundV255 from "@/pages/PlaygroundV255";
-import PlaygroundV256 from "@/pages/PlaygroundV256";
-import PlaygroundV257 from "@/pages/PlaygroundV257";
-import PlaygroundV258 from "@/pages/PlaygroundV258";
-import PlaygroundV259 from "@/pages/PlaygroundV259";
-import PlaygroundV260 from "@/pages/PlaygroundV260";
-import PlaygroundV261 from "@/pages/PlaygroundV261";
-import PlaygroundV262 from "@/pages/PlaygroundV262";
-import PlaygroundV263 from "@/pages/PlaygroundV263";
-import PlaygroundV264 from "@/pages/PlaygroundV264";
-import PlaygroundV265 from "@/pages/PlaygroundV265";
-import PlaygroundV266 from "@/pages/PlaygroundV266";
-import PlaygroundV267 from "@/pages/PlaygroundV267";
-import PlaygroundV268 from "@/pages/PlaygroundV268";
-import PlaygroundV269 from "@/pages/PlaygroundV269";
-import PlaygroundV270 from "@/pages/PlaygroundV270";
-import PlaygroundV271 from "@/pages/PlaygroundV271";
-import PlaygroundV272 from "@/pages/PlaygroundV272";
-import PlaygroundV273 from "@/pages/PlaygroundV273";
-import PlaygroundV274 from "@/pages/PlaygroundV274";
-import PlaygroundV275 from "@/pages/PlaygroundV275";
-import PlaygroundV276 from "@/pages/PlaygroundV276";
-import PlaygroundV277 from "@/pages/PlaygroundV277";
-import PlaygroundV278 from "@/pages/PlaygroundV278";
-import PlaygroundV279 from "@/pages/PlaygroundV279";
-import PlaygroundV280 from "@/pages/PlaygroundV280";
-import PlaygroundV281 from "@/pages/PlaygroundV281";
-import PlaygroundV282 from "@/pages/PlaygroundV282";
-import PlaygroundV283 from "@/pages/PlaygroundV283";
-import PlaygroundV284 from "@/pages/PlaygroundV284";
-import PlaygroundV285 from "@/pages/PlaygroundV285";
-import PlaygroundV286 from "@/pages/PlaygroundV286";
-import PlaygroundV287 from "@/pages/PlaygroundV287";
-import PlaygroundV288 from "@/pages/PlaygroundV288";
-import PlaygroundV289 from "@/pages/PlaygroundV289";
-import PlaygroundV290 from "@/pages/PlaygroundV290";
-import PlaygroundV291 from "@/pages/PlaygroundV291";
-import PlaygroundV292 from "@/pages/PlaygroundV292";
-import PlaygroundV293 from "@/pages/PlaygroundV293";
-import PlaygroundV294 from "@/pages/PlaygroundV294";
-import PlaygroundV295 from "@/pages/PlaygroundV295";
-import PlaygroundV296 from "@/pages/PlaygroundV296";
-import PlaygroundV297 from "@/pages/PlaygroundV297";
-import PlaygroundV298 from "@/pages/PlaygroundV298";
-import PlaygroundV299 from "@/pages/PlaygroundV299";
-import PlaygroundV300 from "@/pages/PlaygroundV300";
-import PlaygroundV301 from "@/pages/PlaygroundV301";
-import PlaygroundV302 from "@/pages/PlaygroundV302";
-import PlaygroundV303 from "@/pages/PlaygroundV303";
-import PlaygroundV304 from "@/pages/PlaygroundV304";
-import PlaygroundV305 from "@/pages/PlaygroundV305";
-import PlaygroundV306 from "@/pages/PlaygroundV306";
-import PlaygroundV307 from "@/pages/PlaygroundV307";
-import PlaygroundV308 from "@/pages/PlaygroundV308";
-import PlaygroundV309 from "@/pages/PlaygroundV309";
-import PlaygroundV310 from "@/pages/PlaygroundV310";
-import PlaygroundV311 from "@/pages/PlaygroundV311";
-import PlaygroundV312 from "@/pages/PlaygroundV312";
-import PlaygroundV313 from "@/pages/PlaygroundV313";
-import PlaygroundV314 from "@/pages/PlaygroundV314";
-import PlaygroundV315 from "@/pages/PlaygroundV315";
-import PlaygroundV316 from "@/pages/PlaygroundV316";
-import PlaygroundV317 from "@/pages/PlaygroundV317";
-import PlaygroundV318 from "@/pages/PlaygroundV318";
-import PlaygroundV319 from "@/pages/PlaygroundV319";
-import PlaygroundV320 from "@/pages/PlaygroundV320";
-import PlaygroundV321 from "@/pages/PlaygroundV321";
-import PlaygroundV322 from "@/pages/PlaygroundV322";
-import PlaygroundV323 from "@/pages/PlaygroundV323";
-import PlaygroundV324 from "@/pages/PlaygroundV324";
-import PlaygroundV325 from "@/pages/PlaygroundV325";
-import PlaygroundV326 from "@/pages/PlaygroundV326";
-import PlaygroundV327 from "@/pages/PlaygroundV327";
-import PlaygroundV328 from "@/pages/PlaygroundV328";
-import PlaygroundV329 from "@/pages/PlaygroundV329";
-import PlaygroundV330 from "@/pages/PlaygroundV330";
-import PlaygroundV331 from "@/pages/PlaygroundV331";
-import PlaygroundV332 from "@/pages/PlaygroundV332";
-import PlaygroundV333 from "@/pages/PlaygroundV333";
-import PlaygroundV334 from "@/pages/PlaygroundV334";
-import PlaygroundV335 from "@/pages/PlaygroundV335";
-import PlaygroundV336 from "@/pages/PlaygroundV336";
-import PlaygroundV337 from "@/pages/PlaygroundV337";
-import PlaygroundV338 from "@/pages/PlaygroundV338";
-import PlaygroundV339 from "@/pages/PlaygroundV339";
-import PlaygroundV340 from "@/pages/PlaygroundV340";
-import PlaygroundV341 from "@/pages/PlaygroundV341";
-import PlaygroundV342 from "@/pages/PlaygroundV342";
-import PlaygroundV343 from "@/pages/PlaygroundV343";
-import PlaygroundV344 from "@/pages/PlaygroundV344";
-import PlaygroundV345 from "@/pages/PlaygroundV345";
-import PlaygroundV346 from "@/pages/PlaygroundV346";
-import PlaygroundV347 from "@/pages/PlaygroundV347";
-import PlaygroundV348 from "@/pages/PlaygroundV348";
-import PlaygroundV349 from "@/pages/PlaygroundV349";
-import PlaygroundV350 from "@/pages/PlaygroundV350";
-import PlaygroundV351 from "@/pages/PlaygroundV351";
-import PlaygroundV352 from "@/pages/PlaygroundV352";
-import PlaygroundV353 from "@/pages/PlaygroundV353";
-import PlaygroundV354 from "@/pages/PlaygroundV354";
-import PlaygroundV355 from "@/pages/PlaygroundV355";
-import PlaygroundV356 from "@/pages/PlaygroundV356";
-import PlaygroundV357 from "@/pages/PlaygroundV357";
-import PlaygroundV358 from "@/pages/PlaygroundV358";
-import PlaygroundV359 from "@/pages/PlaygroundV359";
-import PlaygroundV360 from "@/pages/PlaygroundV360";
-import PlaygroundV361 from "@/pages/PlaygroundV361";
-import PlaygroundV362 from "@/pages/PlaygroundV362";
-import PlaygroundV363 from "@/pages/PlaygroundV363";
-import PlaygroundV364 from "@/pages/PlaygroundV364";
-import PlaygroundV365 from "@/pages/PlaygroundV365";
-import PlaygroundV366 from "@/pages/PlaygroundV366";
-import PlaygroundV367 from "@/pages/PlaygroundV367";
-import PlaygroundV368 from "@/pages/PlaygroundV368";
-import PlaygroundV369 from "@/pages/PlaygroundV369";
-import PlaygroundV370 from "@/pages/PlaygroundV370";
-import PlaygroundV371 from "@/pages/PlaygroundV371";
-import PlaygroundV372 from "@/pages/PlaygroundV372";
-import PlaygroundV373 from "@/pages/PlaygroundV373";
-import PlaygroundV374 from "@/pages/PlaygroundV374";
-import PlaygroundV375 from "@/pages/PlaygroundV375";
-import PlaygroundV376 from "@/pages/PlaygroundV376";
-import PlaygroundV377 from "@/pages/PlaygroundV377";
-import PlaygroundV378 from "@/pages/PlaygroundV378";
-import PlaygroundV379 from "@/pages/PlaygroundV379";
-import PlaygroundV380 from "@/pages/PlaygroundV380";
-import PlaygroundV381 from "@/pages/PlaygroundV381";
-import PlaygroundV382 from "@/pages/PlaygroundV382";
-import PlaygroundV383 from "@/pages/PlaygroundV383";
-import PlaygroundV384 from "@/pages/PlaygroundV384";
-import PlaygroundV385 from "@/pages/PlaygroundV385";
-import PlaygroundV386 from "@/pages/PlaygroundV386";
-import PlaygroundV387 from "@/pages/PlaygroundV387";
-import PlaygroundV388 from "@/pages/PlaygroundV388";
-import PlaygroundV389 from "@/pages/PlaygroundV389";
-import PlaygroundV390 from "@/pages/PlaygroundV390";
-import PlaygroundV391 from "@/pages/PlaygroundV391";
-import PlaygroundV392 from "@/pages/PlaygroundV392";
-import PlaygroundV393 from "@/pages/PlaygroundV393";
-import PlaygroundV394 from "@/pages/PlaygroundV394";
-import PlaygroundV395 from "@/pages/PlaygroundV395";
-import PlaygroundV396 from "@/pages/PlaygroundV396";
-import PlaygroundV397 from "@/pages/PlaygroundV397";
-import PlaygroundV398 from "@/pages/PlaygroundV398";
-import PlaygroundV399 from "@/pages/PlaygroundV399";
-import PlaygroundV400 from "@/pages/PlaygroundV400";
-import PlaygroundV401 from "@/pages/PlaygroundV401";
-import PlaygroundV402 from "@/pages/PlaygroundV402";
-import PlaygroundV403 from "@/pages/PlaygroundV403";
-import PlaygroundV404 from "@/pages/PlaygroundV404";
-import PlaygroundV405 from "@/pages/PlaygroundV405";
-import PlaygroundV406 from "@/pages/PlaygroundV406";
-import PlaygroundV407 from "@/pages/PlaygroundV407";
-import PlaygroundV408 from "@/pages/PlaygroundV408";
-import PlaygroundV409 from "@/pages/PlaygroundV409";
-import PlaygroundV410 from "@/pages/PlaygroundV410";
-import PlaygroundV411 from "@/pages/PlaygroundV411";
-import PlaygroundV412 from "@/pages/PlaygroundV412";
-import PlaygroundV413 from "@/pages/PlaygroundV413";
-import PlaygroundV414 from "@/pages/PlaygroundV414";
-import PlaygroundV415 from "@/pages/PlaygroundV415";
-import PlaygroundV416 from "@/pages/PlaygroundV416";
-import PlaygroundV417 from "@/pages/PlaygroundV417";
-import PlaygroundV418 from "@/pages/PlaygroundV418";
-import PlaygroundV419 from "@/pages/PlaygroundV419";
-import PlaygroundV420 from "@/pages/PlaygroundV420";
-import PlaygroundV421 from "@/pages/PlaygroundV421";
-import PlaygroundV422 from "@/pages/PlaygroundV422";
-import PlaygroundV423 from "@/pages/PlaygroundV423";
-import PlaygroundV424 from "@/pages/PlaygroundV424";
-import PlaygroundV425 from "@/pages/PlaygroundV425";
-import PlaygroundV426 from "@/pages/PlaygroundV426";
-import PlaygroundV427 from "@/pages/PlaygroundV427";
-import PlaygroundV428 from "@/pages/PlaygroundV428";
-import PlaygroundV429 from "@/pages/PlaygroundV429";
-import PlaygroundV430 from "@/pages/PlaygroundV430";
-import PlaygroundV431 from "@/pages/PlaygroundV431";
-import PlaygroundV432 from "@/pages/PlaygroundV432";
-import PlaygroundV433 from "@/pages/PlaygroundV433";
-import PlaygroundV434 from "@/pages/PlaygroundV434";
-import PlaygroundV435 from "@/pages/PlaygroundV435";
-import PlaygroundV436 from "@/pages/PlaygroundV436";
-import PlaygroundV437 from "@/pages/PlaygroundV437";
-import PlaygroundV438 from "@/pages/PlaygroundV438";
-import PlaygroundV439 from "@/pages/PlaygroundV439";
-import PlaygroundV440 from "@/pages/PlaygroundV440";
-import PlaygroundV441 from "@/pages/PlaygroundV441";
-import PlaygroundV442 from "@/pages/PlaygroundV442";
-import PlaygroundV443 from "@/pages/PlaygroundV443";
-import PlaygroundV444 from "@/pages/PlaygroundV444";
-import PlaygroundV445 from "@/pages/PlaygroundV445";
-import PlaygroundV446 from "@/pages/PlaygroundV446";
-import PlaygroundV447 from "@/pages/PlaygroundV447";
-import PlaygroundV448 from "@/pages/PlaygroundV448";
-import PlaygroundV449 from "@/pages/PlaygroundV449";
-import PlaygroundV450 from "@/pages/PlaygroundV450";
-import PlaygroundV451 from "@/pages/PlaygroundV451";
-import PlaygroundV452 from "@/pages/PlaygroundV452";
-import PlaygroundV453 from "@/pages/Playground
+// Chargement paresseux des pages
+const LoginPage = lazy(() => import('@/pages/Login'));
+const TableauDeBord = lazy(() => import('@/pages/TableauDeBord'));
+const ForgotPassword = lazy(() => import('@/pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('@/pages/ResetPassword'));
+const ExercisePage = lazy(() => import('@/pages/ExercisePage'));
+const SavedContentPage = lazy(() => import('@/pages/SavedContentPage'));
+const LessonPlanPage = lazy(() => import('@/pages/LessonPlanPage'));
+const ImageGenerationPage = lazy(() => import('@/pages/ImageGenerationPage'));
+const CorrespondencePage = lazy(() => import('@/pages/CorrespondencePage'));
+const DiscoverPage = lazy(() => import('@/pages/DiscoverPage'));
+const MetricsPage = lazy(() => import('@/pages/MetricsPage'));
+const Settings = lazy(() => import('@/pages/Settings'));
+const DeleteAccount = lazy(() => import('@/pages/DeleteAccount'));
+const UTMLinksPage = lazy(() => import('@/pages/UTMLinksPage'));
+const RedirectsPage = lazy(() => import('@/pages/RedirectsPage'));
+const Legal = lazy(() => import('@/pages/Legal'));
+const Privacy = lazy(() => import('@/pages/Privacy'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const SuggestionsPage = lazy(() => import('@/pages/SuggestionsPage'));
+const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
+const OfflineChatPage = lazy(() => import('@/pages/OfflineChatPage'));
+const SubscriptionSuccessPage = lazy(() => import('@/pages/SubscriptionSuccessPage'));
+const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage'));
+const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
+const Pricing = lazy(() => import('@/pages/Pricing'));
+const ContactPage = lazy(() => import('@/pages/ContactPage'));
+
+// Composant de chargement pour Suspense
+const LoadingPage = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="text-center">
+      <LoadingIndicator />
+      <p className="mt-4 text-gray-600">Chargement en cours...</p>
+    </div>
+  </div>
+);
+
+function AppRoutes() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <Routes>
+        <Route path="/" element={<Navigate to="/bienvenue" replace />} />
+        <Route path="/bienvenue" element={<Bienvenue />} />
+        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/confirm-email" element={<ConfirmEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/pricing" element={<Pricing />} />
+        
+        {/* Redirection de /home vers /tableaudebord */}
+        <Route path="/home" element={<Navigate to="/tableaudebord" replace />} />
+        <Route path="/tableaudebord" element={
+          <ProtectedRoute>
+            <TableauDeBord />
+          </ProtectedRoute>
+        } />
+        
+        {/* Routes des outils pédagogiques utilisant le layout partagé */}
+        <Route element={<ProtectedRoute><SubscriptionRoute><ToolsLayout /></SubscriptionRoute></ProtectedRoute>}>
+          <Route path="/exercise" element={<ExercisePage />} />
+          <Route path="/lesson-plan" element={<LessonPlanPage />} />
+          <Route path="/image-generation" element={<ImageGenerationPage />} />
+          <Route path="/correspondence" element={<CorrespondencePage />} />
+          <Route path="/offline-chat" element={<OfflineChatPage />} />
+          <Route path="/saved-content" element={<SavedContentPage />} />
+        </Route>
+        
+        {/* Routes accessibles sans abonnement */}
+        <Route path="/discover" element={<ProtectedRoute><DiscoverPage /></ProtectedRoute>} />
+        <Route path="/metrics" element={<ProtectedRoute><MetricsPage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+        <Route path="/delete-account" element={<ProtectedRoute><DeleteAccount /></ProtectedRoute>} />
+        <Route path="/utm-links" element={<ProtectedRoute><UTMLinksPage /></ProtectedRoute>} />
+        <Route path="/redirects" element={<ProtectedRoute><RedirectsPage /></ProtectedRoute>} />
+        <Route path="/legal" element={<Legal />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/suggestions" element={<ProtectedRoute><SuggestionsPage /></ProtectedRoute>} />
+        <Route path="/marketing" element={<ProtectedRoute><MarketingPage /></ProtectedRoute>} />
+        <Route path="/contact" element={<ContactPage />} />
+        
+        {/* Routes de suivi des conversions */}
+        <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
+        <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />
+        <Route path="/checkout-canceled" element={<CheckoutCanceledPage />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+export default AppRoutes;

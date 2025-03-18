@@ -2,7 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Check if an email is in the beta_users table with is_validated=true
+ * Vérifie si un email est dans la liste des utilisateurs beta
  */
 export const checkBetaEmail = async (email: string): Promise<boolean> => {
   if (!email) return false;
@@ -15,20 +15,20 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
       .maybeSingle();
     
     if (error) {
-      console.error('Error checking beta status by email:', error);
+      console.error('Erreur lors de la vérification du statut beta par email:', error);
       return false;
     }
     
-    // Return true only if the user exists AND is validated
+    // Retourner true seulement si l'utilisateur existe ET est validé
     return !!data && !!data.is_validated;
   } catch (err) {
-    console.error('Exception checking beta status by email:', err);
+    console.error('Exception lors de la vérification du statut beta par email:', err);
     return false;
   }
 };
 
 /**
- * Check if a user should see the beta welcome message
+ * Vérifie si un utilisateur doit voir le message de bienvenue beta
  */
 export const checkBetaWelcomeMessage = async (userId: string): Promise<boolean> => {
   if (!userId) return false;
@@ -41,20 +41,20 @@ export const checkBetaWelcomeMessage = async (userId: string): Promise<boolean> 
       .maybeSingle();
     
     if (error) {
-      console.error('Error checking beta welcome message:', error);
+      console.error('Erreur lors de la vérification du message de bienvenue beta:', error);
       return false;
     }
     
-    // If the record exists and the message hasn't been sent, we need to display the message
+    // Si l'enregistrement existe et que le message n'a pas été envoyé, on doit afficher le message
     return !!data && !data.message_sent;
   } catch (err) {
-    console.error('Exception checking beta welcome message:', err);
+    console.error('Exception lors de la vérification du message de bienvenue beta:', err);
     return false;
   }
 };
 
 /**
- * Mark the beta welcome message as sent
+ * Marque le message de bienvenue comme envoyé
  */
 export const markBetaWelcomeMessageAsSent = async (userId: string): Promise<void> => {
   if (!userId) return;
@@ -66,9 +66,9 @@ export const markBetaWelcomeMessageAsSent = async (userId: string): Promise<void
       .eq('user_id', userId);
     
     if (error) {
-      console.error('Error marking beta welcome message as sent:', error);
+      console.error('Erreur lors du marquage du message de bienvenue comme envoyé:', error);
     }
   } catch (err) {
-    console.error('Exception marking beta welcome message as sent:', err);
+    console.error('Exception lors du marquage du message de bienvenue comme envoyé:', err);
   }
 };
