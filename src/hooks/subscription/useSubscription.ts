@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { SubscriptionStatus, initialStatus, REFRESH_INTERVAL } from './types';
@@ -13,18 +12,18 @@ import { useSubscriptionErrorHandling } from './useSubscriptionErrorHandling';
  */
 export const useSubscription = () => {
   const [status, setStatus] = useState<SubscriptionStatus>(initialStatus);
-  // Ajouter un flag pour éviter les vérifications multiples
+  // Add a flag to prevent multiple simultaneous checks
   const [isChecking, setIsChecking] = useState(false);
 
-  // Fonction de rappel pour checkSubscription définie avec les bonnes dépendances
+  // Define checkSubscription with proper dependencies
   const checkSubscription = useCallback(async (force = false) => {
-    // Prévenir les vérifications multiples simultanées
+    // Prevent multiple simultaneous checks
     if (isChecking && !force) {
-      console.log("Une vérification est déjà en cours, ignorée");
+      console.log("A check is already in progress, skipped");
       return;
     }
     
-    // Si pas de force, vérifier le cache d'abord
+    // If not forcing, check cache first
     if (!force) {
       const cachedStatus = getCachedStatus();
       if (cachedStatus) {
@@ -34,26 +33,26 @@ export const useSubscription = () => {
       }
     }
     
-    // Sinon, procéder à la vérification
-    setIsChecking(true); // Marquer comme en cours de vérification
+    // Otherwise proceed with verification
+    setIsChecking(true); // Mark as checking
     setStatus(prev => ({ ...prev, isLoading: true, error: null }));
     
-    // En cas d'erreur pendant les vérifications, s'assurer que isLoading est correctement réinitialisé
+    // Ensure isLoading is reset in case of errors during checks
     try {
-      // Vérifier le mode développement d'abord (court-circuite les autres vérifications)
+      // Check development mode first (short-circuits other checks)
       if (checkDevMode(setStatus)) {
         setIsChecking(false);
         return;
       }
       
-      // Vérifier la session utilisateur
+      // Check user session
       const session = await checkUserSession(setStatus);
       if (!session) {
         setIsChecking(false);
         return;
       }
       
-      // Vérifier l'accès utilisateur
+      // Check user access
       await checkUserAccess(status, setStatus);
     } catch (error) {
       const criticalErrorStatus = errorHandler.handleSubscriptionError(error, status);
@@ -63,14 +62,14 @@ export const useSubscription = () => {
     }
   }, [status, isChecking]);
 
-  // Utiliser le hook de gestion des erreurs
+  // Use the error handling hook
   const errorHandler = useSubscriptionErrorHandling(status, checkSubscription);
 
-  // Vérifier l'abonnement au chargement du composant, une seule fois
+  // Check subscription once on component load
   useEffect(() => {
     let mounted = true;
     
-    // Utiliser un setTimeout pour éviter les problèmes de rendu
+    // Use a setTimeout to avoid rendering issues
     const timer = setTimeout(() => {
       if (mounted) {
         checkSubscription();
@@ -83,25 +82,25 @@ export const useSubscription = () => {
     };
   }, []);
   
-  // Actualiser périodiquement le statut de l'abonnement
+  // Periodically refresh subscription status
   useEffect(() => {
-    // Actualiser le statut toutes les 30 minutes
+    // Refresh status every 30 minutes
     const refreshInterval = setInterval(() => {
       console.log('Periodic subscription status refresh');
-      checkSubscription(true); // Forcer une vérification complète
+      checkSubscription(true); // Force a complete check
     }, REFRESH_INTERVAL);
     
     return () => clearInterval(refreshInterval);
   }, [checkSubscription]);
 
   /**
-   * Vérifier si l'utilisateur a un abonnement valide, sinon rediriger vers la page de tarification
-   * @returns {boolean} True si l'utilisateur peut accéder à la fonctionnalité
+   * Check if user has a valid subscription, otherwise redirect to pricing page
+   * @returns {boolean} True if user can access feature
    */
   const requireSubscription = useCallback(() => {
-    if (status.isLoading) return true; // Attendre le chargement
+    if (status.isLoading) return true; // Wait for loading
     
-    // Considérer les accès spéciaux comme valides
+    // Consider special accesses as valid
     if (status.type === 'beta' || status.type === 'dev_mode') return true;
     
     if (!status.isActive) {

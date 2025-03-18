@@ -21,5 +21,5 @@ export const initialStatus: SubscriptionStatus = {
 
 // Constants for cache management
 export const CACHE_KEY = 'subscription_status';
-export const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 heures en millisecondes (au lieu de 10 minutes)
-export const REFRESH_INTERVAL = 60 * 60 * 1000; // 1 heure en millisecondes (au lieu de 30 minutes)
+export const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds (increased from 10 minutes)
+export const REFRESH_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds (increased from 30 minutes)
