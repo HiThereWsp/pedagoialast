@@ -16,6 +16,9 @@ export const useSubscription = () => {
   // Ajouter un flag pour éviter les vérifications multiples
   const [isChecking, setIsChecking] = useState(false);
 
+  // Utiliser le hook de gestion des erreurs - placer en haut pour respecter les règles des hooks
+  const errorHandler = useSubscriptionErrorHandling(status, setStatus);
+
   // Fonction de rappel pour checkSubscription définie avec les bonnes dépendances
   const checkSubscription = useCallback(async (force = false) => {
     // Prévenir les vérifications multiples simultanées
@@ -56,15 +59,11 @@ export const useSubscription = () => {
       // Vérifier l'accès utilisateur
       await checkUserAccess(status, setStatus);
     } catch (error) {
-      const criticalErrorStatus = errorHandler.handleSubscriptionError(error, status);
-      setStatus(criticalErrorStatus);
+      errorHandler.handleSubscriptionError(error, status);
     } finally {
       setIsChecking(false);
     }
-  }, [status, isChecking]);
-
-  // Utiliser le hook de gestion des erreurs
-  const errorHandler = useSubscriptionErrorHandling(status, checkSubscription);
+  }, [status, isChecking, errorHandler]);
 
   // Vérifier l'abonnement au chargement du composant, une seule fois
   useEffect(() => {
@@ -81,7 +80,7 @@ export const useSubscription = () => {
       mounted = false;
       clearTimeout(timer);
     };
-  }, []);
+  }, [checkSubscription]);
   
   // Actualiser périodiquement le statut de l'abonnement
   useEffect(() => {

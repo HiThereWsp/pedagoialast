@@ -1,5 +1,6 @@
 
 import { SubscriptionStatus } from './types';
+import { cacheSubscriptionStatus } from './useSubscriptionCache';
 
 /**
  * Check if user is in development mode
@@ -16,10 +17,8 @@ export const checkDevMode = (setStatus: (status: SubscriptionStatus) => void): b
       error: null,
       retryCount: 0
     };
-    // Important - utiliser un setTimeout pour éviter les problèmes de mise à jour d'état en boucle
-    setTimeout(() => {
-      setStatus(devStatus);
-    }, 0);
+    setStatus(devStatus);
+    cacheSubscriptionStatus(devStatus);
     return true;
   }
   return false;
