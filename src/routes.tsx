@@ -69,6 +69,10 @@ const router = createBrowserRouter([
     element: <Legal />,
   },
   {
+    path: "/guide",
+    element: <Guide />,
+  },
+  {
     path: "/dashboard",
     element: <TableauDeBord />,
   },
@@ -95,10 +99,6 @@ const router = createBrowserRouter([
   {
     path: "/settings",
     element: <Settings />,
-  },
-  {
-    path: "/guide",
-    element: <Guide />,
   },
   
   // Add the admin route for Brevo sync
