@@ -9,7 +9,7 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
   if (!email) return false;
   
   try {
-    // Get user by email from profiles table instead of auth.users
+    // Get user by email from profiles table
     const { data: userData, error: userError } = await supabase
       .from('profiles')
       .select('id')
