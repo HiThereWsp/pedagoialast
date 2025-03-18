@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { Clock } from 'lucide-react';
+import { Clock, Settings, FileText, Download, ArrowRight } from 'lucide-react';
 
 export function SequenceGeneratorSection() {
   return (
     <section id="generateur-sequences" className="space-y-8">
       <h2 className="text-3xl font-bold text-[#2c3e50] border-b border-gray-100 pb-4">
-        Générateur de séquences pédagogiques
+        Créateur de séquences pédagogiques
       </h2>
       
       <div className="bg-gray-50 rounded-xl p-6 text-center my-12 shadow-inner">
@@ -14,35 +14,44 @@ export function SequenceGeneratorSection() {
       </div>
       
       <p className="text-lg leading-relaxed text-gray-700 mb-8">
-        L'un des outils les plus appréciés de PedagoIA est le <strong className="text-[#2c3e50]">générateur de séquences pédagogiques</strong> qui vous permet de créer des progressions complètes en quelques clics.
+        Le créateur de séquences pédagogiques de PedagoIA vous permet de générer une séquence complète en quelques minutes. Vous obtenez immédiatement :
       </p>
       
-      <h3 className="text-2xl font-semibold mt-12 mb-6 text-[#3d4852]">Comment créer une séquence pédagogique</h3>
-      
       <ol className="list-none space-y-6 mb-12 pl-0">
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">1</span>
-          <span className="text-lg">Depuis votre tableau de bord, cliquez sur "Générateur de séquences"</span>
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+          <div className="bg-purple-100 p-4 rounded-full mr-6">
+            <Settings className="h-8 w-8 text-purple-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">1. Configurez votre séquence</h3>
+            <p className="text-gray-700">Choisissez la matière, le niveau et les objectifs pédagogiques de votre séquence</p>
+          </div>
+          <div className="ml-4 text-purple-600">
+            <ArrowRight className="animate-pulse" />
+          </div>
         </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">2</span>
-          <span className="text-lg">Sélectionnez votre niveau d'enseignement et votre matière</span>
+        
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+          <div className="bg-purple-100 p-4 rounded-full mr-6">
+            <FileText className="h-8 w-8 text-purple-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">2. Générez votre contenu</h3>
+            <p className="text-gray-700">Notre IA crée une séquence complète avec progression, objectifs et supports de cours</p>
+          </div>
+          <div className="ml-4 text-purple-600">
+            <ArrowRight className="animate-pulse" />
+          </div>
         </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">3</span>
-          <span className="text-lg">Précisez la thématique de votre séquence</span>
-        </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">4</span>
-          <span className="text-lg">Indiquez le nombre de séances souhaitées et leur durée</span>
-        </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">5</span>
-          <span className="text-lg">Ajoutez des contraintes spécifiques (matériel disponible, approche pédagogique, etc.)</span>
-        </li>
-        <li className="flex items-start">
-          <span className="flex items-center justify-center bg-purple-100 text-purple-700 font-bold rounded-full w-8 h-8 mr-4 flex-shrink-0">6</span>
-          <span className="text-lg">Cliquez sur "Générer ma séquence"</span>
+        
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+          <div className="bg-purple-100 p-4 rounded-full mr-6">
+            <Download className="h-8 w-8 text-purple-600" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">3. Téléchargez et adaptez</h3>
+            <p className="text-gray-700">Exportez votre séquence complète au format Word ou PDF et personnalisez-la selon vos besoins</p>
+          </div>
         </li>
       </ol>
       
@@ -53,7 +62,7 @@ export function SequenceGeneratorSection() {
           <div className="space-y-2 text-left">
             <h4 className="text-xl font-semibold text-green-700">Temps économisé</h4>
             <p className="text-lg leading-relaxed text-gray-700">
-              Une séquence pédagogique complète générée en <strong className="text-green-800 text-xl">moins d'une minute</strong>, contre <span className="line-through text-gray-500">3 à 5 heures</span> de préparation traditionnelle. Soit une économie moyenne de <strong className="text-green-800 text-xl">4h30</strong> par séquence !
+              Création d'une séquence complète en <strong className="text-green-800 text-xl">15 minutes</strong>, contre <span className="line-through text-gray-500">3 à 4 heures</span> habituellement.
             </p>
           </div>
         </div>
