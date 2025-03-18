@@ -7,30 +7,9 @@ export async function checkBetaAccess(
 ) {
   console.log("Checking if user is beta user:", user.email);
   
-  // Check in the beta_users table with is_validated=true
-  const { data: betaUser, error: betaError } = await supabaseClient
-    .from('beta_users')
-    .select('*')
-    .eq('email', user.email.toLowerCase())
-    .eq('is_validated', true)
-    .single();
-    
-  if (betaError && betaError.code !== 'PGRST116') {
-    console.error("Beta user check error:", betaError);
-  }
-    
-  if (betaUser) {
-    console.log('Validated beta user found in beta_users table:', user.email);
-    return { 
-      access: true, 
-      type: 'beta',
-      expires_at: null,
-    };
-  }
-
-  // For backward compatibility, check in user_subscriptions table
-  console.log("Checking beta subscription in user_subscriptions for", user.email);
-  const { data: betaSubscription, error: betaSubError } = await supabaseClient
+  // Check in user_subscriptions table for type=beta
+  console.log("Checking beta subscription for", user.email);
+  const { data: betaSubscription, error: betaError } = await supabaseClient
     .from('user_subscriptions')
     .select('*')
     .eq('user_id', user.id)
@@ -40,17 +19,17 @@ export async function checkBetaAccess(
     .limit(1)
     .maybeSingle();
 
-  if (betaSubError) {
-    console.error("Beta subscription check error:", betaSubError);
+  if (betaError) {
+    console.error("Beta subscription check error:", betaError);
     return { 
       access: false, 
-      message: `Erreur lors de la vérification de l'abonnement beta: ${betaSubError.message}`,
+      message: `Erreur lors de la vérification de l'abonnement beta: ${betaError.message}`,
       type: 'error'
     };
   }
 
   if (betaSubscription) {
-    console.log('Beta subscription found in user_subscriptions for', user.email, ':', betaSubscription);
+    console.log('Beta subscription found for', user.email, ':', betaSubscription);
     
     // Check if beta subscription is expired
     if (betaSubscription.expires_at) {

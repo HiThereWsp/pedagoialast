@@ -3,26 +3,41 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Vérifie si un email est dans la liste des utilisateurs beta
+ * Cette fonction est désormais redirigée vers le système de subscription
  */
 export const checkBetaEmail = async (email: string): Promise<boolean> => {
   if (!email) return false;
   
   try {
-    const { data, error } = await supabase
-      .from('beta_users')
-      .select('id, is_validated')
+    // Rechercher un utilisateur par email
+    const { data: userData, error: userError } = await supabase
+      .from('auth.users')
+      .select('id')
       .eq('email', email.toLowerCase())
       .maybeSingle();
     
-    if (error) {
-      console.error('Erreur lors de la vérification du statut beta par email:', error);
+    if (userError || !userData) {
+      console.log('Utilisateur non trouvé par email:', email);
       return false;
     }
     
-    // Retourner true seulement si l'utilisateur existe ET est validé
-    return !!data && !!data.is_validated;
+    // Vérifier si l'utilisateur a un abonnement beta actif
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .select('id')
+      .eq('user_id', userData.id)
+      .eq('type', 'beta')
+      .eq('status', 'active')
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Erreur lors de la vérification du statut beta par abonnement:', error);
+      return false;
+    }
+    
+    return !!data;
   } catch (err) {
-    console.error('Exception lors de la vérification du statut beta par email:', err);
+    console.error('Exception lors de la vérification du statut beta:', err);
     return false;
   }
 };

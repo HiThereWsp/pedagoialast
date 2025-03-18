@@ -45,10 +45,26 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
       }
     }
     
-    // Then check for beta status using the beta_users table with is_validated=true
+    // Then check for beta status through user_subscriptions
+    if (userId) {
+      const { data: betaSubscription } = await supabase
+        .from('user_subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('type', 'beta')
+        .eq('status', 'active')
+        .single();
+        
+      if (betaSubscription) {
+        console.log("Beta subscription detected, providing beta access:", email);
+        return createBetaStatus();
+      }
+    }
+    
+    // Fallback: legacy check for emails in beta_users (backward compatibility)
     const isBetaUser = await checkBetaEmail(email);
     if (isBetaUser) {
-      console.log("Validated beta user detected, providing beta access:", email);
+      console.log("Validated beta user detected via legacy method, providing beta access:", email);
       return createBetaStatus();
     }
   } catch (err) {
