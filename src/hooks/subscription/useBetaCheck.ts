@@ -9,26 +9,33 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
   if (!email) return false;
   
   try {
-    // Querying directly for the user ID from auth.users using email
-    const { data: authUser, error: authError } = await supabase
-      .from('user_subscriptions')
+    // First get the user ID directly
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
       .select('id')
-      .eq('type', 'beta')
-      .eq('status', 'active')
-      .in('user_id', (subquery) => {
-        return subquery
-          .from('profiles')
-          .select('id')
-          .eq('email', email.toLowerCase());
-      })
+      .eq('email', email.toLowerCase())
       .maybeSingle();
     
-    if (authError) {
-      console.error('Erreur lors de la vérification du statut beta:', authError);
+    if (profileError || !profile) {
+      console.log('Utilisateur non trouvé par email:', email);
       return false;
     }
     
-    return !!authUser;
+    // Then check for beta subscription with the user ID
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .select('id')
+      .eq('user_id', profile.id)
+      .eq('type', 'beta')
+      .eq('status', 'active')
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Erreur lors de la vérification du statut beta par abonnement:', error);
+      return false;
+    }
+    
+    return !!data;
   } catch (err) {
     console.error('Exception lors de la vérification du statut beta:', err);
     return false;
