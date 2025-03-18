@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { lessonPlansService } from "@/services/lesson-plans";
 import type { SaveLessonPlanParams } from "@/types/saved-content";
+import { FORM_STORAGE_KEY, RESULT_STORAGE_KEY } from "@/hooks/lesson-plan/types";
 
 export function useLessonPlanContent() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +17,11 @@ export function useLessonPlanContent() {
         title: "Séquence sauvegardée",
         description: "Votre séquence a été sauvegardée avec succès"
       });
+      
+      // Optional: clear cache after successful save to avoid duplicates
+      // Only uncomment if you want to reset form after save
+      // localStorage.removeItem(FORM_STORAGE_KEY);
+      // localStorage.removeItem(RESULT_STORAGE_KEY);
     } catch (error) {
       if (error instanceof Error && error.message.includes('Limite de contenu')) {
         toast({

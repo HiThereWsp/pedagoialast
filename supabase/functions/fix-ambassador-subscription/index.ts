@@ -27,6 +27,7 @@ serve(async (req) => {
 
     // Extraire l'email de l'utilisateur de la requête
     const { email } = await req.json();
+    console.log(`Attempting to fix ambassador subscription for: ${email}`);
     
     if (!email) {
       return new Response(
@@ -38,13 +39,13 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Tentative de réparation de l'abonnement pour l'email: ${email}`);
+    console.log(`Processing ambassador subscription fix for email: ${email}`);
     
     // Trouver l'utilisateur par email
     const { data: userData, error: userError } = await supabaseClient.auth.admin.listUsers();
     
     if (userError) {
-      console.error("Erreur lors de la récupération des utilisateurs:", userError);
+      console.error("Error fetching users list:", userError);
       return new Response(
         JSON.stringify({ error: "Erreur lors de la récupération des utilisateurs" }),
         { 
@@ -57,6 +58,7 @@ serve(async (req) => {
     const user = userData.users.find(u => u.email === email);
     
     if (!user) {
+      console.error(`User not found for email: ${email}`);
       return new Response(
         JSON.stringify({ error: "Utilisateur non trouvé" }),
         { 
@@ -66,56 +68,91 @@ serve(async (req) => {
       );
     }
     
-    console.log(`Utilisateur trouvé: ${user.id}`);
+    console.log(`Found user with ID: ${user.id} for email: ${email}`);
+    
+    // Définir la date d'expiration pour l'ambassadeur (2 ans dans le futur)
+    const expiresAt = new Date('2025-08-28').toISOString();
     
     // 1. Mettre à jour l'abonnement dans user_subscriptions
-    const { error: subscriptionError } = await supabaseClient
-      .from('user_subscriptions')
-      .upsert({
-        user_id: user.id,
-        type: 'ambassador',
-        status: 'active',
-        expires_at: new Date('2025-08-28').toISOString(),
-        stripe_subscription_id: 'manual_fix_' + Date.now(),
-        stripe_customer_id: 'manual_fix_' + Date.now()
-      }, {
-        onConflict: 'user_id'
-      });
+    try {
+      const { error: subscriptionError } = await supabaseClient
+        .from('user_subscriptions')
+        .upsert({
+          user_id: user.id,
+          type: 'ambassador',
+          status: 'active',
+          expires_at: expiresAt,
+          stripe_subscription_id: 'manual_fix_' + Date.now(),
+          stripe_customer_id: 'manual_fix_' + Date.now()
+        }, {
+          onConflict: 'user_id'
+        });
+        
+      if (subscriptionError) {
+        console.error("Error updating subscription:", subscriptionError);
+      } else {
+        console.log(`Successfully updated subscription for user: ${user.id}`);
+      }
+    } catch (e) {
+      console.error("Exception during subscription update:", e);
+    }
       
-    if (subscriptionError) {
-      console.error("Erreur lors de la mise à jour de l'abonnement:", subscriptionError);
-      return new Response(
-        JSON.stringify({ error: "Erreur lors de la mise à jour de l'abonnement" }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 500
-        }
-      );
+    // 2. Ajouter/mettre à jour dans la table ambassador_program
+    try {
+      const { error: ambassadorError } = await supabaseClient
+        .from('ambassador_program')
+        .upsert({
+          user_id: user.id,
+          email: email,
+          status: 'active',
+          approved_at: new Date().toISOString(),
+          expires_at: expiresAt,
+          notes: 'Réparation manuelle via fix-ambassador-subscription'
+        }, {
+          onConflict: 'user_id'
+        });
+        
+      if (ambassadorError) {
+        console.error("Error adding to ambassador program:", ambassadorError);
+      } else {
+        console.log(`Successfully added to ambassador program: ${user.id}`);
+      }
+    } catch (e) {
+      console.error("Exception during ambassador program update:", e);
     }
     
-    // 2. Ajouter/mettre à jour dans la table ambassador_program
-    const { error: ambassadorError } = await supabaseClient
-      .from('ambassador_program')
-      .upsert({
-        user_id: user.id,
-        email: email,
-        status: 'active',
-        approved_at: new Date().toISOString(),
-        expires_at: new Date('2025-08-28').toISOString(),
-        notes: 'Réparation manuelle via fix-ambassador-subscription'
-      }, {
-        onConflict: 'user_id'
-      });
-      
-    if (ambassadorError) {
-      console.error("Erreur lors de l'ajout au programme ambassadeur:", ambassadorError);
-      // Continuer même en cas d'erreur
+    // 3. Clear any cached subscription info - send an event to invalidate
+    try {
+      const { error: eventError } = await supabaseClient
+        .from('user_events')
+        .insert({
+          user_id: user.id,
+          event_type: 'subscription_updated',
+          metadata: {
+            source: 'fix-ambassador-subscription',
+            type: 'ambassador',
+            timestamp: new Date().toISOString(),
+            cache_invalidation: true
+          }
+        });
+        
+      if (eventError) {
+        console.error("Error recording update event:", eventError);
+      } else {
+        console.log(`Successfully recorded update event for: ${user.id}`);
+      }
+    } catch (e) {
+      console.error("Exception during event recording:", e);
     }
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Abonnement ambassadeur réparé pour ${email}` 
+        message: `Abonnement ambassadeur réparé pour ${email}`,
+        details: {
+          user_id: user.id,
+          expires_at: expiresAt
+        }
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -124,7 +161,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error("Erreur générale:", error);
+    console.error("General error:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

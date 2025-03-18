@@ -1,9 +1,9 @@
 
-import { RefreshCw, AlertTriangle, WrenchIcon } from "lucide-react";
+import { RefreshCw, AlertTriangle, Wrench } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SubscriptionErrorProps {
   error: string;
@@ -17,30 +17,35 @@ interface SubscriptionErrorProps {
 export function SubscriptionError({ 
   error, 
   isRetrying, 
-  onRetry, 
+  onRetry,
   onRepair,
   showRepair,
   isRepairing = false
 }: SubscriptionErrorProps) {
-  const [canRepair, setCanRepair] = useState(false);
-
-  // Vérifier si on doit afficher l'option de réparation
+  const [showRepairButton, setShowRepairButton] = useState(false);
+  
+  // Check if repair button should be shown
   useEffect(() => {
-    const checkRepairOption = async () => {
+    const checkRepairEligibility = async () => {
       if (showRepair) {
-        const showRepairOption = await showRepair();
-        setCanRepair(showRepairOption);
+        try {
+          const eligible = await showRepair();
+          setShowRepairButton(eligible);
+        } catch (e) {
+          console.error("Error checking repair eligibility:", e);
+          setShowRepairButton(false);
+        }
       }
     };
     
-    checkRepairOption();
+    checkRepairEligibility();
   }, [showRepair]);
 
   return (
     <div className="max-w-4xl mx-auto p-6 my-8">
       <Alert className="bg-red-50 border-red-200 mb-6">
         <AlertTriangle className="h-5 w-5 text-red-600" />
-        <AlertTitle className="text-red-800 font-bold">Erreur de vérification d'abonnement</AlertTitle>
+        <AlertTitle className="text-red-800 font-medium">Erreur de vérification d'abonnement</AlertTitle>
         <AlertDescription className="text-red-700">
           Une erreur est survenue lors de la vérification de votre abonnement. 
           Vous pouvez essayer de réactualiser ou contacter notre support si le problème persiste.
@@ -70,12 +75,14 @@ export function SubscriptionError({
             </>
           )}
         </Button>
-        
-        {canRepair && onRepair && (
+
+        {/* Show repair button only for eligible users */}
+        {showRepairButton && onRepair && (
           <Button 
-            onClick={onRepair} 
+            onClick={onRepair}
             disabled={isRepairing}
-            variant="destructive"
+            variant="outline"
+            className="text-amber-700 border-amber-300 hover:bg-amber-50"
           >
             {isRepairing ? (
               <>
@@ -84,7 +91,7 @@ export function SubscriptionError({
               </>
             ) : (
               <>
-                <WrenchIcon className="mr-2 h-4 w-4" />
+                <Wrench className="mr-2 h-4 w-4" />
                 Réparer l'abonnement
               </>
             )}

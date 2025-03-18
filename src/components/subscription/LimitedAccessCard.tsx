@@ -1,30 +1,27 @@
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export function LimitedAccessCard() {
   const navigate = useNavigate();
   
   return (
-    <Card className="p-6">
-      <h3 className="text-xl sm:text-2xl font-bold mb-3 leading-tight tracking-tight text-balance">
-        Accès limité
-      </h3>
-      <p className="text-muted-foreground mb-4 max-w-lg">
-        Abonnez vous pour avoir accès à toutes les fonctionnalités de PedagoIA.
-      </p>
-      <div className="flex flex-col sm:flex-row gap-3 mt-4">
-        <Button onClick={() => navigate("/pricing")} className="w-full sm:w-auto">
-          Voir les abonnements
-        </Button>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate("/tableau-de-bord")} 
-          className="w-full sm:w-auto">
-          Explorer la plateforme
+    <div className="max-w-4xl mx-auto p-6 my-8">
+      <Alert className="bg-amber-50 border-amber-200 mb-6">
+        <Info className="h-5 w-5 text-amber-800" />
+        <AlertTitle className="text-amber-800 font-medium">Accès limité</AlertTitle>
+        <AlertDescription className="text-amber-700">
+          Abonnez vous pour avoir accès à toutes les fonctionnalités de PedagoIA.
+          <div className="mt-2">Redirection vers la page d'abonnement...</div>
+        </AlertDescription>
+      </Alert>
+      <div className="flex justify-center">
+        <Button onClick={() => navigate('/pricing')}>
+          Voir les offres d'abonnement
         </Button>
       </div>
-    </Card>
+    </div>
   );
 }

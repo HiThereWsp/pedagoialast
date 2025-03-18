@@ -4,24 +4,27 @@ import { SubscriptionStatus, CACHE_KEY, CACHE_DURATION } from './types';
 /**
  * Cache subscription status in local storage
  */
-export const cacheSubscriptionStatus = (statusToCache: SubscriptionStatus) => {
+export const cacheSubscriptionStatus = (statusToCache: SubscriptionStatus): void => {
   try {
-    // Only cache valid, non-loading, error-free statuses
-    if (statusToCache.isLoading || statusToCache.error) {
-      console.log('Not caching loading or error status:', statusToCache);
-      return;
-    }
-    
-    // Cache with timestamp for expiration tracking
     const cacheData = {
       ...statusToCache,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      cachedUntil: Date.now() + CACHE_DURATION
     };
     
-    console.log('Caching subscription status:', cacheData);
+    // Special handling for ambassador accounts
+    if (statusToCache.type === 'ambassador' && !cacheData.special_handling) {
+      cacheData.special_handling = true;
+    }
+    
+    if (statusToCache.type === 'ambassador' && statusToCache.ambassador_email) {
+      cacheData.ambassador_email = statusToCache.ambassador_email;
+    }
+    
     localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+    console.log('Subscription status cached until', new Date(cacheData.cachedUntil).toLocaleTimeString());
   } catch (err) {
-    console.log('Error caching status:', err);
+    console.log('Error caching subscription status:', err);
     // Continue even if caching fails
   }
 };
@@ -38,45 +41,61 @@ export const getCachedStatus = (): SubscriptionStatus | null => {
       return null;
     }
     
-    const parsedCache = JSON.parse(cached) as SubscriptionStatus & { timestamp?: number };
+    const parsedCache = JSON.parse(cached) as SubscriptionStatus;
     
     // Check cache age
-    if (parsedCache.timestamp) {
-      const ageInMs = Date.now() - parsedCache.timestamp;
-      
-      if (ageInMs < CACHE_DURATION) {
-        console.log(`Using cached subscription status (age: ${Math.round(ageInMs/1000)}s)`, parsedCache);
-        
-        // Clean up timestamp for return 
-        const cleanCache: SubscriptionStatus = {
-          isActive: parsedCache.isActive,
-          type: parsedCache.type,
-          expiresAt: parsedCache.expiresAt,
-          isLoading: false, // Always reset to false when using cache
-          error: null,      // Always reset to null when using cache
-          retryCount: 0     // Reset retry counter
-        };
-        
-        return cleanCache;
+    if (parsedCache.timestamp && parsedCache.cachedUntil) {
+      if (Date.now() < parsedCache.cachedUntil) {
+        console.log('Using cached subscription status, valid until', 
+          new Date(parsedCache.cachedUntil).toLocaleTimeString());
+        return parsedCache;
       } else {
-        console.log(`Cached subscription status expired (age: ${Math.round(ageInMs/1000)}s)`);
+        console.log('Cached subscription status expired at', 
+          new Date(parsedCache.cachedUntil).toLocaleTimeString());
       }
+    } else if (parsedCache.timestamp && (Date.now() - parsedCache.timestamp) < CACHE_DURATION) {
+      // Fallback for older cache format
+      console.log('Using cached subscription status (legacy format)');
+      return parsedCache;
     }
+    
+    console.log('Cached subscription status expired');
+    return null;
   } catch (err) {
-    console.log('Error retrieving cache:', err);
+    console.log('Error retrieving cached subscription status:', err);
+    return null;
   }
-  
-  return null;
 };
 
 /**
- * Force clear the subscription cache
+ * Clear subscription cache
  */
-export const clearSubscriptionCache = () => {
+export const clearSubscriptionCache = (): void => {
   try {
     localStorage.removeItem(CACHE_KEY);
     console.log('Subscription cache cleared');
   } catch (err) {
-    console.log('Error clearing cache:', err);
+    console.log('Error clearing subscription cache:', err);
   }
+};
+
+/**
+ * Force refresh subscription cache
+ */
+export const forceRefreshCache = (status: SubscriptionStatus): SubscriptionStatus => {
+  const updatedStatus = {
+    ...status,
+    forceReload: true,
+    timestamp: Date.now()
+  };
+  
+  // Special handling for ambassador accounts to ensure they get proper access
+  if (status.type === 'ambassador') {
+    updatedStatus.special_handling = true;
+  }
+  
+  clearSubscriptionCache();
+  cacheSubscriptionStatus(updatedStatus);
+  
+  return updatedStatus;
 };

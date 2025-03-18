@@ -1,12 +1,13 @@
 
-import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
 
 export function SubscriptionLoading() {
   return (
-    <Card className="p-4 flex items-center justify-center h-24">
-      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-      <span className="ml-2 text-muted-foreground">Vérification de l'abonnement...</span>
-    </Card>
+    <div className="flex items-center justify-center min-h-[50vh] transition-opacity duration-300">
+      <div className="text-center">
+        <LoadingIndicator type="spinner" size="md" />
+        <p className="text-muted-foreground mt-4">Chargement en cours...</p>
+      </div>
+    </div>
   );
 }
