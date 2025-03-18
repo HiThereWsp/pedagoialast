@@ -9,23 +9,57 @@ export const checkBetaEmail = async (email: string): Promise<boolean> => {
   if (!email) return false;
   
   try {
-    // Get user by email from profiles table with explicit type
-    const { data: userData, error: userError } = await supabase
+    // Querying directly for the user ID from auth.users using email
+    const { data: authUser, error: authError } = await supabase
+      .from('user_subscriptions')
+      .select('id')
+      .eq('type', 'beta')
+      .eq('status', 'active')
+      .in('user_id', (subquery) => {
+        return subquery
+          .from('profiles')
+          .select('id')
+          .eq('email', email.toLowerCase());
+      })
+      .maybeSingle();
+    
+    if (authError) {
+      console.error('Erreur lors de la vérification du statut beta:', authError);
+      return false;
+    }
+    
+    return !!authUser;
+  } catch (err) {
+    console.error('Exception lors de la vérification du statut beta:', err);
+    return false;
+  }
+};
+
+/**
+ * Alternative implementation that first gets the user ID then checks subscription
+ * Use this if the subquery approach above causes issues
+ */
+export const checkBetaEmailAlternate = async (email: string): Promise<boolean> => {
+  if (!email) return false;
+  
+  try {
+    // First get the user ID directly
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
       .eq('email', email.toLowerCase())
       .maybeSingle();
     
-    if (userError || !userData) {
+    if (profileError || !profile) {
       console.log('Utilisateur non trouvé par email:', email);
       return false;
     }
     
-    // Vérifier si l'utilisateur a un abonnement beta actif avec type explicite
+    // Then check for beta subscription with the user ID
     const { data, error } = await supabase
       .from('user_subscriptions')
       .select('id')
-      .eq('user_id', userData.id)
+      .eq('user_id', profile.id)
       .eq('type', 'beta')
       .eq('status', 'active')
       .maybeSingle();

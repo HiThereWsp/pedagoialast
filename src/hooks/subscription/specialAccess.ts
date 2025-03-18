@@ -3,7 +3,7 @@ import { SubscriptionStatus, initialStatus } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { logSubscriptionError } from './useErrorLogging';
 import { cacheSubscriptionStatus } from './useSubscriptionCache';
-import { checkBetaEmail } from './useBetaCheck';
+import { checkBetaEmailAlternate } from './useBetaCheck';
 import { processAmbassadorWelcome } from './ambassador-check';
 
 /**
@@ -62,7 +62,7 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     }
     
     // Fallback: legacy check for emails in beta_users (backward compatibility)
-    const isBetaUser = await checkBetaEmail(email);
+    const isBetaUser = await checkBetaEmailAlternate(email);
     if (isBetaUser) {
       console.log("Validated beta user detected via legacy method, providing beta access:", email);
       return createBetaStatus();
