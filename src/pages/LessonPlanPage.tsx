@@ -1,10 +1,21 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { LessonPlanCreator } from '@/components/lesson-plan/LessonPlanCreator';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { FORM_STORAGE_KEY, RESULT_STORAGE_KEY } from '@/hooks/lesson-plan/types';
 
 const LessonPlanPage = () => {
   const isMobile = useIsMobile();
+  
+  // Clear cached data when first visiting the page
+  useEffect(() => {
+    // Check if this is a fresh page load (not a return from history)
+    if (performance.navigation?.type === 1 || !performance.navigation) {
+      console.log('Fresh page load of lesson plan page, clearing old cache');
+      localStorage.removeItem(FORM_STORAGE_KEY);
+      localStorage.removeItem(RESULT_STORAGE_KEY);
+    }
+  }, []);
   
   return (
     <div className="container mx-auto py-4 px-4">
