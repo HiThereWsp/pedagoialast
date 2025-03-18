@@ -194,19 +194,6 @@ export async function checkBetaAccess(
     }
   }
   
-  // Dernier recours: vérification directe des emails connus qui devraient toujours avoir accès
-  // Cette vérification est redondante avec celle du début, mais permet de s'assurer que ces utilisateurs
-  // auront toujours accès même si la première vérification échoue pour une raison quelconque
-  if (user.email === 'andyguitteaud@gmail.com') {
-    console.log('Accès beta accordé pour utilisateur spécial:', user.email);
-    return { 
-      access: true, 
-      type: 'beta',
-      expires_at: null,
-      special_access: true
-    };
-  }
-  
   console.log("No beta access found for", user.email);
   return null;
 }

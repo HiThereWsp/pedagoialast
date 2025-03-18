@@ -42,12 +42,6 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       console.log('Development mode detected, access granted despite error');
       return children;
     }
-
-    // Skip the error for special users or ambassador accounts
-    if (user?.email === 'ag.tradeunion@gmail.com') {
-      console.log("Ambassador account detected, bypassing error");
-      return children;
-    }
     
     return (
       <SubscriptionError 
