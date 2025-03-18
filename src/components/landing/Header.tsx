@@ -61,10 +61,10 @@ export function Header() {
               Tableau de bord
             </Button>
           ) : (
-            // Dialog de connexion pour utilisateurs non connectés
+            // Dialog de connexion pour utilisateurs non connectés - CACHÉ SUR MOBILE
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" className="flex gap-2">
+                <Button variant="outline" className="hidden md:flex gap-2">
                   <LogIn className="h-4 w-4" />
                   Se connecter
                 </Button>

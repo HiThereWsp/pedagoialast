@@ -4,7 +4,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 
 // Fonction pour gérer la création d'abonnement
 export async function handleSubscriptionCreated(subscription: Stripe.Subscription, stripe: Stripe) {
-  console.log('Traitement de customer.subscription.created');
+  console.log('Traitement de customer.subscription.created', subscription.id);
   
   const customerId = subscription.customer as string;
   const subscriptionId = subscription.id;
@@ -24,10 +24,16 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
     console.log('Promo code from metadata:', promoCode);
     
     if (!customerEmail) {
+      console.error('Email client non trouvé pour le client Stripe:', customerId);
       throw new Error('Email client non trouvé');
     }
     
-    // Trouver l'utilisateur par email
+    // Trouver l'utilisateur par ID utilisateur dans les métadonnées du client
+    if (!customer.metadata?.userId) {
+      console.error('ID utilisateur non trouvé dans les métadonnées du client Stripe:', customerId);
+      throw new Error('ID utilisateur non trouvé dans les métadonnées');
+    }
+    
     const { data: userData, error: userError } = await supabase
       .from('profiles')
       .select('id')
@@ -40,6 +46,12 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
     }
     
     const userId = userData.id;
+
+    // Vérifier si c'est un produit ambassadeur gratuit
+    const isAmbassadorProduct = await isAmbassadorSubscription(subscription, stripe);
+    const subscriptionType = isAmbassadorProduct ? 'ambassador' : 'paid';
+    
+    console.log(`Type d'abonnement détecté: ${subscriptionType}`);
     
     // Mettre à jour ou créer l'enregistrement dans user_subscriptions
     const { error: upsertError } = await supabase
@@ -49,7 +61,7 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
         stripe_customer_id: customerId,
         stripe_subscription_id: subscriptionId,
         status: 'active',
-        type: 'paid',
+        type: subscriptionType,
         product_id: productId,
         promo_code: promoCode || null,
         expires_at: expiresAt
@@ -62,7 +74,32 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
       throw upsertError;
     }
     
-    console.log(`Abonnement créé pour l'utilisateur ${userId} avec le product ID: ${productId}`);
+    console.log(`Abonnement ${subscriptionType} créé pour l'utilisateur ${userId} avec le product ID: ${productId}`);
+    
+    // Si c'est un ambassadeur, ajouter aussi à la table ambassador_program
+    if (isAmbassadorProduct) {
+      console.log('Ajout de l\'utilisateur au programme ambassadeur');
+      
+      const { error: ambassadorError } = await supabase
+        .from('ambassador_program')
+        .upsert({
+          user_id: userId,
+          email: customerEmail,
+          full_name: customer.name || null,
+          status: 'active',
+          approved_at: new Date().toISOString(),
+          expires_at: expiresAt
+        }, {
+          onConflict: 'user_id'
+        });
+        
+      if (ambassadorError) {
+        console.error('Erreur lors de l\'ajout au programme ambassadeur:', ambassadorError);
+        // On continue malgré l'erreur pour ne pas bloquer l'activation de l'abonnement
+      } else {
+        console.log('Utilisateur ajouté avec succès au programme ambassadeur');
+      }
+    }
     
     // Synchroniser avec Brevo - déplacer l'utilisateur vers la liste des utilisateurs premium
     try {
@@ -70,25 +107,66 @@ export async function handleSubscriptionCreated(subscription: Stripe.Subscriptio
         body: { 
           email: customerEmail,
           contactName: customer.name || 'Membre Premium',
-          userType: "premium", // Marquer comme utilisateur premium
-          source: "paid_subscription"
+          userType: isAmbassadorProduct ? "ambassador" : "premium", // Marquer avec le bon type
+          source: isAmbassadorProduct ? "ambassador_program" : "paid_subscription"
         }
       });
-      console.log('Utilisateur déplacé vers la liste premium dans Brevo');
+      console.log(`Utilisateur déplacé vers la liste ${isAmbassadorProduct ? 'ambassadeur' : 'premium'} dans Brevo`);
     } catch (brevoError) {
       console.error('Erreur lors de la synchronisation avec Brevo:', brevoError);
       // On continue même si la synchro Brevo échoue
     }
     
   } catch (error) {
-    console.error('Erreur dans handleSubscriptionCreated:', error);
+    console.error('Erreur dans handleSubscriptionCreated:', error.message);
+    // Rethrow to allow top-level error handler to handle it
     throw error;
+  }
+}
+
+// Fonction pour déterminer si un abonnement est un produit ambassadeur (gratuit)
+async function isAmbassadorSubscription(subscription: Stripe.Subscription, stripe: Stripe): Promise<boolean> {
+  try {
+    // Vérifier si le prix est à 0
+    const hasFreePrice = subscription.items.data.some(item => 
+      item.price.unit_amount === 0 || item.price.unit_amount === null
+    );
+    
+    if (!hasFreePrice) {
+      return false;
+    }
+    
+    // Si le prix est à 0, vérifier si c'est le produit ambassadeur spécifique
+    // On peut vérifier par ID de produit ou par métadonnées
+    for (const item of subscription.items.data) {
+      const productId = item.price.product as string;
+      const product = await stripe.products.retrieve(productId);
+      
+      // Vérifier les métadonnées ou l'ID pour identifier un produit ambassadeur
+      const isAmbassador = 
+        product.metadata?.type === 'ambassador' || 
+        product.name?.toLowerCase().includes('ambassadeur') ||
+        productId === 'prod_abcd1234'; // Remplacer par l'ID réel du produit ambassadeur
+      
+      if (isAmbassador) {
+        console.log('Produit ambassadeur identifié:', productId, product.name);
+        return true;
+      }
+    }
+    
+    // Par défaut, considérer tous les produits gratuits comme ambassadeur pour l'instant
+    // Cette logique peut être affinée si nécessaire
+    return true;
+  } catch (error) {
+    console.error('Erreur lors de la vérification du type d\'abonnement:', error);
+    // En cas d'erreur, considérer comme un abonnement payant normal par sécurité
+    return false;
   }
 }
 
 // Fonction pour gérer les mises à jour d'abonnement
 export async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-  console.log('Traitement de customer.subscription.updated');
+  console.log('Traitement de customer.subscription.updated', subscription.id);
   
   const subscriptionId = subscription.id;
   const status = subscription.status;
@@ -99,7 +177,7 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     // Rechercher l'abonnement existant
     const { data: existingSubscription, error: findError } = await supabase
       .from('user_subscriptions')
-      .select('user_id')
+      .select('user_id, type')
       .eq('stripe_subscription_id', subscriptionId)
       .single();
     
@@ -123,6 +201,23 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     }
     
     console.log(`Abonnement mis à jour pour l'utilisateur ${existingSubscription.user_id}`);
+    
+    // Si c'est un ambassadeur, mettre aussi à jour la table ambassador_program
+    if (existingSubscription.type === 'ambassador') {
+      const { error: ambassadorError } = await supabase
+        .from('ambassador_program')
+        .update({
+          status: status === 'active' ? 'active' : 'inactive',
+          expires_at: expiresAt
+        })
+        .eq('user_id', existingSubscription.user_id);
+        
+      if (ambassadorError) {
+        console.error('Erreur lors de la mise à jour du statut ambassadeur:', ambassadorError);
+      } else {
+        console.log('Statut ambassadeur mis à jour avec succès');
+      }
+    }
     
     // Si le statut a changé, mettre à jour dans Brevo également
     if (status !== 'active') {
@@ -150,14 +245,14 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
       }
     }
   } catch (error) {
-    console.error('Erreur dans handleSubscriptionUpdated:', error);
+    console.error('Erreur dans handleSubscriptionUpdated:', error.message);
     throw error;
   }
 }
 
 // Fonction pour gérer la suppression d'abonnement
 export async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
-  console.log('Traitement de customer.subscription.deleted');
+  console.log('Traitement de customer.subscription.deleted', subscription.id);
   
   const subscriptionId = subscription.id;
   const supabase = getSupabaseClient();
@@ -166,7 +261,7 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
     // Rechercher l'abonnement existant
     const { data: existingSubscription, error: findError } = await supabase
       .from('user_subscriptions')
-      .select('user_id')
+      .select('user_id, type')
       .eq('stripe_subscription_id', subscriptionId)
       .single();
     
@@ -191,6 +286,22 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
     
     console.log(`Abonnement supprimé pour l'utilisateur ${existingSubscription.user_id}`);
     
+    // Si c'est un ambassadeur, mettre aussi à jour la table ambassador_program
+    if (existingSubscription.type === 'ambassador') {
+      const { error: ambassadorError } = await supabase
+        .from('ambassador_program')
+        .update({
+          status: 'inactive'
+        })
+        .eq('user_id', existingSubscription.user_id);
+        
+      if (ambassadorError) {
+        console.error('Erreur lors de la mise à jour du statut ambassadeur:', ambassadorError);
+      } else {
+        console.log('Statut ambassadeur désactivé avec succès');
+      }
+    }
+    
     // Obtenir l'email de l'utilisateur
     const { data: userData, error: userError } = await supabase
       .from('profiles')
@@ -214,14 +325,14 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
       }
     }
   } catch (error) {
-    console.error('Erreur dans handleSubscriptionDeleted:', error);
+    console.error('Erreur dans handleSubscriptionDeleted:', error.message);
     throw error;
   }
 }
 
 // Fonction pour gérer la complétion d'un paiement via checkout
 export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, stripe: Stripe) {
-  console.log('Traitement de checkout.session.completed');
+  console.log('Traitement de checkout.session.completed', session.id);
   const supabase = getSupabaseClient();
   
   try {
@@ -242,12 +353,16 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, 
     const subscriptionType = session.metadata?.subscriptionType || 'monthly';
     const promoCode = session.metadata?.promoCode || session.metadata?.applied_promo_code;
     
+    // Vérifier si c'est un produit gratuit (0$) - potentiellement un ambassadeur
+    const isZeroAmount = session.amount_total === 0;
+    console.log(`Montant total de la session: ${session.amount_total} - Produit gratuit: ${isZeroAmount}`);
+    
     // Enregistrer l'événement de paiement réussi
     try {
       await supabase.from('payment_events').insert({
         user_id: userId,
         email: customerEmail,
-        plan_type: subscriptionType,
+        plan_type: isZeroAmount ? 'ambassador' : subscriptionType,
         event_type: 'payment_completed',
         payment_method: 'stripe_checkout',
         promo_code: promoCode || null
@@ -263,6 +378,31 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, 
       // On peut récupérer les détails de l'abonnement
       const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
       
+      // Déterminer si c'est un abonnement ambassadeur
+      const isAmbassador = isZeroAmount || await isAmbassadorSubscription(subscription, stripe);
+      
+      if (isAmbassador) {
+        console.log('Produit ambassadeur détecté dans la session de checkout');
+        // Ajouter directement à la table ambassador_program
+        try {
+          await supabase
+            .from('ambassador_program')
+            .upsert({
+              user_id: userId,
+              email: customerEmail,
+              status: 'active',
+              requested_at: new Date().toISOString(),
+              approved_at: new Date().toISOString(),
+              notes: `Ajouté via Stripe Checkout - Session ID: ${session.id}`
+            }, {
+              onConflict: 'user_id'
+            });
+          console.log('Utilisateur ajouté au programme ambassadeur avec succès');
+        } catch (ambassadorError) {
+          console.error('Erreur lors de l\'ajout au programme ambassadeur:', ambassadorError);
+        }
+      }
+      
       // Et appeler notre fonction de création d'abonnement
       await handleSubscriptionCreated(subscription, stripe);
     } else {
@@ -271,7 +411,7 @@ export async function handleCheckoutCompleted(session: Stripe.Checkout.Session, 
     
     console.log('Checkout traité avec succès');
   } catch (error) {
-    console.error('Erreur dans handleCheckoutCompleted:', error);
+    console.error('Erreur dans handleCheckoutCompleted:', error.message);
     throw error;
   }
 }
