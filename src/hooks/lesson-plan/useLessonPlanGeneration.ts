@@ -80,14 +80,19 @@ export function useLessonPlanGeneration() {
       // Process the response and calculate generation time
       const generationEndTime = performance.now();
       const generationTime = generationEndTime - generationStartTime;
-      setLastGenerationTime(generationTime);
+      setLastGenerationTime(Math.round(generationTime)); // Round here too for UI consistency
 
       if (response) {
         // Save the result
         setLessonPlanResult(response);
         
-        // Save to database
-        await savePlan(formData, response, generationTime);
+        try {
+          // Save to database - wrap in try/catch to prevent errors here from affecting UI
+          await savePlan(formData, response, generationTime);
+        } catch (saveError) {
+          console.error('Error saving lesson plan:', saveError);
+          // Don't show toast here as it might confuse the user since the plan was generated successfully
+        }
         
         return response;
       } else {
