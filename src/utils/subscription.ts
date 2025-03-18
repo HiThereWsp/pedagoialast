@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 
@@ -36,7 +35,7 @@ export const handleSubscription = async (planType: SubscriptionType, isTrial = f
     // Créer une session de paiement Stripe Checkout
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
       body: { 
-        priceId: isTrial ? PRICE_IDS.trial : PRICE_IDS[planType],
+        priceId: isTrial ? PRICE_IDS.trial : PRICE_IDS[planType as keyof typeof PRICE_IDS],
         subscriptionType: isTrial ? 'trial' : planType,
         productId: isTrial ? 'prod_trial_200days' : (planType === 'monthly' ? 'prod_Rvu5l79HX8EAis' : 'prod_Rvu5hv7FxnkHpv'),
         isTrial: isTrial

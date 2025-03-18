@@ -119,6 +119,7 @@ export const PricingPlans = ({
         ctaText={getButtonText('trial')}
         onSubscribe={handleLongTrialSubscription}
         disabled={isButtonDisabled('trial')}
+        fullWidth={false}
       />
       <PricingCard
         title="Plan mensuel"
@@ -134,6 +135,7 @@ export const PricingPlans = ({
         ctaText={getButtonText('monthly')}
         onSubscribe={handleMonthlySubscription}
         disabled={isButtonDisabled('monthly')}
+        fullWidth={false}
       />
       <PricingCard
         title="Plan annuel"
@@ -150,6 +152,7 @@ export const PricingPlans = ({
         ctaText={getButtonText('yearly')}
         onSubscribe={handleYearlySubscription}
         disabled={isButtonDisabled('yearly')}
+        fullWidth={false}
       />
       <div className="md:col-span-3">
         <PricingCard
@@ -163,7 +166,7 @@ export const PricingPlans = ({
           ]}
           ctaText="Prendre contact"
           onSubscribe={onSchoolContactRequest}
-          fullWidth
+          fullWidth={true}
         />
       </div>
     </div>
