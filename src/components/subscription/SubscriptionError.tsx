@@ -1,16 +1,46 @@
 
-import { RefreshCw, AlertTriangle } from "lucide-react";
+import { RefreshCw, AlertTriangle, Wrench } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
+import { useState, useEffect } from "react";
 
 interface SubscriptionErrorProps {
   error: string;
   isRetrying: boolean;
   onRetry: () => void;
+  onRepair?: () => void;
+  showRepair?: () => Promise<boolean>;
+  isRepairing?: boolean;
 }
 
-export function SubscriptionError({ error, isRetrying, onRetry }: SubscriptionErrorProps) {
+export function SubscriptionError({ 
+  error, 
+  isRetrying, 
+  onRetry,
+  onRepair,
+  showRepair,
+  isRepairing = false
+}: SubscriptionErrorProps) {
+  const [showRepairButton, setShowRepairButton] = useState(false);
+  
+  // Check if repair button should be shown
+  useEffect(() => {
+    const checkRepairEligibility = async () => {
+      if (showRepair) {
+        try {
+          const eligible = await showRepair();
+          setShowRepairButton(eligible);
+        } catch (e) {
+          console.error("Error checking repair eligibility:", e);
+          setShowRepairButton(false);
+        }
+      }
+    };
+    
+    checkRepairEligibility();
+  }, [showRepair]);
+
   return (
     <div className="max-w-4xl mx-auto p-6 my-8">
       <Alert className="bg-red-50 border-red-200 mb-6">
@@ -45,6 +75,29 @@ export function SubscriptionError({ error, isRetrying, onRetry }: SubscriptionEr
             </>
           )}
         </Button>
+
+        {/* Show repair button only for eligible users */}
+        {showRepairButton && onRepair && (
+          <Button 
+            onClick={onRepair}
+            disabled={isRepairing}
+            variant="outline"
+            className="text-amber-700 border-amber-300 hover:bg-amber-50"
+          >
+            {isRepairing ? (
+              <>
+                <LoadingIndicator size="sm" type="spinner" className="mr-2" />
+                <span>Réparation...</span>
+              </>
+            ) : (
+              <>
+                <Wrench className="mr-2 h-4 w-4" />
+                Réparer l'abonnement
+              </>
+            )}
+          </Button>
+        )}
+        
         <Button onClick={() => window.location.href = '/contact'}>
           Contacter le support
         </Button>
