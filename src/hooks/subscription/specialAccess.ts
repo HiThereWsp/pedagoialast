@@ -3,7 +3,7 @@ import { SubscriptionStatus, initialStatus } from './types';
 import { supabase } from '@/integrations/supabase/client';
 import { logSubscriptionError } from './useErrorLogging';
 import { cacheSubscriptionStatus } from './useSubscriptionCache';
-import { isSpecialBetaEmail, isSpecialBetaDomain } from './email-matchers';
+import { checkBetaEmail } from './useBetaCheck';
 import { processAmbassadorWelcome } from './ambassador-check';
 
 /**
@@ -45,16 +45,10 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
       }
     }
     
-    // Then check for beta status
-    // Check if user has a special beta email
-    if (isSpecialBetaEmail(email)) {
-      console.log("Beta email detected, providing beta access:", email);
-      return createBetaStatus();
-    }
-    
-    // Check if user has a special beta domain
-    if (isSpecialBetaDomain(email)) {
-      console.log("Beta domain detected, providing beta access:", email);
+    // Then check for beta status using the beta_users table with is_validated=true
+    const isBetaUser = await checkBetaEmail(email);
+    if (isBetaUser) {
+      console.log("Validated beta user detected, providing beta access:", email);
       return createBetaStatus();
     }
   } catch (err) {
