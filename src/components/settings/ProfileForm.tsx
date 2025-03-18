@@ -76,23 +76,23 @@ export const ProfileForm = ({ initialFirstName, onUpdate }: ProfileFormProps) =>
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="space-y-1">
-          <h3 className="text-sm font-medium text-muted-foreground">Votre profil</h3>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+        <div className="space-y-2">
+          <h3 className="text-base font-medium text-muted-foreground">Votre profil</h3>
         </div>
         
         <FormField
           control={form.control}
           name="firstName"
           render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel className="text-xs text-muted-foreground">Prénom</FormLabel>
+            <FormItem className="space-y-2">
+              <FormLabel className="text-sm text-muted-foreground">Prénom</FormLabel>
               <FormControl>
                 <div className="relative">
                   <Input
                     {...field}
                     placeholder="Votre prénom"
-                    className="h-9 text-sm"
+                    className="h-10 text-sm"
                   />
                 </div>
               </FormControl>
@@ -105,14 +105,13 @@ export const ProfileForm = ({ initialFirstName, onUpdate }: ProfileFormProps) =>
           type="submit" 
           disabled={loading}
           size="sm"
-          variant="outline"
-          className="w-full transition-all duration-200 text-xs"
+          className="w-full transition-all duration-200 mt-2"
         >
           {loading ? (
             "Mise à jour..."
           ) : success ? (
             <>
-              <Check className="mr-1 h-3 w-3" /> Mis à jour
+              <Check className="mr-1 h-4 w-4" /> Mis à jour
             </>
           ) : (
             "Mettre à jour"

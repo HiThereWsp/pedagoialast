@@ -71,23 +71,23 @@ const Settings = () => {
         description="Personnalisez votre expérience PedagoIA en gérant vos paramètres de compte et vos préférences."
       />
       <DashboardWrapper>
-        <div className="min-h-screen p-6">
-          <div className="max-w-md mx-auto space-y-6">
+        <div className="min-h-screen p-6 py-12">
+          <div className="max-w-md mx-auto space-y-8">
             <BackButton />
 
-            <Card className="shadow-sm border overflow-hidden relative">
-              <CardHeader className="flex items-center justify-center pb-2">
-                <div className="flex flex-col items-center space-y-2">
-                  <Avatar className="h-16 w-16 bg-primary/5">
+            <Card className="shadow-md border overflow-hidden relative bg-card/95 backdrop-blur-sm">
+              <CardHeader className="flex items-center justify-center pb-4">
+                <div className="flex flex-col items-center space-y-3">
+                  <Avatar className="h-20 w-20 bg-primary/5 shadow-sm">
                     <AvatarFallback className="text-primary">
-                      <User className="h-8 w-8 text-muted-foreground" />
+                      <User className="h-9 w-9 text-muted-foreground" />
                     </AvatarFallback>
                   </Avatar>
                   <div className="text-center">
                     {loading ? (
-                      <div className="h-5 w-32 bg-muted animate-pulse rounded"></div>
+                      <div className="h-6 w-36 bg-muted animate-pulse rounded"></div>
                     ) : (
-                      <span className="text-lg font-medium text-muted-foreground">
+                      <span className="text-xl font-medium text-muted-foreground">
                         {firstName || "Votre Profil"}
                       </span>
                     )}
@@ -95,10 +95,10 @@ const Settings = () => {
                 </div>
               </CardHeader>
               
-              <CardContent className="space-y-6 pt-4">
+              <CardContent className="space-y-8 pt-2 px-6 pb-8">
                 <ProfileForm initialFirstName={firstName} onUpdate={setFirstName} />
                 
-                <Separator className="my-6" />
+                <Separator className="my-8" />
                 
                 <PasswordForm />
               </CardContent>

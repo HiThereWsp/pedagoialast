@@ -71,25 +71,25 @@ export const PasswordForm = () => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        <div className="space-y-1">
-          <h3 className="text-sm font-medium text-muted-foreground">Sécurité</h3>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+        <div className="space-y-2">
+          <h3 className="text-base font-medium text-muted-foreground">Sécurité</h3>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           <FormField
             control={form.control}
             name="newPassword"
             render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground">Nouveau mot de passe</FormLabel>
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm text-muted-foreground">Nouveau mot de passe</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       {...field}
                       type="password"
                       placeholder="Nouveau mot de passe"
-                      className="h-9 text-sm"
+                      className="h-10 text-sm"
                     />
                   </div>
                 </FormControl>
@@ -102,15 +102,15 @@ export const PasswordForm = () => {
             control={form.control}
             name="confirmPassword"
             render={({ field }) => (
-              <FormItem className="space-y-1">
-                <FormLabel className="text-xs text-muted-foreground">Confirmer le mot de passe</FormLabel>
+              <FormItem className="space-y-2">
+                <FormLabel className="text-sm text-muted-foreground">Confirmer le mot de passe</FormLabel>
                 <FormControl>
                   <div className="relative">
                     <Input
                       {...field}
                       type="password"
                       placeholder="Confirmer le mot de passe"
-                      className="h-9 text-sm"
+                      className="h-10 text-sm"
                     />
                   </div>
                 </FormControl>
@@ -124,14 +124,13 @@ export const PasswordForm = () => {
           type="submit" 
           disabled={loading}
           size="sm"
-          variant="outline"
-          className="w-full transition-all duration-200 text-xs"
+          className="w-full transition-all duration-200 mt-2"
         >
           {loading ? (
             "Mise à jour..."
           ) : success ? (
             <>
-              <Check className="mr-1 h-3 w-3" /> Mot de passe mis à jour
+              <Check className="mr-1 h-4 w-4" /> Mot de passe mis à jour
             </>
           ) : (
             "Mettre à jour le mot de passe"
