@@ -1,5 +1,5 @@
 
-import { RefreshCw, AlertTriangle, Tools } from "lucide-react";
+import { RefreshCw, AlertTriangle, WrenchIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
@@ -84,7 +84,7 @@ export function SubscriptionError({
               </>
             ) : (
               <>
-                <Tools className="mr-2 h-4 w-4" />
+                <WrenchIcon className="mr-2 h-4 w-4" />
                 Réparer l'abonnement
               </>
             )}
