@@ -95,7 +95,7 @@ export interface UserSubscriptionRow {
   updated_at: string;
 }
 
-// Ajout de l'interface pour la table bug_reports
+// Add the new BugReportRow interface
 export interface BugReportRow {
   id: string;
   user_id: string | null;

@@ -171,6 +171,42 @@ export type Database = {
         }
         Relationships: []
       }
+      bug_reports: {
+        Row: {
+          browser_info: Json | null
+          created_at: string
+          description: string
+          id: string
+          screenshot_url: string | null
+          status: string
+          updated_at: string
+          url: string | null
+          user_id: string | null
+        }
+        Insert: {
+          browser_info?: Json | null
+          created_at?: string
+          description: string
+          id?: string
+          screenshot_url?: string | null
+          status?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          browser_info?: Json | null
+          created_at?: string
+          description?: string
+          id?: string
+          screenshot_url?: string | null
+          status?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       chats: {
         Row: {
           action_type: string | null
