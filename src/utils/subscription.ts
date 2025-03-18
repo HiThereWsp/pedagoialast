@@ -1,15 +1,17 @@
+
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 
-type SubscriptionType = 'monthly' | 'yearly' | 'trial' | 'trial_200days';
+type SubscriptionType = 'monthly' | 'yearly' | 'trial' | 'trial_200days' | 'ambassador';
 
 const PRICE_IDS = {
   monthly: 'price_1R22GyIqXQKnGj4mvQpgJUIR',
   yearly: 'price_1R22GrIqXQKnGj4md4Ce7dgb',
-  trial: 'price_1RaQ8qIqXQKnGj4mLmQMg6yI' // ID du prix pour l'offre d'essai de 200 jours (à 0,50€)
+  trial: 'price_1RaQ8qIqXQKnGj4mLmQMg6yI', // ID du prix pour l'offre d'essai de 200 jours (à 0,50€)
+  ambassador: 'price_1R3om1IqXQKnGj4m0enZ7GBD' // ID du prix pour l'offre ambassadeur
 }
 
-export const handleSubscription = async (planType: SubscriptionType, isTrial = false) => {
+export const handleSubscription = async (planType: SubscriptionType, isTrial = false, isAmbassador = false) => {
   const { data: { session } } = await supabase.auth.getSession()
   
   if (!session) {
@@ -22,7 +24,7 @@ export const handleSubscription = async (planType: SubscriptionType, isTrial = f
     try {
       await supabase.functions.invoke('log-payment-start', {
         body: { 
-          planType: isTrial ? 'trial_200' : planType,
+          planType: isAmbassador ? 'ambassador' : (isTrial ? 'trial_200' : planType),
           userId: session.user.id,
           email: session.user.email
         }
@@ -32,13 +34,24 @@ export const handleSubscription = async (planType: SubscriptionType, isTrial = f
       // Continue même si la journalisation échoue
     }
     
+    // Déterminer le bon product ID selon le type d'abonnement
+    let productId = '';
+    if (isAmbassador) {
+      productId = 'prod_RxkGEnji2kgNK4'; // Produit ambassadeur
+    } else if (isTrial) {
+      productId = 'prod_trial_200days'; // Produit essai 200 jours
+    } else {
+      productId = planType === 'monthly' ? 'prod_Rvu5l79HX8EAis' : 'prod_Rvu5hv7FxnkHpv';
+    }
+    
     // Créer une session de paiement Stripe Checkout
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
       body: { 
-        priceId: isTrial ? PRICE_IDS.trial : PRICE_IDS[planType as keyof typeof PRICE_IDS],
-        subscriptionType: isTrial ? 'trial' : planType,
-        productId: isTrial ? 'prod_trial_200days' : (planType === 'monthly' ? 'prod_Rvu5l79HX8EAis' : 'prod_Rvu5hv7FxnkHpv'),
-        isTrial: isTrial
+        priceId: isAmbassador ? PRICE_IDS.ambassador : (isTrial ? PRICE_IDS.trial : PRICE_IDS[planType as keyof typeof PRICE_IDS]),
+        subscriptionType: isAmbassador ? 'ambassador' : (isTrial ? 'trial' : planType),
+        productId: productId,
+        isTrial: isTrial,
+        isAmbassador: isAmbassador
       }
     });
     
@@ -66,7 +79,12 @@ export const handleSubscription = async (planType: SubscriptionType, isTrial = f
   }
 }
 
-// Nouvelle fonction spécifique pour l'essai de 200 jours
+// Fonction spécifique pour l'essai de 200 jours
 export const handleTrialSubscription = async () => {
   return handleSubscription('trial', true); // On utilise 'trial' comme base, mais avec isTrial=true
+}
+
+// Nouvelle fonction spécifique pour les ambassadeurs
+export const handleAmbassadorSubscription = async () => {
+  return handleSubscription('ambassador', false, true); // On utilise 'ambassador' comme base, avec isAmbassador=true
 }

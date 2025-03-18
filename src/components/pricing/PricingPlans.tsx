@@ -3,7 +3,7 @@ import { PricingCard } from "@/components/pricing/PricingCard";
 import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
-import { handleSubscription, handleTrialSubscription } from "@/utils/subscription";
+import { handleSubscription, handleTrialSubscription, handleAmbassadorSubscription } from "@/utils/subscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -77,6 +77,20 @@ export const PricingPlans = ({
     // Redirection vers Stripe avec l'essai de 200 jours
     handleTrialSubscription();
   };
+  
+  // Nouvelle fonction pour gérer l'abonnement ambassadeur
+  const handleAmbassadorPlan = async () => {
+    if (!await checkAuth()) return;
+    
+    // Tracking PostHog
+    pricingEvents.selectPlan('ambassador');
+    
+    // Tracking minimal pour les ambassadeurs
+    subscriptionEvents.subscriptionStarted('ambassador' as any, 0);
+    
+    // Redirection vers Stripe pour l'abonnement ambassadeur
+    handleAmbassadorSubscription();
+  };
 
   // Texte du bouton selon l'état de l'abonnement
   const getButtonText = (planType) => {
@@ -88,6 +102,10 @@ export const PricingPlans = ({
         return "Votre abonnement actuel";
       }
       return planType === 'yearly' ? "Passer à l'annuel" : "Changer de formule";
+    }
+    
+    if (planType === 'ambassador') {
+      return "Devenir ambassadeur";
     }
     
     return planType === 'trial' ? "Essayer sans engagement" : "Démarrer l'essai gratuit";
@@ -168,6 +186,24 @@ export const PricingPlans = ({
           ]}
           ctaText="Prendre contact"
           onSubscribe={onSchoolContactRequest}
+          fullWidth={true}
+        />
+      </div>
+      <div className="md:col-span-3">
+        <PricingCard
+          title="Programme Ambassadeur"
+          price="Gratuit"
+          period="pour 200 jours"
+          badge="Réservé"
+          features={[
+            "Bénéficiez de tous les avantages du plan premium",
+            "Accédez à la communauté privée d'ambassadeurs",
+            "Participez à la co-construction de PedagoIA",
+            "Proposez vos idées de fonctionnalités en priorité"
+          ]}
+          ctaText={getButtonText('ambassador')}
+          onSubscribe={handleAmbassadorPlan}
+          disabled={isButtonDisabled('ambassador')}
           fullWidth={true}
         />
       </div>

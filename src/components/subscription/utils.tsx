@@ -60,19 +60,6 @@ export const getSubscriptionInfo = (type: string | null) => {
         badgeStyle: 'bg-indigo-100 text-indigo-800 border-indigo-200',
         showManageButton: false
       };
-    case 'beta':
-      return {
-        title: 'Accès Beta',
-        description: 'En tant que testeur beta, vous avez accès à toutes les fonctionnalités.',
-        icon: <BugOff className="h-8 w-8 text-green-500" />,
-        color: 'bg-gradient-to-br from-green-400 to-green-600',
-        textClass: 'text-green-600',
-        titleStyle: 'text-green-600 ml-2',
-        badgeVariant: 'outline' as const,
-        badgeText: 'Beta',
-        badgeStyle: 'border-green-500 text-green-700',
-        showManageButton: false
-      };
     case 'ambassador':
       return {
         title: 'Ambassadeur Pedagogia',
@@ -84,6 +71,19 @@ export const getSubscriptionInfo = (type: string | null) => {
         badgeVariant: 'default' as const,
         badgeText: 'Ambassadeur',
         badgeStyle: 'bg-blue-500',
+        showManageButton: false
+      };
+    case 'beta':
+      return {
+        title: 'Accès Beta',
+        description: 'En tant que testeur beta, vous avez accès à toutes les fonctionnalités.',
+        icon: <BugOff className="h-8 w-8 text-green-500" />,
+        color: 'bg-gradient-to-br from-green-400 to-green-600',
+        textClass: 'text-green-600',
+        titleStyle: 'text-green-600 ml-2',
+        badgeVariant: 'outline' as const,
+        badgeText: 'Beta',
+        badgeStyle: 'border-green-500 text-green-700',
         showManageButton: false
       };
     case 'dev_mode':

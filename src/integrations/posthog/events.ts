@@ -17,7 +17,7 @@ export const pricingEvents = {
 }
 
 export const subscriptionEvents = {
-  subscriptionStarted: (plan: 'monthly' | 'yearly' | 'trial', price: number) => {
+  subscriptionStarted: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador', price: number) => {
     posthog.capture('subscription_started', { 
       plan_type: plan,
       price: price,
@@ -25,7 +25,7 @@ export const subscriptionEvents = {
     })
   },
   
-  subscriptionCompleted: (plan: 'monthly' | 'yearly' | 'trial', price: number) => {
+  subscriptionCompleted: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador', price: number) => {
     posthog.capture('subscription_completed', {
       plan_type: plan,
       price: price,
@@ -34,21 +34,21 @@ export const subscriptionEvents = {
     })
   },
 
-  subscriptionFailed: (plan: 'monthly' | 'yearly' | 'trial', error: string) => {
+  subscriptionFailed: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador', error: string) => {
     posthog.capture('subscription_failed', {
       plan_type: plan,
       error_type: error
     })
   },
 
-  subscriptionCanceled: (plan: 'monthly' | 'yearly' | 'trial', step: string) => {
+  subscriptionCanceled: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador', step: string) => {
     posthog.capture('subscription_canceled', {
       plan_type: plan,
       abandonment_step: step
     })
   },
   
-  firstLogin: (plan: 'monthly' | 'yearly' | 'trial') => {
+  firstLogin: (plan: 'monthly' | 'yearly' | 'trial' | 'ambassador') => {
     posthog.capture('subscription_first_login', {
       plan_type: plan
     })

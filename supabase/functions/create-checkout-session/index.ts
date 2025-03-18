@@ -19,13 +19,14 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, subscriptionType = 'monthly', productId, promoCode, isTrial = false } = await req.json()
+    const { priceId, subscriptionType = 'monthly', productId, promoCode, isTrial = false, isAmbassador = false } = await req.json()
     console.log('Received request with:', { 
       priceId, 
       subscriptionType, 
       productId,
       promoCode,
       isTrial,
+      isAmbassador,
       headers: Object.fromEntries(req.headers.entries())
     })
     
@@ -67,7 +68,8 @@ serve(async (req) => {
       userEmail: user.email,
       subscriptionType,
       promoCode,
-      isTrial
+      isTrial,
+      isAmbassador
     })
 
     // Vérifier si le client existe déjà
@@ -87,7 +89,8 @@ serve(async (req) => {
         metadata: {
           userId: user.id,
           subscriptionType,
-          productId
+          productId,
+          isAmbassador: isAmbassador ? 'true' : 'false'
         }
       })
       customerId = customer.id
@@ -98,7 +101,8 @@ serve(async (req) => {
         metadata: {
           userId: user.id,
           subscriptionType,
-          productId
+          productId,
+          isAmbassador: isAmbassador ? 'true' : 'false'
         }
       });
       console.log('Updated existing customer metadata');
@@ -119,8 +123,8 @@ serve(async (req) => {
       )
     }
 
-    // Créer la session de paiement
-    const sessionParams = {
+    // Configuration de base pour la session
+    const sessionConfig = {
       customer: customerId,
       line_items: [
         {
@@ -136,36 +140,57 @@ serve(async (req) => {
         subscriptionType,
         productId,
         promoCode: promoCode || 'none',
-        isTrial: isTrial ? 'true' : 'false'
+        isTrial: isTrial ? 'true' : 'false',
+        isAmbassador: isAmbassador ? 'true' : 'false'
       },
       // Autoriser les codes promo pré-définis dans Stripe
       allow_promotion_codes: true,
-      // Pour l'offre de 200 jours d'essai gratuit
-      subscription_data: isTrial ? {
+      payment_method_collection: 'if_required' // Par défaut ne pas demander de paiement
+    };
+
+    // Pour l'offre de 200 jours d'essai gratuit
+    if (isTrial) {
+      sessionConfig.subscription_data = {
         trial_period_days: 200,
         metadata: {
           is_long_trial: 'true',
           trial_length: '200_days'
         }
-      } : undefined,
-      // Ne pas collecter la méthode de paiement pendant la période d'essai
-      payment_method_collection: isTrial ? 'if_required' : 'always'
-    };
+      };
+    }
+    
+    // Pour l'offre ambassadeur (200 jours d'accès complet)
+    if (isAmbassador) {
+      sessionConfig.subscription_data = {
+        trial_period_days: 200,
+        metadata: {
+          is_ambassador: 'true',
+          ambassador_special: 'true'
+        }
+      };
+    }
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    const session = await stripe.checkout.sessions.create(sessionConfig);
     console.log('Checkout session created:', session.id)
 
     // Préparer l'utilisateur pour le transfert vers la liste premium une fois le paiement réussi
     try {
+      let userType = "free";
+      if (isAmbassador) {
+        userType = "ambassador";
+      } else if (isTrial) {
+        userType = "trial";
+      }
+      
       await supabaseClient.functions.invoke('create-brevo-contact', {
         body: {
           email: user.email,
           contactName: user.user_metadata?.first_name || 'Utilisateur',
-          userType: isTrial ? "trial" : "free", // Type spécifique pour les utilisateurs en période d'essai longue
-          source: isTrial ? "200day_trial_started" : "checkout_started"
+          userType: userType,
+          source: isAmbassador ? "ambassador_program" : (isTrial ? "200day_trial_started" : "checkout_started")
         }
       });
-      console.log('User prepared for premium list transfer in Brevo');
+      console.log(`User prepared for ${userType} list transfer in Brevo`);
     } catch (brevoError) {
       console.error('Error preparing user in Brevo:', brevoError);
       // Continue despite Brevo error
