@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Send } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -29,7 +30,8 @@ export const NegativeFeedback = ({ imageUrl, isVisible }: NegativeFeedbackProps)
           tool_type: 'image_generation',
           action_type: 'generate',
           feedback_score: -1,
-          content_length: comment.length
+          content_length: comment.length,
+          comment
         })
 
       if (error) throw error
