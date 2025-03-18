@@ -5,11 +5,11 @@ import { Clock, FileText, User, ArrowRight } from 'lucide-react';
 export function DifferentiationSection() {
   return (
     <section id="differentiation" className="space-y-8">
-      <h2 className="text-3xl font-bold text-[#2c3e50] border-b border-gray-100 pb-4">
+      <h2 className="text-3xl font-bold text-slate-800 border-b border-gray-100 pb-4">
         Faire votre différenciation pédagogique
       </h2>
       
-      <div className="bg-gray-50 rounded-xl p-6 text-center my-12 shadow-inner">
+      <div className="bg-gray-50 rounded-xl p-6 text-center my-12 shadow-sm">
         <p className="text-gray-500">[Vidéo/GIF montrant le processus de différenciation]</p>
       </div>
       
@@ -18,12 +18,12 @@ export function DifferentiationSection() {
       </p>
       
       <ol className="list-none space-y-6 mb-12 pl-0">
-        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border-l-4 border-purple-400 flex items-center">
           <div className="bg-purple-100 p-4 rounded-full mr-6">
             <FileText className="h-8 w-8 text-purple-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">1. Importez un exercice existant</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">1. Importez un exercice existant</h3>
             <p className="text-gray-700">Utilisez un exercice créé avec PedagoIA ou copiez simplement un exercice existant</p>
           </div>
           <div className="ml-4 text-purple-600">
@@ -31,12 +31,12 @@ export function DifferentiationSection() {
           </div>
         </li>
         
-        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border-l-4 border-purple-400 flex items-center">
           <div className="bg-purple-100 p-4 rounded-full mr-6">
             <User className="h-8 w-8 text-purple-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">2. Renseignez les spécificités de l'élève</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">2. Renseignez les spécificités de l'élève</h3>
             <p className="text-gray-700">Décrivez les besoins particuliers, les difficultés ou points forts de l'élève et quelques précisions de contexte</p>
           </div>
           <div className="ml-4 text-purple-600">
@@ -44,12 +44,12 @@ export function DifferentiationSection() {
           </div>
         </li>
         
-        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border-l-4 border-purple-400 flex items-center">
           <div className="bg-purple-100 p-4 rounded-full mr-6">
             <FileText className="h-8 w-8 text-purple-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">3. Copiez votre exercice généré</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">3. Copiez votre exercice généré</h3>
             <p className="text-gray-700">Récupérez l'exercice parfaitement adapté aux besoins spécifiques de l'élève</p>
           </div>
         </li>

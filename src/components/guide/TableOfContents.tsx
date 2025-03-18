@@ -5,7 +5,7 @@ import { Check } from 'lucide-react';
 export function TableOfContents() {
   return (
     <section className="my-16 space-y-8">
-      <h2 className="text-3xl font-bold text-[#2c3e50] border-b border-gray-100 pb-4">Sommaire</h2>
+      <h2 className="text-3xl font-bold text-slate-800 border-b border-gray-100 pb-4">Sommaire</h2>
       <nav aria-label="Table des matières">
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <li className="flex items-center">

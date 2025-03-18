@@ -1,15 +1,15 @@
 
 import React from 'react';
-import { Clock, Lightbulb, Vote, Star, ArrowUp } from 'lucide-react';
+import { Clock, Lightbulb, ArrowUp, Star } from 'lucide-react';
 
 export function SuggestionsSection() {
   return (
     <section id="suggestions" className="space-y-8">
-      <h2 className="text-3xl font-bold text-[#2c3e50] border-b border-gray-100 pb-4">
+      <h2 className="text-3xl font-bold text-slate-800 border-b border-gray-100 pb-4">
         Contribuez à l'évolution de PedagoIA
       </h2>
       
-      <div className="bg-gray-50 rounded-xl p-6 text-center my-12 shadow-inner">
+      <div className="bg-gray-50 rounded-xl p-6 text-center my-12 shadow-sm">
         <p className="text-gray-500">[Vidéo/GIF montrant le processus de suggestion et vote]</p>
       </div>
       
@@ -18,39 +18,39 @@ export function SuggestionsSection() {
       </p>
       
       <ol className="list-none space-y-6 mb-12 pl-0">
-        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border-l-4 border-purple-400 flex items-center">
           <div className="bg-purple-100 p-4 rounded-full mr-6">
             <Lightbulb className="h-8 w-8 text-purple-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">Proposez de nouvelles fonctionnalités</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">Proposez de nouvelles fonctionnalités</h3>
             <p className="text-gray-700">Partagez vos idées pour améliorer PedagoIA et répondre à vos besoins spécifiques</p>
           </div>
         </li>
         
-        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border-l-4 border-purple-400 flex items-center">
           <div className="bg-purple-100 p-4 rounded-full mr-6">
             <ArrowUp className="h-8 w-8 text-purple-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">Votez pour les idées de la communauté</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">Votez pour les idées de la communauté</h3>
             <p className="text-gray-700">Soutenez les fonctionnalités qui vous semblent les plus utiles pour prioriser leur développement</p>
           </div>
         </li>
         
-        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all border-l-4 border-purple-400 flex items-center">
+        <li className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border-l-4 border-purple-400 flex items-center">
           <div className="bg-purple-100 p-4 rounded-full mr-6">
             <Star className="h-8 w-8 text-purple-600" />
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-semibold mb-2 text-[#3d4852]">Obtenez des mises à jour prioritaires</h3>
+            <h3 className="text-xl font-semibold mb-2 text-gray-800">Obtenez des mises à jour prioritaires</h3>
             <p className="text-gray-700">Les fonctionnalités les plus populaires sont développées en priorité et vous êtes informés dès leur disponibilité</p>
           </div>
         </li>
       </ol>
       
       <div className="bg-white rounded-xl p-6 shadow-md border-l-4 border-purple-400 my-8">
-        <h4 className="text-xl font-semibold mb-4 text-[#3d4852]">Déjà implémenté grâce à vos votes</h4>
+        <h4 className="text-xl font-semibold mb-4 text-gray-800">Déjà implémenté grâce à vos votes</h4>
         <ul className="space-y-3">
           <li className="flex items-center gap-2">
             <div className="bg-green-100 p-1 rounded-full">
