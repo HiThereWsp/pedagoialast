@@ -7,9 +7,12 @@ export { useToast } from './use-toast';
 export { useIsMobile } from './use-mobile';
 export { useSavedContent } from './useSavedContent';
 export { useToolMetrics } from './useToolMetrics';
+export { useBugReport } from './bug-report';
 
 // Feature-specific hooks
 export * from './subscription';
 export * from './image-generation';
 export * from './lesson-plan';
 export * from './exercise';
+export * from './bug-report';
+
