@@ -17,7 +17,10 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
     error,
     showContent,
     isRetrying,
+    isRepairing,
     handleRetry,
+    handleRepair,
+    checkRepairEligibility,
     user
   } = useSubscriptionRouteLogic();
   
@@ -47,7 +50,10 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
       <SubscriptionError 
         error={error} 
         isRetrying={isRetrying} 
-        onRetry={handleRetry} 
+        onRetry={handleRetry}
+        onRepair={handleRepair}
+        showRepair={checkRepairEligibility}
+        isRepairing={isRepairing}
       />
     );
   }

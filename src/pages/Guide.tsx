@@ -1,46 +1,117 @@
 
-import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { SEO } from "@/components/SEO";
-import { Header } from "@/components/landing/Header";
-import Footer from "@/components/landing/Footer";
-import { FAQSection } from "@/components/landing/FAQSection";
-import { GuideHeroSection } from "@/components/guide/HeroSection";
-import { GuideContent } from "@/components/guide/GuideContent";
-import { posthog } from '@/integrations/posthog/client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/hooks/use-toast';
+import { fixAmbassadorSubscription } from '@/utils/ambassadorUtils';
 
 const Guide = () => {
-  const [searchParams] = useSearchParams();
-
-  // Track page view with UTM parameters
-  useEffect(() => {
-    posthog.capture('guide_page_viewed', {
-      utm_source: searchParams.get('utm_source'),
-      utm_medium: searchParams.get('utm_medium'),
-      utm_campaign: searchParams.get('utm_campaign'),
-      utm_content: searchParams.get('utm_content'),
-      utm_term: searchParams.get('utm_term')
-    });
-  }, [searchParams]);
+  const [isRepairing, setIsRepairing] = useState(false);
+  const [email, setEmail] = useState('');
+  
+  const handleAdminRepair = async () => {
+    if (!email) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Veuillez entrer une adresse e-mail",
+        duration: 3000,
+      });
+      return;
+    }
+    
+    setIsRepairing(true);
+    try {
+      const result = await fixAmbassadorSubscription(email);
+      
+      if (result.success) {
+        toast({
+          title: "Réparation réussie",
+          description: result.message,
+          duration: 5000,
+        });
+        setEmail('');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Échec de la réparation",
+          description: result.message,
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erreur inattendue",
+        description: "Une erreur est survenue lors de la réparation",
+        duration: 5000,
+      });
+      console.error("Repair error:", error);
+    } finally {
+      setIsRepairing(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <SEO 
-        title="Guide Complet PedagoIA : L'Assistant IA qui Révolutionne la Préparation des Cours" 
-        description="Découvrez comment l'assistant pédagogique intelligent PedagoIA vous permet d'économiser jusqu'à 60% de votre temps de préparation tout en créant des contenus plus personnalisés pour vos élèves." 
-        image="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
-        article={true} 
-      />
+    <div className="container mx-auto max-w-5xl py-8">
+      <h1 className="text-3xl font-bold mb-8">Guide d'utilisation</h1>
       
-      <Header />
+      <div className="mb-12">
+        <h2 className="text-2xl font-semibold mb-4">Bienvenue sur PedagoIA</h2>
+        <p className="text-gray-700 mb-4">
+          Ce guide vous aidera à tirer le meilleur parti de votre expérience avec PedagoIA.
+        </p>
+        
+        {/* Contenu du guide ici */}
+        <div className="space-y-6">
+          <section className="p-6 bg-white rounded-lg shadow-sm border">
+            <h3 className="text-xl font-medium mb-2">Démarrer avec PedagoIA</h3>
+            <p>Découvrez les fonctionnalités essentielles pour commencer.</p>
+          </section>
+          
+          <section className="p-6 bg-white rounded-lg shadow-sm border">
+            <h3 className="text-xl font-medium mb-2">Création d'exercices</h3>
+            <p>Apprenez à créer des exercices personnalisés pour vos élèves.</p>
+          </section>
+          
+          <section className="p-6 bg-white rounded-lg shadow-sm border">
+            <h3 className="text-xl font-medium mb-2">Plans de cours</h3>
+            <p>Découvrez comment créer des plans de cours efficaces.</p>
+          </section>
+        </div>
+      </div>
       
-      <main className="flex-grow">
-        <GuideHeroSection />
-        <GuideContent />
-        <FAQSection />
-      </main>
-      
-      <Footer />
+      {/* Admin section for repair */}
+      <div className="mt-16 p-6 bg-amber-50 border border-amber-200 rounded-lg">
+        <h2 className="text-xl font-semibold mb-4">Réparation d'accès ambassadeur</h2>
+        <p className="mb-4 text-sm">
+          Cet outil permet de réparer l'accès ambassadeur pour un utilisateur dont le webhook Stripe aurait échoué.
+        </p>
+        
+        <div className="flex gap-4 items-end">
+          <div className="flex-1">
+            <label htmlFor="email" className="block text-sm font-medium mb-1">Email de l'utilisateur</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="exemple@domaine.com"
+              className="w-full px-3 py-2 border rounded-md"
+            />
+          </div>
+          <Button 
+            onClick={handleAdminRepair}
+            disabled={isRepairing || !email}
+            className="bg-amber-600 hover:bg-amber-700"
+          >
+            {isRepairing ? "Réparation en cours..." : "Réparer l'accès"}
+          </Button>
+        </div>
+        
+        <p className="mt-4 text-xs text-gray-500">
+          Note: Cet outil ne fonctionne que pour les utilisateurs ayant complété un paiement sur Stripe.
+        </p>
+      </div>
     </div>
   );
 };

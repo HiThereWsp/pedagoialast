@@ -1,109 +1,143 @@
 
-import { useState, useEffect, useRef } from "react";
-import { useSubscription } from "@/hooks/subscription";
-import { useAuth } from "@/hooks/useAuth";
-import { useLocation, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { posthog } from "@/integrations/posthog/client";
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useSubscription } from './useSubscription';
+import { toast } from '@/hooks/use-toast';
+import { fixAmbassadorSubscription } from '@/utils/ambassadorUtils';
 
-export function useSubscriptionRouteLogic() {
-  const { user } = useAuth();
-  const { isSubscribed, subscriptionType, isLoading, error, checkSubscription } = useSubscription();
+/**
+ * Custom hook for managing subscription route logic
+ */
+export const useSubscriptionRouteLogic = () => {
+  const { isSubscribed, isLoading, error, checkSubscription } = useSubscription();
   const [isChecking, setIsChecking] = useState(false);
   const [isRetrying, setIsRetrying] = useState(false);
-  const checkCount = useRef(0);
-  const [showContent, setShowContent] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [isRepairing, setIsRepairing] = useState(false);
+  const [showRepairOption, setShowRepairOption] = useState(false);
+  const [user, setUser] = useState(null);
   
-  // Special handling for development mode
+  // Check if the user has special handling capability
   useEffect(() => {
-    if (import.meta.env.DEV) {
-      console.log("Development mode detected in SubscriptionRoute, showing content");
-      setShowContent(true);
-    }
-  }, []);
-  
-  // Special handling for known users
-  useEffect(() => {
-    // List of emails that should always see content
-    const specialEmails = [
-      'andyguitteaud@gmail.co',
-      'andyguitteaud@gmail.com', 
-      'ag.tradeunion@gmail.com'
-    ];
-    
-    if (user?.email && specialEmails.includes(user.email)) {
-      console.log(`[DEBUG] Special user detected in SubscriptionRoute: ${user.email}, showing content`);
-      setShowContent(true);
-    }
-  }, [user]);
-  
-  // Reduce display time - only show verification if it takes unusually long
-  useEffect(() => {
-    if (isLoading) {
-      // Only show loading indicator after a delay (2 seconds)
-      const timer = setTimeout(() => setIsChecking(true), 2000);
-      return () => clearTimeout(timer);
-    } else {
-      setIsChecking(false);
-    }
-  }, [isLoading]);
-  
-  // Limit check count to avoid infinite loops
-  useEffect(() => {
-    if (isLoading && checkCount.current < 3) {
-      checkCount.current += 1;
-    }
-    
-    // Safety measure to always show content if too many checks are happening
-    if (checkCount.current >= 3) {
-      console.log("Maximum check count reached, forcing content display");
-      setShowContent(true);
-    }
-  }, [isLoading]);
-  
-  // Effect for handling non-subscribed users
-  useEffect(() => {
-    // This effect is only for redirecting unsubscribed users
-    if (!isLoading && !error && !isSubscribed && !showContent) {
-      const redirectTimer = setTimeout(() => {
-        safeNavigate('/pricing');
-      }, 1500);
-      
-      // Log in PostHog for analytics, but only in production
-      if (!import.meta.env.DEV) {
-        posthog.capture('subscription_required_view', {
-          current_path: location.pathname,
-          subscription_type: subscriptionType
-        });
+    const checkUserEmail = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.user) {
+        setUser(data.session.user);
+        
+        // Check if this user might need repair option
+        const userEmail = data.session.user.email?.toLowerCase();
+        // Look for stripe customer or other indicators of payment
+        if (userEmail && error) {
+          try {
+            // Check if we find evidence of active subscription in Stripe
+            const { data: eventData } = await supabase
+              .from('user_events')
+              .select('*')
+              .eq('user_id', data.session.user.id)
+              .eq('event_type', 'subscription_updated')
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+              
+            setShowRepairOption(!!eventData);
+          } catch (e) {
+            console.error("Error checking repair eligibility:", e);
+          }
+        }
       }
-      
-      return () => clearTimeout(redirectTimer);
-    }
-  }, [isLoading, error, isSubscribed, showContent, location.pathname, subscriptionType]);
-  
-  // React Router navigation for redirects
-  const safeNavigate = (path: string) => {
-    console.log(`Safe navigation to: ${path} from: ${location.pathname}`);
-    setTimeout(() => navigate(path), 50);
-  };
-  
-  // Retry handler
-  const handleRetry = async () => {
+    };
+    
+    checkUserEmail();
+  }, [error]);
+
+  // Flag to determine if we should show content now
+  const showContent = Boolean(
+    // In development mode, always show content
+    import.meta.env.DEV ||
+    // User is subscribed
+    isSubscribed
+  );
+
+  // Function to manually retry verification
+  const handleRetry = useCallback(async () => {
     setIsRetrying(true);
-    toast.info("Vérification de l'abonnement en cours...");
+    toast({
+      title: "Vérification en cours",
+      description: "Nous vérifions votre abonnement...",
+      duration: 3000,
+    });
     
     try {
-      await checkSubscription(true); // Force refresh
-      toast.success("Vérification terminée");
+      await checkSubscription(true); // Force check
+      toast({
+        title: "Vérification terminée",
+        description: "Statut d'abonnement mis à jour",
+        duration: 3000,
+      });
     } catch (e) {
-      toast.error("La vérification a échoué");
+      toast({
+        variant: "destructive",
+        title: "Échec de la vérification",
+        description: "Impossible de vérifier votre abonnement",
+        duration: 5000,
+      });
+      console.error("Verification error:", e);
     } finally {
       setIsRetrying(false);
     }
-  };
+  }, [checkSubscription]);
   
+  // Function to repair ambassador subscription
+  const handleRepair = useCallback(async () => {
+    if (!user?.email) {
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Email de l'utilisateur non disponible",
+        duration: 5000,
+      });
+      return;
+    }
+    
+    setIsRepairing(true);
+    
+    try {
+      const result = await fixAmbassadorSubscription(user.email);
+      
+      if (result.success) {
+        toast({
+          title: "Réparation réussie",
+          description: result.message,
+          duration: 5000,
+        });
+        
+        // Force a verification after repair
+        await handleRetry();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Échec de la réparation",
+          description: result.message,
+          duration: 5000,
+        });
+      }
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Erreur inattendue",
+        description: "Une erreur est survenue lors de la réparation",
+        duration: 5000,
+      });
+      console.error("Repair error:", e);
+    } finally {
+      setIsRepairing(false);
+    }
+  }, [user, handleRetry]);
+
+  // Function to check if repair is eligible
+  const checkRepairEligibility = useCallback(async () => {
+    return showRepairOption;
+  }, [showRepairOption]);
+
   return {
     isSubscribed,
     isLoading,
@@ -111,8 +145,10 @@ export function useSubscriptionRouteLogic() {
     error,
     showContent,
     isRetrying,
+    isRepairing,
     handleRetry,
-    safeNavigate,
+    handleRepair,
+    checkRepairEligibility,
     user
   };
-}
+};
