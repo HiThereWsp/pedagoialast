@@ -4,20 +4,16 @@ import { Clock, ImageIcon, Paintbrush, Palette } from 'lucide-react';
 
 export function ImageGeneratorSection() {
   return (
-    <section id="generateur-images" className="space-y-12">
+    <section id="generateur-images" className="space-y-16">
       <h2 className="text-3xl font-bold text-slate-800 border-b border-gray-100 pb-4">
         Générateur d'images pédagogiques
       </h2>
       
-      <div className="bg-gray-50 rounded-xl p-8 text-center my-10 shadow-inner">
-        <p className="text-gray-500">[Vidéo/GIF montrant la génération d'images]</p>
-      </div>
-      
-      <p className="text-lg leading-relaxed text-gray-700 mb-8">
+      <p className="text-lg leading-relaxed text-gray-700 mb-12">
         Les supports visuels améliorent considérablement l'engagement des élèves. PedagoIA intègre un <strong className="text-slate-800">générateur d'images pédagogiques</strong> pour illustrer vos cours sans effort.
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 my-16">
         <div className="bg-gradient-to-br from-white to-green-50 rounded-xl p-8 shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
           <div className="flex items-start gap-6">
             <div className="bg-green-100 p-4 rounded-full shadow-sm">
@@ -75,7 +71,7 @@ export function ImageGeneratorSection() {
         </div>
       </div>
       
-      <div className="bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-100 my-8">
+      <div className="bg-gray-50 p-6 rounded-lg shadow-inner border border-gray-100 my-16">
         <h4 className="text-lg font-medium text-gray-800 mb-4">Comment ça marche ?</h4>
         <ol className="list-decimal pl-5 space-y-3 text-gray-700">
           <li>Décrivez l'image dont vous avez besoin en français simple</li>
