@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Camera, Upload, Loader2 } from 'lucide-react';
-import { useBugReport } from '@/hooks/useBugReport';
+import { useBugReport } from '@/hooks/bug-report';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { useToast } from '@/hooks/use-toast';
 
