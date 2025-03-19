@@ -69,7 +69,7 @@ ${JSON.stringify(JSON.parse(report.browser_info), null, 2)}
     // Envoyer l'email avec la fonction existante
     const { data: emailResult, error: emailError } = await supabaseAdmin.functions.invoke('send-email', {
       body: {
-        to: [Deno.env.get('ADMIN_EMAIL') || 'admin@example.com'],
+        to: ['bonjour@pedagoia.fr'],
         subject: `[BUG] Nouveau rapport - ${description.slice(0, 50)}${description.length > 50 ? '...' : ''}`,
         html: emailHtml,
       }
