@@ -17,11 +17,12 @@ export function LessonPlanCreator() {
     resetLessonPlan
   } = useLessonPlanGeneration();
 
-  // Memoized content ID for feedback
+  // Memoized content ID for feedback - using a proper UUID format
   const contentId = useMemo(() => {
-    // Generate a stable content ID if there's lesson plan content
+    // Generate a stable UUID if there's lesson plan content
     if (formData.lessonPlan) {
-      return `lesson-plan-${Date.now()}`;
+      // Use crypto.randomUUID() for standard UUID generation
+      return crypto.randomUUID();
     }
     return undefined;
   }, [formData.lessonPlan]);

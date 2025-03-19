@@ -1,16 +1,13 @@
 
 import React from 'react';
 import { Clock, FileText, User, ArrowRight } from 'lucide-react';
+
 export function DifferentiationSection() {
   return (
-    <section id="differentiation" className="space-y-20">
+    <section id="differentiation" className="space-y-16">
       <h2 className="text-3xl font-bold text-slate-800 border-b border-gray-100 pb-4">
         Faire votre différenciation pédagogique
       </h2>
-      
-      <div className="bg-gray-50 rounded-xl p-8 text-center my-16 shadow-inner">
-        <p className="text-gray-500">[Vidéo/GIF montrant le processus de différenciation]</p>
-      </div>
       
       <p className="text-lg leading-relaxed text-gray-700 mb-12">
         La différenciation pédagogique est essentielle pour répondre aux besoins individuels des élèves, mais elle nécessite traditionnellement un temps considérable. Avec PedagoIA, adaptez vos exercices en quelques clics :

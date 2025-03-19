@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { posthog } from "@/integrations/posthog/client";
+import { supabase } from "@/integrations/supabase/client";
 
 export function useSubscriptionRouteLogic() {
   const { user } = useAuth();
@@ -30,7 +31,8 @@ export function useSubscriptionRouteLogic() {
     const specialEmails = [
       'andyguitteaud@gmail.co',
       'andyguitteaud@gmail.com', 
-      'ag.tradeunion@gmail.com'
+      'ag.tradeunion@gmail.com',
+      'maitreclementtiktok@gmail.com'
     ];
     
     if (user?.email && specialEmails.includes(user.email)) {
@@ -103,6 +105,35 @@ export function useSubscriptionRouteLogic() {
       setIsRetrying(false);
     }
   };
+
+  // Fix ambassador subscription
+  const fixAmbassadorSubscription = async (email: string) => {
+    if (!email) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('fix-ambassador-subscription', {
+        body: { email }
+      });
+      
+      if (error) {
+        console.error("Error fixing ambassador subscription:", error);
+        toast.error(`Erreur: ${error.message || "Une erreur est survenue"}`);
+        return false;
+      }
+      
+      console.log("Fix ambassador subscription result:", data);
+      toast.success(`Abonnement ambassadeur réparé pour ${email}`);
+      
+      // Refresh subscription status
+      await checkSubscription(true);
+      
+      return true;
+    } catch (err) {
+      console.error("Exception during ambassador fix:", err);
+      toast.error(`Exception: ${err instanceof Error ? err.message : "Une erreur inattendue est survenue"}`);
+      return false;
+    }
+  };
   
   return {
     isSubscribed,
@@ -113,6 +144,7 @@ export function useSubscriptionRouteLogic() {
     isRetrying,
     handleRetry,
     safeNavigate,
-    user
+    user,
+    fixAmbassadorSubscription
   };
 }

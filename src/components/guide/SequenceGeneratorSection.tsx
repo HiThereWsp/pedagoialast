@@ -4,14 +4,10 @@ import { Clock, Settings, FileText, Download, ArrowRight } from 'lucide-react';
 
 export function SequenceGeneratorSection() {
   return (
-    <section id="generateur-sequences" className="space-y-20">
+    <section id="generateur-sequences" className="space-y-16">
       <h2 className="text-3xl font-bold text-slate-800 border-b border-gray-100 pb-4">
         Créateur de séquences pédagogiques
       </h2>
-      
-      <div className="bg-gray-50 rounded-xl p-8 text-center my-16 shadow-inner">
-        <p className="text-gray-500">[Vidéo/GIF montrant la création d'une séquence]</p>
-      </div>
       
       <p className="text-lg leading-relaxed text-gray-700 mb-12">
         Le créateur de séquences pédagogiques de PedagoIA vous permet de générer une séquence complète en quelques minutes. Vous obtenez immédiatement :

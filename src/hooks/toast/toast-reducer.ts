@@ -4,6 +4,9 @@ import { Action, State, actionTypes, TOAST_REMOVE_DELAY, ToasterToast } from "./
 // Map to store timeouts for toast removal
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
 
+// Define TOAST_LIMIT constant
+const TOAST_LIMIT = 20
+
 // Add a toast to the removal queue with optional custom duration
 export const addToRemoveQueue = (toastId: string, duration?: number) => {
   if (toastTimeouts.has(toastId)) {
