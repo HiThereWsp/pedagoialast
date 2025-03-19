@@ -34,6 +34,20 @@ async function checkAmbassadorAccess(supabaseClient, user) {
   console.log("Checking ambassador status for user:", user.email);
   
   try {
+    // Special handling for specific ambassadors
+    const specialAmbassadors = [
+      'maitreclementtiktok@gmail.com'
+    ];
+    
+    if (user.email && specialAmbassadors.includes(user.email)) {
+      console.log(`[Manual override] Special ambassador status for ${user.email}`);
+      return { 
+        access: true, 
+        type: 'ambassador',
+        expires_at: null
+      };
+    }
+    
     // Check in ambassador_program table
     const { data: ambassador, error: ambassadorError } = await supabaseClient
       .from('ambassador_program')

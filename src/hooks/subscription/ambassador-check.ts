@@ -74,6 +74,16 @@ export const checkAmbassadorSubscription = async (userId: string, email: string)
   try {
     console.log(`Checking ambassador subscription for user: ${userId}, email: ${email}`);
     
+    // Special handling for known ambassadors
+    const specialAmbassadors = [
+      'maitreclementtiktok@gmail.com'
+    ];
+    
+    if (specialAmbassadors.includes(email)) {
+      console.log(`Special ambassador detected: ${email}`);
+      return true;
+    }
+    
     // First check user_subscriptions table
     const { data: userSub } = await supabase
       .from('user_subscriptions')

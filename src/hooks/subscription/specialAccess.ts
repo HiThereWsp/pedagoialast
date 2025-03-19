@@ -20,6 +20,16 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     
     console.log(`Vérification des accès spéciaux pour: ${email}`);
     
+    // Special handling for specific users
+    const forcedAmbassadors = [
+      'maitreclementtiktok@gmail.com'
+    ];
+    
+    if (email && forcedAmbassadors.includes(email)) {
+      console.log(`[DEBUG] Forced ambassador access for: ${email}`);
+      return createAmbassadorStatus();
+    }
+    
     // Check if user has paid or trial subscription first
     // If they do, don't apply beta or ambassador status
     if (userId) {
@@ -85,6 +95,17 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
 export const checkAmbassadorSubscription = async (userId: string, email: string): Promise<boolean> => {
   try {
     console.log(`Checking ambassador subscription for user: ${userId}, email: ${email}`);
+    
+    // Special handling for known ambassadors
+    const specialAmbassadors = [
+      'maitreclementtiktok@gmail.com'
+    ];
+    
+    if (specialAmbassadors.includes(email)) {
+      console.log(`Special ambassador detected: ${email}`);
+      return true;
+    }
+    
     const { data: userSub } = await supabase
       .from('user_subscriptions')
       .select('type')
