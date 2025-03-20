@@ -1,85 +1,106 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
+// CORS headers for browser requests
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-}
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      headers: corsHeaders,
-      status: 204
-    })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { planType, userId, email, promoCode } = await req.json()
-    console.log('Logging payment start for:', { planType, userId, email, promoCode });
-    
-    if (!planType || !userId || !email) {
-      console.error('Missing required data');
-      throw new Error('Les données de paiement sont incomplètes')
-    }
-
+    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
+    );
 
-    // Enregistrer l'événement de début de paiement
-    const { error: insertError } = await supabaseClient
-      .from('user_events')
-      .insert({
-        user_id: userId,
-        email: email,
-        event_type: 'payment_started',
-        metadata: {
-          plan_type: planType,
-          payment_method: 'stripe_checkout',
-          promo_code: promoCode || null
+    // Parse the request body
+    const reqBody = await req.json();
+    const { planType, userId, email } = reqBody;
+
+    console.log(`Logging payment start: ${planType} for user ${userId} (${email})`);
+
+    if (!userId || !planType) {
+      console.error('Missing required fields in request');
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
-      });
-      
-    if (insertError) {
-      console.error('Erreur d\'enregistrement:', insertError);
-      throw insertError;
+      );
     }
 
-    // Tenter de synchroniser avec Brevo 
+    // Log the payment start event in user_events
     try {
-      await supabaseClient.functions.invoke('create-brevo-contact', {
-        body: {
-          email: email,
-          userType: "free", // Toujours gratuit jusqu'à confirmation du paiement
-          source: "checkout_started"
-        }
-      });
-      console.log('User prepared for premium list transfer in Brevo');
+      const { error: insertError } = await supabaseClient
+        .from('user_events')
+        .insert({
+          user_id: userId,
+          event_type: 'payment_start',
+          metadata: {
+            plan_type: planType,
+            timestamp: new Date().toISOString(),
+            user_email: email
+          }
+        });
+
+      if (insertError) {
+        console.error('Error logging payment start:', insertError);
+        // Continue despite error to not block payment flow
+      }
+    } catch (dbError) {
+      console.error('Database error logging payment start:', dbError);
+      // Continue despite error
+    }
+
+    // Try to update the user in Brevo CRM
+    try {
+      if (email) {
+        await supabaseClient.functions.invoke('create-brevo-contact', {
+          body: {
+            email: email,
+            userType: "payment_initiated",
+            source: "payment_initiated",
+            additionalData: {
+              paymentInitiated: true,
+              planType: planType
+            }
+          }
+        });
+        console.log('Updated user in Brevo CRM for payment initiation');
+      }
     } catch (brevoError) {
-      console.error('Error preparing user in Brevo:', brevoError);
+      console.error('Error updating Brevo:', brevoError);
       // Continue despite Brevo error
     }
 
+    // Return success
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, message: 'Payment start logged successfully' }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
+        status: 200, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
-    )
+    );
+    
   } catch (error) {
-    console.error('Error in log-payment-start:', error)
+    console.error('Unhandled error:', error);
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: 'Server error', details: error.message }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
-    )
+    );
   }
-})
+});

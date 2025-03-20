@@ -72,10 +72,35 @@ export const getCachedStatus = (): SubscriptionStatus | null => {
  */
 export const clearSubscriptionCache = (): void => {
   try {
+    // First log the current cache value for debugging
+    const currentCache = localStorage.getItem(CACHE_KEY);
+    if (currentCache) {
+      console.log('Clearing subscription cache. Current value:', JSON.parse(currentCache));
+    } else {
+      console.log('Clearing subscription cache. No current cache exists.');
+    }
+    
+    // Now remove the item from localStorage
     localStorage.removeItem(CACHE_KEY);
-    console.log('Subscription cache cleared');
+    
+    // Double-check that it was removed
+    const afterRemoval = localStorage.getItem(CACHE_KEY);
+    if (afterRemoval) {
+      console.error('Failed to clear subscription cache! Value still exists:', afterRemoval);
+      
+      // Try alternative clearing method
+      try {
+        localStorage.setItem(CACHE_KEY, '');
+        localStorage.removeItem(CACHE_KEY);
+        console.log('Attempted alternative cache clearing method');
+      } catch (e) {
+        console.error('Alternative clearing method also failed:', e);
+      }
+    } else {
+      console.log('Subscription cache cleared successfully');
+    }
   } catch (err) {
-    console.log('Error clearing subscription cache:', err);
+    console.error('Error clearing subscription cache:', err);
   }
 };
 

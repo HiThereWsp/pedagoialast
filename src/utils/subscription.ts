@@ -36,8 +36,11 @@ export const handleSubscription = async (planType: SubscriptionType) => {
   }
 
   try {
-    // Log the payment start event
+    // Log the payment start event with better error handling
     try {
+      // Enhanced logging to understand issues in production
+      console.log(`Starting payment process for ${planType} subscription by user ${session.user.id}`);
+      
       await supabase.functions.invoke('log-payment-start', {
         body: { 
           planType,
@@ -50,16 +53,23 @@ export const handleSubscription = async (planType: SubscriptionType) => {
       // Continue even if logging fails
     }
     
-    // Clear subscription cache before redirect to ensure fresh data on return
-    clearSubscriptionCache();
+    // Forcefully clear subscription cache before redirect to ensure fresh data on return
+    console.log("Clearing subscription cache before payment redirect");
+    try {
+      clearSubscriptionCache();
+    } catch (cacheError) {
+      console.error("Error clearing subscription cache:", cacheError);
+      // Continue even if cache clearing fails
+    }
     
     // Get the appropriate payment link
     const paymentLink = PAYMENT_LINKS[planType];
     console.log(`Redirection vers le lien de paiement Stripe pour le plan ${planType}: ${paymentLink}`);
     
-    // Add the plan type as a query parameter to help the success page identify the subscription type
+    // Add the plan type and user ID as query parameters to help identify the subscription
     const redirectURL = new URL(paymentLink);
     redirectURL.searchParams.append('plan', planType);
+    redirectURL.searchParams.append('uid', session.user.id); // Add user ID for better tracking
     
     // Redirect to the Stripe Payment Link
     window.location.href = redirectURL.toString();
