@@ -1,13 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
-
-// CORS headers for browser requests
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+import { corsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -56,6 +50,8 @@ serve(async (req) => {
       if (insertError) {
         console.error('Error logging payment start:', insertError);
         // Continue despite error to not block payment flow
+      } else {
+        console.log('Successfully logged payment start event');
       }
     } catch (dbError) {
       console.error('Database error logging payment start:', dbError);
