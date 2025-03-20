@@ -38,25 +38,63 @@ export const verifyStripeSignature = (
   }
   
   const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+  const STRIPE_WEBHOOK_SECRET_TEST = Deno.env.get('STRIPE_WEBHOOK_SECRET_TEST');
   
-  if (!STRIPE_WEBHOOK_SECRET) {
-    console.error('STRIPE_WEBHOOK_SECRET missing in environment variables');
-    throw new Error('Webhook secret missing - please configure STRIPE_WEBHOOK_SECRET');
+  if (!STRIPE_WEBHOOK_SECRET && !STRIPE_WEBHOOK_SECRET_TEST) {
+    console.error('No webhook secrets found in environment variables');
+    throw new Error('Webhook secret missing - please configure STRIPE_WEBHOOK_SECRET or STRIPE_WEBHOOK_SECRET_TEST');
   }
   
   const stripe = getStripeClient();
+  let event: Stripe.Event | null = null;
+  let error: Error | null = null;
   
-  try {
-    console.log(`Verifying signature with webhook secret: ${STRIPE_WEBHOOK_SECRET.substring(0, 3)}...`);
-    return stripe.webhooks.constructEvent(
-      body,
-      signature,
-      STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    console.error(`Signature verification error: ${err.message}`);
-    throw new Error(`Webhook Error: ${err.message}`);
+  // First try with the production webhook secret
+  if (STRIPE_WEBHOOK_SECRET) {
+    try {
+      console.log(`Attempting verification with production webhook secret: ${STRIPE_WEBHOOK_SECRET.substring(0, 3)}...`);
+      event = stripe.webhooks.constructEvent(
+        body,
+        signature,
+        STRIPE_WEBHOOK_SECRET
+      );
+      console.log('Event verified with production secret');
+      return event;
+    } catch (err) {
+      error = err;
+      console.log(`Production webhook verification failed: ${err.message}`);
+    }
   }
+  
+  // If production verification fails or no production secret is set, try with test webhook secret
+  if (STRIPE_WEBHOOK_SECRET_TEST) {
+    try {
+      console.log(`Attempting verification with test webhook secret: ${STRIPE_WEBHOOK_SECRET_TEST.substring(0, 3)}...`);
+      event = stripe.webhooks.constructEvent(
+        body,
+        signature,
+        STRIPE_WEBHOOK_SECRET_TEST
+      );
+      console.log('Event verified with test secret');
+      return event;
+    } catch (err) {
+      console.log(`Test webhook verification failed: ${err.message}`);
+      // If we already had an error from production verification, throw that one
+      if (error) {
+        throw error;
+      }
+      throw err;
+    }
+  }
+  
+  // If we get here and we had an error from production verification, throw it
+  if (error) {
+    console.error(`Signature verification error: ${error.message}`);
+    throw error;
+  }
+  
+  // This should be unreachable, but just in case
+  throw new Error('Webhook verification failed - no valid webhook secret found');
 };
 
 export const handleError = (error: Error): Response => {

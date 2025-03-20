@@ -53,6 +53,13 @@ serve(async (req) => {
     try {
       event = verifyStripeSignature(body, signature);
       console.log(`Event successfully verified: ${event.id}, type: ${event.type}`);
+      
+      // Log if this is a test event
+      if (event.livemode === false) {
+        console.log('⚠️ This is a TEST event from Stripe');
+      } else {
+        console.log('✅ This is a LIVE event from Stripe');
+      }
     } catch (err) {
       console.error(`Webhook signature verification failed: ${err.message}`);
       return new Response(JSON.stringify({ error: `Webhook Error: ${err.message}` }), { 
