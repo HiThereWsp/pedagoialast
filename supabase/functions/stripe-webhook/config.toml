@@ -1,3 +1,4 @@
 
 project_id = "jpelncawdaounkidvymu"
 STRIPE_WEBHOOK_SECRET = "whsec_3NBhwaToGSYUQq2XtjKPrwG1aRDpscrM"
+STRIPE_WEBHOOK_SECRET_TEST = "whsec_mxduieTaBI8bMyVlioaNGFjSYX5tDhii"

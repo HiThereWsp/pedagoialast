@@ -4,10 +4,27 @@ import { toast } from "sonner"
 
 type SubscriptionType = 'monthly' | 'yearly';
 
-const PRICE_IDS = {
+// Prix en environnement de production
+const PRODUCTION_PRICE_IDS = {
   monthly: 'price_1R22GyIqXQKnGj4mvQpgJUIR',
   yearly: 'price_1R22GrIqXQKnGj4md4Ce7dgb'
 }
+
+// Prix en environnement de test
+const TEST_PRICE_IDS = {
+  monthly: 'price_1R4arFIqXQKnGj4moBiz4Ynk',
+  yearly: 'price_1R4arkIqXQKnGj4m5jbu0rkk'
+}
+
+// Détermine si nous sommes en environnement de développement
+const isDevelopment = import.meta.env.DEV || 
+                      window.location.hostname === 'localhost' || 
+                      window.location.hostname.includes('127.0.0.1');
+
+// Choix des prix basé sur l'environnement
+// En production, utilise toujours les IDs de production
+// En développement, utilise les IDs de test
+const PRICE_IDS = isDevelopment ? TEST_PRICE_IDS : PRODUCTION_PRICE_IDS;
 
 export const handleSubscription = async (planType: SubscriptionType) => {
   const { data: { session } } = await supabase.auth.getSession()
@@ -32,12 +49,20 @@ export const handleSubscription = async (planType: SubscriptionType) => {
       // Continue même si la journalisation échoue
     }
     
+    const selectedPriceId = PRICE_IDS[planType];
+    console.log(`Création de session de paiement avec ID de prix: ${selectedPriceId}`);
+    
+    // Déterminer l'ID du produit correspondant
+    const productId = planType === 'monthly' ? 
+                      (isDevelopment ? 'prod_PhxCwgFv4eZrxr' : 'prod_Rvu5l79HX8EAis') : 
+                      (isDevelopment ? 'prod_PhxCW9m0ZDdU2o' : 'prod_Rvu5hv7FxnkHpv');
+    
     // Créer une session de paiement Stripe Checkout
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
       body: { 
-        priceId: PRICE_IDS[planType],
+        priceId: selectedPriceId,
         subscriptionType: planType,
-        productId: planType === 'monthly' ? 'prod_Rvu5l79HX8EAis' : 'prod_Rvu5hv7FxnkHpv'
+        productId: productId
       }
     });
     
