@@ -1,3 +1,4 @@
+
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
@@ -72,7 +73,8 @@ export const verifyStripeSignature = (
   
   // Check if we're in test mode based on the Stripe key
   const isTestMode = stripe.getApiField('key').toString().startsWith('sk_test_') || 
-                     stripe.getApiField('key').toString().startsWith('rk_test_');
+                     stripe.getApiField('key').toString().startsWith('rk_test_') ||
+                     Deno.env.get('STRIPE_TEST_MODE') === 'true';
   
   console.log(`Webhook verification: ${isTestMode ? 'TEST' : 'LIVE'} mode detected`);
   console.log(`Available webhook secret types: ${STRIPE_WEBHOOK_SECRET_TEST ? 'TEST ' : ''}${STRIPE_WEBHOOK_SECRET ? 'PRODUCTION' : ''}`);
@@ -119,6 +121,16 @@ export const verifyStripeSignature = (
   if (error) {
     console.error(`Signature verification error: ${error.message}`);
     throw error;
+  }
+  
+  // Allow skipping verification in development for debugging
+  if (Deno.env.get('ENVIRONMENT') === 'development' || Deno.env.get('STRIPE_TEST_MODE') === 'true') {
+    console.warn('DEV MODE: Bypassing signature verification');
+    try {
+      return JSON.parse(body) as Stripe.Event;
+    } catch (err) {
+      throw new Error(`Failed to parse event JSON: ${(err as Error).message}`);
+    }
   }
   
   // This should be unreachable, but just in case

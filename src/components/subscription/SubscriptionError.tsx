@@ -4,6 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SubscriptionErrorProps {
   error: string;
@@ -35,11 +36,45 @@ export function SubscriptionError({
           console.error("Error checking repair eligibility:", e);
           setShowRepairButton(false);
         }
+      } else {
+        // By default, show repair option for subscription errors
+        setShowRepairButton(true);
       }
     };
     
     checkRepairEligibility();
   }, [showRepair]);
+
+  // Default repair function if none is provided
+  const handleDefaultRepair = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        console.error("No authenticated user found for repair");
+        return;
+      }
+      
+      const { data, error } = await supabase.functions.invoke('repair-user-subscription', {
+        body: { 
+          userId: session.user.id,
+          email: session.user.email
+        }
+      });
+      
+      if (error) {
+        console.error("Error repairing subscription:", error);
+      } else {
+        console.log("Repair result:", data);
+        
+        // Call onRetry to refresh subscription status
+        if (onRetry) {
+          setTimeout(onRetry, 1000);
+        }
+      }
+    } catch (e) {
+      console.error("Error invoking repair function:", e);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 my-8">
@@ -77,9 +112,9 @@ export function SubscriptionError({
         </Button>
 
         {/* Show repair button only for eligible users */}
-        {showRepairButton && onRepair && (
+        {showRepairButton && (
           <Button 
-            onClick={onRepair}
+            onClick={onRepair || handleDefaultRepair}
             disabled={isRepairing}
             variant="outline"
             className="text-amber-700 border-amber-300 hover:bg-amber-50"

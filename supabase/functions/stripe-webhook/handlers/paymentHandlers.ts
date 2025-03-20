@@ -6,161 +6,141 @@ import { updateOrCreateSubscription, updateUserInBrevoCRM } from '../helpers/sub
  */
 export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
   console.log('Processing payment success event');
-  console.log('Payment data:', JSON.stringify(paymentObject, null, 2));
   
   try {
-    // Extract payment information based on event type
-    let customerEmail = null;
-    let customerId = null;
-    let paymentAmount = 0;
-    let subscriptionType = 'monthly'; // Default type
-    let metadata = {};
+    // Extract customer information
+    let customerId, customerEmail, metadata, receipt_email, subscriptionType;
     
-    // Extract data based on the object type
+    // Different event types have different data structures
     if (paymentObject.object === 'payment_intent') {
-      // Handle payment_intent.succeeded
       customerId = paymentObject.customer;
-      paymentAmount = paymentObject.amount;
       metadata = paymentObject.metadata || {};
+      subscriptionType = metadata.subscription_type || metadata.plan || 'monthly';
+      customerEmail = paymentObject.receipt_email || metadata.email;
       
-      // Retrieve invoice to get additional data if this is a subscription payment
-      if (paymentObject.invoice) {
-        try {
-          const invoice = await stripe.invoices.retrieve(paymentObject.invoice);
-          if (invoice && invoice.customer_email) {
-            customerEmail = invoice.customer_email;
-          }
-        } catch (invoiceError) {
-          console.error('Error retrieving invoice:', invoiceError);
-        }
-      }
-    } else if (paymentObject.object === 'charge') {
-      // Handle charge.succeeded
+      console.log(`Payment intent success for customer ${customerId} (${customerEmail}), type: ${subscriptionType}`);
+    } 
+    else if (paymentObject.object === 'charge') {
       customerId = paymentObject.customer;
-      paymentAmount = paymentObject.amount;
+      customerEmail = paymentObject.receipt_email || paymentObject.billing_details?.email;
       metadata = paymentObject.metadata || {};
+      subscriptionType = metadata.subscription_type || metadata.plan || 'monthly';
       
-      // Check billing details for email
-      if (paymentObject.billing_details && paymentObject.billing_details.email) {
-        customerEmail = paymentObject.billing_details.email;
-      }
-    } else if (paymentObject.object === 'checkout.session') {
-      // Handle checkout.session.completed (legacy support)
+      console.log(`Charge success for customer ${customerId} (${customerEmail}), type: ${subscriptionType}`);
+    }
+    else if (paymentObject.object === 'checkout.session') {
       customerId = paymentObject.customer;
-      customerEmail = paymentObject.customer_email || 
-                     (paymentObject.customer_details ? paymentObject.customer_details.email : null);
+      customerEmail = paymentObject.customer_email || paymentObject.customer_details?.email;
       metadata = paymentObject.metadata || {};
+      subscriptionType = metadata.subscription_type || metadata.plan || 'monthly';
       
-      // Get payment intent to retrieve amount
-      if (paymentObject.payment_intent) {
-        try {
-          const paymentIntent = await stripe.paymentIntents.retrieve(paymentObject.payment_intent);
-          if (paymentIntent) {
-            paymentAmount = paymentIntent.amount;
-          }
-        } catch (paymentIntentError) {
-          console.error('Error retrieving payment intent:', paymentIntentError);
-        }
-      }
-    } else {
-      console.error('Unknown payment object type:', paymentObject.object);
+      console.log(`Checkout session completed for customer ${customerId} (${customerEmail}), type: ${subscriptionType}`);
+    }
+    else {
+      console.log(`Unhandled payment object type: ${paymentObject.object}`);
       return;
     }
     
-    // If we still don't have customer email, try to retrieve from customer object
-    if (!customerEmail && customerId) {
+    // Need at least customer email or ID to proceed
+    if (!customerEmail && !customerId) {
+      console.error('No customer information found in payment object');
+      console.log('Payment object:', JSON.stringify(paymentObject));
+      return;
+    }
+    
+    // If we only have customer ID, try to get email
+    if (customerId && !customerEmail) {
       try {
         const customer = await stripe.customers.retrieve(customerId);
-        if (customer && customer.email) {
-          customerEmail = customer.email;
-        }
-      } catch (customerError) {
-        console.error('Error retrieving customer:', customerError);
+        customerEmail = customer.email;
+        console.log(`Retrieved customer email ${customerEmail} for customer ${customerId}`);
+      } catch (err) {
+        console.error(`Error retrieving customer: ${err.message}`);
       }
     }
     
-    if (!customerEmail) {
-      console.error('Could not find customer email from any source');
-      return;
-    }
+    // Calculate subscription expiry date based on type
+    const now = new Date();
+    const expiryDate = new Date(now);
     
-    console.log(`Customer found: ${customerId} with email ${customerEmail}`);
-    
-    // Determine subscription type from various sources
-    
-    // Method 1: Check URL params if they were passed in metadata
-    if (metadata.plan) {
-      subscriptionType = metadata.plan === 'yearly' ? 'yearly' : 'monthly';
-      console.log(`Found subscription type from metadata: ${subscriptionType}`);
-    }
-    
-    // Method 2: Use payment amount to determine plan type if not found yet
-    if ((!metadata.plan || subscriptionType === 'monthly') && paymentAmount) {
-      const amount = paymentAmount / 100; // Convert cents to whole currency units
-      console.log(`Using payment amount to determine subscription type: ${amount}`);
-      
-      // These thresholds should match your pricing
-      if (amount >= 90) { 
-        // Yearly subscription (approximately)
-        subscriptionType = 'yearly';
-        console.log(`Detected yearly subscription based on amount: ${amount}`);
-      }
-    }
-    
-    // Calculate expiry date based on subscription type
-    let expiryDate = new Date();
     if (subscriptionType === 'yearly') {
-      expiryDate.setFullYear(expiryDate.getFullYear() + 1); // 1 year from now
-    } else { // monthly
-      expiryDate.setMonth(expiryDate.getMonth() + 1); // 1 month from now
+      expiryDate.setFullYear(now.getFullYear() + 1);
+    } else {
+      // Default to monthly
+      expiryDate.setMonth(now.getMonth() + 1);
     }
     
-    console.log(`Customer email: ${customerEmail}, Subscription type: ${subscriptionType}, Expires: ${expiryDate}`);
+    console.log(`Setting expiration date to ${expiryDate.toISOString()} for ${subscriptionType} plan`);
     
-    // Try to find user by email
-    const { data: userData, error: userError } = await supabase
-      .from('profiles')
-      .select('id, user_id')
-      .eq('email', customerEmail)
-      .maybeSingle();
-    
-    if (userError) {
-      console.error('Could not find user by email:', userError);
-      
-      // Try to find user using auth.users table through RPC function if available
+    // Find user by email if we don't have customer ID
+    if (!customerId && customerEmail) {
       try {
-        const { data: authUser, error: authError } = await supabase.auth.admin.listUsers({
-          filters: {
+        // First try to get user profile by email
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('id, stripe_customer_id')
+          .eq('email', customerEmail)
+          .maybeSingle();
+          
+        if (userError) {
+          console.error('Error fetching user by email:', userError);
+        } else if (userData) {
+          customerId = userData.stripe_customer_id || customerId;
+          
+          // If user doesn't have a Stripe customer ID yet, update it
+          if (userData.id && customerId && !userData.stripe_customer_id) {
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ stripe_customer_id: customerId })
+              .eq('id', userData.id);
+              
+            if (updateError) {
+              console.error('Error updating stripe_customer_id:', updateError);
+            } else {
+              console.log(`Updated stripe_customer_id for user ${userData.id}`);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(`Error looking up user by email: ${err.message}`);
+      }
+    }
+    
+    // Next, try to find the user from auth.users if the email wasn't found in profiles
+    if (customerEmail) {
+      try {
+        const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers({
+          filter: {
             email: customerEmail
           }
         });
         
-        if (authError || !authUser || authUser.users.length === 0) {
-          console.error('Could not find user in auth.users:', authError || 'No users found');
+        if (usersError) {
+          console.error('Error fetching user from auth:', usersError);
+        } else if (users && users.length > 0) {
+          const userId = users[0].id;
+          console.log(`Found user ID ${userId} for email ${customerEmail}`);
+          
+          // Update subscription with user ID and customer ID
+          await updateOrCreateSubscription(supabase, userId, customerId, subscriptionType, expiryDate);
+          
+          // Update user in Brevo CRM
+          if (customerEmail) {
+            await updateUserInBrevoCRM(supabase, customerEmail);
+          }
+          
+          console.log(`Successfully processed payment for ${customerEmail} (${subscriptionType})`);
           return;
         }
-        
-        const userId = authUser.users[0].id;
-        console.log(`Found user by auth.users: ${userId}`);
-        
-        await updateOrCreateSubscription(supabase, userId, customerId, subscriptionType, expiryDate);
-      } catch (adminError) {
-        console.error('Error using admin API:', adminError);
-        return;
+      } catch (err) {
+        console.error(`Error in auth lookup: ${err.message}`);
       }
-    } else if (!userData) {
-      console.error('No user found for email:', customerEmail);
-      return;
-    } else {
-      // Use user_id if available, otherwise use id
-      const userId = userData.user_id || userData.id;
-      await updateOrCreateSubscription(supabase, userId, customerId, subscriptionType, expiryDate);
     }
     
-    // Attempt to update user's subscription type in Brevo
-    await updateUserInBrevoCRM(supabase, customerEmail);
+    // If we got here, we were unable to find the user
+    console.error(`Unable to find user for email ${customerEmail} or customer ${customerId}`);
     
   } catch (error) {
-    console.error('Error processing payment success:', error);
+    console.error(`Error handling payment success: ${error.message}`, error);
   }
 }

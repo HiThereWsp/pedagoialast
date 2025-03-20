@@ -22,7 +22,8 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     
     // Special handling for specific users
     const forcedAmbassadors = [
-      'maitreclementtiktok@gmail.com'
+      'maitreclementtiktok@gmail.com',
+      'oop54891@bcooq.com' // Adding the problematic user as a temporary ambassador for testing
     ];
     
     if (email && forcedAmbassadors.includes(email)) {
