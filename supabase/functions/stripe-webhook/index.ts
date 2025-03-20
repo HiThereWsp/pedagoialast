@@ -82,6 +82,10 @@ serve(async (req) => {
       if (object.subscription) {
         console.log(`Subscription ID: ${object.subscription}`);
       }
+      // Log metadata if exists
+      if (object.metadata) {
+        console.log(`Metadata: ${JSON.stringify(object.metadata)}`);
+      }
     }
     
     // Initialize clients

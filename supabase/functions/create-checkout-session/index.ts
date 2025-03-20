@@ -1,7 +1,6 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import Stripe from "https://esm.sh/stripe@14.21.0"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,107 +18,60 @@ serve(async (req) => {
   }
 
   try {
-    const { priceId, subscriptionType = 'monthly', productId, promoCode } = await req.json()
-    console.log('Received request with:', { 
-      priceId, 
-      subscriptionType, 
-      productId,
-      promoCode,
-      headers: Object.fromEntries(req.headers.entries())
-    })
+    const { priceId, subscriptionType, productId, testMode } = await req.json();
+    console.log('Request data:', { priceId, subscriptionType, productId, testMode });
     
     if (!priceId) {
-      console.error('Price ID is missing');
-      throw new Error('Price ID is required')
+      throw new Error('Prix non spécifié');
     }
-
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-    )
-
-    const authHeader = req.headers.get('Authorization')!
-    console.log('Auth header present:', !!authHeader)
     
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
-
-    if (userError) {
-      console.error('Error getting user:', userError)
-      throw new Error('Authentication failed')
+    // Utiliser la clé Stripe appropriée en fonction du mode (test ou production)
+    // La clé de test commence par sk_test_, la clé de production par sk_live_
+    const stripeSecretKey = testMode 
+      ? Deno.env.get('STRIPE_SECRET_KEY_TEST') || Deno.env.get('STRIPE_SECRET_KEY')
+      : Deno.env.get('STRIPE_SECRET_KEY');
+    
+    if (!stripeSecretKey) {
+      console.error('STRIPE_SECRET_KEY manquante');
+      throw new Error('Configuration Stripe manquante');
     }
+    
+    console.log(`Utilisation de la clé Stripe en mode: ${testMode ? 'TEST' : 'PRODUCTION'}`);
+    console.log(`La clé commence par: ${stripeSecretKey.substring(0, 7)}...`);
+    
+    const stripe = new Stripe(stripeSecretKey, {
+      apiVersion: '2020-08-27',
+    });
 
-    if (!user?.email) {
-      console.error('No user email found')
-      throw new Error('User email not found')
-    }
-
-    console.log('Found user email:', user.email)
-
-    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-      apiVersion: '2023-10-16',
-    })
-
-    console.log('Creating checkout session for:', {
-      priceId,
-      productId,
-      userEmail: user.email,
-      subscriptionType,
-      promoCode
-    })
-
-    // Vérifier si le client existe déjà
-    const customers = await stripe.customers.list({
-      email: user.email,
-      limit: 1,
-    })
-
-    let customerId = customers.data[0]?.id
-    console.log('Existing customer ID:', customerId)
-
-    // Créer un nouveau client si nécessaire
-    if (!customerId) {
-      console.log('Creating new customer')
-      const customer = await stripe.customers.create({
-        email: user.email,
-        metadata: {
-          userId: user.id,
-          subscriptionType,
-          productId
+    // Récupérer l'information de l'utilisateur depuis le token JWT
+    const authHeader = req.headers.get('Authorization');
+    let userId = null;
+    let userEmail = null;
+    
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const { supabaseClient } = await import('https://esm.sh/@supabase/supabase-js@2.45.0');
+        
+        const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+        const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+        
+        const supabase = supabaseClient(supabaseUrl, supabaseAnonKey);
+        const { data: { user } } = await supabase.auth.getUser(token);
+        
+        if (user) {
+          userId = user.id;
+          userEmail = user.email;
+          console.log(`Utilisateur authentifié: ${userEmail}`);
         }
-      })
-      customerId = customer.id
-      console.log('New customer created:', customerId)
-    } else {
-      // Mettre à jour les métadonnées du client existant
-      await stripe.customers.update(customerId, {
-        metadata: {
-          userId: user.id,
-          subscriptionType,
-          productId
-        }
-      });
-      console.log('Updated existing customer metadata');
+      } catch (error) {
+        console.error('Erreur d\'authentification:', error);
+        // Continue sans information utilisateur
+      }
     }
 
-    // Validate the priceId actually exists in Stripe
-    try {
-      const price = await stripe.prices.retrieve(priceId);
-      console.log('Price validated successfully:', { id: price.id, product: price.product });
-    } catch (priceError) {
-      console.error('Invalid price ID:', priceError);
-      return new Response(
-        JSON.stringify({ error: `Prix invalide: ${priceId}. Erreur: ${priceError.message}` }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 400,
-        }
-      )
-    }
-
-    // Créer la session de paiement
-    const sessionParams = {
-      customer: customerId,
+    // Créer la session checkout en mode test ou production selon la configuration
+    const session = await stripe.checkout.sessions.create({
       line_items: [
         {
           price: priceId,
@@ -127,35 +79,21 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/subscription-success?type=${subscriptionType}`,
-      cancel_url: `${req.headers.get('origin')}/checkout-canceled?type=${subscriptionType}`,
+      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${req.headers.get('origin')}/pricing?canceled=true`,
+      // Inclure des métadonnées pour le webhook
       metadata: {
-        userId: user.id,
-        subscriptionType,
-        productId,
-        promoCode: promoCode || 'none'
+        subscription_type: subscriptionType,
+        product_id: productId,
+        user_id: userId,
+        test_mode: testMode ? 'true' : 'false'
       },
-      // Autoriser les codes promo pré-définis dans Stripe
-      allow_promotion_codes: true
-    };
+      // Si l'utilisateur est connecté, pré-remplir son email
+      ...(userEmail ? { customer_email: userEmail } : {})
+    });
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
-    console.log('Checkout session created:', session.id)
-
-    // Préparer l'utilisateur pour le transfert vers la liste premium une fois le paiement réussi
-    try {
-      await supabaseClient.functions.invoke('create-brevo-contact', {
-        body: {
-          email: user.email,
-          contactName: user.user_metadata?.first_name || 'Utilisateur',
-          userType: "free", // Encore gratuit jusqu'à confirmation du paiement
-          source: "checkout_started"
-        }
-      });
-      console.log('User prepared for premium list transfer in Brevo');
-    } catch (brevoError) {
-      console.error('Error preparing user in Brevo:', brevoError);
-      // Continue despite Brevo error
+    if (!session.url) {
+      throw new Error('Impossible de créer l\'URL de session Stripe');
     }
 
     return new Response(
@@ -164,15 +102,15 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       }
-    )
+    );
   } catch (error) {
-    console.error('Error in create-checkout-session:', error)
+    console.error('Erreur:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 400,
       }
-    )
+    );
   }
-})
+});

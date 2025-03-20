@@ -4,17 +4,36 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
 export const getStripeClient = (): Stripe => {
+  // Tenter d'obtenir la clé Stripe appropriée
+  // Vérifier d'abord si nous avons des clés séparées pour test/production
+  const STRIPE_SECRET_KEY_TEST = Deno.env.get('STRIPE_SECRET_KEY_TEST');
+  const STRIPE_SECRET_KEY_LIVE = Deno.env.get('STRIPE_SECRET_KEY_LIVE');
   const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
   
-  if (!STRIPE_SECRET_KEY) {
-    console.error('STRIPE_SECRET_KEY missing in environment variables');
+  // Déterminer quelle clé utiliser
+  let selectedKey: string | undefined;
+  
+  // Si nous avons des clés spécifiques pour test et production
+  if (STRIPE_SECRET_KEY_TEST && STRIPE_SECRET_KEY_LIVE) {
+    // Vérifier si le mode test est activé via une variable d'environnement
+    const isTestMode = Deno.env.get('STRIPE_TEST_MODE') === 'true';
+    selectedKey = isTestMode ? STRIPE_SECRET_KEY_TEST : STRIPE_SECRET_KEY_LIVE;
+    console.log(`Using specific ${isTestMode ? 'TEST' : 'LIVE'} key based on STRIPE_TEST_MODE env`);
+  } else {
+    // Sinon, utiliser la clé générique
+    selectedKey = STRIPE_SECRET_KEY;
+    console.log('Using generic STRIPE_SECRET_KEY');
+  }
+  
+  if (!selectedKey) {
+    console.error('No valid Stripe secret key found in environment variables');
     throw new Error('STRIPE_SECRET_KEY missing');
   }
   
-  const isTestKey = STRIPE_SECRET_KEY.startsWith('sk_test_') || STRIPE_SECRET_KEY.startsWith('rk_test_');
-  console.log(`Using Stripe in ${isTestKey ? 'TEST' : 'LIVE'} mode`);
+  const isTestKey = selectedKey.startsWith('sk_test_') || selectedKey.startsWith('rk_test_');
+  console.log(`Using Stripe in ${isTestKey ? 'TEST' : 'LIVE'} mode with key prefix: ${selectedKey.substring(0, 8)}...`);
   
-  return new Stripe(STRIPE_SECRET_KEY, {
+  return new Stripe(selectedKey, {
     apiVersion: '2020-08-27', // Updated to match Stripe's webhook API version
   });
 };
@@ -40,6 +59,7 @@ export const verifyStripeSignature = (
     throw new Error('Signature missing');
   }
   
+  // Récupérer les secrets webhook pour les environnements de test et production
   const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET');
   const STRIPE_WEBHOOK_SECRET_TEST = Deno.env.get('STRIPE_WEBHOOK_SECRET_TEST');
   
@@ -57,6 +77,7 @@ export const verifyStripeSignature = (
                      stripe.getApiField('key').toString().startsWith('rk_test_');
   
   console.log(`Webhook verification: ${isTestMode ? 'TEST' : 'LIVE'} mode detected`);
+  console.log(`Available webhook secret types: ${STRIPE_WEBHOOK_SECRET_TEST ? 'TEST ' : ''}${STRIPE_WEBHOOK_SECRET ? 'PRODUCTION' : ''}`);
   
   // First try with the test webhook secret if in test mode
   if (isTestMode && STRIPE_WEBHOOK_SECRET_TEST) {
@@ -70,7 +91,7 @@ export const verifyStripeSignature = (
       console.log('Event verified with TEST webhook secret');
       return event;
     } catch (err) {
-      error = err;
+      error = err as Error;
       console.log(`TEST webhook verification failed: ${err.message}`);
     }
   }
@@ -87,7 +108,7 @@ export const verifyStripeSignature = (
       console.log('Event verified with production webhook secret');
       return event;
     } catch (err) {
-      console.log(`Production webhook verification failed: ${err.message}`);
+      console.log(`Production webhook verification failed: ${(err as Error).message}`);
       // If we already had an error from test verification, throw that one
       if (error) {
         throw error;
