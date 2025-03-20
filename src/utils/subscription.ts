@@ -50,7 +50,7 @@ export const handleSubscription = async (planType: SubscriptionType) => {
       // Continue even if logging fails
     }
     
-    // Clear subscription cache before redirect to avoid stale data
+    // Clear subscription cache before redirect to ensure fresh data on return
     clearSubscriptionCache();
     
     // Get the appropriate payment link
