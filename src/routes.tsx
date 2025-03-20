@@ -1,36 +1,20 @@
-import { lazy, Suspense } from "react";
+
+import React from 'react';
 import { Navigate } from "react-router-dom";
 import { SubscriptionRoute } from "./routes/SubscriptionRoute";
-import { AuthRoute } from "./routes/AuthRoute";
-import { LoadingPage } from "./pages/LoadingPage";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ConfirmEmail from "./pages/ConfirmEmail";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
+import AdminSubscriptionRepairPage from "./pages/AdminSubscriptionRepairPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { ErrorPage } from "./pages/ErrorPage";
-
-// Lazy-loaded components
-const HomePage = lazy(() => import("./pages/HomePage"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
-const RegisterPage = lazy(() => import("./pages/RegisterPage"));
-const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
-const DashboardPage = lazy(() => import("./pages/DashboardPage"));
-const ChatPage = lazy(() => import("./pages/ChatPage"));
-const PricingPage = lazy(() => import("./pages/PricingPage"));
-const SettingsPage = lazy(() => import("./pages/SettingsPage"));
-const ProfilePage = lazy(() => import("./pages/ProfilePage"));
-const LessonPlanPage = lazy(() => import("./pages/LessonPlanPage"));
-const ExercisePage = lazy(() => import("./pages/ExercisePage"));
-const CorrespondencePage = lazy(() => import("./pages/CorrespondencePage"));
-const ImageGenerationPage = lazy(() => import("./pages/ImageGenerationPage"));
-const SubscriptionSuccessPage = lazy(() => import("./pages/SubscriptionSuccessPage"));
-const SubscriptionFailedPage = lazy(() => import("./pages/SubscriptionFailedPage"));
-const PaymentSuccessPage = lazy(() => import("./pages/PaymentSuccessPage"));
-const PaymentFailurePage = lazy(() => import("./pages/PaymentFailurePage"));
-const AdminSubscriptionRepairPage = lazy(() => import("./pages/AdminSubscriptionRepairPage"));
+import { Suspense } from "react";
 
 // Wrap component with error boundary and suspense
 const withErrorBoundary = (Component) => (
-  <ErrorBoundary fallback={<ErrorPage />}>
-    <Suspense fallback={<LoadingPage />}>
+  <ErrorBoundary fallback={<div>An error occurred</div>}>
+    <Suspense fallback={<div>Loading...</div>}>
       {Component}
     </Suspense>
   </ErrorBoundary>
@@ -39,134 +23,43 @@ const withErrorBoundary = (Component) => (
 export const routes = [
   {
     path: "/",
-    element: withErrorBoundary(<HomePage />),
+    element: withErrorBoundary(<Navigate to="/bienvenue" replace />),
   },
   {
     path: "/login",
-    element: withErrorBoundary(<LoginPage />),
-  },
-  {
-    path: "/register",
-    element: withErrorBoundary(<RegisterPage />),
+    element: withErrorBoundary(<Login />),
   },
   {
     path: "/forgot-password",
-    element: withErrorBoundary(<ForgotPasswordPage />),
+    element: withErrorBoundary(<ForgotPassword />),
   },
   {
-    path: "/reset-password",
-    element: withErrorBoundary(<ResetPasswordPage />),
+    path: "/confirm-email",
+    element: withErrorBoundary(<ConfirmEmail />),
   },
   {
     path: "/home",
     element: withErrorBoundary(
-      <AuthRoute>
-        <HomePage />
-      </AuthRoute>
+      <ProtectedRoute>
+        <Home />
+      </ProtectedRoute>
     ),
   },
   {
     path: "/tableaudebord",
     element: withErrorBoundary(
-      <AuthRoute>
-        <DashboardPage />
-      </AuthRoute>
+      <ProtectedRoute>
+        <Home />
+      </ProtectedRoute>
     ),
-  },
-  {
-    path: "/chat",
-    element: withErrorBoundary(
-      <AuthRoute>
-        <SubscriptionRoute>
-          <ChatPage />
-        </SubscriptionRoute>
-      </AuthRoute>
-    ),
-  },
-  {
-    path: "/pricing",
-    element: withErrorBoundary(<PricingPage />),
-  },
-  {
-    path: "/settings",
-    element: withErrorBoundary(
-      <AuthRoute>
-        <SettingsPage />
-      </AuthRoute>
-    ),
-  },
-  {
-    path: "/profile",
-    element: withErrorBoundary(
-      <AuthRoute>
-        <ProfilePage />
-      </AuthRoute>
-    ),
-  },
-  {
-    path: "/lesson-plan",
-    element: withErrorBoundary(
-      <AuthRoute>
-        <SubscriptionRoute>
-          <LessonPlanPage />
-        </SubscriptionRoute>
-      </AuthRoute>
-    ),
-  },
-  {
-    path: "/exercise",
-    element: withErrorBoundary(
-      <AuthRoute>
-        <SubscriptionRoute>
-          <ExercisePage />
-        </SubscriptionRoute>
-      </AuthRoute>
-    ),
-  },
-  {
-    path: "/correspondence",
-    element: withErrorBoundary(
-      <AuthRoute>
-        <SubscriptionRoute>
-          <CorrespondencePage />
-        </SubscriptionRoute>
-      </AuthRoute>
-    ),
-  },
-  {
-    path: "/image-generation",
-    element: withErrorBoundary(
-      <AuthRoute>
-        <SubscriptionRoute>
-          <ImageGenerationPage />
-        </SubscriptionRoute>
-      </AuthRoute>
-    ),
-  },
-  {
-    path: "/subscription/success",
-    element: withErrorBoundary(<SubscriptionSuccessPage />),
-  },
-  {
-    path: "/subscription/failed",
-    element: withErrorBoundary(<SubscriptionFailedPage />),
-  },
-  {
-    path: "/payment/success",
-    element: withErrorBoundary(<PaymentSuccessPage />),
-  },
-  {
-    path: "/payment/failure",
-    element: withErrorBoundary(<PaymentFailurePage />),
   },
   {
     path: "/admin/repair-subscription",
     element: withErrorBoundary(
-      <AuthRoute>
+      <ProtectedRoute>
         <AdminSubscriptionRepairPage />
-      </AuthRoute>
+      </ProtectedRoute>
     ),
-    auth: true,
   },
   {
     path: "*",

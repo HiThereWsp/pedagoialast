@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { useAuth } from "@/integrations/supabase/auth";
+import { useAuth } from "@/hooks/useAuth"; // Fixed import path
 import { SEO } from "@/components/SEO";
 import { Loader2, CheckCircle, AlertTriangle } from "lucide-react";
 
