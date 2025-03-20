@@ -30,20 +30,39 @@ export async function handleCheckoutCompleted(session, stripe) {
       return;
     }
     
-    // Determine subscription type from payment amount
-    const amount = paymentIntent.amount / 100; // Convert cents to whole currency
-    let subscriptionType;
-    let expiryDate;
+    // Extract URL parameters from the success URL if present
+    let subscriptionType = 'monthly'; // Default
+    if (session.success_url) {
+      try {
+        const successUrl = new URL(session.success_url);
+        const planParam = successUrl.searchParams.get('plan');
+        if (planParam === 'yearly' || planParam === 'monthly') {
+          subscriptionType = planParam;
+          console.log(`Found subscription type from URL param: ${subscriptionType}`);
+        }
+      } catch (urlError) {
+        console.error('Error parsing success_url:', urlError);
+      }
+    }
     
-    // Use amount to determine if it's monthly or yearly
-    // These thresholds should match your pricing
-    if (amount >= 90 && amount < 150) { // Yearly subscription (approximately)
-      subscriptionType = 'yearly';
-      expiryDate = new Date();
+    // Determine subscription type from payment amount if not found in URL
+    if (!subscriptionType) {
+      const amount = paymentIntent.amount / 100; // Convert cents to whole currency
+      
+      // Use amount to determine if it's monthly or yearly
+      // These thresholds should match your pricing
+      if (amount >= 90) { // Yearly subscription (approximately)
+        subscriptionType = 'yearly';
+      } else { // Monthly subscription
+        subscriptionType = 'monthly';
+      }
+    }
+    
+    // Calculate expiry date based on subscription type
+    let expiryDate = new Date();
+    if (subscriptionType === 'yearly') {
       expiryDate.setFullYear(expiryDate.getFullYear() + 1); // 1 year from now
-    } else { // Monthly subscription
-      subscriptionType = 'monthly';
-      expiryDate = new Date();
+    } else { // monthly
       expiryDate.setMonth(expiryDate.getMonth() + 1); // 1 month from now
     }
     
@@ -56,7 +75,7 @@ export async function handleCheckoutCompleted(session, stripe) {
       return;
     }
     
-    console.log(`Customer email: ${customerEmail}, Subscription type: ${subscriptionType}`);
+    console.log(`Customer email: ${customerEmail}, Subscription type: ${subscriptionType}, Expires: ${expiryDate}`);
     
     // Try to find user by email
     const { data: userData, error: userError } = await supabase

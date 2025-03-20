@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
+import { clearSubscriptionCache } from "@/hooks/subscription/useSubscriptionCache";
 
 type SubscriptionType = 'monthly' | 'yearly';
 
@@ -49,13 +50,22 @@ export const handleSubscription = async (planType: SubscriptionType) => {
       // Continue even if logging fails
     }
     
+    // Clear subscription cache before redirect to avoid stale data
+    clearSubscriptionCache();
+    
     // Get the appropriate payment link
     const paymentLink = PAYMENT_LINKS[planType];
     console.log(`Redirection vers le lien de paiement Stripe pour le plan ${planType}: ${paymentLink}`);
     
-    // Redirect to the Stripe Payment Link
-    window.location.href = paymentLink;
+    // Add the plan type as a query parameter to help the success page identify the subscription type
+    const redirectURL = new URL(paymentLink);
+    redirectURL.searchParams.append('plan', planType);
     
+    // Redirect to the Stripe Payment Link
+    window.location.href = redirectURL.toString();
+    
+    // Return null to indicate we're handling the redirect
+    return null;
   } catch (error) {
     console.error('Erreur lors de la redirection vers Stripe:', error);
     toast.error("Une erreur est survenue lors de la redirection vers la page de paiement");

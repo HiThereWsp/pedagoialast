@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
@@ -8,20 +8,26 @@ import { subscriptionEvents } from "@/integrations/posthog/events";
 import { SEO } from "@/components/SEO";
 
 const PaymentFailurePage = () => {
+  const location = useLocation();
+  
+  // Get subscription type from URL params, default to monthly
+  const queryParams = new URLSearchParams(location.search);
+  const subscriptionType = (queryParams.get("plan") || "monthly") as "monthly" | "yearly";
+  
   useEffect(() => {
     // Tracking events
     facebookEvents.subscriptionFailed(
-      'monthly' as 'monthly' | 'yearly',  // Default to monthly if unknown
+      subscriptionType,
       0,         // Price unknown at this point
       'payment_failed'
     );
     
     // Tracking PostHog
     subscriptionEvents.subscriptionFailed(
-      'monthly' as 'monthly' | 'yearly',  // Default to monthly if unknown
+      subscriptionType,
       'payment_failed'
     );
-  }, []);
+  }, [subscriptionType]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
