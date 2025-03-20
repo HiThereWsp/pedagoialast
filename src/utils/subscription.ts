@@ -16,15 +16,31 @@ const TEST_PRICE_IDS = {
   yearly: 'price_1R4arkIqXQKnGj4m5jbu0rkk'
 }
 
-// Détermine si nous sommes en environnement de développement
-const isDevelopment = import.meta.env.DEV || 
-                      window.location.hostname === 'localhost' || 
-                      window.location.hostname.includes('127.0.0.1');
+// Déterminer explicitement si nous utilisons le mode test de Stripe
+// D'abord vérifier la variable d'environnement VITE_STRIPE_TEST_MODE
+// Ensuite vérifier si nous sommes en environnement de développement
+const isTestMode = import.meta.env.VITE_STRIPE_TEST_MODE === 'true' || 
+                   import.meta.env.DEV || 
+                   window.location.hostname === 'localhost' || 
+                   window.location.hostname.includes('127.0.0.1');
 
-// Choix des prix basé sur l'environnement
-// En production, utilise toujours les IDs de production
-// En développement, utilise les IDs de test
-const PRICE_IDS = isDevelopment ? TEST_PRICE_IDS : PRODUCTION_PRICE_IDS;
+// Choix des prix basé sur le mode test/production
+console.log(`Mode Stripe: ${isTestMode ? 'TEST' : 'PRODUCTION'}`);
+const PRICE_IDS = isTestMode ? TEST_PRICE_IDS : PRODUCTION_PRICE_IDS;
+
+// Identifiants des produits correspondant aux abonnements
+const PRODUCT_IDS = {
+  // En mode test
+  test: {
+    monthly: 'prod_PhxCwgFv4eZrxr',
+    yearly: 'prod_PhxCW9m0ZDdU2o'
+  },
+  // En production
+  production: {
+    monthly: 'prod_Rvu5l79HX8EAis',
+    yearly: 'prod_Rvu5hv7FxnkHpv'
+  }
+};
 
 export const handleSubscription = async (planType: SubscriptionType) => {
   const { data: { session } } = await supabase.auth.getSession()
@@ -51,18 +67,19 @@ export const handleSubscription = async (planType: SubscriptionType) => {
     
     const selectedPriceId = PRICE_IDS[planType];
     console.log(`Création de session de paiement avec ID de prix: ${selectedPriceId}`);
+    console.log(`Mode de paiement Stripe: ${isTestMode ? 'TEST' : 'PRODUCTION'}`);
     
-    // Déterminer l'ID du produit correspondant
-    const productId = planType === 'monthly' ? 
-                      (isDevelopment ? 'prod_PhxCwgFv4eZrxr' : 'prod_Rvu5l79HX8EAis') : 
-                      (isDevelopment ? 'prod_PhxCW9m0ZDdU2o' : 'prod_Rvu5hv7FxnkHpv');
+    // Déterminer l'ID du produit correspondant en utilisant le bon environnement
+    const productId = PRODUCT_IDS[isTestMode ? 'test' : 'production'][planType];
+    console.log(`ID du produit sélectionné: ${productId}`);
     
     // Créer une session de paiement Stripe Checkout
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
       body: { 
         priceId: selectedPriceId,
         subscriptionType: planType,
-        productId: productId
+        productId: productId,
+        testMode: isTestMode  // Passer l'information du mode test à la fonction
       }
     });
     
