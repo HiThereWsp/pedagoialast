@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 
@@ -10,10 +9,10 @@ const PRODUCTION_PRICE_IDS = {
   yearly: 'price_1R22GrIqXQKnGj4md4Ce7dgb'
 }
 
-// Prix en environnement de test
+// Prix en environnement de test (nouveaux IDs)
 const TEST_PRICE_IDS = {
-  monthly: 'price_1R4arFIqXQKnGj4moBiz4Ynk',
-  yearly: 'price_1R4arkIqXQKnGj4m5jbu0rkk'
+  monthly: 'price_1R4axkIHqPsl7Tpbqgmn8o0f',
+  yearly: 'price_1R4bZfIHqPsl7TpblbCO6BME'
 }
 
 // Déterminer explicitement si nous utilisons le mode test de Stripe
@@ -30,10 +29,10 @@ const PRICE_IDS = isTestMode ? TEST_PRICE_IDS : PRODUCTION_PRICE_IDS;
 
 // Identifiants des produits correspondant aux abonnements
 const PRODUCT_IDS = {
-  // En mode test
+  // En mode test (nouveaux IDs)
   test: {
-    monthly: 'prod_PhxCwgFv4eZrxr',
-    yearly: 'prod_PhxCW9m0ZDdU2o'
+    monthly: 'prod_RyY3yWZXT9QwZJ',
+    yearly: 'prod_RyYhTLZmkjqyXz'
   },
   // En production
   production: {
