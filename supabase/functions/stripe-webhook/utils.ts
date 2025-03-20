@@ -12,7 +12,7 @@ export const getStripeClient = (): Stripe => {
   }
   
   return new Stripe(STRIPE_SECRET_KEY, {
-    apiVersion: '2023-10-16',
+    apiVersion: '2020-08-27', // Updated to match Stripe's webhook API version
   });
 };
 
