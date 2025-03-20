@@ -11,6 +11,9 @@ export const getStripeClient = (): Stripe => {
     throw new Error('STRIPE_SECRET_KEY missing');
   }
   
+  const isTestKey = STRIPE_SECRET_KEY.startsWith('sk_test_') || STRIPE_SECRET_KEY.startsWith('rk_test_');
+  console.log(`Using Stripe in ${isTestKey ? 'TEST' : 'LIVE'} mode`);
+  
   return new Stripe(STRIPE_SECRET_KEY, {
     apiVersion: '2020-08-27', // Updated to match Stripe's webhook API version
   });
@@ -49,37 +52,43 @@ export const verifyStripeSignature = (
   let event: Stripe.Event | null = null;
   let error: Error | null = null;
   
-  // First try with the production webhook secret
-  if (STRIPE_WEBHOOK_SECRET) {
-    try {
-      console.log(`Attempting verification with production webhook secret: ${STRIPE_WEBHOOK_SECRET.substring(0, 3)}...`);
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature,
-        STRIPE_WEBHOOK_SECRET
-      );
-      console.log('Event verified with production secret');
-      return event;
-    } catch (err) {
-      error = err;
-      console.log(`Production webhook verification failed: ${err.message}`);
-    }
-  }
+  // Check if we're in test mode based on the Stripe key
+  const isTestMode = stripe.getApiField('key').toString().startsWith('sk_test_') || 
+                     stripe.getApiField('key').toString().startsWith('rk_test_');
   
-  // If production verification fails or no production secret is set, try with test webhook secret
-  if (STRIPE_WEBHOOK_SECRET_TEST) {
+  console.log(`Webhook verification: ${isTestMode ? 'TEST' : 'LIVE'} mode detected`);
+  
+  // First try with the test webhook secret if in test mode
+  if (isTestMode && STRIPE_WEBHOOK_SECRET_TEST) {
     try {
-      console.log(`Attempting verification with test webhook secret: ${STRIPE_WEBHOOK_SECRET_TEST.substring(0, 3)}...`);
+      console.log(`Attempting verification with TEST webhook secret: ${STRIPE_WEBHOOK_SECRET_TEST.substring(0, 8)}...`);
       event = stripe.webhooks.constructEvent(
         body,
         signature,
         STRIPE_WEBHOOK_SECRET_TEST
       );
-      console.log('Event verified with test secret');
+      console.log('Event verified with TEST webhook secret');
       return event;
     } catch (err) {
-      console.log(`Test webhook verification failed: ${err.message}`);
-      // If we already had an error from production verification, throw that one
+      error = err;
+      console.log(`TEST webhook verification failed: ${err.message}`);
+    }
+  }
+  
+  // If test verification fails or we're in production mode, try with production webhook secret
+  if (STRIPE_WEBHOOK_SECRET) {
+    try {
+      console.log(`Attempting verification with production webhook secret: ${STRIPE_WEBHOOK_SECRET.substring(0, 8)}...`);
+      event = stripe.webhooks.constructEvent(
+        body,
+        signature,
+        STRIPE_WEBHOOK_SECRET
+      );
+      console.log('Event verified with production webhook secret');
+      return event;
+    } catch (err) {
+      console.log(`Production webhook verification failed: ${err.message}`);
+      // If we already had an error from test verification, throw that one
       if (error) {
         throw error;
       }
@@ -87,7 +96,7 @@ export const verifyStripeSignature = (
     }
   }
   
-  // If we get here and we had an error from production verification, throw it
+  // If we get here and we had an error from test verification, throw it
   if (error) {
     console.error(`Signature verification error: ${error.message}`);
     throw error;
