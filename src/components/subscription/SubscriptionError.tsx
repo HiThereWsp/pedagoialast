@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface SubscriptionErrorProps {
   error: string;
@@ -51,8 +52,11 @@ export function SubscriptionError({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         console.error("No authenticated user found for repair");
+        toast.error("Aucun utilisateur connecté trouvé");
         return;
       }
+      
+      toast.info("Tentative de réparation de l'abonnement...");
       
       const { data, error } = await supabase.functions.invoke('repair-user-subscription', {
         body: { 
@@ -63,8 +67,10 @@ export function SubscriptionError({
       
       if (error) {
         console.error("Error repairing subscription:", error);
+        toast.error("Échec de la réparation: " + error.message);
       } else {
         console.log("Repair result:", data);
+        toast.success("Réparation réussie! Actualisation en cours...");
         
         // Call onRetry to refresh subscription status
         if (onRetry) {
@@ -73,6 +79,7 @@ export function SubscriptionError({
       }
     } catch (e) {
       console.error("Error invoking repair function:", e);
+      toast.error("Erreur lors de la réparation: " + e.message);
     }
   };
 
