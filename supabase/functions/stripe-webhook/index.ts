@@ -47,12 +47,34 @@ serve(async (req) => {
     console.log(`Webhook request received with signature: ${signature.substring(0, 10)}...`);
     console.log(`Request body (first 100 chars): ${body.substring(0, 100)}...`);
     
+    // For debugging in production, log the full request body
+    // This helps identify issues with webhook data format
+    // WARNING: This could log sensitive data, remove in production after debugging
+    console.log(`Full request body: ${body}`);
+    
     // Verify the signature to ensure it's from Stripe
     let event;
+    let skipSignatureVerification = false;
     
     try {
-      event = verifyStripeSignature(body, signature);
-      console.log(`Event successfully verified: ${event.id}, type: ${event.type}`);
+      // Due to potential Stripe signature verification issues in production,
+      // consider implementing a fallback for debugging purposes only
+      try {
+        event = verifyStripeSignature(body, signature);
+        console.log(`Event successfully verified: ${event.id}, type: ${event.type}`);
+      } catch (signatureError) {
+        console.error(`Webhook signature verification failed: ${signatureError.message}`);
+        
+        // For debugging in production, we might temporarily parse the event without verification
+        // This is NOT recommended for production, but can help diagnose issues
+        if (Deno.env.get('ENVIRONMENT') === 'development') {
+          console.log('Development environment detected, proceeding with unverified event');
+          event = JSON.parse(body);
+          skipSignatureVerification = true;
+        } else {
+          throw signatureError; // Re-throw the error for production
+        }
+      }
       
       // Log if this is a test event
       if (event.livemode === false) {
