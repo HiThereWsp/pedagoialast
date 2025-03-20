@@ -11,7 +11,7 @@ import {
   handleSubscriptionCreated,
   handleSubscriptionUpdated,
   handleSubscriptionDeleted,
-  handleCheckoutCompleted
+  handlePaymentSuccess
 } from './subscriptionHandlers.ts';
 
 serve(async (req) => {
@@ -49,7 +49,6 @@ serve(async (req) => {
     
     // For debugging in production, log the full request body
     // This helps identify issues with webhook data format
-    // WARNING: This could log sensitive data, remove in production after debugging
     console.log(`Full request body: ${body}`);
     
     // Verify the signature to ensure it's from Stripe
@@ -128,9 +127,19 @@ serve(async (req) => {
         console.log("Processing subscription deleted event");
         await handleSubscriptionDeleted(event.data.object);
         break;
+      // Payment Link events
+      case 'payment_intent.succeeded':
+        console.log("Processing payment intent succeeded event");
+        await handlePaymentSuccess(event.data.object, stripe, supabase);
+        break;
+      case 'charge.succeeded':
+        console.log("Processing charge succeeded event");
+        await handlePaymentSuccess(event.data.object, stripe, supabase);
+        break;
+      // Legacy checkout event - kept for backward compatibility
       case 'checkout.session.completed':
-        console.log("Processing checkout completed event");
-        await handleCheckoutCompleted(event.data.object, stripe);
+        console.log("Processing checkout completed event (legacy)");
+        await handlePaymentSuccess(event.data.object, stripe, supabase);
         break;
       default:
         console.log(`Unhandled event type: ${event.type} - acknowledging but not processing`);

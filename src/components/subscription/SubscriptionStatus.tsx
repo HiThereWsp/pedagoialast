@@ -13,6 +13,15 @@ export function SubscriptionStatus() {
   const { isSubscribed, subscriptionType, expiresAt, isLoading, error, checkSubscription } = useSubscription();
   const [isRetrying, setIsRetrying] = useState(false);
   
+  // Auto-verify subscription on initial load and after payment return
+  useEffect(() => {
+    // Check for payment_success or payment_redirect in the URL
+    if (window.location.search.includes('payment_success') || 
+        window.location.search.includes('payment_redirect')) {
+      handleRetry();
+    }
+  }, []);
+  
   // Function to manually retry verification
   const handleRetry = async () => {
     setIsRetrying(true);

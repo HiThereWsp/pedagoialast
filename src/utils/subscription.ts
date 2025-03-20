@@ -68,8 +68,15 @@ export const handleSubscription = async (planType: SubscriptionType) => {
     
     // Add the plan type and user ID as query parameters to help identify the subscription
     const redirectURL = new URL(paymentLink);
+    
+    // Add plan type as metadata parameter (Stripe will store this with the payment)
     redirectURL.searchParams.append('plan', planType);
-    redirectURL.searchParams.append('uid', session.user.id); // Add user ID for better tracking
+    redirectURL.searchParams.append('uid', session.user.id);
+    
+    // Add return URL with success parameter (our app will check for this)
+    const returnUrl = new URL(window.location.origin);
+    returnUrl.searchParams.append('payment_success', 'true');
+    redirectURL.searchParams.append('redirect', returnUrl.toString());
     
     // Redirect to the Stripe Payment Link
     window.location.href = redirectURL.toString();
