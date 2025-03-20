@@ -1,11 +1,15 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard";
 import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
-import { handleSubscription } from "@/utils/subscription";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+// Stripe Payment Links
+const PAYMENT_LINKS = {
+  monthly: 'https://buy.stripe.com/test_cN203tebg49K9uo9AA',
+  yearly: 'https://buy.stripe.com/test_4gw7vV3wC49KcGA001'
+};
 
 interface PricingPlansProps {
   isSubscribed: boolean;
@@ -43,8 +47,8 @@ export const PricingPlans = ({
     // Tracking Facebook
     facebookEvents.initiateCheckout('monthly', 11.90);
     
-    // Redirection vers Stripe
-    handleSubscription('monthly');
+    // Redirect to Stripe Payment Link
+    window.location.href = PAYMENT_LINKS.monthly;
   };
 
   const handleYearlySubscription = async () => {
@@ -57,8 +61,8 @@ export const PricingPlans = ({
     // Tracking Facebook
     facebookEvents.initiateCheckout('yearly', 9.00);
     
-    // Redirection vers Stripe
-    handleSubscription('yearly');
+    // Redirect to Stripe Payment Link
+    window.location.href = PAYMENT_LINKS.yearly;
   };
 
   // Texte du bouton selon l'état de l'abonnement
