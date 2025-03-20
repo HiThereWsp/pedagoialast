@@ -45,7 +45,7 @@ serve(async (req) => {
     
     console.log(`Webhook request received with signature: ${signature.substring(0, 10)}...`);
     
-    // Vérifier la signature pour s'assurer que c'est bien Stripe qui envoie
+    // Verify the signature to ensure it's from Stripe
     let event;
     
     try {
@@ -59,13 +59,13 @@ serve(async (req) => {
       });
     }
     
-    console.log(`Événement Stripe reçu: ${event.type}`);
+    console.log(`Stripe event received: ${event.type}`);
     
-    // Initialiser les clients
+    // Initialize clients
     const stripe = getStripeClient();
     const supabase = getSupabaseClient();
     
-    // Traiter différents types d'événements
+    // Process different event types
     switch (event.type) {
       case 'customer.subscription.created':
         await handleSubscriptionCreated(event.data.object, stripe);
@@ -80,7 +80,7 @@ serve(async (req) => {
         await handleCheckoutCompleted(event.data.object, stripe);
         break;
       default:
-        console.log(`Type d'événement non géré: ${event.type}`);
+        console.log(`Unhandled event type: ${event.type}`);
     }
     
     // Always return a 200 response to Stripe to acknowledge receipt
@@ -89,7 +89,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   } catch (err) {
-    console.error(`Erreur générale non gérée: ${err.message}`);
+    console.error(`Unhandled general error: ${err.message}`);
     // Even for errors, we should return a 200 status to prevent Stripe from retrying
     // but log the error for debugging
     return new Response(JSON.stringify({ received: true, error: err.message }), { 
