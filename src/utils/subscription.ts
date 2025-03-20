@@ -4,43 +4,27 @@ import { toast } from "sonner"
 
 type SubscriptionType = 'monthly' | 'yearly';
 
-// Prix en environnement de production
-const PRODUCTION_PRICE_IDS = {
-  monthly: 'price_1R22GyIqXQKnGj4mvQpgJUIR',
-  yearly: 'price_1R22GrIqXQKnGj4md4Ce7dgb'
+// Stripe Payment Links for test environment
+const TEST_PAYMENT_LINKS = {
+  monthly: 'https://buy.stripe.com/test_cN203tebg49K9uo9AA',
+  yearly: 'https://buy.stripe.com/test_4gw7vV3wC49KcGA001'
 }
 
-// Prix en environnement de test
-const TEST_PRICE_IDS = {
-  monthly: 'price_1R4arFIqXQKnGj4moBiz4Ynk',
-  yearly: 'price_1R4arkIqXQKnGj4m5jbu0rkk'
+// Payment Links for production environment (to be updated with real links)
+const PRODUCTION_PAYMENT_LINKS = {
+  monthly: 'https://buy.stripe.com/live_link_for_monthly', // Replace with actual production link
+  yearly: 'https://buy.stripe.com/live_link_for_yearly'    // Replace with actual production link
 }
 
-// Déterminer explicitement si nous utilisons le mode test de Stripe
-// D'abord vérifier la variable d'environnement VITE_STRIPE_TEST_MODE
-// Ensuite vérifier si nous sommes en environnement de développement
+// Determine if we're in test mode
 const isTestMode = import.meta.env.VITE_STRIPE_TEST_MODE === 'true' || 
                    import.meta.env.DEV || 
                    window.location.hostname === 'localhost' || 
                    window.location.hostname.includes('127.0.0.1');
 
-// Choix des prix basé sur le mode test/production
+// Choose the appropriate payment links based on environment
 console.log(`Mode Stripe: ${isTestMode ? 'TEST' : 'PRODUCTION'}`);
-const PRICE_IDS = isTestMode ? TEST_PRICE_IDS : PRODUCTION_PRICE_IDS;
-
-// Identifiants des produits correspondant aux abonnements
-const PRODUCT_IDS = {
-  // En mode test
-  test: {
-    monthly: 'prod_PhxCwgFv4eZrxr',
-    yearly: 'prod_PhxCW9m0ZDdU2o'
-  },
-  // En production
-  production: {
-    monthly: 'prod_Rvu5l79HX8EAis',
-    yearly: 'prod_Rvu5hv7FxnkHpv'
-  }
-};
+const PAYMENT_LINKS = isTestMode ? TEST_PAYMENT_LINKS : PRODUCTION_PAYMENT_LINKS;
 
 export const handleSubscription = async (planType: SubscriptionType) => {
   const { data: { session } } = await supabase.auth.getSession()
@@ -51,7 +35,7 @@ export const handleSubscription = async (planType: SubscriptionType) => {
   }
 
   try {
-    // Journaliser l'événement de début de paiement
+    // Log the payment start event
     try {
       await supabase.functions.invoke('log-payment-start', {
         body: { 
@@ -62,43 +46,15 @@ export const handleSubscription = async (planType: SubscriptionType) => {
       })
     } catch (logError) {
       console.error('Erreur lors de la journalisation du début de paiement:', logError);
-      // Continue même si la journalisation échoue
+      // Continue even if logging fails
     }
     
-    const selectedPriceId = PRICE_IDS[planType];
-    console.log(`Création de session de paiement avec ID de prix: ${selectedPriceId}`);
-    console.log(`Mode de paiement Stripe: ${isTestMode ? 'TEST' : 'PRODUCTION'}`);
+    // Get the appropriate payment link
+    const paymentLink = PAYMENT_LINKS[planType];
+    console.log(`Redirection vers le lien de paiement Stripe pour le plan ${planType}: ${paymentLink}`);
     
-    // Déterminer l'ID du produit correspondant en utilisant le bon environnement
-    const productId = PRODUCT_IDS[isTestMode ? 'test' : 'production'][planType];
-    console.log(`ID du produit sélectionné: ${productId}`);
-    
-    // Créer une session de paiement Stripe Checkout
-    const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-      body: { 
-        priceId: selectedPriceId,
-        subscriptionType: planType,
-        productId: productId,
-        testMode: isTestMode  // Passer l'information du mode test à la fonction
-      }
-    });
-    
-    if (error) {
-      console.error('Erreur lors de la création de la session de paiement:', error);
-      toast.error("Une erreur est survenue lors de la création de la session de paiement");
-      return null;
-    }
-    
-    if (!data.url) {
-      console.error('URL de checkout manquante dans la réponse');
-      toast.error("Une erreur est survenue lors de la redirection vers la page de paiement");
-      return null;
-    }
-    
-    console.log('Redirection vers Stripe Checkout:', data.url);
-    
-    // Rediriger vers la page de paiement Stripe
-    window.location.href = data.url;
+    // Redirect to the Stripe Payment Link
+    window.location.href = paymentLink;
     
   } catch (error) {
     console.error('Erreur lors de la redirection vers Stripe:', error);

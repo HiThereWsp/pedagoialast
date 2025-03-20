@@ -1,12 +1,10 @@
-
 import { corsHeaders } from '../_shared/cors.ts';
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 
 export const getStripeClient = (): Stripe => {
-  // Tenter d'obtenir la clé Stripe appropriée
-  // Vérifier d'abord si nous avons des clés séparées pour test/production
-  const STRIPE_SECRET_KEY_TEST = Deno.env.get('STRIPE_SECRET_KEY_TEST');
+  // Nouvelle clé de test fixe
+  const STRIPE_SECRET_KEY_TEST = "sk_test_51R4Z4eIHqPsl7TpblORlj8Cy63BSL8nTz16WtzTyWFpIXuDVQk4O92PgPRAK1pk0P8ZdjoCzt27X1r87BplLPdEQ00fU3ejj8o";
   const STRIPE_SECRET_KEY_LIVE = Deno.env.get('STRIPE_SECRET_KEY_LIVE');
   const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
   
@@ -20,13 +18,13 @@ export const getStripeClient = (): Stripe => {
     selectedKey = isTestMode ? STRIPE_SECRET_KEY_TEST : STRIPE_SECRET_KEY_LIVE;
     console.log(`Using specific ${isTestMode ? 'TEST' : 'LIVE'} key based on STRIPE_TEST_MODE env`);
   } else {
-    // Sinon, utiliser la clé générique
-    selectedKey = STRIPE_SECRET_KEY;
-    console.log('Using generic STRIPE_SECRET_KEY');
+    // Sinon, utiliser la clé générique ou la clé de test fixe
+    selectedKey = STRIPE_SECRET_KEY || STRIPE_SECRET_KEY_TEST;
+    console.log('Using generic STRIPE_SECRET_KEY or fixed TEST key');
   }
   
   if (!selectedKey) {
-    console.error('No valid Stripe secret key found in environment variables');
+    console.error('No valid Stripe secret key found in environment variables or hardcoded value');
     throw new Error('STRIPE_SECRET_KEY missing');
   }
   
@@ -34,7 +32,7 @@ export const getStripeClient = (): Stripe => {
   console.log(`Using Stripe in ${isTestKey ? 'TEST' : 'LIVE'} mode with key prefix: ${selectedKey.substring(0, 8)}...`);
   
   return new Stripe(selectedKey, {
-    apiVersion: '2020-08-27', // Updated to match Stripe's webhook API version
+    apiVersion: '2020-08-27',
   });
 };
 
@@ -59,7 +57,7 @@ export const verifyStripeSignature = (
     throw new Error('Signature missing');
   }
   
-  // Récupérer les secrets webhook pour les environnements de test et production
+  // La nouvelle clé de test pour le webhook: on aura besoin de la configurer si ce n'est pas déjà fait
   const STRIPE_WEBHOOK_SECRET = Deno.env.get('STRIPE_WEBHOOK_SECRET');
   const STRIPE_WEBHOOK_SECRET_TEST = Deno.env.get('STRIPE_WEBHOOK_SECRET_TEST');
   

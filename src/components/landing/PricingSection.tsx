@@ -1,9 +1,13 @@
-
 import React from 'react';
 import { PricingCard } from './pricing/PricingCard';
 import { usePromoCode } from './pricing/usePromoCode';
 import { usePricingAnalytics } from './pricing/usePricingAnalytics';
-import { handleSubscription } from '@/utils/subscription';
+
+// Stripe Payment Links
+const PAYMENT_LINKS = {
+  monthly: 'https://buy.stripe.com/test_cN203tebg49K9uo9AA',
+  yearly: 'https://buy.stripe.com/test_4gw7vV3wC49KcGA001'
+};
 
 export const PricingSection = () => {
   const promoCode = usePromoCode();
@@ -17,13 +21,13 @@ export const PricingSection = () => {
   const handlePremiumPlan = () => {
     trackPlanSelection('premium', 'prod_Rvu5l79HX8EAis');
     console.log('Premium plan selected');
-    handleSubscription('monthly');
+    window.location.href = PAYMENT_LINKS.monthly;
   };
 
   const handleEnterprisePlan = () => {
     trackPlanSelection('enterprise', 'prod_Rvu5hv7FxnkHpv');
     console.log('Enterprise plan selected');
-    handleSubscription('yearly');
+    window.location.href = PAYMENT_LINKS.yearly;
   };
 
   return (

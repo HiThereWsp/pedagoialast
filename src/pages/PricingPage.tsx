@@ -1,4 +1,3 @@
-
 import { PricingCard } from "@/components/pricing/PricingCard"
 import { useEffect } from "react"
 import { pricingEvents } from "@/integrations/posthog/events"
@@ -6,9 +5,14 @@ import { subscriptionEvents } from "@/integrations/posthog/events"
 import { facebookEvents } from "@/integrations/meta-pixel/client"
 import { SEO } from "@/components/SEO"
 import { Shield, Clock, RefreshCw } from "lucide-react"
-import { handleSubscription } from "@/utils/subscription"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
+
+// Stripe Payment Links
+const PAYMENT_LINKS = {
+  monthly: 'https://buy.stripe.com/test_cN203tebg49K9uo9AA',
+  yearly: 'https://buy.stripe.com/test_4gw7vV3wC49KcGA001'
+};
 
 const PricingPage = () => {
   useEffect(() => {
@@ -42,8 +46,8 @@ const PricingPage = () => {
     // Tracking Facebook
     facebookEvents.initiateCheckout('monthly', 11.90);
     
-    // Utiliser Stripe Checkout via la fonction handleSubscription
-    handleSubscription('monthly');
+    // Redirect to Stripe Payment Link
+    window.location.href = PAYMENT_LINKS.monthly;
   }
 
   const handleYearlySubscription = async () => {
@@ -56,8 +60,8 @@ const PricingPage = () => {
     // Tracking Facebook
     facebookEvents.initiateCheckout('yearly', 9.00);
     
-    // Utiliser Stripe Checkout via la fonction handleSubscription
-    handleSubscription('yearly');
+    // Redirect to Stripe Payment Link
+    window.location.href = PAYMENT_LINKS.yearly;
   }
 
   return (

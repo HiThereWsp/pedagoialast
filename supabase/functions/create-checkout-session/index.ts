@@ -26,9 +26,9 @@ serve(async (req) => {
     }
     
     // Utiliser la clé Stripe appropriée en fonction du mode (test ou production)
-    // La clé de test commence par sk_test_, la clé de production par sk_live_
+    // La nouvelle clé de test: sk_test_51R4Z4eIHqPsl7TpblORlj8Cy63BSL8nTz16WtzTyWFpIXuDVQk4O92PgPRAK1pk0P8ZdjoCzt27X1r87BplLPdEQ00fU3ejj8o
     const stripeSecretKey = testMode 
-      ? Deno.env.get('STRIPE_SECRET_KEY_TEST') || Deno.env.get('STRIPE_SECRET_KEY')
+      ? Deno.env.get('STRIPE_SECRET_KEY_TEST') || "sk_test_51R4Z4eIHqPsl7TpblORlj8Cy63BSL8nTz16WtzTyWFpIXuDVQk4O92PgPRAK1pk0P8ZdjoCzt27X1r87BplLPdEQ00fU3ejj8o"
       : Deno.env.get('STRIPE_SECRET_KEY');
     
     if (!stripeSecretKey) {
@@ -51,12 +51,12 @@ serve(async (req) => {
     if (authHeader) {
       try {
         const token = authHeader.replace('Bearer ', '');
-        const { supabaseClient } = await import('https://esm.sh/@supabase/supabase-js@2.45.0');
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2.45.0');
         
         const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
         const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
         
-        const supabase = supabaseClient(supabaseUrl, supabaseAnonKey);
+        const supabase = createClient(supabaseUrl, supabaseAnonKey);
         const { data: { user } } = await supabase.auth.getUser(token);
         
         if (user) {
@@ -79,8 +79,8 @@ serve(async (req) => {
         },
       ],
       mode: 'subscription',
-      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/pricing?canceled=true`,
+      success_url: `${req.headers.get('origin')}/success?session_id={CHECKOUT_SESSION_ID}&type=${subscriptionType}`,
+      cancel_url: `${req.headers.get('origin')}/pricing?canceled=true&type=${subscriptionType}`,
       // Inclure des métadonnées pour le webhook
       metadata: {
         subscription_type: subscriptionType,
@@ -95,6 +95,8 @@ serve(async (req) => {
     if (!session.url) {
       throw new Error('Impossible de créer l\'URL de session Stripe');
     }
+
+    console.log(`Session de paiement créée avec succès. URL: ${session.url.substring(0, 50)}...`);
 
     return new Response(
       JSON.stringify({ url: session.url }),
