@@ -11,14 +11,14 @@ const PaymentFailurePage = () => {
   useEffect(() => {
     // Tracking events
     facebookEvents.subscriptionFailed(
-      'unknown',  // Will be determined from webhook if possible
+      'monthly' as 'monthly' | 'yearly',  // Default to monthly if unknown
       0,         // Price unknown at this point
       'payment_failed'
     );
     
     // Tracking PostHog
     subscriptionEvents.subscriptionFailed(
-      'unknown',  // Will be determined from webhook if possible
+      'monthly' as 'monthly' | 'yearly',  // Default to monthly if unknown
       'payment_failed'
     );
   }, []);

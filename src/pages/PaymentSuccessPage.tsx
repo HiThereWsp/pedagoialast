@@ -20,14 +20,14 @@ const PaymentSuccessPage = () => {
     
     // Envoyer l'événement de succès d'abonnement à Facebook
     facebookEvents.subscriptionSuccess(
-      'unknown', // Type will be verified by webhook
+      'monthly' as 'monthly' | 'yearly', // Default to monthly if unknown
       0,        // Price will be verified by webhook
       0
     );
     
     // Tracking PostHog
     subscriptionEvents.subscriptionCompleted(
-      'unknown', // Type will be verified by webhook
+      'monthly' as 'monthly' | 'yearly', // Default to monthly if unknown
       0         // Price will be verified by webhook
     );
     
