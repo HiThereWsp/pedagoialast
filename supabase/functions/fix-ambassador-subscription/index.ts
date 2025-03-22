@@ -63,7 +63,8 @@ serve(async (req) => {
         'maitreclementtiktok@gmail.com',
         'zoe.lejan@gmail.com', 
         'marine.poirel1@gmail.com',
-        'mehdijrad@live.fr'
+        'mehdijrad@live.fr',
+        'ag.tradeunion@gmail.com'
       ];
       
       if (knownAmbassadors.includes(email)) {

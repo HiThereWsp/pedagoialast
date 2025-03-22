@@ -79,7 +79,8 @@ export const checkAmbassadorSubscription = async (userId: string, email: string)
       'maitreclementtiktok@gmail.com',
       'zoe.lejan@gmail.com',
       'marine.poirel1@gmail.com',
-      'mehdijrad@live.fr'
+      'mehdijrad@live.fr',
+      'ag.tradeunion@gmail.com'
     ];
     
     if (specialAmbassadors.includes(email)) {
