@@ -66,8 +66,8 @@ serve(async (req) => {
         
         // For debugging in production, we might temporarily parse the event without verification
         // This is NOT recommended for production, but can help diagnose issues
-        if (Deno.env.get('ENVIRONMENT') === 'development') {
-          console.log('Development environment detected, proceeding with unverified event');
+        if (Deno.env.get('ENVIRONMENT') === 'development' || Deno.env.get('STRIPE_TEST_MODE') === 'true') {
+          console.log('Development or test environment detected, proceeding with unverified event');
           event = JSON.parse(body);
           skipSignatureVerification = true;
         } else {

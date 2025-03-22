@@ -1,3 +1,4 @@
+
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
@@ -38,6 +39,7 @@ const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
 const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
+const AdminSubscriptionRepairPage = lazy(() => import('@/pages/AdminSubscriptionRepairPage'));
 
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
@@ -103,6 +105,7 @@ function AppRoutes() {
 
         {/* Admin routes */}
         <Route path="/admin/brevo-sync" element={<ProtectedRoute><BrevoSyncPage /></ProtectedRoute>} />
+        <Route path="/admin/subscription-management" element={<ProtectedRoute><AdminSubscriptionRepairPage /></ProtectedRoute>} />
         
         {/* Routes de suivi des conversions */}
         <Route path="/payment-success" element={<PaymentSuccessPage />} />

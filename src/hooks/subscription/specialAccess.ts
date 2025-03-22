@@ -22,7 +22,10 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     
     // Special handling for specific users
     const forcedAmbassadors = [
-      'maitreclementtiktok@gmail.com'
+      'maitreclementtiktok@gmail.com',
+      'zoe.lejan@gmail.com',
+      'marine.poirel1@gmail.com',
+      'mehdijrad@live.fr'
     ];
     
     if (email && forcedAmbassadors.includes(email)) {
@@ -98,7 +101,10 @@ export const checkAmbassadorSubscription = async (userId: string, email: string)
     
     // Special handling for known ambassadors
     const specialAmbassadors = [
-      'maitreclementtiktok@gmail.com'
+      'maitreclementtiktok@gmail.com',
+      'zoe.lejan@gmail.com',
+      'marine.poirel1@gmail.com',
+      'mehdijrad@live.fr'
     ];
     
     if (specialAmbassadors.includes(email)) {

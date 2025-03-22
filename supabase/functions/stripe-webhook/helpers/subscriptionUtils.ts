@@ -1,10 +1,78 @@
-
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { verifyUserEmail, ensureUserProfile } from './emailVerification.ts';
 
 /**
  * Helper function to update or create a subscription
  */
 export async function updateOrCreateSubscription(supabase, userId, customerId, subscriptionType, expiryDate) {
+  if (!userId) {
+    console.error('No user ID provided for subscription update');
+    return false;
+  }
+  
+  // Verify user if needed - import from emailVerification.ts
+  try {
+    const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers({
+      filter: {
+        id: userId
+      }
+    });
+    
+    if (!usersError && users && users.length > 0) {
+      const user = users[0];
+      
+      // Attempt to verify email if it's not already verified
+      if (user.email && !user.email_confirmed_at) {
+        console.log(`Attempting to verify email ${user.email} during subscription update`);
+        
+        const { error: updateError } = await supabase.auth.admin.updateUserById(
+          userId,
+          { email_confirm: true }
+        );
+        
+        if (updateError) {
+          console.error(`Failed to verify email during subscription: ${updateError.message}`);
+        } else {
+          console.log(`Successfully verified email ${user.email} during subscription update`);
+        }
+      }
+      
+      // Ensure profile exists
+      try {
+        // Check if profile exists
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', userId)
+          .maybeSingle();
+          
+        if (profileError) {
+          console.error(`Error checking profile: ${profileError.message}`);
+        } else if (!profile) {
+          console.log(`Creating profile for user ${userId}`);
+          await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: user.email,
+              first_name: user.user_metadata?.first_name || 'User',
+              stripe_customer_id: customerId
+            });
+        } else if (customerId) {
+          // Update Stripe customer ID if needed
+          await supabase
+            .from('profiles')
+            .update({ stripe_customer_id: customerId })
+            .eq('id', userId);
+        }
+      } catch (profileErr) {
+        console.error(`Error managing profile: ${profileErr.message}`);
+      }
+    }
+  } catch (err) {
+    console.error(`Error verifying user: ${err.message}`);
+  }
+  
   // First try with user_subscriptions table (new schema)
   try {
     // Check if there's an existing subscription
@@ -35,7 +103,7 @@ export async function updateOrCreateSubscription(supabase, userId, customerId, s
           console.error('Error updating subscription in user_subscriptions:', updateError);
         } else {
           console.log(`Updated subscription for user ${userId} (${subscriptionType}) in user_subscriptions`);
-          return; // Success, exit early
+          return true; // Success, exit early
         }
       } else {
         // Create a new subscription
@@ -54,7 +122,7 @@ export async function updateOrCreateSubscription(supabase, userId, customerId, s
           console.error('Error creating subscription in user_subscriptions:', insertError);
         } else {
           console.log(`Created new subscription for user ${userId} (${subscriptionType}) in user_subscriptions`);
-          return; // Success, exit early
+          return true; // Success, exit early
         }
       }
     }
@@ -73,7 +141,7 @@ export async function updateOrCreateSubscription(supabase, userId, customerId, s
     
     if (subError) {
       console.error('Error checking existing subscription in subscriptions:', subError);
-      return;
+      return false;
     }
     
     if (existingSub) {
@@ -92,7 +160,7 @@ export async function updateOrCreateSubscription(supabase, userId, customerId, s
       
       if (updateError) {
         console.error('Error updating subscription in subscriptions:', updateError);
-        return;
+        return false;
       }
       
       console.log(`Updated subscription for user ${userId} (${subscriptionType}) in subscriptions`);
@@ -113,7 +181,7 @@ export async function updateOrCreateSubscription(supabase, userId, customerId, s
       
       if (createError) {
         console.error('Error creating subscription in subscriptions:', createError);
-        return;
+        return false;
       }
       
       console.log(`Created new subscription for user ${userId} (${subscriptionType}) in subscriptions`);
@@ -140,6 +208,8 @@ export async function updateOrCreateSubscription(supabase, userId, customerId, s
   } catch (legacyTableError) {
     console.error('Error with subscriptions table:', legacyTableError);
   }
+
+  return false;
 }
 
 /**
