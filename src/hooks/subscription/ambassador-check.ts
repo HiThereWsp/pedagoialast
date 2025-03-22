@@ -74,9 +74,12 @@ export const checkAmbassadorSubscription = async (userId: string, email: string)
   try {
     console.log(`Checking ambassador subscription for user: ${userId}, email: ${email}`);
     
-    // Special handling for known ambassadors
+    // Special handling for known ambassadors - SYNCHRONIZED WITH SERVER-SIDE LIST
     const specialAmbassadors = [
-      'maitreclementtiktok@gmail.com'
+      'maitreclementtiktok@gmail.com',
+      'zoe.lejan@gmail.com',
+      'marine.poirel1@gmail.com',
+      'mehdijrad@live.fr'
     ];
     
     if (specialAmbassadors.includes(email)) {

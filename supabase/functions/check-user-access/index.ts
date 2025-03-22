@@ -34,9 +34,12 @@ async function checkAmbassadorAccess(supabaseClient, user) {
   console.log("Checking ambassador status for user:", user.email);
   
   try {
-    // Special handling for specific ambassadors
+    // Special handling for specific ambassadors - Updated to match client-side list
     const specialAmbassadors = [
-      'maitreclementtiktok@gmail.com'
+      'maitreclementtiktok@gmail.com',
+      'zoe.lejan@gmail.com',
+      'marine.poirel1@gmail.com',
+      'mehdijrad@live.fr'
     ];
     
     if (user.email && specialAmbassadors.includes(user.email)) {

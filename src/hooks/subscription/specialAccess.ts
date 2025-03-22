@@ -20,7 +20,7 @@ export const checkSpecialEmails = async (): Promise<SubscriptionStatus | null> =
     
     console.log(`Vérification des accès spéciaux pour: ${email}`);
     
-    // Special handling for specific users
+    // Special handling for specific users - SYNCHRONIZED WITH SERVER-SIDE LIST
     const forcedAmbassadors = [
       'maitreclementtiktok@gmail.com',
       'zoe.lejan@gmail.com',
@@ -99,7 +99,7 @@ export const checkAmbassadorSubscription = async (userId: string, email: string)
   try {
     console.log(`Checking ambassador subscription for user: ${userId}, email: ${email}`);
     
-    // Special handling for known ambassadors
+    // Special handling for known ambassadors - SYNCHRONIZED WITH SERVER-SIDE LIST
     const specialAmbassadors = [
       'maitreclementtiktok@gmail.com',
       'zoe.lejan@gmail.com',
