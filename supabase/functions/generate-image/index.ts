@@ -32,10 +32,10 @@ serve(async (req) => {
 
     console.log('Requête reçue avec prompt:', requestData.prompt);
 
-    // La clé API de Replicate
-    const replicateApiKey = Deno.env.get('REPLICATE_API_KEY');
-    if (!replicateApiKey) {
-      throw new Error('La clé API Replicate n\'est pas configurée');
+    // La clé API de OpenAI
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openaiApiKey) {
+      throw new Error('La clé API OpenAI n\'est pas configurée');
     }
 
     // Créer un client Supabase
@@ -47,26 +47,19 @@ serve(async (req) => {
     // Détecter le style d'image demandé
     const imageStyle = requestData.style || 'auto';
 
-    // Construire le prompt pour Replicate basé sur le style demandé
+    // Construire le prompt pour DALL-E basé sur le style demandé
     let fullPrompt = requestData.prompt;
-    let model = "stability-ai/stable-diffusion-xl-base-1.0";
-    let additionalParams = {};
+    let imageSize = "1024x1024";
 
     console.log('Génération d\'image avec style:', imageStyle);
 
-    // Modification du modèle et des params selon le style
+    // Modification du prompt selon le style
     switch (imageStyle) {
       case 'realistic':
         fullPrompt = `high quality, photorealistic, detailed, ${requestData.prompt}`;
         break;
       case 'cartoon':
         fullPrompt = `cartoon style, colorful, fun, ${requestData.prompt}`;
-        model = "stability-ai/sdxl"; // Autre modèle pour style cartoon
-        additionalParams = {
-          refine: "expert_ensemble_refiner",
-          scheduler: "K_EULER",
-          lora_scale: 0.6
-        };
         break;
       case 'watercolor':
         fullPrompt = `watercolor painting style, artistic, soft colors, ${requestData.prompt}`;
@@ -77,92 +70,43 @@ serve(async (req) => {
       case 'minimalist':
         fullPrompt = `minimalist design, clean lines, simple, elegant, ${requestData.prompt}`;
         break;
-      // cas par défaut - on utilise le prompt tel quel avec le modèle standard
+      // cas par défaut - on utilise le prompt tel quel
     }
     
-    // Configuration standard des paramètres pour Replicate
-    const replicateParams = {
-      version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
-      input: {
-        prompt: fullPrompt,
-        negative_prompt: "poorly drawn, bad anatomy, distorted, blurry, low quality",
-        width: 1024,
-        height: 1024,
-        num_outputs: 1,
-        num_inference_steps: 25,
-        ...additionalParams
-      }
-    };
+    console.log('Appel de OpenAI DALL-E avec prompt:', fullPrompt);
 
-    console.log('Appel de Replicate avec params:', replicateParams);
-
-    // Appel à l'API Replicate
-    const replicateResponse = await fetch("https://api.replicate.com/v1/predictions", {
+    // Appel à l'API OpenAI pour DALL-E 3
+    const openaiResponse = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
       headers: {
-        "Authorization": `Token ${replicateApiKey}`,
+        "Authorization": `Bearer ${openaiApiKey}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(replicateParams)
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: fullPrompt,
+        n: 1,
+        size: imageSize,
+        quality: "standard",
+        response_format: "url"
+      })
     });
 
-    if (!replicateResponse.ok) {
-      const errorDetails = await replicateResponse.text();
-      console.error('Erreur Replicate:', errorDetails);
-      throw new Error(`Erreur Replicate: ${replicateResponse.status} ${replicateResponse.statusText}`);
+    if (!openaiResponse.ok) {
+      const errorDetails = await openaiResponse.text();
+      console.error('Erreur OpenAI:', errorDetails);
+      throw new Error(`Erreur OpenAI: ${openaiResponse.status} ${openaiResponse.statusText}`);
     }
 
-    const prediction = await replicateResponse.json();
-    console.log('Prédiction initiée:', prediction);
+    const openaiData = await openaiResponse.json();
+    console.log('Réponse OpenAI reçue:', openaiData);
 
-    // Si aucun ID de prédiction n'est retourné
-    if (!prediction.id) {
-      throw new Error('ID de prédiction manquant dans la réponse Replicate');
-    }
+    // Extraire l'URL de l'image générée
+    const imageUrl = openaiData.data[0]?.url;
 
-    // Vérifier le statut de la prédiction jusqu'à ce qu'elle soit terminée
-    let imageUrl = null;
-    let attempts = 0;
-    const maxAttempts = 30; // Limite à 60 secondes (30 * 2s)
-
-    while (attempts < maxAttempts) {
-      // Attendre 2 secondes entre chaque vérification
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      attempts++;
-
-      // Vérifier le statut
-      const statusResponse = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
-        headers: {
-          "Authorization": `Token ${replicateApiKey}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (!statusResponse.ok) {
-        console.error('Erreur lors de la vérification du statut:', statusResponse.status);
-        continue;
-      }
-
-      const status = await statusResponse.json();
-      console.log(`Statut (tentative ${attempts}/${maxAttempts}):`, status.status);
-
-      // Si la prédiction est terminée
-      if (status.status === 'succeeded') {
-        imageUrl = status.output?.[0];
-        break;
-      } else if (status.status === 'failed') {
-        throw new Error('La génération d\'image a échoué: ' + (status.error || 'Raison inconnue'));
-      }
-
-      // Si on atteint le nombre maximal de tentatives
-      if (attempts >= maxAttempts) {
-        throw new Error('Délai d\'attente dépassé pour la génération d\'image');
-      }
-    }
-
-    // Vérifier si on a bien récupéré une URL d'image
+    // Si aucune URL d'image n'est retournée
     if (!imageUrl) {
-      throw new Error('Aucune URL d\'image générée');
+      throw new Error('URL d\'image manquante dans la réponse OpenAI');
     }
 
     console.log('Image générée avec succès:', imageUrl);

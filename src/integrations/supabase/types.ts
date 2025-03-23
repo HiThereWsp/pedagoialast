@@ -1042,6 +1042,10 @@ export type Database = {
           created_at: string
           email_verified: boolean | null
           id: number
+          is_admin: boolean | null
+          is_ambassador: boolean | null
+          is_beta: boolean | null
+          is_paid_user: boolean | null
           user_email: string | null
           user_id: string | null
           welcome_email_sent: boolean | null
@@ -1050,6 +1054,10 @@ export type Database = {
           created_at?: string
           email_verified?: boolean | null
           id?: number
+          is_admin?: boolean | null
+          is_ambassador?: boolean | null
+          is_beta?: boolean | null
+          is_paid_user?: boolean | null
           user_email?: string | null
           user_id?: string | null
           welcome_email_sent?: boolean | null
@@ -1058,6 +1066,10 @@ export type Database = {
           created_at?: string
           email_verified?: boolean | null
           id?: number
+          is_admin?: boolean | null
+          is_ambassador?: boolean | null
+          is_beta?: boolean | null
+          is_paid_user?: boolean | null
           user_email?: string | null
           user_id?: string | null
           welcome_email_sent?: boolean | null
@@ -1442,6 +1454,10 @@ export type Database = {
           short_path: string
           target_url: string
         }
+      }
+      is_user_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       ivfflat_bit_support: {
         Args: {
