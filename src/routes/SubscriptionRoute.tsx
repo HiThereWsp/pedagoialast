@@ -4,6 +4,7 @@ import { SubscriptionLoading } from "@/components/subscription/SubscriptionLoadi
 import { SubscriptionError } from "@/components/subscription/SubscriptionError";
 import { LimitedAccessCard } from "@/components/subscription/LimitedAccessCard";
 import { useSubscriptionRouteLogic } from "@/hooks/subscription/useSubscriptionRouteLogic";
+import {useAuth} from "@/hooks";
 
 interface SubscriptionRouteProps {
   children: JSX.Element;
@@ -24,7 +25,10 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   // Rendering logic based on conditions
   
   // If special access is granted, show content immediately
+  // show content
+
   if (showContent) {
+    console.log("ShowContent Condition",{showContent});
     return children;
   }
   
@@ -53,10 +57,10 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   }
   
   // If no active subscription, show subscription required message
-  if (!isSubscribed) {
-    return <LimitedAccessCard />;
-  }
+  // if (!isSubscribed) {
+  //   return <LimitedAccessCard />;
+  // }
   
   // User has a valid subscription, show content
-  return children;
+  return <LimitedAccessCard />;
 };

@@ -38,6 +38,7 @@ const SubscriptionFailedPage = lazy(() => import('@/pages/SubscriptionFailedPage
 const CheckoutCanceledPage = lazy(() => import('@/pages/CheckoutCanceledPage'));
 const Pricing = lazy(() => import('@/pages/Pricing'));
 const ContactPage = lazy(() => import('@/pages/ContactPage'));
+const UserManagementPage = lazy(() => import('@/pages/UserManagement'));
 const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
 const AdminSubscriptionRepairPage = lazy(() => import('@/pages/AdminSubscriptionRepairPage'));
 
@@ -80,6 +81,11 @@ function AppRoutes() {
         <Route path="/tableaudebord" element={
           <ProtectedRoute>
             <TableauDeBord />
+          </ProtectedRoute>
+        } />
+        <Route path="/user-management" element={
+          <ProtectedRoute>
+            <UserManagementPage />
           </ProtectedRoute>
         } />
         

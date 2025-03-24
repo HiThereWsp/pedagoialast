@@ -10,15 +10,16 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+
   const location = useLocation();
-  const { user, loading, authReady } = useAuth();
+  const { user, loading, authReady ,profile} = useAuth();
   const [showLoadingTimeout, setShowLoadingTimeout] = useState(false);
   const initialLoadComplete = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Détermine si la page actuelle est une page publique d'authentification
   const isAuthPage = () => {
-    const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password', '/confirm-email'];
+    const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password', '/confirm-email', '/user-management'];
     return authPaths.some(path => location.pathname.startsWith(path));
   };
 
@@ -75,18 +76,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // Si l'utilisateur est déjà connecté et essaie d'accéder à une page d'authentification,
   // rediriger vers la page d'accueil
-  if (user && isAuthPage()) {
-    console.log("Utilisateur déjà authentifié, redirection vers /tableaudebord");
-    return <Navigate to="/tableaudebord" replace />;
-  }
+  // if (user && isAuthPage()) {
+  //   console.log("Utilisateur déjà authentifié, redirection vers /tableaudebord");
+  //   return <Navigate to="/tableaudebord" replace />;
+  // }
 
   // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, 
   // rediriger vers la page de connexion, sauf si c'est déjà une page d'authentification
-  if (!user && authReady && !loading && !isAuthPage()) {
-    console.log("Utilisateur non authentifié, redirection vers /login");
-    return <Navigate to="/login" state={{ returnUrl: location.pathname }} replace />;
-  }
+  // if (!user && authReady && !loading && !isAuthPage()) {
+  //   console.log("Utilisateur non authentifié, redirection vers /login");
+  //   return <Navigate to="/login" state={{ returnUrl: location.pathname }} replace />;
+  // }
 
   // Si l'utilisateur est authentifié ou si c'est une page d'authentification, afficher le contenu
+
   return <>{children}</>;
 };

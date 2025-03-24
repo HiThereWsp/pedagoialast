@@ -17,10 +17,10 @@ export const checkUserAccess = async (
   try {
     // Check development mode first (only for dev environment)
     if (import.meta.env.DEV) {
-      console.log("Development mode detected, simulating active subscription");
+      console.log("Development mode detectedaa, simulating active subscription");
       const devStatus = {
         isActive: true,
-        type: 'dev_mode',
+        type: 'a',
         expiresAt: null,
         isLoading: false,
         error: null,

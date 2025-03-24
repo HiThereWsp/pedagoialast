@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { SubscriptionStatus, initialStatus, REFRESH_INTERVAL } from './types';
 import { getCachedStatus, cacheSubscriptionStatus, clearSubscriptionCache } from './useSubscriptionCache';
-import { checkDevMode } from './useDevMode';
+import { checkDevWorkingMode } from './useDevMode';
 import { checkUserSession } from './useSessionCheck';
 import { checkUserAccess } from './useAccessCheck';
 import { useSubscriptionErrorHandling } from './useSubscriptionErrorHandling';
@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 /**
  * Custom hook to manage subscription state and verification
  */
-export const useSubscription = () => {
+export const useSubSubscription = () => {
   const [status, setStatus] = useState<SubscriptionStatus>(initialStatus);
   // Add a flag to prevent multiple simultaneous checks
   const [isChecking, setIsChecking] = useState(false);
@@ -59,7 +59,7 @@ export const useSubscription = () => {
     // Ensure isLoading is reset in case of errors during checks
     try {
       // Check development mode first (short-circuits other checks)
-      if (checkDevMode(setStatus)) {
+      if (checkDevWorkingMode(setStatus)) {
         setIsChecking(false);
         return;
       }
@@ -130,7 +130,7 @@ export const useSubscription = () => {
       if (status.special_handling) {
         console.log("Special handling detected, granting access");
       }
-      return true;
+      return false;
     }
     
     if (!status.isActive) {
