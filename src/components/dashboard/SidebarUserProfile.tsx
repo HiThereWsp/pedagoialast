@@ -49,12 +49,12 @@ export const SidebarUserProfile = ({ firstName, onLogout }: SidebarUserProfilePr
                 <span>Aide</span>
               </DropdownMenuItem>
               {/* Conditionally render User Management option if the user is an admin */}
-              {isAdmin && (
-                  <DropdownMenuItem onClick={() => navigate('/user-management')} className="cursor-pointer">
-                    <Users className="mr-2 h-4 w-4" /> {/* Changed to Users icon for better context */}
-                    <span>Gestion des utilisateurs</span> {/* Updated label to French for consistency */}
-                  </DropdownMenuItem>
-              )}
+              {/*{isAdmin && (*/}
+              {/*    <DropdownMenuItem onClick={() => navigate('/user-management')} className="cursor-pointer">*/}
+              {/*      <Users className="mr-2 h-4 w-4" /> /!* Changed to Users icon for better context *!/*/}
+              {/*      <span>Gestion des utilisateurs</span> /!* Updated label to French for consistency *!/*/}
+              {/*    </DropdownMenuItem>*/}
+              {/*)}*/}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
