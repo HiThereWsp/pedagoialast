@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useSubscription } from "@/hooks/subscription";
+import { useSubSubscription } from "@/hooks/subscription";
 import { toast } from "sonner";
 import { SubscriptionLoading } from "./SubscriptionLoading";
 import { SubscriptionError } from "./SubscriptionError";
@@ -10,7 +10,7 @@ import { getSubscriptionInfo } from "./utils";
 import { clearSubscriptionCache } from "@/hooks/subscription/useSubscriptionCache";
 
 export function SubscriptionStatus() {
-  const { isSubscribed, subscriptionType, expiresAt, isLoading, error, checkSubscription } = useSubscription();
+  const { isSubscribed, subscriptionType, expiresAt, isLoading, error, checkSubscription } = useSubSubscription();
   const [isRetrying, setIsRetrying] = useState(false);
   
   // Auto-verify subscription on initial load and after payment return

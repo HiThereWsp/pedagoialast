@@ -1,6 +1,6 @@
 
 export * from './types';
-export * from './useSubscription';
+export * from './useSubSubscription.ts';
 export * from './useSubscriptionCache';
 export * from './useErrorLogging';
 export * from './useAccessCheck';
