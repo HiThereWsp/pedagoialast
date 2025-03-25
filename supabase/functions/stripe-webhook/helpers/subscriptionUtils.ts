@@ -121,7 +121,7 @@ export async function updateOrCreateSubscription(supabase, userId, customerId, s
         if (insertError) {
           console.error('Error creating subscription in user_subscriptions:', insertError);
         } else {
-          console.log(`Created new subscription for user ${userId} (${subscriptionType}) in user_subscriptions`);
+          console.log(`Created new subscription for user 1 ${userId} (${subscriptionType}) in user_subscriptions`);
           return true; // Success, exit early
         }
       }
