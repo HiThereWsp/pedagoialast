@@ -30,6 +30,7 @@ serve(async (req) => {
   try {
     // Validate request
     const signature = req.headers.get("stripe-signature");
+    console.log({signature});
     if (!signature) {
       throw new Error("Missing Stripe signature");
     }
@@ -41,12 +42,13 @@ serve(async (req) => {
 
     // Verify webhook signature
     // const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || Deno.env.get("STRIPE_WEBHOOK_SECRET_TEST");
-    const webhookSecret = "whsec_e3c7485663ec5a2d28600f8743c716504318398b176498741992982785a4d877"
+    // const webhookSecret = "whsec_e3c7485663ec5a2d28600f8743c716504318398b176498741992982785a4d877"
+    const webhookSecret = "whsec_otFKDLi2qA6CMhN7oxnekdzCkY27dS3x"
     if (!webhookSecret) {
       throw new Error("Missing webhook secret");
     }
 
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
     console.log(`Received Stripe event: ${event.type}, ID: ${event.id}`);
 
     // Process subscription events
