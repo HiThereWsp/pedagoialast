@@ -180,31 +180,50 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     return;
   }
 
+  // Check if the subscription already exists to avoid duplicates
+  const { data: existingSubscription } = await supabase
+      .from("user_subscriptions")
+      .select("id")
+      .eq("stripe_subscription_id", subscriptionId)
+      .maybeSingle();
+
+  if (existingSubscription) {
+    console.log(`Subscription ${subscriptionId} already exists, skipping creation`);
+    return;
+  }
+
   // Insert new subscription
+  const subscriptionData = {
+    user_id: userId,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: subscriptionId,
+    status: subscriptionStatus,
+    type: subscription.status === "trialing" ? "trial" : "paid",
+    plan_variant: subscriptionType,
+    current_period_end: currentPeriodEnd,
+    expires_at: currentPeriodEnd, // Set expires_at to current_period_end
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  console.log("Attempting to insert subscription with data:", subscriptionData);
+
   const { error: insertError } = await supabase
       .from("user_subscriptions")
-      .insert({
-        user_id: userId,
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-        status: subscriptionStatus as "active" | "canceled" | "past_due",
-        type: "paid" as "trial" | "paid",
-        plan_variant: subscriptionType,
-        current_period_end: currentPeriodEnd,
-        created_at: new Date(),
-        updated_at: new Date(),
-      });
+      .insert(subscriptionData);
 
   if (insertError) {
     console.error(`Error inserting subscription: ${insertError.message}`);
+    console.error("Full error details:", JSON.stringify(insertError, null, 2));
     return;
   }
 
   // Update is_paid_user and role_expiry in user_profiles
+  const isActiveOrTrialing = subscriptionStatus === "active" || subscriptionStatus === "trialing";
   const { error: profileUpdateError } = await supabase
       .from("user_profiles")
       .update({
-        is_paid_user: true,
+        is_paid_user: isActiveOrTrialing,
         role_expiry: currentPeriodEnd,
       })
       .eq("user_id", userId);
@@ -293,31 +312,50 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     return;
   }
 
+  // Check if the subscription already exists to avoid duplicates
+  const { data: existingSubscription } = await supabase
+      .from("user_subscriptions")
+      .select("id")
+      .eq("stripe_subscription_id", subscriptionId)
+      .maybeSingle();
+
+  if (existingSubscription) {
+    console.log(`Subscription ${subscriptionId} already exists, skipping creation`);
+    return;
+  }
+
   // Insert new subscription
+  const subscriptionData = {
+    user_id: userId,
+    stripe_customer_id: customerId,
+    stripe_subscription_id: subscriptionId,
+    status: subscriptionStatus,
+    type: subscription.status === "trialing" ? "trial" : "paid",
+    plan_variant: subscriptionType,
+    current_period_end: currentPeriodEnd,
+    expires_at: currentPeriodEnd, // Set expires_at to current_period_end
+    created_at: new Date(),
+    updated_at: new Date(),
+  };
+
+  console.log("Attempting to insert subscription with data:", subscriptionData);
+
   const { error: insertError } = await supabase
       .from("user_subscriptions")
-      .insert({
-        user_id: userId,
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-        status: subscriptionStatus as "active" | "canceled" | "past_due",
-        type: "paid" as "trial" | "paid",
-        plan_variant: subscriptionType,
-        current_period_end: currentPeriodEnd,
-        created_at: new Date(),
-        updated_at: new Date(),
-      });
+      .insert(subscriptionData);
 
   if (insertError) {
     console.error(`Error inserting subscription: ${insertError.message}`);
+    console.error("Full error details:", JSON.stringify(insertError, null, 2));
     return;
   }
 
   // Update is_paid_user and role_expiry in user_profiles
+  const isActiveOrTrialing = subscriptionStatus === "active" || subscriptionStatus === "trialing";
   const { error: profileUpdateError } = await supabase
       .from("user_profiles")
       .update({
-        is_paid_user: true,
+        is_paid_user: isActiveOrTrialing,
         role_expiry: currentPeriodEnd,
       })
       .eq("user_id", userId);
@@ -343,7 +381,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const { data: subscriptionData, error: fetchError } = await supabase
       .from("user_subscriptions")
       .select("user_id")
-      .eq("stripe_subscription", subscriptionId)
+      .eq("stripe_subscription_id", subscriptionId)
       .single();
 
   if (fetchError || !subscriptionData) {
@@ -354,12 +392,13 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const { error: updateError } = await supabase
       .from("user_subscriptions")
       .update({
-        status: subscriptionStatus as "active" | "canceled" | "past_due",
+        status: subscriptionStatus,
         plan_variant: subscriptionType,
-        current_period: currentPeriodEnd,
+        current_period_end: currentPeriodEnd,
+        expires_at: currentPeriodEnd, // Update expires_at to match current_period_end
         updated_at: new Date(),
       })
-      .eq("stripe_subscription", subscriptionId);
+      .eq("stripe_subscription_id", subscriptionId);
 
   if (updateError) {
     console.error(`Error updating subscription: ${updateError.message}`);
@@ -367,11 +406,11 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   }
 
   // Update is_paid_user and role_expiry based on subscription status
-  const isActive = subscriptionStatus === "active";
+  const isActiveOrTrialing = subscriptionStatus === "active" || subscriptionStatus === "trialing";
   const { error: profileUpdateError } = await supabase
       .from("user_profiles")
       .update({
-        is_paid_user: isActive,
+        is_paid_user: isActiveOrTrialing,
         role_expiry: currentPeriodEnd,
       })
       .eq("user_id", subscriptionData.user_id);
@@ -394,7 +433,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const { data: subscriptionData, error: fetchError } = await supabase
       .from("user_subscriptions")
       .select("user_id")
-      .eq("stripe_subscription", subscriptionId)
+      .eq("stripe_subscription_id", subscriptionId)
       .single();
 
   if (fetchError || !subscriptionData) {
@@ -405,10 +444,10 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const { error: updateError } = await supabase
       .from("user_subscriptions")
       .update({
-        status: "canceled" as "active" | "canceled" | "past_due",
+        status: "canceled",
         updated_at: new Date(),
       })
-      .eq("stripe_subscription", subscriptionId);
+      .eq("stripe_subscription_id", subscriptionId);
 
   if (updateError) {
     console.error(`Error deleting subscription: ${updateError.message}`);
