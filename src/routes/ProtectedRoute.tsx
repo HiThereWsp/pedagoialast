@@ -12,7 +12,7 @@ interface ProtectedRouteProps {
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   const location = useLocation();
-  const { user, loading, authReady ,profile} = useAuth();
+  const { user, loading, authReady } = useAuth();
   const [showLoadingTimeout, setShowLoadingTimeout] = useState(false);
   const initialLoadComplete = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
