@@ -8,10 +8,12 @@ export const getStripeClient = (): Stripe => {
   const STRIPE_SECRET_KEY_TEST = "sk_test_51R4Z4eIHqPsl7TpblORlj8Cy63BSL8nTz16WtzTyWFpIXuDVQk4O92PgPRAK1pk0P8ZdjoCzt27X1r87BplLPdEQ00fU3ejj8o";
   const STRIPE_SECRET_KEY_LIVE = Deno.env.get('STRIPE_SECRET_KEY_LIVE');
   const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY');
-  
+  console.log({STRIPE_SECRET_KEY})
+  console.log({STRIPE_SECRET_KEY_LIVE})
+  console.log({STRIPE_SECRET_KEY_TEST})
   // Déterminer quelle clé utiliser
   let selectedKey: string | undefined;
-  
+  console.log("Test Mode", Deno.env.get('STRIPE_TEST_MODE'))
   // Si nous avons des clés spécifiques pour test et production
   if (STRIPE_SECRET_KEY_TEST && STRIPE_SECRET_KEY_LIVE) {
     // Vérifier si le mode test est activé via une variable d'environnement
@@ -23,7 +25,7 @@ export const getStripeClient = (): Stripe => {
     selectedKey = STRIPE_SECRET_KEY || STRIPE_SECRET_KEY_TEST;
     console.log('Using generic STRIPE_SECRET_KEY or fixed TEST key');
   }
-  
+  console.log("Selected Key", selectedKey)
   if (!selectedKey) {
     console.error('No valid Stripe secret key found in environment variables or hardcoded value');
     throw new Error('STRIPE_SECRET_KEY missing');
@@ -68,11 +70,15 @@ export const verifyStripeSignature = (
   }
   
   const stripe = getStripeClient();
+  console.log("Got Stripe client")
   let event: Stripe.Event | null = null;
   let error: Error | null = null;
   
   // Check if we're in test mode based on the Stripe key
-  const isTestMode = stripe.getApiField('key').toString().startsWith('sk_test_') || 
+  console.log("checking is test mode")
+  console.log("stripe.getApiField('key') -> ", stripe.getApiField('key'))
+
+  const isTestMode = stripe.getApiField('key').toString().startsWith('sk_test_') ||
                      stripe.getApiField('key').toString().startsWith('rk_test_') ||
                      Deno.env.get('STRIPE_TEST_MODE') === 'true';
   

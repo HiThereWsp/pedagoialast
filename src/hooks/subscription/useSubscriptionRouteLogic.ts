@@ -33,7 +33,7 @@ export function useSubscriptionRouteLogic() {
     }
 
     // Allow access if user is beta, ambassador, or admin
-    setShowContent(profile.is_beta || profile.is_ambassador || profile.is_admin);
+    setShowContent(profile.is_beta || profile.is_ambassador || profile.is_admin || profile.is_paid_user);
   }, [authReady, profile, profileLoading, profileError]);
 
   // Reduce display time - only show verification if it takes unusually long
