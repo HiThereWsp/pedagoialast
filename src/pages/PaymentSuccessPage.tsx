@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client"
+import { LoadingIndicator } from "@/components/ui/loading-indicator";
+import { supabase } from "@/integrations/supabase/client";
 import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
@@ -21,54 +23,39 @@ interface CheckoutSessionData {
 
 export default function PaymentSuccessPage() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [sessionData, setSessionData] = useState<CheckoutSessionData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSessionDetails = async () => {
       try {
-        // Get the session_id and type from the query parameters
+        // Extract session_id and subscription type from URL query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get("session_id");
         const subscriptionType = urlParams.get("type");
 
         if (!sessionId || !subscriptionType) {
-          throw new Error("Missing session_id or subscription type");
+          throw new Error("Missing session_id or subscription type in URL parameters");
         }
 
         // Call the Supabase Edge Function to retrieve session details
-        const {data, error} = await supabase.functions.invoke('get-checkout-session', {
-          body: {sessionId}
-        })
-        // const response = await fetch(
-        //     "https://your-supabase-url.functions.supabase.co/get-checkout-session",
-        //     {
-        //       method: "POST",
-        //       headers: {
-        //         "Content-Type": "application/json",
-        //       },
-        //       body: JSON.stringify({ sessionId }),
-        //     }
-        // );
-
-        // const data = await response.json();
+        const { data, error } = await supabase.functions.invoke("get-checkout-session", {
+          body: { sessionId },
+        });
 
         if (error) {
-          throw new Error(data.error);
+          throw new Error(error.message || "Failed to fetch session details");
         }
 
+        if (!data) {
+          throw new Error("No session data returned from server");
+        }
         setSessionData(data);
-
-        // Track the successful subscription in analytics
-        // if (subscriptionType === "monthly") {
-        //   pricingEvents.selectPlan("premium");
-        //   subscriptionEvents.subscriptionCompleted("monthly", 11.90);
-        //   facebookEvents.completeRegistration("monthly", 11.90);
-        // } else if (subscriptionType === "yearly") {
-        //   pricingEvents.selectPlan("premium");
-        //   subscriptionEvents.subscriptionCompleted("yearly", 9.90);
-        //   facebookEvents.completeRegistration("yearly", 9.00);
-        // }
+        // Navigate to /home after 5 seconds
+        setTimeout(() => {
+          navigate("/home");
+        }, 5000);
       } catch (error) {
         toast({
           title: "Erreur lors de la récupération des détails de la session",
@@ -81,7 +68,7 @@ export default function PaymentSuccessPage() {
     };
 
     fetchSessionDetails();
-  }, [toast]);
+  }, [toast, navigate]);
 
   return (
       <>
@@ -104,9 +91,12 @@ export default function PaymentSuccessPage() {
                   Paiement réussi !
                 </h1>
                 {loading ? (
-                    <p className="text-lg text-muted-foreground">
-                      Chargement des détails de votre abonnement...
-                    </p>
+                    <div className="flex flex-col items-center space-y-4">
+                      <LoadingIndicator />
+                      <p className="text-lg text-muted-foreground">
+                        Chargement des détails de votre abonnement...
+                      </p>
+                    </div>
                 ) : sessionData ? (
                     <div className="space-y-4">
                       <p className="text-lg text-muted-foreground">
@@ -140,6 +130,9 @@ export default function PaymentSuccessPage() {
                       </span>.
                           </p>
                       )}
+                      <p className="text-sm text-muted-foreground">
+                        Vous serez redirigé vers la page d’accueil dans 5 secondes...
+                      </p>
                     </div>
                 ) : (
                     <p className="text-lg text-muted-foreground">
@@ -147,11 +140,13 @@ export default function PaymentSuccessPage() {
                     </p>
                 )}
               </div>
-              <div className="text-center">
-                <Button asChild>
-                  <Link to="/dashboard">Commencer à utiliser PedagoIA</Link>
-                </Button>
-              </div>
+              {!loading && (
+                  <div className="text-center">
+                    <Button asChild>
+                      <Link to="/dashboard">Commencer à utiliser PedagoIA</Link>
+                    </Button>
+                  </div>
+              )}
             </Card>
           </div>
         </div>
