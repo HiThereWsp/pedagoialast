@@ -128,6 +128,7 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
+      locale: "fr",
       mode: "subscription",
       success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&type=${subscriptionType}`,
       cancel_url: `${origin}/pricing?canceled=true&type=${subscriptionType}`,

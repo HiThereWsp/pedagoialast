@@ -245,7 +245,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   const subscriptionStatus = subscription.status;
   const subscriptionType = subscription.metadata?.subscription_type || "monthly";
   const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-
+  console.log({subscriptionStatus})
   // Fetch customer email from Stripe
   let customerEmail: string | undefined;
   try {
@@ -376,37 +376,89 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const subscriptionStatus = subscription.status;
   const subscriptionType = subscription.metadata?.subscription_type || "monthly";
   const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-
-  // Update subscription
-  const { data: subscriptionData, error: fetchError } = await supabase
+  console.log({subscriptionStatus});
+  // Fetch the subscription record from user_subscriptions
+  console.log(`Fetching user subscription for stripe_subscription_id: ${subscriptionId}`);
+  let { data: subscriptionData, error: fetchError } = await supabase
       .from("user_subscriptions")
       .select("user_id")
       .eq("stripe_subscription_id", subscriptionId)
-      .single();
+      .maybeSingle();
 
-  if (fetchError || !subscriptionData) {
-    console.error(`Error fetching subscription for user update: ${fetchError?.message}`);
+  if (fetchError) {
+    console.error(`Error fetching subscription from user_subscriptions: ${fetchError.message}`);
     return;
   }
 
+  // If no subscription record exists, create one
+  if (!subscriptionData) {
+    console.log(
+        `No subscription found in user_subscriptions for stripe_subscription_id: ${subscriptionId}. ` +
+        `Creating a new record.`
+    );
+
+    // Fetch the customer to get the user_id (if available in metadata or linked to a user)
+    const customer = await stripe.customers.retrieve(subscription.customer as string);
+    const userId = customer.metadata?.user_id || "anonymous"; // Fallback to "anonymous" if no user_id
+
+    const newSubscriptionData = {
+      user_id: userId,
+      stripe_customer_id: subscription.customer as string,
+      stripe_subscription_id: subscriptionId,
+      status: subscriptionStatus,
+      type: subscriptionStatus === "trialing" ? "trial" : "paid",
+      plan_variant: subscriptionType,
+      current_period_end: currentPeriodEnd,
+      expires_at: currentPeriodEnd,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    const { data: insertedData, error: insertError } = await supabase
+        .from("user_subscriptions")
+        .insert(newSubscriptionData)
+        .select("user_id")
+        .maybeSingle();
+
+    if (insertError) {
+      console.error(`Error creating subscription in user_subscriptions: ${insertError.message}`);
+      return;
+    }
+
+    if (!insertedData) {
+      console.error("Failed to create subscription record: No data returned after insert");
+      return;
+    }
+    let
+    subscriptionData = insertedData;
+    console.log(`Created new subscription record for user_id: ${subscriptionData.user_id}`);
+  }
+
+  console.log(`Found subscription for user_id: ${subscriptionData.user_id}`);
+
+  // Update the subscription record
+  console.log("Updating subscription in user_subscriptions...");
   const { error: updateError } = await supabase
       .from("user_subscriptions")
       .update({
         status: subscriptionStatus,
         plan_variant: subscriptionType,
         current_period_end: currentPeriodEnd,
-        expires_at: currentPeriodEnd, // Update expires_at to match current_period_end
+        expires_at: currentPeriodEnd,
         updated_at: new Date(),
       })
       .eq("stripe_subscription_id", subscriptionId);
 
   if (updateError) {
-    console.error(`Error updating subscription: ${updateError.message}`);
+    console.error(`Error updating subscription in user_subscriptions: ${updateError.message}`);
     return;
   }
 
-  // Update is_paid_user and role_expiry based on subscription status
+  console.log("Subscription updated successfully.");
+
+  // Update user profile (is_paid_user and role_expiry)
   const isActiveOrTrialing = subscriptionStatus === "active" || subscriptionStatus === "trialing";
+  console.log(`Updating user_profiles for user_id: ${subscriptionData.user_id}, is_paid_user: ${isActiveOrTrialing}`);
   const { error: profileUpdateError } = await supabase
       .from("user_profiles")
       .update({
@@ -420,7 +472,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     return;
   }
 
-  console.log(`Subscription updated: ${subscriptionId}`);
+  console.log(`User profile updated successfully for subscription: ${subscriptionId}`);
 }
 
 // Handle subscription deleted event
