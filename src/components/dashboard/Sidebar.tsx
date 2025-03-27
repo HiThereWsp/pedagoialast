@@ -77,7 +77,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
           notAvailable={true}
           notAvailableIcon={
             <span className="ml-auto flex items-center">
-              <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 font-normal px-2 py-0.5">
+              <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 font-normal px-2 py-0.5 whitespace-nowrap">
                 bientôt disponible
               </Badge>
             </span>
