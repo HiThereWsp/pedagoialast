@@ -113,20 +113,28 @@ export const ResourceCard = React.memo(({
           </p>
         )}
         
-        {/* Metadata tags with color coding and truncation */}
+        {/* Metadata tags with color coding and tooltips */}
         <div className="flex flex-wrap gap-1.5 mt-2">
+          {/* Type tag */}
+          {resource.type && (
+            <ColoredBadge
+              label={getDisplayType(resource.type)}
+              {...getTagColorScheme('type')}
+            />
+          )}
+          
+          {/* Subject tag */}
           {resource.subject && (
             <ColoredBadge
               label={resource.subject}
-              maxLength={15}
               {...getTagColorScheme('subject')}
             />
           )}
           
+          {/* Class level tag */}
           {resource.class_level && (
             <ColoredBadge
               label={resource.class_level}
-              maxLength={12}
               {...getTagColorScheme('class_level')}
             />
           )}

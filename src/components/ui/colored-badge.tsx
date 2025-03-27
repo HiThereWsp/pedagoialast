@@ -19,7 +19,7 @@ export function ColoredBadge({
   backgroundColor,
   borderColor,
   className,
-  maxLength = 15,
+  maxLength = 24,
   showTooltip = true,
   ...props
 }: ColoredBadgeProps) {
@@ -27,24 +27,27 @@ export function ColoredBadge({
     ? `${label.substring(0, maxLength)}...` 
     : label;
   
-  const shouldShowTooltip = showTooltip && label.length > maxLength;
-  
+  // Always show tooltip on hover, regardless of truncation
   const badgeContent = (
     <Badge
       className={cn(
         "text-xs font-medium px-2 py-0.5",
-        backgroundColor && `bg-opacity-20 bg-[${backgroundColor}]`,
-        color && `text-[${color}]`,
-        borderColor && `border border-[${borderColor}]`,
         className
       )}
+      style={{
+        color: color,
+        backgroundColor: backgroundColor ? `${backgroundColor}33` : undefined, // 33 is ~20% opacity in hex
+        borderColor: borderColor,
+        borderWidth: borderColor ? '1px' : undefined,
+        borderStyle: borderColor ? 'solid' : undefined,
+      }}
       {...props}
     >
       {truncatedLabel}
     </Badge>
   );
 
-  if (shouldShowTooltip) {
+  if (showTooltip) {
     return (
       <TooltipProvider>
         <Tooltip>
