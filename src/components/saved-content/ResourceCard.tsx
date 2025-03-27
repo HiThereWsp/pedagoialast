@@ -1,4 +1,3 @@
-
 import React, { useCallback } from "react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -114,7 +113,7 @@ export const ResourceCard = React.memo(({
         )}
         
         {/* Metadata tags with color coding and tooltips */}
-        <div className="flex flex-wrap gap-1.5 mt-2">
+        <div className="flex flex-wrap gap-1.5 mt-2 mb-4">
           {/* Type tag */}
           {resource.type && (
             <ColoredBadge
@@ -143,13 +142,13 @@ export const ResourceCard = React.memo(({
       
       <CardFooter className={`${isMobile ? 'p-4 pt-2' : 'p-5 pt-3'} flex justify-end border-t mt-auto`}>
         <Button 
-          variant="outline" 
-          size={isMobile ? "sm" : "default"} 
+          variant="ghost" 
+          size="icon"
           onClick={handleSelect}
-          className="w-full"
+          className="ml-auto rounded-full"
+          title="Voir"
         >
-          <Eye className="mr-2 h-3.5 w-3.5" />
-          Voir
+          <Eye className="h-4 w-4" />
         </Button>
       </CardFooter>
     </Card>
