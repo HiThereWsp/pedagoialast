@@ -26,8 +26,8 @@ const LessonPlanPage = () => {
       />
       <div className="container mx-auto py-4 px-4">
         <div className="text-center mb-6">
-          <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-extrabold mb-2 bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent leading-tight tracking-tight text-balance max-w-lg mx-auto`}>
-            Générateur de séquences
+          <h1 className={`${isMobile ? 'text-3xl' : 'text-5xl'} font-extrabold mb-2 tracking-tight text-balance max-w-lg mx-auto`}>
+            <span className="bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent">Générateur de séquences</span>
           </h1>
           <p className="max-w-2xl mx-auto text-slate-500">
             Créez des séquences pédagogiques adaptées à votre classe en quelques clics.
@@ -41,6 +41,6 @@ const LessonPlanPage = () => {
       </div>
     </>
   );
-};
+}
 
 export default LessonPlanPage;

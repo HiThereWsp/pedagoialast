@@ -11,22 +11,26 @@ export const savedContentTabs = [{
   id: 'sequences',
   label: 'Mes séquences',
   buttonText: 'Créer une nouvelle séquence',
-  path: '/lesson-plan'
+  path: '/lesson-plan',
+  color: 'from-[#FFE29F] to-[#FF719A]'
 }, {
   id: 'exercises',
   label: 'Mes exercices',
   buttonText: 'Générer un nouvel exercice',
-  path: '/exercise'
+  path: '/exercise',
+  color: 'from-[#F97316] to-[#FF8E7C]'
 }, {
   id: 'images',
   label: 'Mes images',
   buttonText: 'Générer une nouvelle image',
-  path: '/image-generation'
+  path: '/image-generation',
+  color: 'from-[#0EA5E9] to-[#38BDF8]'
 }, {
   id: 'correspondence',
   label: 'Mes correspondances',
   buttonText: 'Générer une correspondance',
-  path: '/correspondence'
+  path: '/correspondence',
+  color: 'from-[#9b87f5] to-[#6E59A5]'
 }] as const;
 
 interface SavedContentHeaderProps {
@@ -68,7 +72,11 @@ export const SavedContentHeader: React.FC<SavedContentHeaderProps> = React.memo(
             <RefreshCw className={`h-3.5 w-3.5 md:h-4 md:w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
           
-          <Button onClick={handleCreate} className="bg-gradient-to-r from-[#FFDD00] via-[#FFA800] to-[#FF7A00] hover:opacity-90 text-white shadow-sm text-xs md:text-sm" size={isMobile ? "sm" : "default"}>
+          <Button 
+            onClick={handleCreate} 
+            className={`bg-gradient-to-r ${currentTab.color} hover:opacity-90 text-white shadow-sm text-xs md:text-sm`} 
+            size={isMobile ? "sm" : "default"}
+          >
             <Plus className="w-4 h-4 mr-1 md:mr-2" />
             <span className="hidden sm:inline">{currentTab.buttonText}</span>
             <span className="sm:hidden">Créer</span>
