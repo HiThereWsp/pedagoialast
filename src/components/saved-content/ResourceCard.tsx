@@ -140,12 +140,12 @@ export const ResourceCard = React.memo(({
         </div>
       </CardContent>
       
-      <CardFooter className={`${isMobile ? 'p-4 pt-2' : 'p-5 pt-3'} flex justify-end border-t mt-auto`}>
+      <CardFooter className={`${isMobile ? 'p-2 pb-3' : 'p-3 pb-4'} flex justify-end mt-auto border-t-0`}>
         <Button 
           variant="ghost" 
           size="icon"
           onClick={handleSelect}
-          className="ml-auto rounded-full"
+          className="ml-auto rounded-full h-8 w-8"
           title="Voir"
         >
           <Eye className="h-4 w-4" />
