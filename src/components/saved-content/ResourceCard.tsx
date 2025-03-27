@@ -6,6 +6,7 @@ import { Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { type SavedContent } from "@/types/saved-content";
 import { useIsMobile } from '@/hooks/use-mobile';
+import { ColoredBadge } from "@/components/ui/colored-badge";
 
 interface ResourceCardProps {
   resource: SavedContent;
@@ -41,18 +42,47 @@ export const ResourceCard = React.memo(({
     }
   };
 
-  const getIconClass = (type?: string) => {
+  // Color schemes for different tag types
+  const getTagColorScheme = (tagType: string) => {
+    // Subject colors (soft blue)
+    if (tagType === 'subject') {
+      return {
+        color: '#2563EB',
+        backgroundColor: '#DBEAFE',
+        borderColor: '#93C5FD'
+      };
+    }
+    // Class level colors (soft green)
+    else if (tagType === 'class_level') {
+      return {
+        color: '#16A34A',
+        backgroundColor: '#DCFCE7',
+        borderColor: '#86EFAC'
+      };
+    }
+    // Content type colors (soft purple)
+    else {
+      return {
+        color: '#9333EA',
+        backgroundColor: '#F3E8FF',
+        borderColor: '#D8B4FE'
+      };
+    }
+  };
+
+  // Get display type based on resource type
+  const getDisplayType = (type?: string) => {
     switch (type) {
       case 'lesson-plan':
-        return "text-blue-500";
+        return 'Séquence';
       case 'exercise':
-        return "text-green-500";
+        return 'Exercice';
       case 'Image':
-        return "text-purple-500";
+        return 'Image';
       case 'correspondence':
-        return "text-orange-500";
+        return 'Correspondance';
       default:
-        return "text-gray-500";
+        return type || '';
     }
   };
   
@@ -83,19 +113,24 @@ export const ResourceCard = React.memo(({
           </p>
         )}
         
-        {/* Additional metadata tags if available */}
-        {resource.subject && (
-          <div className="flex flex-wrap gap-1.5 mt-2">
-            <span className="inline-flex text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-              {resource.subject}
-            </span>
-            {resource.class_level && (
-              <span className="inline-flex text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
-                {resource.class_level}
-              </span>
-            )}
-          </div>
-        )}
+        {/* Metadata tags with color coding and truncation */}
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {resource.subject && (
+            <ColoredBadge
+              label={resource.subject}
+              maxLength={15}
+              {...getTagColorScheme('subject')}
+            />
+          )}
+          
+          {resource.class_level && (
+            <ColoredBadge
+              label={resource.class_level}
+              maxLength={12}
+              {...getTagColorScheme('class_level')}
+            />
+          )}
+        </div>
       </CardContent>
       
       <CardFooter className={`${isMobile ? 'p-4 pt-2' : 'p-5 pt-3'} flex justify-end border-t mt-auto`}>
