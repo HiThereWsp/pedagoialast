@@ -55,6 +55,9 @@ export const ResourceCard = React.memo(({
         return "text-gray-500";
     }
   };
+  
+  // Date display in a cleaner format for card content
+  const formattedDate = formatDate(resource.created_at);
 
   return (
     <Card 
@@ -69,22 +72,29 @@ export const ResourceCard = React.memo(({
           {resource.title || "Sans titre"}
         </CardTitle>
         <p className="text-xs text-muted-foreground text-left mt-1">
-          {formatDate(resource.created_at)}
+          {formattedDate}
         </p>
       </CardHeader>
       
       <CardContent className={`grow text-left ${isMobile ? 'px-4 py-2' : 'px-5 py-0'}`}>
-        <div className="flex items-start space-x-2">
-          <div className={`h-2 w-2 rounded-full mt-1.5 ${getIconClass(resource.type)}`} />
-          <p className="text-sm text-muted-foreground">
-            {resource.displayType || resource.type || "Ressource"}
-          </p>
-        </div>
-        
         {resource.summary && (
           <p className="text-sm line-clamp-2 mt-2 text-gray-600 dark:text-gray-300">
             {resource.summary}
           </p>
+        )}
+        
+        {/* Additional metadata tags if available */}
+        {resource.subject && (
+          <div className="flex flex-wrap gap-1.5 mt-2">
+            <span className="inline-flex text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+              {resource.subject}
+            </span>
+            {resource.class_level && (
+              <span className="inline-flex text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                {resource.class_level}
+              </span>
+            )}
+          </div>
         )}
       </CardContent>
       
