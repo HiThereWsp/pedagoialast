@@ -69,7 +69,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Chat IA with "Bientôt" badge */}
+      {/* Chat IA with "Bientôt disponible" badge */}
       <div className="mb-6 px-4 py-6">
         <SidebarNavItem 
           icon={<MessageSquare className="h-5 w-5" />} 
@@ -78,7 +78,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
           notAvailableIcon={
             <span className="ml-auto flex items-center">
               <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 font-normal px-2 py-0.5">
-                Bientôt
+                bientôt disponible
               </Badge>
             </span>
           }
