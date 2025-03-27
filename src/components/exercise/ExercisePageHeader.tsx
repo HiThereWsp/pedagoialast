@@ -6,7 +6,7 @@ export function ExercisePageHeader() {
   
   return (
     <div className="text-center mb-8">
-      <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl'} font-extrabold mb-2 tracking-tight text-balance`}>
+      <h1 className={`${isMobile ? 'text-4xl' : 'text-5xl'} font-extrabold mb-2 bg-gradient-to-r from-[#F97316] to-[#FF8E7C] bg-clip-text text-transparent tracking-tight text-balance`}>
         <span className="rotate-1 inline-block">Générateur</span> <span className="-rotate-1 inline-block">d'exercices</span>
       </h1>
       <p className="text-xl text-muted-foreground max-w-lg mx-auto">
