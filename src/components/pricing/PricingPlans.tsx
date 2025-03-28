@@ -7,8 +7,8 @@ import { toast } from "sonner";
 
 // Price IDs for the plans
 const PRICE_IDS = {
-    yearly : "price_1R1zloIqXQKnGj4mbfg3CG2p",
-    monthly: "price_1R1zqKIqXQKnGj4mgi0nXbaK",
+    yearly : "price_1R1zqKIqXQKnGj4mgi0nXbaK",
+    monthly: "price_1R1zloIqXQKnGj4mbfg3CG2p",
 };
 
 interface PricingPlansProps {
