@@ -7,7 +7,7 @@ import { corsHeaders } from "../_shared/cors.ts";
 //   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 //   "Access-Control-Allow-Methods": "POST, OPTIONS",
 // };
-
+// TODO: Delete this function
 // Interface for the request body
 interface GetSessionRequestBody {
   sessionId: string;
