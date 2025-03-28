@@ -11,9 +11,9 @@ if (typeof window !== 'undefined') { // Check for browser environment
       persistence: 'localStorage',
       capture_pageview: true, // Enable automatic pageview tracking
       capture_pageleave: true, // Enable tracking when users leave pages
-      disable_session_recording: true,
+      disable_session_recording: false, // Enable session recording
       cross_subdomain_cookie: false,
-      enable_recording_console_log: false,
+      enable_recording_console_log: true, // Enable console log recording for better debugging
       request_batching: true,
       bootstrap: {
         distinctID: 'anonymous',
