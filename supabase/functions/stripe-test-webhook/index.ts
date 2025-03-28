@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
+import { sendSubscriptionEmail } from './email_client.ts';
+import { manageContactList } from './brevo_list_client.ts';
 // CORS headers for responses
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -261,6 +262,10 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     console.error(`No email found for customer ${customerId}`);
     return;
   }
+  await Promise.all([
+    sendSubscriptionEmail(customerEmail, subscriptionStatus),
+    manageContactList(customerEmail, subscriptionStatus)
+  ]);
 
   // Look up user by stripe_customer_id or user_email
   let userId: string | undefined;
@@ -429,7 +434,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
       console.error("Failed to create subscription record: No data returned after insert");
       return;
     }
-    let
+
     subscriptionData = insertedData;
     console.log(`Created new subscription record for user_id: ${subscriptionData.user_id}`);
   }
@@ -473,6 +478,18 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   }
 
   console.log(`User profile updated successfully for subscription: ${subscriptionId}`);
+  const customer = await stripe.customers.retrieve(subscription.customer as string);
+  const customerEmail = customer?.email;
+  console.log("Sending subsciption update email")
+  console.log({customerEmail})
+  if (customerEmail) {
+    console.log("Sending subsciption update email +")
+    await Promise.all([
+      sendSubscriptionEmail(customerEmail, subscriptionStatus),
+      manageContactList(customerEmail, subscriptionStatus)
+    ]);
+    console.log("Sent subsciption update email")
+  }
 }
 
 // Handle subscription deleted event
