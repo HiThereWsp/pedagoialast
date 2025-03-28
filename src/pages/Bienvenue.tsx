@@ -13,6 +13,7 @@ import { ComparisonSection } from "@/components/landing/ComparisonSection";
 import { TestimonialMainSection } from "@/components/landing/TestimonialMainSection";
 import { ToolsSection } from "@/components/landing/ToolsSection";
 import { MetricsSection } from "@/components/landing/MetricsSection";
+import { SenjaTestimonialsSection } from "@/components/landing/SenjaTestimonialsSection";
 import { posthog } from '@/integrations/posthog/client';
 
 const Bienvenue = () => {
@@ -71,6 +72,9 @@ const Bienvenue = () => {
         
         {/* Section Metrics */}
         <MetricsSection />
+        
+        {/* Section Senja Testimonials */}
+        <SenjaTestimonialsSection />
         
         {/* Section Outils */}
         <ToolsSection />
