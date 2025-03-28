@@ -22,9 +22,9 @@ export const SidebarButton = ({
   active = false, 
   small = false, 
   notAvailable = false, 
-  notAvailableIcon = <span className="ml-auto flex items-center text-xs font-medium">
+  notAvailableIcon = <span className="ml-auto flex items-center text-xs font-medium whitespace-nowrap">
     <Clock className="h-3.5 w-3.5 text-amber-500" />
-    <span className="ml-1 text-amber-500">Bientôt</span>
+    <span className="ml-1 text-amber-500">bientôt disponible</span>
   </span>,
   onClick = () => {},
   className = ""

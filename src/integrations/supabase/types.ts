@@ -1046,6 +1046,8 @@ export type Database = {
           is_ambassador: boolean | null
           is_beta: boolean | null
           is_paid_user: boolean | null
+          role_expiry: string | null
+          stripe_customer_id: string | null
           user_email: string | null
           user_id: string | null
           welcome_email_sent: boolean | null
@@ -1058,6 +1060,8 @@ export type Database = {
           is_ambassador?: boolean | null
           is_beta?: boolean | null
           is_paid_user?: boolean | null
+          role_expiry?: string | null
+          stripe_customer_id?: string | null
           user_email?: string | null
           user_id?: string | null
           welcome_email_sent?: boolean | null
@@ -1070,6 +1074,8 @@ export type Database = {
           is_ambassador?: boolean | null
           is_beta?: boolean | null
           is_paid_user?: boolean | null
+          role_expiry?: string | null
+          stripe_customer_id?: string | null
           user_email?: string | null
           user_id?: string | null
           welcome_email_sent?: boolean | null
@@ -1136,8 +1142,10 @@ export type Database = {
       user_subscriptions: {
         Row: {
           created_at: string
+          current_period_end: string | null
           expires_at: string
           id: string
+          plan_variant: string | null
           status: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
@@ -1147,8 +1155,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          current_period_end?: string | null
           expires_at: string
           id?: string
+          plan_variant?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -1158,8 +1168,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          current_period_end?: string | null
           expires_at?: string
           id?: string
+          plan_variant?: string | null
           status?: Database["public"]["Enums"]["subscription_status"]
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
@@ -1322,6 +1334,10 @@ export type Database = {
             }
             Returns: unknown
           }
+      call_expire_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       check_ambassador_status: {
         Args: {
           user_id: string
@@ -1610,7 +1626,14 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       feedback_type: "like" | "dislike"
-      subscription_status: "active" | "expired"
+      subscription_status:
+        | "active"
+        | "canceled"
+        | "past_due"
+        | "trialing"
+        | "incomplete"
+        | "incomplete_expired"
+        | "unpaid"
       subscription_type: "beta" | "trial" | "paid" | "ambassador"
       tool_type:
         | "differentiation"

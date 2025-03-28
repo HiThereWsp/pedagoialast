@@ -4,6 +4,7 @@ import { useExercisePageState } from "@/hooks/exercise/useExercisePageState";
 import { SaveErrorAlert } from "@/components/exercise/form/SaveErrorAlert";
 import { ExerciseFormTabs } from "@/components/exercise/form/ExerciseFormTabs";
 import { ExercisePageHeader } from "@/components/exercise/ExercisePageHeader";
+import { SEO } from "@/components/SEO";
 
 export default function ExercisePage() {
   const {
@@ -21,27 +22,33 @@ export default function ExercisePage() {
   } = useExercisePageState();
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <ExercisePageHeader />
+    <>
+      <SEO 
+        title="Générateur d'exercices pédagogiques | PedagoIA"
+        description="Créez des exercices adaptés à vos besoins pédagogiques grâce à l'IA."
+      />
+      <div className="container mx-auto px-4 py-8">
+        <ExercisePageHeader />
 
-      <div className="max-w-4xl mx-auto">
-        <SaveErrorAlert 
-          error={lastSaveError} 
-          isSaving={isSaving} 
-          onRetry={handleRetrySave} 
-        />
+        <div className="max-w-4xl mx-auto">
+          <SaveErrorAlert 
+            error={lastSaveError} 
+            isSaving={isSaving} 
+            onRetry={handleRetrySave} 
+          />
 
-        <ExerciseFormTabs
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleSubmit={handleSubmit}
-          isLoading={isLoading}
-        />
+          <ExerciseFormTabs
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSubmit={handleSubmit}
+            isLoading={isLoading}
+          />
 
-        {exercises && <ResultDisplay exercises={exercises} exerciseId={lastGeneratedId} />}
+          {exercises && <ResultDisplay exercises={exercises} exerciseId={lastGeneratedId} />}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
-import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
@@ -24,10 +23,58 @@ interface CheckoutSessionData {
 export default function PaymentSuccessPage() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sessionData, setSessionData] = useState<CheckoutSessionData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const trackPaymentSuccess = async () => {
+      try {
+        // Get subscription type from URL params
+        const urlParams = new URLSearchParams(location.search);
+        const subscriptionType = urlParams.get("type") as "monthly" | "yearly" || "monthly";
+        
+        // Track Google Ads conversion
+        if (window.gtag && sessionData) {
+          window.gtag('event', 'conversion', {
+            'send_to': 'AW-16957927011/c3kwCIzhyrAaEOPclZY_',
+            'value': sessionData.amount,
+            'currency': 'EUR',
+            'transaction_id': ''
+          });
+        }
+        
+        if (sessionData) {
+          // Calculating yearly value for tracking
+          const yearlyValue = subscriptionType === "monthly" 
+            ? sessionData.amount * 12 
+            : sessionData.amount;
+          
+          // Envoyer l'événement de succès d'abonnement à Facebook
+          facebookEvents.subscriptionSuccess(
+            subscriptionType,
+            sessionData.amount,
+            yearlyValue
+          );
+          
+          // Tracking PostHog
+          subscriptionEvents.subscriptionCompleted(
+            subscriptionType,
+            sessionData.amount
+          );
+          
+          // Afficher un toast de confirmation
+          toast({
+            title: "Abonnement réussi !",
+            description: "Votre compte a été activé avec succès.",
+            duration: 5000,
+          });
+        }
+      } catch (error) {
+        console.error("Error in payment success tracking:", error);
+      }
+    };
+
     const fetchSessionDetails = async () => {
       try {
         // Extract session_id and subscription type from URL query parameters
@@ -51,15 +98,21 @@ export default function PaymentSuccessPage() {
         if (!data) {
           throw new Error("No session data returned from server");
         }
+        
         setSessionData(data);
+        
+        // Run tracking after session data is available
+        await trackPaymentSuccess();
+        
         // Navigate to /home after 5 seconds
         setTimeout(() => {
           navigate("/home");
         }, 5000);
       } catch (error) {
+        console.error("Error fetching session details:", error);
         toast({
           title: "Erreur lors de la récupération des détails de la session",
-          description: error.message,
+          description: error instanceof Error ? error.message : "Une erreur inconnue s'est produite",
           variant: "destructive",
         });
       } finally {
@@ -68,88 +121,88 @@ export default function PaymentSuccessPage() {
     };
 
     fetchSessionDetails();
-  }, [toast, navigate]);
+  }, [toast, navigate, location.search]);
 
   return (
-      <>
-        <SEO
-            title="Paiement réussi | PedagoIA - Bienvenue !"
-            description="Votre abonnement a été créé avec succès. Commencez à utiliser PedagoIA dès maintenant !"
-        />
-        <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl mx-auto">
-            <Link to="/home" className="block mb-8">
-              <img
-                  src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
-                  alt="PedagoIA Logo"
-                  className="w-[100px] h-[120px] object-contain mx-auto"
-              />
-            </Link>
-            <Card className="p-8">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold tracking-tight text-primary mb-4">
-                  Paiement réussi !
-                </h1>
-                {loading ? (
-                    <div className="flex flex-col items-center space-y-4">
-                      <LoadingIndicator />
-                      <p className="text-lg text-muted-foreground">
-                        Chargement des détails de votre abonnement...
-                      </p>
-                    </div>
-                ) : sessionData ? (
-                    <div className="space-y-4">
-                      <p className="text-lg text-muted-foreground">
-                        Merci d’avoir souscrit au{" "}
-                        <span className="font-semibold">{sessionData.planName}</span> !
-                      </p>
-                      <p className="text-muted-foreground">
-                        Un email de confirmation a été envoyé à{" "}
-                        <span className="font-semibold">{sessionData.customerEmail}</span>.
-                      </p>
-                      {sessionData.trialEnd ? (
-                          <p className="text-muted-foreground">
-                            Votre essai gratuit se termine le{" "}
-                            <span className="font-semibold">
+    <>
+      <SEO
+        title="Paiement réussi | PedagoIA - Bienvenue !"
+        description="Votre abonnement a été créé avec succès. Commencez à utiliser PedagoIA dès maintenant !"
+      />
+      <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto">
+          <Link to="/home" className="block mb-8">
+            <img
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
+              alt="PedagoIA Logo"
+              className="w-[100px] h-[120px] object-contain mx-auto"
+            />
+          </Link>
+          <Card className="p-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold tracking-tight text-primary mb-4">
+                Paiement réussi !
+              </h1>
+              {loading ? (
+                <div className="flex flex-col items-center space-y-4">
+                  <LoadingIndicator />
+                  <p className="text-lg text-muted-foreground">
+                    Chargement des détails de votre abonnement...
+                  </p>
+                </div>
+              ) : sessionData ? (
+                <div className="space-y-4">
+                  <p className="text-lg text-muted-foreground">
+                    Merci d'avoir souscrit au{" "}
+                    <span className="font-semibold">{sessionData.planName}</span> !
+                  </p>
+                  <p className="text-muted-foreground">
+                    Un email de confirmation a été envoyé à{" "}
+                    <span className="font-semibold">{sessionData.customerEmail}</span>.
+                  </p>
+                  {sessionData.trialEnd ? (
+                    <p className="text-muted-foreground">
+                      Votre essai gratuit se termine le{" "}
+                      <span className="font-semibold">
                         {new Date(sessionData.trialEnd).toLocaleDateString("fr-FR", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
                         })}
                       </span>.
-                          </p>
-                      ) : (
-                          <p className="text-muted-foreground">
-                            Votre prochain paiement de {sessionData.amount} € sera dû le{" "}
-                            <span className="font-semibold">
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground">
+                      Votre prochain paiement de {sessionData.amount} € sera dû le{" "}
+                      <span className="font-semibold">
                         {new Date(sessionData.nextBillingDate).toLocaleDateString("fr-FR", {
                           day: "numeric",
                           month: "long",
                           year: "numeric",
                         })}
                       </span>.
-                          </p>
-                      )}
-                      <p className="text-sm text-muted-foreground">
-                        Vous serez redirigé vers la page d’accueil dans 5 secondes...
-                      </p>
-                    </div>
-                ) : (
-                    <p className="text-lg text-muted-foreground">
-                      Une erreur s’est produite lors de la récupération des détails de votre abonnement.
                     </p>
-                )}
-              </div>
-              {!loading && (
-                  <div className="text-center">
-                    <Button asChild>
-                      <Link to="/dashboard">Commencer à utiliser PedagoIA</Link>
-                    </Button>
-                  </div>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    Vous serez redirigé vers la page d'accueil dans 5 secondes...
+                  </p>
+                </div>
+              ) : (
+                <p className="text-lg text-muted-foreground">
+                  Une erreur s'est produite lors de la récupération des détails de votre abonnement.
+                </p>
               )}
-            </Card>
-          </div>
+            </div>
+            {!loading && (
+              <div className="text-center">
+                <Button asChild>
+                  <Link to="/dashboard">Commencer à utiliser PedagoIA</Link>
+                </Button>
+              </div>
+            )}
+          </Card>
         </div>
-      </>
+      </div>
+    </>
   );
 }
