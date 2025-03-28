@@ -43,6 +43,7 @@ const TableauDeBord = () => {
         const cacheExpiry = localStorage.getItem(`profile_expiry_${user.id}`);
         
         if (cachedFirstName && cacheExpiry && Date.now() < parseInt(cacheExpiry)) {
+          console.log("setting first name to ca", cachedFirstName)
           setFirstName(cachedFirstName);
           setIsProfileLoading(false);
           hasFetchedProfile.current = true;
@@ -60,10 +61,11 @@ const TableauDeBord = () => {
           console.error("Error fetching profile:", error);
           return;
         }
-        
+        console.log({user})
         if (profile) {
-          // setFirstName(profile.first_name);
-          const display_name = capitalizeName(profile.first_name == "Anonymous" ? (user.user_metadata.first_name || user.user_metadata.full_name):"Anonymous")
+          console.log("profile.first_name", profile.first_name);
+          const display_name = capitalizeName(profile.first_name != "Anonymous" ? profile.first_name :(user.user_metadata.first_name || user.user_metadata.full_name))
+          console.log("setting first name to display name", display_name)
           setFirstName(display_name);
           // Mettre en cache pour 30 minutes
           localStorage.setItem(`profile_firstName_${user.id}`, display_name);
