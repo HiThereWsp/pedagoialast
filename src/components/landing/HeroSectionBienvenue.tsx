@@ -1,11 +1,9 @@
-
 import React from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Tiles } from "@/components/ui/tiles";
 import { AnimatedText } from "@/components/ui/animated-text";
-
 export function HeroSectionBienvenue() {
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
       <div className="absolute inset-0 opacity-25">
@@ -28,20 +26,11 @@ export function HeroSectionBienvenue() {
             </div>
           </div>
           
-          <h1 className="text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight md:text-5xl">L'assistant pédagogique intelligent pour travailler 15x plus vite</h1>
+          <h1 className="text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight md:text-5xl">L'assistant pédagogique IA pour travailler 15x plus vite</h1>
           
           <h2 className="text-2xl md:text-3xl mb-6">
             Avec des outils IA conçus pour <br className="hidden sm:block" /> 
-            <AnimatedText 
-              phrases={[
-                "planifier vos cours",
-                "générer du contenu pédagogique",
-                "évaluer vos élèves",
-                "différencier en quelques clics",
-                "gagner du temps"
-              ]} 
-              className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text"
-            />
+            <AnimatedText phrases={["planifier vos cours", "générer du contenu pédagogique", "évaluer vos élèves", "différencier en quelques clics", "gagner du temps"]} className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text" />
           </h2>
           
           <Link to="/login">
