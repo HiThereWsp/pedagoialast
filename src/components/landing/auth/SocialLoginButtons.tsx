@@ -17,7 +17,7 @@ export function SocialLoginButtons({ isSignUp }: SocialLoginButtonsProps) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: "https://pedagoia.fr/login"
+          redirectTo: "http://localhost:8080/login"
         }
       });
 
