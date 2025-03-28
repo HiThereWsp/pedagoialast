@@ -10,7 +10,6 @@ const PRICE_IDS = {
     yearly : "price_1R22GrIqXQKnGj4md4Ce7dgb",
     monthly: "price_1R224HIqXQKnGj4mw1Zc41s1",
 };
-price_1R22GrIqXQKnGj4md4Ce7dgb
 
 interface PricingPlansProps {
     isSubscribed: boolean;
