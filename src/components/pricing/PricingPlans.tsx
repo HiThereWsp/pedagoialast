@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 // Price IDs for the plans
 const PRICE_IDS = {
-    yearly : "price_1R22GrIqXQKnGj4md4Ce7dgb",
+    yearly : "price_1R224CIqXQKnGj4myOb4EnXo",
     monthly: "price_1R224HIqXQKnGj4mw1Zc41s1",
 };
 
@@ -91,7 +91,7 @@ export const PricingPlans = ({
                 body: {
                     priceId: PRICE_IDS.yearly,
                     subscriptionType: "yearly",
-                    productId: "prod_RvrZPHTHWWrz7v", // Replace with your actual product ID
+                    productId: "prod_RvtrB9qvvdbA94", // Replace with your actual product ID
                     testMode: import.meta.env.DEV, // Use test mode in development
                 }
             })
