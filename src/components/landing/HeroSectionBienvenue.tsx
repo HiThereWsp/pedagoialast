@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Tiles } from "@/components/ui/tiles";
 import { AnimatedText } from "@/components/ui/animated-text";
-
 export function HeroSectionBienvenue() {
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
       <div className="absolute inset-0 opacity-25">
@@ -23,25 +22,16 @@ export function HeroSectionBienvenue() {
                 <img className="rounded-full ring-1 ring-background" src="https://originui.com/avatar-80-06.jpg" width={20} height={20} alt="Avatar 04" />
               </div>
               <p className="px-2 text-xs text-muted-foreground">
-                Utilisé par <strong className="font-medium text-foreground">+500</strong> enseignants.
+                +1000 enseignants utilisent l'IA au quotidien.
               </p>
             </div>
           </div>
           
-          <h1 className="text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight md:text-5xl">L'assistant pédagogique intelligent pour travailler 15x plus vite</h1>
+          <h1 className="text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight md:text-5xl">L'assistant pédagogique IA pour travailler 15x plus vite</h1>
           
           <h2 className="text-2xl md:text-3xl mb-6">
             Avec des outils IA conçus pour <br className="hidden sm:block" /> 
-            <AnimatedText 
-              phrases={[
-                "planifier vos cours",
-                "générer du contenu pédagogique",
-                "évaluer vos élèves",
-                "différencier en quelques clics",
-                "gagner du temps"
-              ]} 
-              className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text"
-            />
+            <AnimatedText phrases={["planifier vos cours", "générer du contenu pédagogique", "évaluer vos élèves", "différencier en quelques clics", "gagner du temps"]} className="bg-gradient-to-r from-yellow-400 via-coral-400 to-pink-400 text-transparent bg-clip-text" />
           </h2>
           
           <Link to="/login">
@@ -52,7 +42,7 @@ export function HeroSectionBienvenue() {
           </Link>
           
           <p className="mt-4 text-sm text-muted-foreground">
-            Tarif préférentiel pour les 1000 premiers enseignants.
+            Tarif préférentiel pour les 2000 premiers enseignants.
           </p>
         </div>
       </div>

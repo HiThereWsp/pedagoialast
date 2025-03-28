@@ -1,14 +1,18 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
+
 interface BackButtonProps {
   fallbackPath?: string;
 }
+
 export const BackButton = ({
   fallbackPath = "/tableaudebord"
 }: BackButtonProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  
   const handleBack = () => {
     console.log("Handling back button click from:", location.pathname);
 
@@ -45,5 +49,16 @@ export const BackButton = ({
       navigate(fallbackPath);
     }
   };
-  return;
+  
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={handleBack}
+      className="mb-4"
+      aria-label="Retour"
+    >
+      <ArrowLeft className="h-4 w-4" />
+    </Button>
+  );
 };
