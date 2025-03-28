@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +19,11 @@ interface CheckoutSessionData {
   trialEnd?: string; // ISO date string
   nextBillingDate: string; // ISO date string
   customerEmail: string;
+  metadata?: Record<string, string>;
+  clientReferenceId?: string;
+  sessionId: string;
+  customerId: string;
+  subscriptionId: string;
 }
 
 export default function PaymentSuccessPage() {
@@ -30,46 +36,80 @@ export default function PaymentSuccessPage() {
   useEffect(() => {
     const trackPaymentSuccess = async () => {
       try {
-        // Get subscription type from URL params
+        // Get subscription type and client_id from URL params
         const urlParams = new URLSearchParams(location.search);
         const subscriptionType = urlParams.get("type") as "monthly" | "yearly" || "monthly";
+        const clientId = urlParams.get("client_id") || undefined;
         
-        // Track Google Ads conversion
-        if (window.gtag && sessionData) {
+        if (!sessionData) return;
+
+        // Track Google Ads conversion with enhanced data
+        if (window.gtag) {
           window.gtag('event', 'conversion', {
             'send_to': 'AW-16957927011/c3kwCIzhyrAaEOPclZY_',
             'value': sessionData.amount,
             'currency': 'EUR',
-            'transaction_id': ''
+            'transaction_id': sessionData.sessionId || '',
+            'user_id': sessionData.customerId || '',
+            'subscription_id': sessionData.subscriptionId || '',
+            'client_id': clientId || sessionData.clientReferenceId || ''
+          });
+          
+          // Track purchase event in GA4
+          window.gtag('event', 'purchase', {
+            'transaction_id': sessionData.sessionId,
+            'value': sessionData.amount,
+            'currency': 'EUR',
+            'items': [
+              {
+                'item_name': sessionData.planName,
+                'item_id': sessionData.subscriptionType,
+                'price': sessionData.amount,
+                'quantity': 1
+              }
+            ],
+            'subscription_id': sessionData.subscriptionId,
+            'client_id': clientId || sessionData.clientReferenceId || '',
+            // Add UTM parameters if available
+            ...(sessionData.metadata?.utm_source && { 'utm_source': sessionData.metadata.utm_source }),
+            ...(sessionData.metadata?.utm_medium && { 'utm_medium': sessionData.metadata.utm_medium }),
+            ...(sessionData.metadata?.utm_campaign && { 'utm_campaign': sessionData.metadata.utm_campaign }),
+            ...(sessionData.metadata?.utm_content && { 'utm_content': sessionData.metadata.utm_content }),
+            ...(sessionData.metadata?.utm_term && { 'utm_term': sessionData.metadata.utm_term })
           });
         }
         
-        if (sessionData) {
-          // Calculating yearly value for tracking
-          const yearlyValue = subscriptionType === "monthly" 
-            ? sessionData.amount * 12 
-            : sessionData.amount;
-          
-          // Envoyer l'événement de succès d'abonnement à Facebook
-          facebookEvents.subscriptionSuccess(
-            subscriptionType,
-            sessionData.amount,
-            yearlyValue
-          );
-          
-          // Tracking PostHog
-          subscriptionEvents.subscriptionCompleted(
-            subscriptionType,
-            sessionData.amount
-          );
-          
-          // Afficher un toast de confirmation
-          toast({
-            title: "Abonnement réussi !",
-            description: "Votre compte a été activé avec succès.",
-            duration: 5000,
-          });
-        }
+        // Calculating yearly value for tracking
+        const yearlyValue = subscriptionType === "monthly" 
+          ? sessionData.amount * 12 
+          : sessionData.amount;
+        
+        // Send subscription success event to Facebook
+        facebookEvents.subscriptionSuccess(
+          subscriptionType,
+          sessionData.amount,
+          yearlyValue
+        );
+        
+        // Tracking PostHog with enhanced data
+        subscriptionEvents.subscriptionCompleted(
+          subscriptionType,
+          sessionData.amount,
+          {
+            session_id: sessionData.sessionId,
+            customer_id: sessionData.customerId,
+            plan_name: sessionData.planName,
+            client_id: clientId || sessionData.clientReferenceId,
+            metadata: sessionData.metadata
+          }
+        );
+        
+        // Display a confirmation toast
+        toast({
+          title: "Abonnement réussi !",
+          description: "Votre compte a été activé avec succès.",
+          duration: 5000,
+        });
       } catch (error) {
         console.error("Error in payment success tracking:", error);
       }
