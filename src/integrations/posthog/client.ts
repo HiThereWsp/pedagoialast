@@ -7,10 +7,10 @@ if (typeof window !== 'undefined') { // Check for browser environment
     import.meta.env.VITE_POSTHOG_KEY || '', 
     {
       api_host: import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com',
-      autocapture: false,
+      autocapture: true, // Enable autocapture for click and form events
       persistence: 'localStorage',
-      capture_pageview: false,
-      capture_pageleave: false,
+      capture_pageview: true, // Enable automatic pageview tracking
+      capture_pageleave: true, // Enable tracking when users leave pages
       disable_session_recording: true,
       cross_subdomain_cookie: false,
       enable_recording_console_log: false,
