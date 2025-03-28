@@ -1,5 +1,4 @@
 
-
 // Configuration de Google Analytics
 const GA_TRACKING_ID = 'qAS5OCTURaCmQ1IfJY2ScQ';
 
@@ -71,7 +70,7 @@ export const trackPurchaseConversion = (
   transactionId: string,
   value: number,
   currency: string = 'EUR',
-  subscriptionType: string,
+  subscriptionType?: string,
   clientId?: string
 ) => {
   if (typeof window.gtag !== 'undefined') {
@@ -90,8 +89,8 @@ export const trackPurchaseConversion = (
       'currency': currency,
       'items': [
         {
-          'item_name': `Abonnement PedagoIA (${subscriptionType})`,
-          'item_id': subscriptionType,
+          'item_name': subscriptionType ? `Abonnement PedagoIA (${subscriptionType})` : 'Abonnement PedagoIA',
+          'item_id': subscriptionType || 'default',
           'price': value,
           'quantity': 1
         }
@@ -100,4 +99,3 @@ export const trackPurchaseConversion = (
     });
   }
 };
-

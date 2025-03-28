@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { pricingEvents } from "@/integrations/posthog/events";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { facebookEvents } from "@/integrations/meta-pixel/client";
+import { trackPurchaseConversion } from "@/integrations/google-analytics/client";
 
 // Interface for the Checkout Session data
 interface CheckoutSessionData {
@@ -43,41 +43,14 @@ export default function PaymentSuccessPage() {
         
         if (!sessionData) return;
 
-        // Track Google Ads conversion with enhanced data
-        if (window.gtag) {
-          window.gtag('event', 'conversion', {
-            'send_to': 'AW-16957927011/c3kwCIzhyrAaEOPclZY_',
-            'value': sessionData.amount,
-            'currency': 'EUR',
-            'transaction_id': sessionData.sessionId || '',
-            'user_id': sessionData.customerId || '',
-            'subscription_id': sessionData.subscriptionId || '',
-            'client_id': clientId || sessionData.clientReferenceId || ''
-          });
-          
-          // Track purchase event in GA4
-          window.gtag('event', 'purchase', {
-            'transaction_id': sessionData.sessionId,
-            'value': sessionData.amount,
-            'currency': 'EUR',
-            'items': [
-              {
-                'item_name': sessionData.planName,
-                'item_id': sessionData.subscriptionType,
-                'price': sessionData.amount,
-                'quantity': 1
-              }
-            ],
-            'subscription_id': sessionData.subscriptionId,
-            'client_id': clientId || sessionData.clientReferenceId || '',
-            // Add UTM parameters if available
-            ...(sessionData.metadata?.utm_source && { 'utm_source': sessionData.metadata.utm_source }),
-            ...(sessionData.metadata?.utm_medium && { 'utm_medium': sessionData.metadata.utm_medium }),
-            ...(sessionData.metadata?.utm_campaign && { 'utm_campaign': sessionData.metadata.utm_campaign }),
-            ...(sessionData.metadata?.utm_content && { 'utm_content': sessionData.metadata.utm_content }),
-            ...(sessionData.metadata?.utm_term && { 'utm_term': sessionData.metadata.utm_term })
-          });
-        }
+        // Track Google Analytics conversion with enhanced data
+        trackPurchaseConversion(
+          sessionData.sessionId || '',
+          sessionData.amount,
+          'EUR',
+          sessionData.subscriptionType,
+          clientId || sessionData.clientReferenceId
+        );
         
         // Calculating yearly value for tracking
         const yearlyValue = subscriptionType === "monthly" 
