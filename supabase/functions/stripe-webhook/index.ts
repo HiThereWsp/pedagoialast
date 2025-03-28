@@ -25,7 +25,7 @@ serve(async (req) => {
     console.log("Headers received:", JSON.stringify([...req.headers.entries()]));
     
     const signature = req.headers.get('stripe-signature');
-    
+    console.log({signature})
     if (!signature) {
       console.error("No Stripe signature found in request headers");
       return new Response(JSON.stringify({ error: 'No Stripe signature found' }), { 
@@ -59,10 +59,11 @@ serve(async (req) => {
       // Due to potential Stripe signature verification issues in production,
       // consider implementing a fallback for debugging purposes only
       try {
+        console.log("Going to verify the signature :)");
         event = verifyStripeSignature(body, signature);
         console.log(`Event successfully verified: ${event.id}, type: ${event.type}`);
       } catch (signatureError) {
-        console.error(`Webhook signature verification failed: ${signatureError.message}`);
+        console.error(`Webhook signature verification failed :(: ${signatureError.message}`);
         
         // For debugging in production, we might temporarily parse the event without verification
         // This is NOT recommended for production, but can help diagnose issues

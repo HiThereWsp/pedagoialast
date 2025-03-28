@@ -122,6 +122,7 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
           console.log(`Found user ID ${userId} for email ${customerEmail}`);
           
           // Update subscription with user ID and customer ID
+          console.log("updateOrCreateSubscription")
           await updateOrCreateSubscription(supabase, userId, customerId, subscriptionType, expiryDate);
           
           // Update user in Brevo CRM

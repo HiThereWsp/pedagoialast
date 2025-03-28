@@ -139,9 +139,9 @@ export const useSubscription = () => {
    * Check if user is in development mode
    * @returns {boolean} True if in development mode
    */
-  const checkDevMode = useCallback(() => {
+  const useCheckDevModeCallBack = useCallback(() => {
     if (import.meta.env.DEV) {
-      console.log("Development mode detected, simulating active subscription");
+      console.log("Development mode detected 1, simulating active subscription");
       const devStatus = {
         isActive: true,
         type: 'dev_mode',
@@ -329,7 +329,7 @@ export const useSubscription = () => {
     // In case of error during checks, ensure isLoading is properly reset
     try {
       // Check development mode first (short-circuits other checks)
-      if (checkDevMode()) return;
+      if (useCheckDevModeCallBack()) return;
       
       // Check user session
       const session = await checkUserSession();
@@ -350,7 +350,7 @@ export const useSubscription = () => {
       setStatus(criticalErrorStatus);
       logSubscriptionError('critical_error', error);
     }
-  }, [checkDevMode, checkUserSession, checkUserAccess, getCachedStatus, status.retryCount, logSubscriptionError]);
+  }, [useCheckDevModeCallBack, checkUserSession, checkUserAccess, getCachedStatus, status.retryCount, logSubscriptionError]);
 
   // Automatic retry with exponential delay on error
   useEffect(() => {
