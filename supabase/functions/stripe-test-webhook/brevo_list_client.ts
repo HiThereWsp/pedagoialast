@@ -20,7 +20,6 @@ interface BrevoResponse<T> {
  * @param status - Stripe subscription status
  */
 export async function manageContactList(email: string, status: string): Promise<void> {
-    // Only handle trialing and active statuses for list management
     const relevantStatuses = ['trialing', 'active'];
     if (!relevantStatuses.includes(status)) {
         console.log(`Skipping list management for status: ${status}`);
@@ -28,16 +27,19 @@ export async function manageContactList(email: string, status: string): Promise<
     }
 
     try {
-        // Check current list membership
+        // Ensure the contact exists
+        await createContactIfNotExists(email);
+
+        // Fetch current list membership
         const currentLists = await getContactLists(email);
         if (!currentLists.success) {
             throw new Error(currentLists.error || 'Failed to fetch contact lists');
         }
 
-        const isInFreeList = currentLists.data?.includes(LIST_IDS.FREE_USERS) || false;
-        const isInPremiumList = currentLists.data?.includes(LIST_IDS.PREMIUM_USERS) || false;
+        const currentListIds = currentLists.data || [];
+        const isInFreeList = currentListIds.includes(LIST_IDS.FREE_USERS);
+        const isInPremiumList = currentListIds.includes(LIST_IDS.PREMIUM_USERS);
 
-        // Determine actions based on status
         if (status === 'trialing') {
             // Add to Free users if not already there
             if (!isInFreeList) {
@@ -64,6 +66,29 @@ export async function manageContactList(email: string, status: string): Promise<
     } catch (error) {
         console.error(`Failed to manage contact list for ${email}: ${error.message}`);
         throw error;
+    }
+}
+
+/**
+ * Creates a contact if it doesn't exist
+ * @param email - Contact's email
+ */
+async function createContactIfNotExists(email: string): Promise<void> {
+    const response = await fetch(`${BASE_URL}/contacts`, {
+        method: 'POST',
+        headers: {
+            'api-key': BREVO_API_KEY,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            email,
+            listIds: [], // Start with no lists
+            updateEnabled: true // Allows updating if contact already exists
+        })
+    });
+
+    if (!response.ok && response.status !== 400) { // 400 is okay (contact already exists)
+        throw new Error(`Failed to create contact ${email}: ${await response.text()}`);
     }
 }
 
@@ -102,16 +127,15 @@ async function getContactLists(email: string): Promise<BrevoResponse<number[]>> 
  * @param listId - Brevo list ID
  */
 async function addToList(email: string, listId: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/contacts`, {
+    const response = await fetch(`${BASE_URL}/contacts/lists/${listId}/contacts/add`, {
         method: 'POST',
         headers: {
             'api-key': BREVO_API_KEY,
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'accept': 'application/json'
         },
         body: JSON.stringify({
-            email,
-            listIds: [listId],
-            updateEnabled: true // Allows updating existing contact
+            emails: [email]
         })
     });
 
@@ -126,12 +150,16 @@ async function addToList(email: string, listId: number): Promise<void> {
  * @param listId - Brevo list ID
  */
 async function removeFromList(email: string, listId: number): Promise<void> {
-    const response = await fetch(`${BASE_URL}/contacts/${encodeURIComponent(email)}/lists/${listId}`, {
-        method: 'DELETE',
+    const response = await fetch(`${BASE_URL}/contacts/lists/${listId}/contacts/remove`, {
+        method: 'POST',
         headers: {
             'api-key': BREVO_API_KEY,
-            'Content-Type': 'application/json'
-        }
+            'Content-Type': 'application/json',
+            'accept': 'application/json'
+        },
+        body: JSON.stringify({
+            emails: [email]
+        })
     });
 
     if (!response.ok && response.status !== 404) { // 404 is okay (contact not in list)
