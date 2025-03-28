@@ -15,6 +15,9 @@ export interface UserProfile {
   is_beta: boolean;
   is_admin: boolean;
   is_paid_user: boolean;
+  role_expiry: string | null;
+  stripe_customer_id: string | null;
+  // These properties might be calculated or added client-side if needed
   admin_expiry: string | null;
   beta_expiry: string | null;
   ambassador_expiry: string | null;
@@ -40,7 +43,17 @@ export const useUserProfile = (user: User | null) => {
         throw error;
       }
       console.log("User profile:", data);
-      return data as UserProfile;
+      
+      // Transform the database result to match our UserProfile interface
+      const profileData: UserProfile = {
+        ...data,
+        // Set these values based on role_expiry or with null as default
+        admin_expiry: data.is_admin ? data.role_expiry : null,
+        beta_expiry: data.is_beta ? data.role_expiry : null,
+        ambassador_expiry: data.is_ambassador ? data.role_expiry : null
+      };
+      
+      return profileData;
     } catch (error) {
       console.error("Exception fetching user profile:", error);
       return null;
@@ -71,7 +84,17 @@ export const useUserProfile = (user: User | null) => {
         throw error;
       }
       console.log("Profile created:", data);
-      return data as UserProfile;
+      
+      // Transform the database result to match our UserProfile interface
+      const profileData: UserProfile = {
+        ...data,
+        // Set these expiry fields to null for new profiles
+        admin_expiry: null,
+        beta_expiry: null,
+        ambassador_expiry: null
+      };
+      
+      return profileData;
     } catch (error) {
       console.error("Error creating user profile:", error);
       return null;
