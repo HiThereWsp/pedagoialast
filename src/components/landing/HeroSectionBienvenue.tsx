@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ export function HeroSectionBienvenue() {
                 <img className="rounded-full ring-1 ring-background" src="https://originui.com/avatar-80-06.jpg" width={20} height={20} alt="Avatar 04" />
               </div>
               <p className="px-2 text-xs text-muted-foreground">
-                Utilisé par <strong className="font-medium text-foreground">+500</strong> enseignants.
+                +1000 enseignants utilisent l'IA au quotidien.
               </p>
             </div>
           </div>
@@ -41,7 +42,7 @@ export function HeroSectionBienvenue() {
           </Link>
           
           <p className="mt-4 text-sm text-muted-foreground">
-            Tarif préférentiel pour les 1000 premiers enseignants.
+            Tarif préférentiel pour les 2000 premiers enseignants.
           </p>
         </div>
       </div>
