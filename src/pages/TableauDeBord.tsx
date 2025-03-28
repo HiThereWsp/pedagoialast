@@ -10,6 +10,14 @@ import { MobileContent } from "@/components/dashboard/MobileContent";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 
+const capitalizeName = (name) => {
+  if (!name) return '';
+  return name
+      .split(' ') // Split by space into array of words
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize first letter, lowercase rest
+      .join(' '); // Join words back with spaces
+};
+
 const TableauDeBord = () => {
   const { user, loading: authLoading, authReady } = useAuth();
   const [firstName, setFirstName] = useState<string>("");
@@ -54,10 +62,11 @@ const TableauDeBord = () => {
         }
         
         if (profile) {
-          setFirstName(profile.first_name);
-          
+          // setFirstName(profile.first_name);
+          const display_name = capitalizeName(profile.first_name == "Anonymous" ? (user.user_metadata.first_name || user.user_metadata.full_name):"Anonymous")
+          setFirstName(display_name);
           // Mettre en cache pour 30 minutes
-          localStorage.setItem(`profile_firstName_${user.id}`, profile.first_name);
+          localStorage.setItem(`profile_firstName_${user.id}`, display_name);
           localStorage.setItem(`profile_expiry_${user.id}`, (Date.now() + 30 * 60 * 1000).toString());
           
           hasFetchedProfile.current = true;
@@ -73,20 +82,7 @@ const TableauDeBord = () => {
       loadUserProfile();
     }
   }, [user, authReady, authLoading]);
-  
-  // Journalisation spécifique pour l'utilisateur problématique
-  useEffect(() => {
-    if (user?.email === 'andyguitteaud@gmail.co') {
-      console.log('[DEBUG] État utilisateur problématique:', { 
-        userId: user.id,
-        email: user.email,
-        authReady,
-        firstName,
-        isProfileLoading,
-        currentPath: window.location.pathname
-      });
-    }
-  }, [user, authReady, firstName, isProfileLoading]);
+
 
   // Si l'authentification est encore en cours, afficher un indicateur de chargement
   if (authLoading || !authReady) {

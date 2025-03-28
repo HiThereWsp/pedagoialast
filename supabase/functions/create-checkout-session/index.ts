@@ -2,14 +2,9 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "../_shared/cors.ts";
-// Define CORS headers (restrict to your domain for security)
-// const corsHeaders = {
-//   "Access-Control-Allow-Origin": "*",
-//   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-//   "Access-Control-Allow-Methods": "POST, OPTIONS",
-// };
 
-// Interface for the request body
+
+
 interface CheckoutRequestBody {
   priceId: string;
   subscriptionType: string;
@@ -40,15 +35,6 @@ serve(async (req) => {
 
   // Validate the origin header
   const origin = req.headers.get("origin");
-  // if (origin !== "https://pedagoia.fr") {
-  //   return new Response(
-  //       JSON.stringify({ error: "Unauthorized origin" }),
-  //       {
-  //         headers: { ...corsHeaders, "Content-Type": "application/json" },
-  //         status: 403,
-  //       }
-  //   );
-  // }
 
   try {
     // Parse and validate the request body
@@ -71,6 +57,7 @@ serve(async (req) => {
 
     // Load Stripe secret key based on testMode
     const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
+    // const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
 
     if (!stripeSecretKey) {
       console.error("Stripe secret key not found in environment variables");
@@ -128,9 +115,11 @@ serve(async (req) => {
           quantity: 1,
         },
       ],
+      locale: "fr",
       mode: "subscription",
       success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&type=${subscriptionType}`,
       cancel_url: `${origin}/pricing?canceled=true&type=${subscriptionType}`,
+      allow_promotion_codes: true,
       metadata: {
         subscription_type: subscriptionType,
         product_id: productId,
