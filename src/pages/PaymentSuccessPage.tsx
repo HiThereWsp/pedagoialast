@@ -99,6 +99,16 @@ const PaymentSuccessPage = () => {
   useEffect(() => {
     const trackPaymentSuccess = async () => {
       try {
+        // Track Google Ads conversion
+        if (window.gtag) {
+          window.gtag('event', 'conversion', {
+            'send_to': 'AW-16957927011/c3kwCIzhyrAaEOPclZY_',
+            'value': details.price,
+            'currency': 'EUR',
+            'transaction_id': ''
+          });
+        }
+        
         // Envoyer l'événement de succès d'abonnement à Facebook
         facebookEvents.subscriptionSuccess(
           subscriptionType,
