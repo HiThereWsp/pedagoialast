@@ -37,7 +37,7 @@ export const PaymentSuccessTracker = ({
         
         // Send subscription success event to Facebook
         facebookEvents.subscriptionSuccess(
-          subscriptionType,
+          subscriptionType as 'monthly' | 'yearly',
           sessionData.amount,
           yearlyValue
         );

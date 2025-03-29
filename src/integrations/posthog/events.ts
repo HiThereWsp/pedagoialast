@@ -25,12 +25,17 @@ export const subscriptionEvents = {
     })
   },
   
-  subscriptionCompleted: (plan: 'monthly' | 'yearly', price: number) => {
+  subscriptionCompleted: (
+    plan: 'monthly' | 'yearly', 
+    price: number, 
+    metadata?: Record<string, any>
+  ) => {
     posthog.capture('subscription_completed', {
       plan_type: plan,
       price: price,
       currency: 'EUR',
-      annual_value: plan === 'monthly' ? price * 12 : price * 12
+      annual_value: plan === 'monthly' ? price * 12 : price,
+      ...metadata
     })
   },
 
