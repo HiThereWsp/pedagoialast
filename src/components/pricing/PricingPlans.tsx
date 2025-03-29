@@ -66,7 +66,7 @@ export const PricingPlans = ({
             }
 
             // Redirect to the Stripe Checkout Session URL
-            // window.location.href = data.url;
+            window.location.href = data.url;
         } catch (error) {
             toast.error("Erreur lors de la création de la session de paiement", {
                 description: error.message,
@@ -114,7 +114,7 @@ export const PricingPlans = ({
             }
 
             // Redirect to the Stripe Checkout Session URL
-            // window.location.href = data.url;
+            window.location.href = data.url;
         } catch (error) {
             toast.error("Erreur lors de la création de la session de paiement", {
                 description: error.message,
