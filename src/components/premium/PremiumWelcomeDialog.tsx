@@ -2,10 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { SparklesText } from "@/components/ui/sparkles-text";
 import { posthog } from '@/integrations/posthog/client';
-import { ConfettiFireworks } from '@/components/ui/confetti-presets';
 import { useSubscription } from '@/hooks/useSubscription';
+import confetti from 'canvas-confetti';
 
 export interface PremiumWelcomeDialogProps {
   firstName?: string;
@@ -43,14 +42,14 @@ export const PremiumWelcomeDialog: React.FC<PremiumWelcomeDialogProps> = ({ firs
         const particleCount = 50 * (timeLeft / duration);
         
         // Confetti from left side
-        window.confetti({
+        confetti({
           ...defaults,
           particleCount,
           origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
         });
         
         // Confetti from right side
-        window.confetti({
+        confetti({
           ...defaults,
           particleCount,
           origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
@@ -97,12 +96,8 @@ export const PremiumWelcomeDialog: React.FC<PremiumWelcomeDialogProps> = ({ firs
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center">
-            <SparklesText
-              text={`Félicitations, ${firstName || "Professeur"} ! 🎉`}
-              className="text-2xl font-bold mb-4"
-              colors={{ first: "#9E7AFF", second: "#FE8BBB" }}
-            />
+          <DialogTitle className="text-center text-2xl font-bold mb-4">
+            Félicitations, {firstName || "Professeur"} ! 🎉
           </DialogTitle>
           <DialogDescription className="text-center text-base">
             <p className="mb-3">
