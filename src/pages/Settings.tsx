@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
@@ -7,15 +8,19 @@ import { Separator } from "@/components/ui/separator"
 import { BackButton } from "@/components/settings/BackButton"
 import { ProfileForm } from "@/components/settings/ProfileForm"
 import { PasswordForm } from "@/components/settings/PasswordForm"
+import { CancellationButton } from "@/components/settings/CancellationButton"
 import { SEO } from "@/components/SEO"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { User } from "lucide-react"
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
 import { DashboardWrapper } from "@/components/dashboard/DashboardWrapper"
+import { useSubscription } from "@/hooks/useSubscription"
+import { Badge } from "@/components/ui/badge"
 
 const Settings = () => {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { isSubscribed, subscriptionType } = useSubscription()
   const [firstName, setFirstName] = useState("")
   const [loading, setLoading] = useState(true)
 
@@ -90,6 +95,15 @@ const Settings = () => {
                         {firstName || "Votre Profil"}
                       </span>
                     )}
+                    {isSubscribed && subscriptionType && (
+                      <div className="mt-2">
+                        <Badge variant="secondary" className="mx-auto">
+                          {subscriptionType === 'monthly' ? 'Abonnement mensuel' : 
+                           subscriptionType === 'yearly' ? 'Abonnement annuel' : 
+                           'Abonné'}
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -100,6 +114,17 @@ const Settings = () => {
                 <Separator className="my-8" />
                 
                 <PasswordForm />
+
+                {isSubscribed && (
+                  <>
+                    <Separator className="my-8" />
+                    
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium">Gestion de l'abonnement</h3>
+                      <CancellationButton />
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
