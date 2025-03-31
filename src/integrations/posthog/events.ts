@@ -59,3 +59,29 @@ export const subscriptionEvents = {
     })
   }
 }
+
+export const bugReportEvents = {
+  reportCreated: (data: { 
+    userId?: string, 
+    hasScreenshot: boolean, 
+    source: string 
+  }) => {
+    posthog.capture('bug_report_created', {
+      user_id: data.userId,
+      has_screenshot: data.hasScreenshot,
+      source: data.source
+    })
+  },
+  
+  reportSubmitted: (data: { 
+    reportId: string, 
+    success: boolean, 
+    errorMessage?: string 
+  }) => {
+    posthog.capture('bug_report_submitted', {
+      report_id: data.reportId,
+      success: data.success,
+      error_message: data.errorMessage
+    })
+  }
+}

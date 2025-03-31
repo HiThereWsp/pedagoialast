@@ -26,7 +26,7 @@ export const useBugReport = (): UseBugReportReturn => {
     setScreenshot(null);
   };
 
-  const { isSubmitting, submitReport } = useReportSubmission(
+  const { isSubmitting, submissionError, submitReport } = useReportSubmission(
     user,
     screenshot,
     description,
@@ -40,6 +40,7 @@ export const useBugReport = (): UseBugReportReturn => {
     isCapturing,
     isUploading,
     isSubmitting,
+    submissionError,
     captureScreenshot,
     uploadScreenshot,
     submitReport,

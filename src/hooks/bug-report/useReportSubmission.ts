@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import type { BugReport } from './types';
 import type { User } from '@supabase/supabase-js';
+import { bugReportEvents } from '@/integrations/posthog/events';
 
 export const useReportSubmission = (
   user: User | null,
@@ -12,12 +13,21 @@ export const useReportSubmission = (
   resetForm: () => void
 ) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
   const submitReport = async () => {
     try {
       setIsSubmitting(true);
+      setSubmissionError(null);
       
       let screenshotUrl: string | undefined;
+      
+      // Track the start of bug report creation
+      bugReportEvents.reportCreated({
+        userId: user?.id,
+        hasScreenshot: !!screenshot,
+        source: window.location.pathname
+      });
       
       // If a screenshot is present, upload it to Supabase Storage
       if (screenshot) {
@@ -68,6 +78,9 @@ export const useReportSubmission = (
         screenSize: `${window.innerWidth}x${window.innerHeight}`,
         platform: navigator.platform,
         language: navigator.language,
+        pageUrl: window.location.href,
+        referrer: document.referrer || 'direct',
+        timestamp: new Date().toISOString()
       });
       
       // Create the bug report in the database
@@ -80,33 +93,65 @@ export const useReportSubmission = (
         status: 'new',
       };
       
-      // Use "as any" as a temporary solution for database typings
+      // Insert the bug report
       const { data, error } = await supabase
-        .from('bug_reports' as any)
+        .from('bug_reports')
         .insert(bugReport)
         .select();
         
       if (error) throw error;
       
       // First check that data exists and has an id property
-      // Notify administrator by email
       if (data && Array.isArray(data) && data.length > 0 && data[0] && 'id' in data[0]) {
-        await supabase.functions.invoke('send-bug-report-notification', {
-          body: {
-            reportId: data[0].id,
-            description,
-            screenshotUrl,
-            url: window.location.href,
-            userId: user?.id || 'Utilisateur non connecté',
+        const reportId = data[0].id;
+        
+        try {
+          // Notify administrator by email via our edge function
+          const notificationResponse = await supabase.functions.invoke('send-bug-report-notification', {
+            body: {
+              reportId,
+              description,
+              screenshotUrl,
+              url: window.location.href,
+              userId: user?.id,
+            }
+          });
+          
+          // Track successful submission
+          bugReportEvents.reportSubmitted({
+            reportId,
+            success: true
+          });
+          
+          if (notificationResponse.error) {
+            console.warn('Bug report created but notification may have failed:', notificationResponse.error);
           }
-        });
+        } catch (notificationError) {
+          console.error('Error sending bug report notification:', notificationError);
+          // Track failed notification but successful DB submission
+          bugReportEvents.reportSubmitted({
+            reportId,
+            success: true,
+            errorMessage: 'Notification failed'
+          });
+        }
+        
+        return data;
       } else {
-        console.warn('Report created but data.id is not available');
+        throw new Error('Report created but ID is not available');
       }
-      
-      return data;
     } catch (error) {
       console.error('Erreur lors de la soumission du rapport de bug:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setSubmissionError(errorMessage);
+      
+      // Track failed submission
+      bugReportEvents.reportSubmitted({
+        reportId: 'failed',
+        success: false,
+        errorMessage
+      });
+      
       throw error;
     } finally {
       setIsSubmitting(false);
@@ -115,6 +160,7 @@ export const useReportSubmission = (
 
   return {
     isSubmitting,
+    submissionError,
     submitReport
   };
 };

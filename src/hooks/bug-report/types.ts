@@ -18,6 +18,7 @@ export interface UseBugReportState {
   isCapturing: boolean;
   isUploading: boolean;
   isSubmitting: boolean;
+  submissionError?: string | null;
 }
 
 export interface UseBugReportActions {

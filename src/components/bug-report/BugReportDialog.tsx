@@ -3,10 +3,11 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Camera, Upload, Loader2 } from 'lucide-react';
+import { Camera, Upload, Loader2, AlertCircle } from 'lucide-react';
 import { useBugReport } from '@/hooks/bug-report';
 import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface BugReportDialogProps {
   open: boolean;
@@ -24,6 +25,7 @@ export const BugReportDialog = ({ open, onOpenChange }: BugReportDialogProps) =>
     isCapturing,
     isUploading,
     isSubmitting,
+    submissionError,
     submitReport,
     resetForm,
   } = useBugReport();
@@ -42,11 +44,8 @@ export const BugReportDialog = ({ open, onOpenChange }: BugReportDialogProps) =>
       resetForm();
       onOpenChange(false);
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du rapport. Veuillez réessayer.",
-      });
+      // The error toast will be shown based on submissionError state
+      // which is now handled by the hook
       console.error('Erreur lors de la soumission du rapport:', error);
     }
   };
@@ -64,6 +63,15 @@ export const BugReportDialog = ({ open, onOpenChange }: BugReportDialogProps) =>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          {submissionError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Une erreur est survenue: {submissionError}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <div className="space-y-2">
             <label htmlFor="bug-description" className="text-sm font-medium">
               Description du problème
