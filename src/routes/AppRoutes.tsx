@@ -1,6 +1,6 @@
 
 import React, { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { SubscriptionRoute } from './SubscriptionRoute';
 import LandingPage from '@/pages/Landing';
@@ -10,6 +10,7 @@ import { LoadingIndicator } from '@/components/ui/loading-indicator';
 import Bienvenue from '@/pages/Bienvenue';
 import ToolsLayout from '@/components/layout/ToolsLayout';
 import Guide from '@/pages/Guide';
+import { BugReportButton } from '@/components/bug-report/BugReportButton';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
@@ -56,9 +57,13 @@ const LoadingPage = () => (
   </div>
 );
 
-function AppRoutes() {
+// Wrapper component to conditionally render BugReportButton
+const AppContent = () => {
+  const location = useLocation();
+  const isBienvenuePage = location.pathname === '/bienvenue';
+  
   return (
-    <Suspense fallback={<LoadingPage />}>
+    <>
       <Routes>
         {/* Pages publiques */}
         <Route path="/" element={<Navigate to="/bienvenue" replace />} />
@@ -123,6 +128,17 @@ function AppRoutes() {
         <Route path="/checkout-canceled" element={<CheckoutCanceledPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      
+      {/* Only show BugReportButton when not on Bienvenue page */}
+      {!isBienvenuePage && <BugReportButton />}
+    </>
+  );
+};
+
+function AppRoutes() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <AppContent />
     </Suspense>
   );
 }
