@@ -65,6 +65,18 @@ export const subscriptionEvents = {
       method: 'copy_instructions',
       timestamp: new Date().toISOString()
     })
+  },
+  
+  premiumWelcomeShown: (subscription_type: string) => {
+    posthog.capture('premium_welcome_shown', {
+      subscription_type
+    })
+  },
+  
+  premiumWelcomeClosed: (subscription_type: string) => {
+    posthog.capture('premium_welcome_closed', {
+      subscription_type
+    })
   }
 }
 
