@@ -97,10 +97,10 @@ const Settings = () => {
                     )}
                     {isSubscribed && subscriptionType && (
                       <div className="mt-2">
-                        <Badge 
-                          className="mx-auto px-3 py-1 text-white font-medium bg-gradient-to-r from-[#FFA500] to-[#FF69B4] border-none shadow-sm"
-                        >
-                          Forfait Premium
+                        <Badge variant="secondary" className="mx-auto">
+                          {subscriptionType === 'monthly' ? 'Abonnement mensuel' : 
+                           subscriptionType === 'yearly' ? 'Abonnement annuel' : 
+                           'Abonné'}
                         </Badge>
                       </div>
                     )}

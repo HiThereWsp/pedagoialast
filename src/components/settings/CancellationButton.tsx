@@ -47,7 +47,8 @@ export const CancellationButton = () => {
 
   const emailInfo = {
     address: "bonjour@pedagoia.fr",
-    subject: "Demande de résiliation de mon abonnement"
+    subject: "Demande de résiliation de mon abonnement",
+    body: "Bonjour,\n\nJe souhaite résilier mon abonnement à PedagoIA.\n\nCordialement,"
   };
 
   return (
@@ -63,8 +64,10 @@ export const CancellationButton = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Demande de résiliation</AlertDialogTitle>
             <AlertDialogDescription>
-              Pour résilier votre abonnement, veuillez nous envoyer un email. 
+              Pour résilier votre abonnement, veuillez nous envoyer un email avec votre demande.
+              Nous allons vous fournir toutes les informations nécessaires pour faciliter cette démarche.
               Votre abonnement restera actif jusqu'à ce que nous traitions votre demande.
+              Cette demande est gratuite et prendra en compte votre période d'essai si elle est toujours en cours.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -82,7 +85,7 @@ export const CancellationButton = () => {
           <DialogHeader>
             <DialogTitle>Envoyer un email de résiliation</DialogTitle>
             <DialogDescription>
-              Veuillez envoyer un email à l'adresse ci-dessous pour demander la résiliation de votre abonnement.
+              Veuillez envoyer un email à l'adresse ci-dessous avec les informations fournies pour demander la résiliation de votre abonnement.
             </DialogDescription>
           </DialogHeader>
           
@@ -116,6 +119,22 @@ export const CancellationButton = () => {
               >
                 <Copy className="h-4 w-4" />
                 Copier l'objet
+              </Button>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="font-semibold text-sm">Message suggéré :</p>
+              <div className="bg-muted/50 p-2 rounded-md whitespace-pre-line">
+                <p className="text-sm">{emailInfo.body}</p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => copyToClipboard(emailInfo.body)}
+                className="gap-1"
+              >
+                <Copy className="h-4 w-4" />
+                Copier le message
               </Button>
             </div>
           </div>
