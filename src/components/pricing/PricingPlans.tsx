@@ -7,8 +7,8 @@ import { toast } from "sonner";
 
 // Price IDs for the plans
 const PRICE_IDS = {
-    yearly : "price_1R1zqKIqXQKnGj4mgi0nXbaK",
-    monthly: "price_1R1zloIqXQKnGj4mbfg3CG2p",
+    yearly : "price_1R224CIqXQKnGj4myOb4EnXo",
+    monthly: "price_1R224HIqXQKnGj4mw1Zc41s1",
 };
 
 interface PricingPlansProps {
@@ -54,7 +54,7 @@ export const PricingPlans = ({
                 body: {
                     priceId: PRICE_IDS.monthly,
                     subscriptionType: "monthly",
-                    productId: "prod_RvrU5SPaCAWh5T", // Replace with your actual product ID
+                    productId: "prod_RvtsYiu8kK3Nlc", // Replace with your actual product ID
                     testMode: import.meta.env.DEV, // Use test mode in development
                 }})
 
@@ -91,7 +91,7 @@ export const PricingPlans = ({
                 body: {
                     priceId: PRICE_IDS.yearly,
                     subscriptionType: "yearly",
-                    productId: "prod_RvrZPHTHWWrz7v", // Replace with your actual product ID
+                    productId: "prod_RvtrB9qvvdbA94", // Replace with your actual product ID
                     testMode: import.meta.env.DEV, // Use test mode in development
                 }
             })

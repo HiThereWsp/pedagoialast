@@ -3,14 +3,9 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { corsHeaders } from "../_shared/cors.ts";
-// Define CORS headers (restrict to your domain for security)
-// const corsHeaders = {
-//   "Access-Control-Allow-Origin": "*",
-//   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-//   "Access-Control-Allow-Methods": "POST, OPTIONS",
-// };
 
-// Interface for the request body
+
+
 interface CheckoutRequestBody {
   priceId: string;
   subscriptionType: string;
@@ -55,15 +50,6 @@ serve(async (req) => {
 
   // Validate the origin header
   const origin = req.headers.get("origin");
-  // if (origin !== "https://pedagoia.fr") {
-  //   return new Response(
-  //       JSON.stringify({ error: "Unauthorized origin" }),
-  //       {
-  //         headers: { ...corsHeaders, "Content-Type": "application/json" },
-  //         status: 403,
-  //       }
-  //   );
-  // }
 
   try {
     // Parse and validate the request body
@@ -85,7 +71,8 @@ serve(async (req) => {
     }
 
     // Load Stripe secret key based on testMode
-    const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
+    // const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
+    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
 
     if (!stripeSecretKey) {
       console.error("Stripe secret key not found in environment variables");
@@ -148,27 +135,29 @@ serve(async (req) => {
       referrer: body.referrer || "",
       landing_page: body.landing_page || "",
     };
+// Create the Stripe Checkout Session
+const session = await stripe.checkout.sessions.create({
+  line_items: [
+    {
+      price: priceId,
+      quantity: 1,
+    },
+  ],
+  mode: "subscription",
+  success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&type=${subscriptionType}&client_id=${clientId}`,
+  cancel_url: `${origin}/pricing?canceled=true&type=${subscriptionType}&client_id=${clientId}`,
+  client_reference_id: clientId,
+  allow_promotion_codes: true,  // Add this line from Second-branch
+  metadata: {
+    subscription_type: subscriptionType,
+    product_id: productId,
+    user_id: userId || "anonymous",
+    test_mode: testMode ? "true" : "false",
+    // Add UTM parameters to metadata
+    ...utmParams,
+  },
+  // ...
 
-    // Create the Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&type=${subscriptionType}&client_id=${clientId}`,
-      cancel_url: `${origin}/pricing?canceled=true&type=${subscriptionType}&client_id=${clientId}`,
-      client_reference_id: clientId,
-      metadata: {
-        subscription_type: subscriptionType,
-        product_id: productId,
-        user_id: userId || "anonymous",
-        test_mode: testMode ? "true" : "false",
-        // Add UTM parameters to metadata
-        ...utmParams,
-      },
       subscription_data: {
         trial_period_days: 3
       },

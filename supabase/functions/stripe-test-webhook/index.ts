@@ -1,7 +1,8 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-
+import { sendSubscriptionEmail } from './email_client.ts';
+import { manageContactList } from './brevo_list_client.ts';
 // CORS headers for responses
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,8 +10,10 @@ const corsHeaders = {
 };
 
 // Initialize Stripe client
-// const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5", {
-const stripe = new Stripe("sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5", {
+
+// const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
+const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
+const stripe = new Stripe(stripeSecretKey, {
   apiVersion: "2020-08-27",
 });
 
@@ -46,9 +49,8 @@ serve(async (req) => {
     console.log(`Raw request body: ${body}`);
 
     // Verify webhook signature
-    // const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") || Deno.env.get("STRIPE_WEBHOOK_SECRET_TEST");
-    // const webhookSecret = "whsec_e3c7485663ec5a2d28600f8743c716504318398b176498741992982785a4d877"
-    const webhookSecret = "whsec_otFKDLi2qA6CMhN7oxnekdzCkY27dS3x"
+    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
+    // const webhookSecret = "whsec_otFKDLi2qA6CMhN7oxnekdzCkY27dS3x" // Test secret
     if (!webhookSecret) {
       throw new Error("Missing webhook secret");
     }
@@ -245,7 +247,7 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
   const subscriptionStatus = subscription.status;
   const subscriptionType = subscription.metadata?.subscription_type || "monthly";
   const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-
+  console.log({subscriptionStatus})
   // Fetch customer email from Stripe
   let customerEmail: string | undefined;
   try {
@@ -261,6 +263,10 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     console.error(`No email found for customer ${customerId}`);
     return;
   }
+  await Promise.all([
+    sendSubscriptionEmail(customerEmail, subscriptionStatus),
+    manageContactList(customerEmail, subscriptionStatus)
+  ]);
 
   // Look up user by stripe_customer_id or user_email
   let userId: string | undefined;
@@ -376,37 +382,89 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   const subscriptionStatus = subscription.status;
   const subscriptionType = subscription.metadata?.subscription_type || "monthly";
   const currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-
-  // Update subscription
-  const { data: subscriptionData, error: fetchError } = await supabase
+  console.log({subscriptionStatus});
+  // Fetch the subscription record from user_subscriptions
+  console.log(`Fetching user subscription for stripe_subscription_id: ${subscriptionId}`);
+  let { data: subscriptionData, error: fetchError } = await supabase
       .from("user_subscriptions")
       .select("user_id")
       .eq("stripe_subscription_id", subscriptionId)
-      .single();
+      .maybeSingle();
 
-  if (fetchError || !subscriptionData) {
-    console.error(`Error fetching subscription for user update: ${fetchError?.message}`);
+  if (fetchError) {
+    console.error(`Error fetching subscription from user_subscriptions: ${fetchError.message}`);
     return;
   }
 
+  // If no subscription record exists, create one
+  if (!subscriptionData) {
+    console.log(
+        `No subscription found in user_subscriptions for stripe_subscription_id: ${subscriptionId}. ` +
+        `Creating a new record.`
+    );
+
+    // Fetch the customer to get the user_id (if available in metadata or linked to a user)
+    const customer = await stripe.customers.retrieve(subscription.customer as string);
+    const userId = customer.metadata?.user_id || "anonymous"; // Fallback to "anonymous" if no user_id
+
+    const newSubscriptionData = {
+      user_id: userId,
+      stripe_customer_id: subscription.customer as string,
+      stripe_subscription_id: subscriptionId,
+      status: subscriptionStatus,
+      type: subscriptionStatus === "trialing" ? "trial" : "paid",
+      plan_variant: subscriptionType,
+      current_period_end: currentPeriodEnd,
+      expires_at: currentPeriodEnd,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    const { data: insertedData, error: insertError } = await supabase
+        .from("user_subscriptions")
+        .insert(newSubscriptionData)
+        .select("user_id")
+        .maybeSingle();
+
+    if (insertError) {
+      console.error(`Error creating subscription in user_subscriptions: ${insertError.message}`);
+      return;
+    }
+
+    if (!insertedData) {
+      console.error("Failed to create subscription record: No data returned after insert");
+      return;
+    }
+
+    subscriptionData = insertedData;
+    console.log(`Created new subscription record for user_id: ${subscriptionData.user_id}`);
+  }
+
+  console.log(`Found subscription for user_id: ${subscriptionData.user_id}`);
+
+  // Update the subscription record
+  console.log("Updating subscription in user_subscriptions...");
   const { error: updateError } = await supabase
       .from("user_subscriptions")
       .update({
         status: subscriptionStatus,
         plan_variant: subscriptionType,
         current_period_end: currentPeriodEnd,
-        expires_at: currentPeriodEnd, // Update expires_at to match current_period_end
+        expires_at: currentPeriodEnd,
         updated_at: new Date(),
       })
       .eq("stripe_subscription_id", subscriptionId);
 
   if (updateError) {
-    console.error(`Error updating subscription: ${updateError.message}`);
+    console.error(`Error updating subscription in user_subscriptions: ${updateError.message}`);
     return;
   }
 
-  // Update is_paid_user and role_expiry based on subscription status
+  console.log("Subscription updated successfully.");
+
+  // Update user profile (is_paid_user and role_expiry)
   const isActiveOrTrialing = subscriptionStatus === "active" || subscriptionStatus === "trialing";
+  console.log(`Updating user_profiles for user_id: ${subscriptionData.user_id}, is_paid_user: ${isActiveOrTrialing}`);
   const { error: profileUpdateError } = await supabase
       .from("user_profiles")
       .update({
@@ -420,7 +478,19 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     return;
   }
 
-  console.log(`Subscription updated: ${subscriptionId}`);
+  console.log(`User profile updated successfully for subscription: ${subscriptionId}`);
+  const customer = await stripe.customers.retrieve(subscription.customer as string);
+  const customerEmail = customer?.email;
+  console.log("Sending subsciption update email")
+  console.log({customerEmail})
+  if (customerEmail) {
+    console.log("Sending subsciption update email +")
+    await Promise.all([
+      sendSubscriptionEmail(customerEmail, subscriptionStatus),
+      manageContactList(customerEmail, subscriptionStatus)
+    ]);
+    console.log("Sent subsciption update email")
+  }
 }
 
 // Handle subscription deleted event
