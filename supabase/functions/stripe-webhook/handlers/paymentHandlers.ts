@@ -1,5 +1,7 @@
 
+
 import { updateOrCreateSubscription, updateUserInBrevoCRM } from '../helpers/subscriptionUtils.ts';
+import { trackPurchaseEvent, trackSubscriptionEvent } from './measurementProtocol.ts';
 
 /**
  * Handle successful payment event (payment_intent.succeeded, charge.succeeded, or checkout.session.completed)
@@ -10,6 +12,7 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
   try {
     // Extract customer information
     let customerId, customerEmail, metadata, receipt_email, subscriptionType;
+    let clientReferenceId, sessionId, subscriptionId, amount;
     
     // Different event types have different data structures
     if (paymentObject.object === 'payment_intent') {
@@ -17,6 +20,9 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
       metadata = paymentObject.metadata || {};
       subscriptionType = metadata.subscription_type || metadata.plan || 'monthly';
       customerEmail = paymentObject.receipt_email || metadata.email;
+      amount = paymentObject.amount / 100; // Convert from cents to full currency unit
+      sessionId = paymentObject.id;
+      clientReferenceId = metadata.client_reference_id || `pi_${paymentObject.id}`;
       
       console.log(`Payment intent success for customer ${customerId} (${customerEmail}), type: ${subscriptionType}`);
     } 
@@ -25,6 +31,9 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
       customerEmail = paymentObject.receipt_email || paymentObject.billing_details?.email;
       metadata = paymentObject.metadata || {};
       subscriptionType = metadata.subscription_type || metadata.plan || 'monthly';
+      amount = paymentObject.amount / 100; // Convert from cents to full currency unit
+      sessionId = paymentObject.id;
+      clientReferenceId = metadata.client_reference_id || `ch_${paymentObject.id}`;
       
       console.log(`Charge success for customer ${customerId} (${customerEmail}), type: ${subscriptionType}`);
     }
@@ -33,8 +42,37 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
       customerEmail = paymentObject.customer_email || paymentObject.customer_details?.email;
       metadata = paymentObject.metadata || {};
       subscriptionType = metadata.subscription_type || metadata.plan || 'monthly';
+      amount = paymentObject.amount_total / 100; // Convert from cents to full currency unit
+      sessionId = paymentObject.id;
+      clientReferenceId = paymentObject.client_reference_id || `cs_${paymentObject.id}`;
+      subscriptionId = paymentObject.subscription;
       
       console.log(`Checkout session completed for customer ${customerId} (${customerEmail}), type: ${subscriptionType}`);
+      
+      // Track purchase via GA4 Measurement Protocol
+      if (clientReferenceId) {
+        // Extract UTM parameters from metadata
+        const utmParams = {
+          utm_source: metadata.utm_source,
+          utm_medium: metadata.utm_medium,
+          utm_campaign: metadata.utm_campaign,
+          utm_content: metadata.utm_content,
+          utm_term: metadata.utm_term
+        };
+        
+        // Send server-side tracking event
+        await trackPurchaseEvent(
+          clientReferenceId,
+          sessionId,
+          subscriptionId,
+          customerId,
+          subscriptionType,
+          amount,
+          utmParams
+        );
+        
+        console.log(`Tracked purchase event via Measurement Protocol for client ${clientReferenceId}`);
+      }
     }
     else {
       console.log(`Unhandled payment object type: ${paymentObject.object}`);
@@ -130,6 +168,20 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
             await updateUserInBrevoCRM(supabase, customerEmail);
           }
           
+          // Track subscription event via GA4 Measurement Protocol
+          if (clientReferenceId && subscriptionId) {
+            await trackSubscriptionEvent(
+              clientReferenceId,
+              subscriptionId,
+              customerId,
+              "active",
+              subscriptionType,
+              amount
+            );
+            
+            console.log(`Tracked subscription event via Measurement Protocol for client ${clientReferenceId}`);
+          }
+          
           console.log(`Successfully processed payment for ${customerEmail} (${subscriptionType})`);
           return;
         }
@@ -145,3 +197,4 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
     console.error(`Error handling payment success: ${error.message}`, error);
   }
 }
+

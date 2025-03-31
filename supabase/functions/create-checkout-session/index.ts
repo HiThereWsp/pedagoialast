@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
@@ -10,6 +11,20 @@ interface CheckoutRequestBody {
   subscriptionType: string;
   productId: string;
   testMode: boolean;
+  // UTM parameters for tracking
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  // Additional tracking parameters
+  referrer?: string;
+  landing_page?: string;
+}
+
+// Generate a client ID for cross-domain tracking
+function generateClientId(): string {
+  return `pedagoia_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 }
 
 // Main handler for the Edge Function
@@ -107,25 +122,42 @@ serve(async (req) => {
       console.log("No Authorization header provided; proceeding without user authentication");
     }
 
-    // Create the Stripe Checkout Session
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      locale: "fr",
-      mode: "subscription",
-      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&type=${subscriptionType}`,
-      cancel_url: `${origin}/pricing?canceled=true&type=${subscriptionType}`,
-      allow_promotion_codes: true,
-      metadata: {
-        subscription_type: subscriptionType,
-        product_id: productId,
-        user_id: userId || "anonymous",
-        test_mode: testMode ? "true" : "false"
-      },
+    // Generate a unique client ID for cross-domain tracking
+    const clientId = generateClientId();
+
+    // Extract UTM parameters and other tracking data
+    const utmParams = {
+      utm_source: body.utm_source || "",
+      utm_medium: body.utm_medium || "",
+      utm_campaign: body.utm_campaign || "",
+      utm_content: body.utm_content || "",
+      utm_term: body.utm_term || "",
+      referrer: body.referrer || "",
+      landing_page: body.landing_page || "",
+    };
+// Create the Stripe Checkout Session
+const session = await stripe.checkout.sessions.create({
+  line_items: [
+    {
+      price: priceId,
+      quantity: 1,
+    },
+  ],
+  mode: "subscription",
+  success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&type=${subscriptionType}&client_id=${clientId}`,
+  cancel_url: `${origin}/pricing?canceled=true&type=${subscriptionType}&client_id=${clientId}`,
+  client_reference_id: clientId,
+  allow_promotion_codes: true,  // Add this line from Second-branch
+  metadata: {
+    subscription_type: subscriptionType,
+    product_id: productId,
+    user_id: userId || "anonymous",
+    test_mode: testMode ? "true" : "false",
+    // Add UTM parameters to metadata
+    ...utmParams,
+  },
+  // ...
+
       subscription_data: {
         trial_period_days: 3
       },
@@ -139,7 +171,10 @@ serve(async (req) => {
     console.log(`Checkout Session created successfully. URL: ${session.url.substring(0, 50)}...`);
 
     return new Response(
-        JSON.stringify({ url: session.url }),
+        JSON.stringify({ 
+          url: session.url,
+          client_id: clientId, // Return the client ID for frontend tracking
+        }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,

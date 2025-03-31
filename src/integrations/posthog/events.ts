@@ -25,12 +25,17 @@ export const subscriptionEvents = {
     })
   },
   
-  subscriptionCompleted: (plan: 'monthly' | 'yearly', price: number) => {
+  subscriptionCompleted: (
+    plan: 'monthly' | 'yearly', 
+    price: number, 
+    metadata?: Record<string, any>
+  ) => {
     posthog.capture('subscription_completed', {
       plan_type: plan,
       price: price,
       currency: 'EUR',
-      annual_value: plan === 'monthly' ? price * 12 : price * 12
+      annual_value: plan === 'monthly' ? price * 12 : price,
+      ...metadata
     })
   },
 
@@ -51,6 +56,32 @@ export const subscriptionEvents = {
   firstLogin: (plan: 'monthly' | 'yearly') => {
     posthog.capture('subscription_first_login', {
       plan_type: plan
+    })
+  }
+}
+
+export const bugReportEvents = {
+  reportCreated: (data: { 
+    userId?: string, 
+    hasScreenshot: boolean, 
+    source: string 
+  }) => {
+    posthog.capture('bug_report_created', {
+      user_id: data.userId,
+      has_screenshot: data.hasScreenshot,
+      source: data.source
+    })
+  },
+  
+  reportSubmitted: (data: { 
+    reportId: string, 
+    success: boolean, 
+    errorMessage?: string 
+  }) => {
+    posthog.capture('bug_report_submitted', {
+      report_id: data.reportId,
+      success: data.success,
+      error_message: data.errorMessage
     })
   }
 }

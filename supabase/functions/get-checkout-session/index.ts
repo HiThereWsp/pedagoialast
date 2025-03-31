@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 import { corsHeaders } from "../_shared/cors.ts";
@@ -95,6 +96,12 @@ serve(async (req) => {
       trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000).toISOString() : undefined,
       nextBillingDate: new Date(subscription.current_period_end * 1000).toISOString(),
       customerEmail: customer.email || session.customer_email || "unknown",
+      // Include tracking metadata from the session
+      metadata: session.metadata || {},
+      clientReferenceId: session.client_reference_id || "",
+      sessionId: session.id,
+      customerId: customer.id,
+      subscriptionId: subscription.id,
     };
 
     return new Response(

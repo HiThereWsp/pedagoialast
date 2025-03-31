@@ -1354,6 +1354,23 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_bug_report_with_user_details: {
+        Args: {
+          report_id: string
+        }
+        Returns: {
+          id: string
+          user_id: string
+          description: string
+          screenshot_url: string
+          browser_info: Json
+          url: string
+          status: string
+          created_at: string
+          updated_at: string
+          user_email: string
+        }[]
+      }
       get_redirect_logs: {
         Args: Record<PropertyKey, never>
         Returns: {
