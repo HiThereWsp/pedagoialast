@@ -6,7 +6,6 @@ import AppRoutes from '@/routes/AppRoutes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from '@/hooks/useAuth'
 import { Toaster } from '@/components/ui/toaster'
-import { BugReportButton } from '@/components/bug-report/BugReportButton'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import '@/App.css'
 
@@ -31,7 +30,6 @@ function App() {
               <Suspense fallback={<div className="flex items-center justify-center h-screen">Chargement...</div>}>
                 <AppRoutes />
                 <Toaster />
-                <BugReportButton />
               </Suspense>
             </AuthProvider>
           </BrowserRouter>
