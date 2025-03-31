@@ -5,63 +5,50 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { subscriptionEvents } from "@/integrations/posthog/events";
-import { Mail, ExternalLink } from "lucide-react";
+import { Mail, Copy, CheckCircle } from "lucide-react";
 
 export const CancellationButton = () => {
   const { toast } = useToast();
   const [isAlertOpen, setIsAlertOpen] = useState(false);
-  const [isFallbackOpen, setIsFallbackOpen] = useState(false);
+  const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
+  const [hasCopied, setHasCopied] = useState(false);
   
   const handleCancellationRequest = () => {
     // Track the event in PostHog
     subscriptionEvents.cancellationRequested('settings_page');
-
-    // Prepare email content
-    const subject = encodeURIComponent('Demande de résiliation de mon abonnement');
-    const body = encodeURIComponent('Bonjour,\n\nJe souhaite résilier mon abonnement à PedagoIA.\n\nCordialement,');
-    const mailtoLink = `mailto:bonjour@pedagoia.fr?subject=${subject}&body=${body}`;
-
-    // Try to open the mail client directly
-    const mailWindow = window.open(mailtoLink, '_blank');
     
-    // Close the alert dialog
+    // Close the alert dialog and open the copy dialog
     setIsAlertOpen(false);
-    
-    // Check if window.open was successful
-    if (!mailWindow || mailWindow.closed || typeof mailWindow.closed === 'undefined') {
-      // If window.open failed, try the default location method
-      window.location.href = mailtoLink;
-      
-      // Set a small timeout to check if the redirect worked
-      setTimeout(() => {
-        // Show the fallback dialog if needed
-        setIsFallbackOpen(true);
-      }, 500);
-    } else {
-      // Window.open seemed to work, show success toast
-      toast({
-        title: "Email de résiliation",
-        description: "Votre client email a été ouvert pour envoyer la demande de résiliation."
-      });
-    }
+    setIsCopyDialogOpen(true);
   };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText('bonjour@pedagoia.fr')
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
       .then(() => {
+        setHasCopied(true);
         toast({
-          title: "Adresse copiée",
-          description: "L'adresse email a été copiée dans votre presse-papier."
+          title: "Copié avec succès",
+          description: "Le texte a été copié dans votre presse-papier."
         });
-        setIsFallbackOpen(false);
+        
+        // Reset the copied state after 2 seconds
+        setTimeout(() => {
+          setHasCopied(false);
+        }, 2000);
       })
       .catch(err => {
         toast({
           variant: "destructive",
           title: "Erreur",
-          description: "Impossible de copier l'adresse. Veuillez la copier manuellement."
+          description: "Impossible de copier le texte. Veuillez le copier manuellement."
         });
       });
+  };
+
+  const emailInfo = {
+    address: "bonjour@pedagoia.fr",
+    subject: "Demande de résiliation de mon abonnement",
+    body: "Bonjour,\n\nJe souhaite résilier mon abonnement à PedagoIA.\n\nCordialement,"
   };
 
   return (
@@ -77,7 +64,8 @@ export const CancellationButton = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Demande de résiliation</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action va ouvrir votre client email pour envoyer une demande de résiliation à notre équipe. 
+              Pour résilier votre abonnement, veuillez nous envoyer un email avec votre demande.
+              Nous allons vous fournir toutes les informations nécessaires pour faciliter cette démarche.
               Votre abonnement restera actif jusqu'à ce que nous traitions votre demande.
               Cette demande est gratuite et prendra en compte votre période d'essai si elle est toujours en cours.
             </AlertDialogDescription>
@@ -85,44 +73,75 @@ export const CancellationButton = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={handleCancellationRequest} className="bg-destructive hover:bg-destructive/90">
-              Confirmer
+              Continuer
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Fallback dialog if email client doesn't open automatically */}
-      <Dialog open={isFallbackOpen} onOpenChange={setIsFallbackOpen}>
+      {/* Copy dialog with email information */}
+      <Dialog open={isCopyDialogOpen} onOpenChange={setIsCopyDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Impossible d'ouvrir le client email</DialogTitle>
+            <DialogTitle>Envoyer un email de résiliation</DialogTitle>
             <DialogDescription>
-              Votre navigateur n'a pas pu ouvrir automatiquement votre client email. Veuillez envoyer manuellement un email à l'adresse ci-dessous:
+              Veuillez envoyer un email à l'adresse ci-dessous avec les informations fournies pour demander la résiliation de votre abonnement.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="p-4 bg-muted/50 rounded-md my-4">
-            <p className="font-semibold mb-1">Adresse email:</p>
-            <div className="flex items-center justify-between bg-background p-2 rounded border">
-              <code className="text-sm">bonjour@pedagoia.fr</code>
-              <Button variant="ghost" size="sm" onClick={copyToClipboard}>
-                Copier
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="font-semibold text-sm">Adresse email :</p>
+              <div className="flex items-center justify-between bg-muted/50 p-2 rounded-md">
+                <code className="text-sm">{emailInfo.address}</code>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => copyToClipboard(emailInfo.address)}
+                  className="gap-1"
+                >
+                  {hasCopied ? <CheckCircle className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                  Copier
+                </Button>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="font-semibold text-sm">Objet suggéré :</p>
+              <div className="bg-muted/50 p-2 rounded-md">
+                <p className="text-sm">{emailInfo.subject}</p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => copyToClipboard(emailInfo.subject)}
+                className="gap-1"
+              >
+                <Copy className="h-4 w-4" />
+                Copier l'objet
               </Button>
             </div>
             
-            <p className="font-semibold mt-4 mb-1">Objet:</p>
-            <p className="bg-background p-2 rounded border">Demande de résiliation de mon abonnement</p>
+            <div className="space-y-2">
+              <p className="font-semibold text-sm">Message suggéré :</p>
+              <div className="bg-muted/50 p-2 rounded-md whitespace-pre-line">
+                <p className="text-sm">{emailInfo.body}</p>
+              </div>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => copyToClipboard(emailInfo.body)}
+                className="gap-1"
+              >
+                <Copy className="h-4 w-4" />
+                Copier le message
+              </Button>
+            </div>
           </div>
           
-          <DialogFooter>
-            <Button onClick={() => setIsFallbackOpen(false)}>
-              J'ai compris
-            </Button>
-            <Button variant="outline" onClick={() => {
-              window.open('https://mail.google.com/mail/u/0/?view=cm&fs=1&to=bonjour@pedagoia.fr&su=Demande+de+résiliation+de+mon+abonnement', '_blank');
-            }}>
-              <ExternalLink className="mr-2 h-4 w-4" />
-              Ouvrir Gmail
+          <DialogFooter className="mt-4">
+            <Button variant="default" onClick={() => setIsCopyDialogOpen(false)}>
+              Fermer
             </Button>
           </DialogFooter>
         </DialogContent>

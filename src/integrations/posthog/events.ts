@@ -62,6 +62,7 @@ export const subscriptionEvents = {
   cancellationRequested: (source: string) => {
     posthog.capture('subscription_cancellation_requested', {
       source: source,
+      method: 'copy_instructions',
       timestamp: new Date().toISOString()
     })
   }
