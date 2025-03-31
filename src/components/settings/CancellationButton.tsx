@@ -64,10 +64,7 @@ export const CancellationButton = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Demande de résiliation</AlertDialogTitle>
             <AlertDialogDescription>
-              Pour résilier votre abonnement, veuillez nous envoyer un email avec votre demande.
-              Nous allons vous fournir toutes les informations nécessaires pour faciliter cette démarche.
-              Votre abonnement restera actif jusqu'à ce que nous traitions votre demande.
-              Cette demande est gratuite et prendra en compte votre période d'essai si elle est toujours en cours.
+              Pour résilier votre abonnement, veuillez nous envoyer un email. Votre abonnement restera actif jusqu'au traitement de votre demande.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

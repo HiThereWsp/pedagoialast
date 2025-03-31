@@ -11,7 +11,7 @@ import { PasswordForm } from "@/components/settings/PasswordForm"
 import { CancellationButton } from "@/components/settings/CancellationButton"
 import { SEO } from "@/components/SEO"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { User } from "lucide-react"
+import { Crown, User } from "lucide-react"
 import { AnimatedGridPattern } from "@/components/ui/animated-grid-pattern"
 import { DashboardWrapper } from "@/components/dashboard/DashboardWrapper"
 import { useSubscription } from "@/hooks/useSubscription"
@@ -97,10 +97,12 @@ const Settings = () => {
                     )}
                     {isSubscribed && subscriptionType && (
                       <div className="mt-2">
-                        <Badge variant="secondary" className="mx-auto">
-                          {subscriptionType === 'monthly' ? 'Abonnement mensuel' : 
-                           subscriptionType === 'yearly' ? 'Abonnement annuel' : 
-                           'Abonné'}
+                        <Badge 
+                          variant="outline" 
+                          className="mx-auto font-semibold px-3 py-1 border-0 bg-gradient-to-r from-purple-500 via-indigo-500 to-indigo-400 text-white shadow-sm flex items-center gap-1"
+                        >
+                          <Crown className="h-3.5 w-3.5" />
+                          Forfait Premium
                         </Badge>
                       </div>
                     )}
