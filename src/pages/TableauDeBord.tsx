@@ -1,4 +1,3 @@
-
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +8,7 @@ import { DesktopContent } from "@/components/dashboard/DesktopContent";
 import { MobileContent } from "@/components/dashboard/MobileContent";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
+import { PremiumWelcomeDialog } from "@/components/premium/PremiumWelcomeDialog";
 
 const capitalizeName = (name) => {
   if (!name) return '';
@@ -106,6 +106,9 @@ const TableauDeBord = () => {
         <title>Tableau de bord | PedagoIA</title>
         <meta name="description" content="Accédez à tous vos outils pédagogiques et gérez vos contenus depuis votre tableau de bord personnalisé." />
       </Helmet>
+      
+      {/* Premium Welcome Dialog */}
+      <PremiumWelcomeDialog firstName={firstName} />
       
       {/* Desktop Sidebar */}
       <DashboardSidebar 
