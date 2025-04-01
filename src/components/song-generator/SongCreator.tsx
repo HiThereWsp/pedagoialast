@@ -8,6 +8,7 @@ import { Music } from 'lucide-react';
 import { SongHeader } from './SongHeader';
 import { StyleButton } from './StyleButton';
 import { toast } from "@/hooks/toast";
+import { triggerSuccessConfetti } from "@/utils/confetti";
 
 // Types pour la gestion du formulaire
 type SongFormData = {
@@ -81,8 +82,11 @@ export const SongCreator: React.FC = () => {
       // Simuler une API pour la génération (à remplacer par votre appel API réel)
       await new Promise(resolve => setTimeout(resolve, 2000));
       
+      // Déclencher l'effet confetti pour célébrer la réussite
+      triggerSuccessConfetti();
+      
       toast({ 
-        variant: "success", 
+        variant: "default", // Changé de "success" à "default"
         title: "Succès", 
         description: "Votre chanson a été générée avec succès!"
       });
