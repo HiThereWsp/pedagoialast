@@ -15,6 +15,7 @@ import { PricingHeader } from "@/components/pricing/PricingHeader";
 import { PricingPlans } from "@/components/pricing/PricingPlans";
 import { FeatureHighlights } from "@/components/pricing/FeatureHighlights";
 import { PricingPageTracking } from "@/components/pricing/PricingPageTracking";
+import { SenjaTestimonialsSection } from "@/components/landing/SenjaTestimonialsSection";
 
 const Pricing = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -58,6 +59,9 @@ const Pricing = () => {
         />
 
         <FeatureHighlights />
+        
+        {/* Add the Senja testimonials section */}
+        <SenjaTestimonialsSection />
       </main>
 
       {/* Dialog for school contact form */}
