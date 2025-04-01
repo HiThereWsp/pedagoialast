@@ -5,7 +5,7 @@ import { SongCreator } from "@/components/song-generator/SongCreator";
 
 const SongGenerator = () => {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative">
       <div className="absolute inset-0 bg-grid-white opacity-20 pointer-events-none"></div>
       <SEO 
         title="PedagoIA - Générateur de chansons pédagogiques"
