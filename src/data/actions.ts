@@ -1,37 +1,49 @@
+import { FileSpreadsheet, CalendarDays, Image, Music, MessageSquare } from 'lucide-react';
 
-import {
-  Sparkles,
-  PenTool,
-  FileEdit,
-  Image,
-  BookOpen
-} from "lucide-react"
-import type { Action } from "@/types/actions"
-
-export const actions: Action[] = [
+export const actions = [
   {
-    title: "Générateur de séquences",
-    route: "/lesson-plan",
-    icon: Sparkles,
+    title: 'Générateur d\'exercices',
+    description: 'Créez des exercices et des supports pour vos élèves',
+    route: '/exercise',
+    icon: FileSpreadsheet,
+    isNew: false,
+    isUtilityAction: false,
+    maintenanceLabel: null,
   },
   {
-    title: "Générer / Différencier des exercices",
-    route: "/exercise",
-    icon: PenTool
+    title: 'Plans de cours',
+    description: 'Créez des séquences et des plans de cours détaillés',
+    route: '/lesson-plan',
+    icon: CalendarDays,
+    isNew: false,
+    isUtilityAction: false,
+    maintenanceLabel: null,
   },
   {
-    title: "Assistant administratif",
-    route: "/correspondence",
-    icon: FileEdit,
-  },
-  {
-    title: "Générateur d'images",
-    route: "/image-generation",
+    title: 'Générateur d\'images',
+    description: 'Créez des images pédagogiques pour vos cours',
+    route: '/image-generation',
     icon: Image,
+    isNew: false,
+    isUtilityAction: false,
+    maintenanceLabel: null,
   },
   {
-    title: "Mes ressources",
-    route: "/saved-content",
-    icon: BookOpen,
-  }
-]
+    title: 'Générateur de chansons',
+    description: 'Créez des chansons pédagogiques pour vos élèves',
+    route: '/song-generator',
+    icon: Music,
+    isNew: true,
+    isUtilityAction: false,
+    maintenanceLabel: null,
+  },
+  {
+    title: 'Générateur de correspondances',
+    description: 'Rédigez des courriers et des e-mails professionnels',
+    route: '/correspondence',
+    icon: MessageSquare,
+    isNew: false,
+    isUtilityAction: false,
+    maintenanceLabel: null,
+  },
+];

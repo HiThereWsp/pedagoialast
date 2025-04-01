@@ -42,6 +42,7 @@ const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const UserManagementPage = lazy(() => import('@/pages/UserManagement'));
 const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
 const AdminSubscriptionRepairPage = lazy(() => import('@/pages/AdminSubscriptionRepairPage'));
+const SongGenerator = lazy(() => import('@/pages/SongGenerator'));
 
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
@@ -102,6 +103,7 @@ const AppContent = () => {
           <Route path="/correspondence" element={<CorrespondencePage />} />
           <Route path="/offline-chat" element={<OfflineChatPage />} />
           <Route path="/saved-content" element={<SavedContentPage />} />
+          <Route path="/song-generator" element={<SongGenerator />} />
         </Route>
         
         {/* Routes accessibles sans abonnement */}
