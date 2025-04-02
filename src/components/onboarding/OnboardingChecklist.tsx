@@ -26,14 +26,19 @@ export function OnboardingChecklist() {
   
   useEffect(() => {
     if (isAllCompleted) {
-      setShowConfetti(true);
+      // Check if premium welcome was already shown to avoid duplicate confetti
+      const premiumWelcomeShown = localStorage.getItem('premium_welcome_shown') === 'true';
       
-      // Hide confetti after animation
-      const timer = setTimeout(() => {
-        setShowConfetti(false);
-      }, 5000);
-      
-      return () => clearTimeout(timer);
+      if (!premiumWelcomeShown) {
+        setShowConfetti(true);
+        
+        // Hide confetti after animation
+        const timer = setTimeout(() => {
+          setShowConfetti(false);
+        }, 5000);
+        
+        return () => clearTimeout(timer);
+      }
     }
   }, [isAllCompleted]);
 
