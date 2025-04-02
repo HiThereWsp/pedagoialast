@@ -1,1 +1,12 @@
+
 project_id = "jpelncawdaounkidvymu"
+[functions.stripe-webhook]
+verify_jwt = false
+
+STRIPE_WEBHOOK_SECRET = "whsec_3NBhwaToGSYUQq2XtjKPrwG1aRDpscrM"
+STRIPE_WEBHOOK_SECRET_TEST = "whsec_mxduieTaBI8bMyVlioaNGFjSYX5tDhii"
+# Google Analytics 4 Measurement Protocol configuration
+GA4_API_SECRET = "sZeGSAYwR1uvsvLZJJsajw"
+GA4_MEASUREMENT_ID = "G-qAS5OCTURaCmQ1IfJY2ScQ"
+# Datafast Analytics configuration
+DATAFAST_WEBSITE_ID = "67ecaee943c67e6831381271"
