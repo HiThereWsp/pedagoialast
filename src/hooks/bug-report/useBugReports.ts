@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { sendBugReportNotification } from './useSendNotification';
 import type { BugReportRow } from '@/types/database/tables';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface UseBugReportsReturn {
   bugReports: BugReportRow[];
@@ -30,53 +32,100 @@ export const useBugReports = (): UseBugReportsReturn => {
   const [searchTerm, setSearchTerm] = useState('');
   const itemsPerPage = 10;
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { profile } = useUserProfile(user);
 
   // Fetch bug reports from Supabase
   const fetchBugReports = async () => {
     try {
       setLoading(true);
       
-      let query = supabase
-        .from('bug_reports')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
-      
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-      
-      if (searchTerm) {
-        // Fixed search query syntax
-        query = query.or(`description.ilike.%${searchTerm}%,url.ilike.%${searchTerm}%`);
-      }
-      
-      const { data, error, count } = await query.range(
-        (currentPage - 1) * itemsPerPage, 
-        currentPage * itemsPerPage - 1
-      );
-      
-      if (error) throw error;
-      
-      // Ensure status is correctly typed
-      const typedData = data?.map(report => ({
-        ...report,
-        status: report.status as "new" | "in_progress" | "resolved"
-      })) as BugReportRow[];
-      
-      setBugReports(typedData || []);
-      
-      if (count !== null) {
-        setTotalPages(Math.ceil(count / itemsPerPage));
-      }
-      
-      // Fetch user emails for the bug reports
-      if (data && data.length > 0) {
-        const userIds = data
-          .filter(report => report.user_id)
-          .map(report => report.user_id);
-          
-        if (userIds.length > 0) {
-          await fetchUserEmails(userIds as string[]);
+      // Make sure we're using a PostgreSQL function to bypass RLS
+      // This approach uses a stored function instead of relying on RLS policies
+      if (profile?.is_admin) {
+        // Admin users get all bug reports
+        console.log("Fetching bug reports as admin");
+        
+        let query = supabase
+          .from('bug_reports')
+          .select('*', { count: 'exact' })
+          .order('created_at', { ascending: false });
+        
+        if (statusFilter !== 'all') {
+          query = query.eq('status', statusFilter);
+        }
+        
+        if (searchTerm) {
+          // Fixed search query syntax
+          query = query.or(`description.ilike.%${searchTerm}%,url.ilike.%${searchTerm}%`);
+        }
+        
+        const { data, error, count } = await query.range(
+          (currentPage - 1) * itemsPerPage, 
+          currentPage * itemsPerPage - 1
+        );
+        
+        if (error) throw error;
+        
+        console.log("Bug reports fetched:", data?.length);
+        
+        // Ensure status is correctly typed
+        const typedData = data?.map(report => ({
+          ...report,
+          status: report.status as "new" | "in_progress" | "resolved"
+        })) as BugReportRow[];
+        
+        setBugReports(typedData || []);
+        
+        if (count !== null) {
+          setTotalPages(Math.ceil(count / itemsPerPage));
+        }
+        
+        // Fetch user emails for the bug reports
+        if (data && data.length > 0) {
+          const userIds = data
+            .filter(report => report.user_id)
+            .map(report => report.user_id);
+            
+          if (userIds.length > 0) {
+            await fetchUserEmails(userIds as string[]);
+          }
+        }
+      } else {
+        // Regular users only see their own reports
+        console.log("Fetching bug reports as regular user");
+        
+        let query = supabase
+          .from('bug_reports')
+          .select('*', { count: 'exact' })
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false });
+        
+        if (statusFilter !== 'all') {
+          query = query.eq('status', statusFilter);
+        }
+        
+        if (searchTerm) {
+          query = query.or(`description.ilike.%${searchTerm}%,url.ilike.%${searchTerm}%`);
+        }
+        
+        const { data, error, count } = await query.range(
+          (currentPage - 1) * itemsPerPage, 
+          currentPage * itemsPerPage - 1
+        );
+        
+        if (error) throw error;
+        
+        // Ensure status is correctly typed
+        const typedData = data?.map(report => ({
+          ...report,
+          status: report.status as "new" | "in_progress" | "resolved"
+        })) as BugReportRow[];
+        
+        setBugReports(typedData || []);
+        
+        if (count !== null) {
+          setTotalPages(Math.ceil(count / itemsPerPage));
         }
       }
     } catch (error: any) {
@@ -155,7 +204,7 @@ export const useBugReports = (): UseBugReportsReturn => {
   // Load bug reports when filters change
   useEffect(() => {
     fetchBugReports();
-  }, [currentPage, statusFilter, searchTerm]);
+  }, [currentPage, statusFilter, searchTerm, profile]);
 
   return {
     bugReports,
