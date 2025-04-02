@@ -1,2 +1,4 @@
 
-project_id = "jpelncawdaounkidvymu"
+verify_jwt = false
+
+[vars]

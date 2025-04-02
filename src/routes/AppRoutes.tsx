@@ -42,6 +42,7 @@ const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const UserManagementPage = lazy(() => import('@/pages/UserManagement'));
 const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
 const AdminSubscriptionRepairPage = lazy(() => import('@/pages/AdminSubscriptionRepairPage'));
+const AdminBugReportsPage = lazy(() => import('@/pages/AdminBugReportsPage')); // New import
 
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
@@ -117,6 +118,7 @@ const AppContent = () => {
         {/* Admin routes */}
         <Route path="/admin/brevo-sync" element={<ProtectedRoute><BrevoSyncPage /></ProtectedRoute>} />
         <Route path="/admin/subscription-management" element={<ProtectedRoute><AdminSubscriptionRepairPage /></ProtectedRoute>} />
+        <Route path="/admin/bug-reports" element={<ProtectedRoute><AdminBugReportsPage /></ProtectedRoute>} />
         
         {/* Routes de suivi des conversions */}
         <Route path="/payment-success" element={<PaymentSuccessPage />} />

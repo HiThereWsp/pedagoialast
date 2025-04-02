@@ -1,116 +1,148 @@
 
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Headers CORS
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Max-Age': '86400'
 };
 
-// Main entry point for the Edge Function
+interface BugReportNotificationPayload {
+  reportId: string;
+  description: string;
+  screenshotUrl?: string;
+  url?: string;
+  userId?: string;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      headers: corsHeaders,
-      status: 204
-    });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const { reportId, description, screenshotUrl, url, userId } = await req.json();
-    
-    // Initialize Supabase client
-    const supabaseAdmin = createClient(
+    const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+
+    // Get the request data
+    const payload = await req.json() as BugReportNotificationPayload;
     
-    console.log("Retrieving bug report details for ID:", reportId);
-    
-    // Use our new function to get the report with user details
-    const { data: report, error: reportError } = await supabaseAdmin
-      .rpc('get_bug_report_with_user_details', { report_id: reportId })
-      .single();
-      
+    if (!payload || !payload.reportId || !payload.description) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get admin emails
+    const { data: adminUsers, error: adminError } = await supabaseClient
+      .from('user_profiles')
+      .select('user_email')
+      .eq('is_admin', true);
+
+    if (adminError) {
+      console.error('Error fetching admin users:', adminError);
+      throw adminError;
+    }
+
+    // Get bug report with details
+    const { data: reportData, error: reportError } = await supabaseClient.rpc(
+      'get_bug_report_with_user_details',
+      { report_id: payload.reportId }
+    );
+
     if (reportError) {
-      console.error("Error retrieving bug report details:", reportError);
+      console.error('Error fetching bug report details:', reportError);
       throw reportError;
     }
-    
+
+    const report = reportData[0];
     if (!report) {
-      console.error("No report found with ID:", reportId);
-      throw new Error("Bug report not found");
+      return new Response(
+        JSON.stringify({ error: 'Bug report not found' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log("Report retrieved successfully:", report.id);
-    
-    // Format email HTML content
-    const emailHtml = `
-      <h1>Nouveau rapport de bug</h1>
-      <p><strong>Date:</strong> ${new Date().toLocaleString('fr-FR')}</p>
-      <p><strong>Utilisateur:</strong> ${report.user_email || 'Utilisateur non connecté'}</p>
-      <p><strong>URL:</strong> ${report.url || url}</p>
-      <h2>Description</h2>
-      <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9;">
-        ${report.description?.replace(/\n/g, '<br>') || description}
-      </div>
-      ${report.screenshot_url || screenshotUrl ? `
-        <h2>Capture d'écran</h2>
-        <img src="${report.screenshot_url || screenshotUrl}" style="max-width: 100%; border: 1px solid #ddd; border-radius: 4px;" />
-      ` : ''}
-      <h2>Informations techniques</h2>
-      <pre style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; background-color: #f9f9f9; overflow: auto;">
-${JSON.stringify(report.browser_info || {}, null, 2)}
-      </pre>
-      <p>
-        <a href="${Deno.env.get('APP_URL') || 'https://app.pedagoia.fr'}/admin/bug-reports/${report.id}" style="display: inline-block; padding: 10px 20px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 4px;">
-          Voir le rapport complet
-        </a>
-      </p>
-    `;
+    // If we have Brevo API key, send email notification to admins
+    const brevoApiKey = Deno.env.get('BREVO_API_KEY');
+    if (brevoApiKey && adminUsers && adminUsers.length > 0) {
+      const adminEmails = adminUsers.map(admin => admin.user_email).filter(Boolean);
+      
+      if (adminEmails.length > 0) {
+        const screenshotHtml = payload.screenshotUrl 
+          ? `<p><strong>Capture d'écran:</strong> <a href="${payload.screenshotUrl}" target="_blank">Voir la capture d'écran</a></p>` 
+          : '';
+          
+        const urlHtml = payload.url 
+          ? `<p><strong>URL:</strong> <a href="${payload.url}" target="_blank">${payload.url}</a></p>` 
+          : '';
+          
+        const userHtml = report.user_email 
+          ? `<p><strong>Utilisateur:</strong> ${report.user_email}</p>` 
+          : '<p><strong>Utilisateur:</strong> Anonyme</p>';
 
-    console.log("Sending email notification");
+        // Prepare email to admins
+        const emailData = {
+          sender: {
+            name: 'PedagoIA - Notifications',
+            email: 'notifications@pedagogia.app'
+          },
+          to: adminEmails.map(email => ({ email })),
+          subject: '🐛 Nouveau signalement de bug sur PedagoIA',
+          htmlContent: `
+            <h1 style="color:#4f46e5">Nouveau signalement de bug</h1>
+            <p>Un nouveau signalement de bug a été soumis sur PedagoIA.</p>
+            <h2>Détails du signalement</h2>
+            ${userHtml}
+            <p><strong>Date:</strong> ${new Date(report.created_at).toLocaleString('fr-FR')}</p>
+            <p><strong>Description:</strong></p>
+            <div style="background-color:#f3f4f6;padding:15px;border-radius:5px;margin:10px 0;">
+              ${payload.description.replace(/\n/g, '<br>')}
+            </div>
+            ${urlHtml}
+            ${screenshotHtml}
+            <div style="margin-top:30px">
+              <a href="https://app.pedagogia.fr/admin/bug-reports" style="background-color:#4f46e5;color:white;padding:10px 15px;text-decoration:none;border-radius:5px;font-weight:bold;">
+                Voir tous les signalements
+              </a>
+            </div>
+          `
+        };
 
-    // Send the email with the function
-    const { data: emailResult, error: emailError } = await supabaseAdmin.functions.invoke('send-email', {
-      body: {
-        to: ['bonjour@pedagoia.fr'],
-        subject: `[BUG] Nouveau rapport - ${report.description?.slice(0, 50) || description.slice(0, 50)}${(report.description || description).length > 50 ? '...' : ''}`,
-        html: emailHtml,
+        // Send email via Brevo API
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'api-key': brevoApiKey
+          },
+          body: JSON.stringify(emailData)
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Error sending email via Brevo:', errorText);
+          throw new Error(`Brevo API error: ${errorText}`);
+        }
       }
-    });
-
-    if (emailError) {
-      console.error("Error sending email notification:", emailError);
-      throw emailError;
     }
-
-    console.log("Email notification sent successfully");
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Notification envoyée avec succès' }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
+      JSON.stringify({ success: true, message: 'Bug report notification sent successfully' }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+    
   } catch (error) {
-    console.error('Error in bug report notification:', error);
+    console.error('Error in bug report notification function:', error);
+    
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        stack: error.stack,
-        success: false,
-        message: 'Erreur lors de l\'envoi de la notification'
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      }
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
