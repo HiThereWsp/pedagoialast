@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sendBugReportNotification } from './useSendNotification';
 import type { BugReportRow } from '@/types/database/tables';
 
 interface UseBugReportsReturn {
@@ -37,7 +38,7 @@ export const useBugReports = (): UseBugReportsReturn => {
       
       let query = supabase
         .from('bug_reports')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false });
       
       if (statusFilter !== 'all') {
@@ -45,11 +46,8 @@ export const useBugReports = (): UseBugReportsReturn => {
       }
       
       if (searchTerm) {
-        // For JSONB field, cast to text before using ilike
-        query = query.or(
-          `description.ilike.%${searchTerm}%,` + 
-          `url.ilike.%${searchTerm}%`
-        );
+        // Fixed search query syntax
+        query = query.or(`description.ilike.%${searchTerm}%,url.ilike.%${searchTerm}%`);
       }
       
       const { data, error, count } = await query.range(
@@ -67,18 +65,16 @@ export const useBugReports = (): UseBugReportsReturn => {
       
       setBugReports(typedData || []);
       
-      // Get total count for pagination
-      const { count: totalCount, error: countError } = await supabase
-        .from('bug_reports')
-        .select('*', { count: 'exact', head: true });
-        
-      if (countError) throw countError;
-      
-      setTotalPages(Math.ceil((totalCount || 0) / itemsPerPage));
+      if (count !== null) {
+        setTotalPages(Math.ceil(count / itemsPerPage));
+      }
       
       // Fetch user emails for the bug reports
       if (data && data.length > 0) {
-        const userIds = data.filter(report => report.user_id).map(report => report.user_id);
+        const userIds = data
+          .filter(report => report.user_id)
+          .map(report => report.user_id);
+          
         if (userIds.length > 0) {
           await fetchUserEmails(userIds as string[]);
         }
@@ -142,13 +138,7 @@ export const useBugReports = (): UseBugReportsReturn => {
       
       // Send notification on status change
       try {
-        const response = await supabase.functions.invoke('send-bug-report-notification', {
-          body: { reportId }
-        });
-        
-        if (response.error) {
-          console.error('Error sending notification:', response.error);
-        }
+        await sendBugReportNotification(reportId);
       } catch (notifyError) {
         console.error('Failed to send status change notification:', notifyError);
       }
