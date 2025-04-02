@@ -1,5 +1,5 @@
 
 verify_jwt = false
 
-[vars]
+[secrets]
 SENDER_EMAIL = "notifications@pedagogia.app"

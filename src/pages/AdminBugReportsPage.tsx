@@ -66,7 +66,13 @@ export default function AdminBugReportsPage() {
       
       if (error) throw error;
       
-      setBugReports(data || []);
+      // Ensure status is correctly typed
+      const typedData = data?.map(report => ({
+        ...report,
+        status: report.status as "new" | "in_progress" | "resolved"
+      })) as BugReportRow[];
+      
+      setBugReports(typedData || []);
       
       // Get total count for pagination
       const { count: totalCount, error: countError } = await supabase
@@ -140,6 +146,19 @@ export default function AdminBugReportsPage() {
           report.id === reportId ? { ...report, status: newStatus } : report
         )
       );
+      
+      // Send notification on status change
+      try {
+        const response = await supabase.functions.invoke('send-bug-report-notification', {
+          body: { reportId }
+        });
+        
+        if (response.error) {
+          console.error('Error sending notification:', response.error);
+        }
+      } catch (notifyError) {
+        console.error('Failed to send status change notification:', notifyError);
+      }
       
       // If we're in detail view, update the selected report
       if (selectedReport && selectedReport.id === reportId) {
@@ -374,10 +393,16 @@ export default function AdminBugReportsPage() {
                     <Pagination className="mt-6">
                       <PaginationContent>
                         <PaginationItem>
-                          <PaginationPrevious 
+                          <Button 
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}
-                          />
+                            className="gap-1"
+                          >
+                            <ArrowLeft className="h-4 w-4" />
+                            <span>Précédent</span>
+                          </Button>
                         </PaginationItem>
                         
                         {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -392,10 +417,16 @@ export default function AdminBugReportsPage() {
                         ))}
                         
                         <PaginationItem>
-                          <PaginationNext 
+                          <Button 
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                             disabled={currentPage === totalPages}
-                          />
+                            className="gap-1"
+                          >
+                            <span>Suivant</span>
+                            <ArrowLeft className="h-4 w-4 rotate-180" />
+                          </Button>
                         </PaginationItem>
                       </PaginationContent>
                     </Pagination>
