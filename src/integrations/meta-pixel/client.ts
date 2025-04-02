@@ -1,11 +1,4 @@
 
-declare global {
-  interface Window {
-    fbq: any;
-    _fbq: any;
-  }
-}
-
 // Configuration des IDs de pixel pour différents objectifs
 export const FB_PIXEL_IDS = {
   SUBSCRIBE: '934337045580399',      // Pour les événements d'abonnement
@@ -129,9 +122,11 @@ export const initializePixel = () => {
 
   // Initialise fbq
   window.fbq = function() {
-    window.fbq.callMethod ? 
-      window.fbq.callMethod.apply(window.fbq, arguments) : 
+    if (window.fbq.callMethod) {
+      window.fbq.callMethod.apply(window.fbq, arguments);
+    } else {
       window.fbq.queue.push(arguments);
+    }
   };
 
   window._fbq = window.fbq;
