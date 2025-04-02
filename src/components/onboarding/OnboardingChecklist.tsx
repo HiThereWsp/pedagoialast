@@ -1,9 +1,7 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle } from "lucide-react";
-import { Confetti } from "@/components/ui/confetti";
 import { useOnboarding } from "@/hooks/useOnboarding";
 
 const onboardingTasks = [
@@ -19,43 +17,12 @@ export function OnboardingChecklist() {
   const { 
     completedTasks, 
     toggleTask, 
-    isAllCompleted, 
-    markAllCompleted 
+    isAllCompleted 
   } = useOnboarding();
-  const [showConfetti, setShowConfetti] = useState(false);
   
-  useEffect(() => {
-    if (isAllCompleted) {
-      // Check if premium welcome was already shown to avoid duplicate confetti
-      const premiumWelcomeShown = localStorage.getItem('premium_welcome_shown') === 'true';
-      
-      if (!premiumWelcomeShown) {
-        setShowConfetti(true);
-        
-        // Hide confetti after animation
-        const timer = setTimeout(() => {
-          setShowConfetti(false);
-        }, 5000);
-        
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [isAllCompleted]);
-
+  // If all tasks are completed, don't show the checklist
   if (isAllCompleted) {
-    return (
-      <div className="fixed bottom-[120px] left-4 z-50 md:absolute">
-        {showConfetti && <Confetti className="fixed inset-0 z-50" />}
-        <Card className="bg-yellow-100 border-yellow-300 shadow-md animate-fade-in">
-          <CardContent className="p-4 flex items-center gap-2">
-            <CheckCircle className="text-yellow-600 w-6 h-6" />
-            <span className="text-yellow-900 font-bold">
-              🎉 Félicitations ! Tu as maintenant les clés pour reprendre le controle de ton temps ! 🔑
-            </span>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return null;
   }
 
   return (
