@@ -23,6 +23,14 @@ export const BugReportFilters: React.FC<BugReportFiltersProps> = ({ onApplyFilte
     onApplyFilters('all', '');
   };
 
+  const handleSearchClear = () => {
+    setSearchTerm('');
+    if (searchTerm) {
+      // Only trigger filter update if there was a previous search term
+      onApplyFilters(statusFilter, '');
+    }
+  };
+
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-end mb-6">
       <div className="flex-1 space-y-1">
@@ -46,9 +54,7 @@ export const BugReportFilters: React.FC<BugReportFiltersProps> = ({ onApplyFilte
               variant="ghost"
               size="sm"
               className="absolute right-1 top-1 h-7 w-7 p-0"
-              onClick={() => {
-                setSearchTerm('');
-              }}
+              onClick={handleSearchClear}
             >
               <X className="h-4 w-4" />
             </Button>

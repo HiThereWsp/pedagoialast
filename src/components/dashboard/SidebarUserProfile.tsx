@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Settings, HelpCircle, LogOut, Mail, Users } from 'lucide-react';
+import { Settings, HelpCircle, LogOut, Mail, Users, Bug } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -48,13 +48,22 @@ export const SidebarUserProfile = ({ firstName, onLogout }: SidebarUserProfilePr
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>Aide</span>
               </DropdownMenuItem>
-              {/* Conditionally render User Management option if the user is an admin */}
-              {/*{isAdmin && (*/}
-              {/*    <DropdownMenuItem onClick={() => navigate('/user-management')} className="cursor-pointer">*/}
-              {/*      <Users className="mr-2 h-4 w-4" /> /!* Changed to Users icon for better context *!/*/}
-              {/*      <span>Gestion des utilisateurs</span> /!* Updated label to French for consistency *!/*/}
-              {/*    </DropdownMenuItem>*/}
-              {/*)}*/}
+              
+              {/* Show admin options only for admin users */}
+              {isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/user-management')} className="cursor-pointer">
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>Gestion des utilisateurs</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/admin/bug-reports')} className="cursor-pointer">
+                    <Bug className="mr-2 h-4 w-4" />
+                    <span>Signalements de bugs</span>
+                  </DropdownMenuItem>
+                </>
+              )}
+              
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onLogout} className="cursor-pointer text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
