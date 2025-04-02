@@ -128,7 +128,7 @@ serve(async (req) => {
         console.log("Processing subscription deleted event");
         await handleSubscriptionDeleted(event.data.object);
         break;
-      // Payment Link events
+      // Payment events
       case 'payment_intent.succeeded':
         console.log("Processing payment intent succeeded event");
         await handlePaymentSuccess(event.data.object, stripe, supabase);
