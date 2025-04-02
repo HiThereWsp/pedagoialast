@@ -1049,6 +1049,8 @@ export type Database = {
           is_ambassador: boolean | null
           is_beta: boolean | null
           is_paid_user: boolean | null
+          onboarding_completed: boolean | null
+          onboarding_tasks: boolean[] | null
           role_expiry: string | null
           stripe_customer_id: string | null
           user_email: string | null
@@ -1063,6 +1065,8 @@ export type Database = {
           is_ambassador?: boolean | null
           is_beta?: boolean | null
           is_paid_user?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_tasks?: boolean[] | null
           role_expiry?: string | null
           stripe_customer_id?: string | null
           user_email?: string | null
@@ -1077,6 +1081,8 @@ export type Database = {
           is_ambassador?: boolean | null
           is_beta?: boolean | null
           is_paid_user?: boolean | null
+          onboarding_completed?: boolean | null
+          onboarding_tasks?: boolean[] | null
           role_expiry?: string | null
           stripe_customer_id?: string | null
           user_email?: string | null
