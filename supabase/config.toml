@@ -4,8 +4,6 @@ project_id = "jpelncawdaounkidvymu"
 [functions]
 [functions.stripe-webhook]
 verify_jwt = false
-
-[functions.stripe-webhook.env]
 STRIPE_WEBHOOK_SECRET = "whsec_3NBhwaToGSYUQq2XtjKPrwG1aRDpscrM"
 STRIPE_WEBHOOK_SECRET_TEST = "whsec_mxduieTaBI8bMyVlioaNGFjSYX5tDhii"
 GA4_API_SECRET = "sZeGSAYwR1uvsvLZJJsajw"
