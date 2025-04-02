@@ -56,7 +56,12 @@ export default function AdminBugReportsPage() {
       }
       
       if (searchTerm) {
-        query = query.or(`description.ilike.%${searchTerm}%,browser_info.ilike.%${searchTerm}%,url.ilike.%${searchTerm}%`);
+        // Fix: Use proper operators for each field type
+        // For JSONB field, cast to text before using ilike
+        query = query.or(
+          `description.ilike.%${searchTerm}%,` + 
+          `url.ilike.%${searchTerm}%`
+        );
       }
       
       const { data, error, count } = await query.range(

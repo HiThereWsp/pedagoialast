@@ -176,6 +176,7 @@ export type Database = {
           browser_info: Json | null
           created_at: string
           description: string
+          Email: string | null
           id: string
           screenshot_url: string | null
           status: string
@@ -187,6 +188,7 @@ export type Database = {
           browser_info?: Json | null
           created_at?: string
           description: string
+          Email?: string | null
           id?: string
           screenshot_url?: string | null
           status?: string
@@ -198,6 +200,7 @@ export type Database = {
           browser_info?: Json | null
           created_at?: string
           description?: string
+          Email?: string | null
           id?: string
           screenshot_url?: string | null
           status?: string
