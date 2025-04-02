@@ -50,7 +50,7 @@ export const BottomBar = ({ firstName }: BottomBarProps) => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 h-16 flex items-center md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-40 h-16 flex items-center md:hidden">
       <div className="w-full flex justify-around">
         {/* Outils pédagogiques Button and Drawer */}
         <Drawer open={toolsDrawerOpen} onOpenChange={setToolsDrawerOpen}>
