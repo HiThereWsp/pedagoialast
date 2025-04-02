@@ -1,7 +1,7 @@
 
-
 import { updateOrCreateSubscription, updateUserInBrevoCRM } from '../helpers/subscriptionUtils.ts';
 import { trackPurchaseEvent, trackSubscriptionEvent } from './measurementProtocol.ts';
+import { trackPaymentEvent } from './datafastTracker.ts';
 
 /**
  * Handle successful payment event (payment_intent.succeeded, charge.succeeded, or checkout.session.completed)
@@ -72,6 +72,24 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
         );
         
         console.log(`Tracked purchase event via Measurement Protocol for client ${clientReferenceId}`);
+      }
+      
+      // Track payment via Datafast server-side tracking
+      if (customerEmail) {
+        await trackPaymentEvent(
+          customerEmail,
+          amount,
+          "EUR",
+          subscriptionType,
+          {
+            transaction_id: sessionId,
+            customer_id: customerId,
+            utm_source: metadata.utm_source,
+            utm_medium: metadata.utm_medium,
+            utm_campaign: metadata.utm_campaign
+          }
+        );
+        console.log(`Tracked payment event via Datafast for user ${customerEmail}`);
       }
     }
     else {
@@ -182,6 +200,24 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
             console.log(`Tracked subscription event via Measurement Protocol for client ${clientReferenceId}`);
           }
           
+          // Track payment via Datafast for payment_intent and charge events if not tracked yet
+          if (customerEmail && (paymentObject.object === 'payment_intent' || paymentObject.object === 'charge')) {
+            await trackPaymentEvent(
+              customerEmail,
+              amount,
+              "EUR",
+              subscriptionType,
+              {
+                transaction_id: sessionId,
+                customer_id: customerId,
+                utm_source: metadata.utm_source,
+                utm_medium: metadata.utm_medium,
+                utm_campaign: metadata.utm_campaign
+              }
+            );
+            console.log(`Tracked payment event via Datafast for user ${customerEmail}`);
+          }
+          
           console.log(`Successfully processed payment for ${customerEmail} (${subscriptionType})`);
           return;
         }
@@ -197,4 +233,3 @@ export async function handlePaymentSuccess(paymentObject, stripe, supabase) {
     console.error(`Error handling payment success: ${error.message}`, error);
   }
 }
-
