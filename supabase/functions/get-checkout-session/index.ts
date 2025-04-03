@@ -48,10 +48,10 @@ serve(async (req) => {
 
   try {
     // --- test key
-    // const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
+    const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
     // -------
-    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
+    // const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
+    // const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
     // Parse and validate the request body
     const body: GetSessionRequestBody = await req.json();
     const { sessionId } = body;

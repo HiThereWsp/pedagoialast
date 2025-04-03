@@ -5,12 +5,26 @@ import { facebookEvents } from "@/integrations/meta-pixel/client";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-// Price IDs for the plans
-const PRICE_IDS = {
-    yearly : "price_1R224CIqXQKnGj4myOb4EnXo",
-    monthly: "price_1R224HIqXQKnGj4mw1Zc41s1",
-};
+// Price IDs for the plans production
+// const priceIDs = {
+//     yearly : "price_1R224CIqXQKnGj4myOb4EnXo",
+//     monthly: "price_1R224HIqXQKnGj4mw1Zc41s1",
+// };
+// const productIDs = {
+//     yearly : "prod_RvtrB9qvvdbA94",
+//     monthly: "prod_RvtsYiu8kK3Nlc",
+// };
 
+// Dev test product Ids test mode
+
+const priceIDs = {
+    yearly : "price_1R1zqKIqXQKnGj4mgi0nXbaK",
+    monthly: "price_1R1zloIqXQKnGj4mbfg3CG2p",
+};
+const productIDs = {
+    yearly : "prod_RvrZPHTHWWrz7v",
+    monthly: "prod_RvrU5SPaCAWh5T",
+};
 interface PricingPlansProps {
     isSubscribed: boolean;
     subscriptionType: string | null;
@@ -52,9 +66,9 @@ export const PricingPlans = ({
             const { data: { session } } = await supabase.auth.getSession();
             const {data, error} = await supabase.functions.invoke('create-checkout-session', {
                 body: {
-                    priceId: PRICE_IDS.monthly,
+                    priceId: priceIDs.monthly,
                     subscriptionType: "monthly",
-                    productId: "prod_RvtsYiu8kK3Nlc", // Replace with your actual product ID
+                    productId: productIDs.monthly, // Replace with your actual product ID
                     testMode: import.meta.env.DEV, // Use test mode in development
                 }})
 
@@ -89,9 +103,9 @@ export const PricingPlans = ({
             const { data: { session } } = await supabase.auth.getSession();
             const {data, error} = await supabase.functions.invoke('create-checkout-session', {
                 body: {
-                    priceId: PRICE_IDS.yearly,
+                    priceId: priceIDs.yearly,
                     subscriptionType: "yearly",
-                    productId: "prod_RvtrB9qvvdbA94", // Replace with your actual product ID
+                    productId: productIDs.yearly, // Replace with your actual product ID
                     testMode: import.meta.env.DEV, // Use test mode in development
                 }
             })

@@ -3,6 +3,7 @@ import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { sendSubscriptionEmail } from './email_client.ts';
 import { manageContactList } from './brevo_list_client.ts';
+
 // CORS headers for responses
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,8 +12,8 @@ const corsHeaders = {
 
 // Initialize Stripe client
 
-// const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
-const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
+const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
+// const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
 const stripe = new Stripe(stripeSecretKey, {
   apiVersion: "2020-08-27",
 });
@@ -49,8 +50,8 @@ serve(async (req) => {
     console.log(`Raw request body: ${body}`);
 
     // Verify webhook signature
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
-    // const webhookSecret = "whsec_otFKDLi2qA6CMhN7oxnekdzCkY27dS3x" // Test secret
+    // const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
+    const webhookSecret = "whsec_otFKDLi2qA6CMhN7oxnekdzCkY27dS3x" // Test secret
     if (!webhookSecret) {
       throw new Error("Missing webhook secret");
     }
@@ -263,10 +264,6 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     console.error(`No email found for customer ${customerId}`);
     return;
   }
-  await Promise.all([
-    sendSubscriptionEmail(customerEmail, subscriptionStatus),
-    manageContactList(customerEmail, subscriptionStatus)
-  ]);
 
   // Look up user by stripe_customer_id or user_email
   let userId: string | undefined;
@@ -370,6 +367,20 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription) {
     console.error(`Error updating user_profiles: ${profileUpdateError.message}`);
     return;
   }
+
+  // Fetch first_name from profiles table
+  const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("first_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+  const userName = profileError || !profile?.first_name || profile.first_name === "Anonymous" ? "Customer" : profile.first_name;
+
+  await Promise.all([
+    sendSubscriptionEmail(customerEmail, subscriptionStatus, userName),
+    manageContactList(customerEmail, subscriptionStatus)
+  ]);
 
   console.log(`Subscription created for user ${userId}`);
 }
@@ -485,8 +496,17 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   console.log({customerEmail})
   if (customerEmail) {
     console.log("Sending subsciption update email +")
+    // Fetch first_name from profiles table
+    const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("first_name")
+        .eq("id", subscriptionData.user_id)
+        .maybeSingle();
+
+    const userName = profileError || !profile?.first_name || profile.first_name === "Anonymous" ? "Customer" : profile.first_name;
+
     await Promise.all([
-      sendSubscriptionEmail(customerEmail, subscriptionStatus),
+      sendSubscriptionEmail(customerEmail, subscriptionStatus, userName),
       manageContactList(customerEmail, subscriptionStatus)
     ]);
     console.log("Sent subsciption update email")
