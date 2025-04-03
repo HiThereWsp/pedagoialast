@@ -42,7 +42,9 @@ export function OnboardingChecklist() {
                 />
                 <label 
                   htmlFor={`task-${index}`}
-                  className="text-sm text-gray-800 cursor-pointer"
+                  className={`text-sm text-gray-800 cursor-pointer ${
+                    completedTasks[index] ? "line-through text-gray-500" : ""
+                  }`}
                 >
                   {task}
                 </label>
