@@ -12,8 +12,8 @@ const corsHeaders = {
 
 // Initialize Stripe client
 
-const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
-// const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
+// const stripeSecretKey = "sk_test_51HrPpqIqXQKnGj4mi4CST5C59N016AKJeIItIS7aFbvVc5EkILfvI4l8OB62QNAW2ZfSSa3v7k6XDwcux4UXm6Wn00dsGWxpA5"
+const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY")
 const stripe = new Stripe(stripeSecretKey, {
   apiVersion: "2020-08-27",
 });
@@ -50,8 +50,8 @@ serve(async (req) => {
     console.log(`Raw request body: ${body}`);
 
     // Verify webhook signature
-    // const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
-    const webhookSecret = "whsec_otFKDLi2qA6CMhN7oxnekdzCkY27dS3x" // Test secret
+    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET")
+    // const webhookSecret = "whsec_otFKDLi2qA6CMhN7oxnekdzCkY27dS3x" // Test secret
     if (!webhookSecret) {
       throw new Error("Missing webhook secret");
     }
