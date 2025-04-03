@@ -6,25 +6,25 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 // Price IDs for the plans production
-// const priceIDs = {
-//     yearly : "price_1R224CIqXQKnGj4myOb4EnXo",
-//     monthly: "price_1R224HIqXQKnGj4mw1Zc41s1",
-// };
-// const productIDs = {
-//     yearly : "prod_RvtrB9qvvdbA94",
-//     monthly: "prod_RvtsYiu8kK3Nlc",
-// };
+const priceIDs = {
+    yearly : "price_1R224CIqXQKnGj4myOb4EnXo",
+    monthly: "price_1R224HIqXQKnGj4mw1Zc41s1",
+};
+const productIDs = {
+    yearly : "prod_RvtrB9qvvdbA94",
+    monthly: "prod_RvtsYiu8kK3Nlc",
+};
 
 // Dev test product Ids test mode
 
-const priceIDs = {
-    yearly : "price_1R1zqKIqXQKnGj4mgi0nXbaK",
-    monthly: "price_1R1zloIqXQKnGj4mbfg3CG2p",
-};
-const productIDs = {
-    yearly : "prod_RvrZPHTHWWrz7v",
-    monthly: "prod_RvrU5SPaCAWh5T",
-};
+// const priceIDs = {
+//     yearly : "price_1R1zqKIqXQKnGj4mgi0nXbaK",
+//     monthly: "price_1R1zloIqXQKnGj4mbfg3CG2p",
+// };
+// const productIDs = {
+//     yearly : "prod_RvrZPHTHWWrz7v",
+//     monthly: "prod_RvrU5SPaCAWh5T",
+// };
 interface PricingPlansProps {
     isSubscribed: boolean;
     subscriptionType: string | null;
