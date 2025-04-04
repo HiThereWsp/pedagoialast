@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Mail, Copy } from "lucide-react"
@@ -13,25 +12,16 @@ export default function ContactPage() {
   const copyEmail = () => {
     navigator.clipboard.writeText(email)
     toast({
-      title: "Adresse email copiée !",
-      description: "L'adresse email a été copiée dans votre presse-papier.",
-    })
-  }
-
-  const handleEmailClick = () => {
-    const mailtoUrl = `mailto:${email}`
-    window.location.href = mailtoUrl
-    toast({
-      title: "Ouverture de votre client mail",
-      description: "Votre client mail par défaut va s'ouvrir automatiquement.",
+      title: "Email copié",
+      description: "L'adresse email a été copiée",
     })
   }
 
   return (
     <>
       <SEO 
-        title="Contact | PedagoIA - Nous contacter pour toute demande"
-        description="Contactez-nous pour toute question sur PedagoIA, le déploiement dans votre établissement ou pour devenir ambassadeur."
+        title="Contact | PedagoIA"
+        description="Contactez-nous pour toute question sur PedagoIA"
       />
       <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
@@ -43,55 +33,30 @@ export default function ContactPage() {
             />
           </Link>
           <Card className="p-8">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold tracking-tight text-primary mb-4">
+            <div className="text-center mb-6">
+              <h1 className="text-3xl font-bold tracking-tight text-primary mb-3">
                 Contactez-nous
               </h1>
-              <p className="text-lg text-muted-foreground">
-                Nous sommes à votre écoute pour toute demande concernant PedagoIA et son utilisation dans votre établissement.
+              <p className="text-muted-foreground">
+                Je suis à votre écoute pour toutes vos questions, Andy.
               </p>
             </div>
 
-            <div className="space-y-6">
-              <p className="text-muted-foreground">
-                N'hésitez pas à nous contacter si :
-              </p>
-              
-              <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
-                <li>Vous avez des questions sur l'utilisation de PedagoIA</li>
-                <li>Vous souhaitez partager votre retour d'expérience</li>
-                <li>Vous rencontrez des problèmes techniques</li>
-                <li>Vous souhaitez déployer PedagoIA dans votre établissement</li>
-                <li>Vous souhaitez devenir ambassadeur de PedagoIA</li>
-              </ul>
-
-              <div className="mt-8 text-center space-y-4">
-                <div className="inline-flex items-center gap-2 bg-muted px-4 py-2 rounded-md">
-                  <span className="text-muted-foreground select-all">{email}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={copyEmail}
-                    className="h-8 w-8"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                <div className="flex flex-col items-center gap-2">
-                  <Button
-                    size="lg"
-                    className="gap-2"
-                    onClick={handleEmailClick}
-                  >
-                    <Mail className="w-5 h-5" />
-                    Ouvrir dans votre client mail
-                  </Button>
-                  <p className="text-sm text-muted-foreground">
-                    Notre équipe vous répondra dans les meilleurs délais
-                  </p>
-                </div>
+            <div className="mt-6 text-center">
+              <div className="inline-flex items-center gap-2 bg-muted px-4 py-2 rounded-md mb-3">
+                <span className="text-muted-foreground select-all">{email}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={copyEmail}
+                  className="h-8 w-8"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
               </div>
+              
+              <p className="text-sm text-muted-foreground">
+              </p>
             </div>
           </Card>
         </div>

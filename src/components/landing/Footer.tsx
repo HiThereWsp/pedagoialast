@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const Footer = () => {
@@ -16,7 +15,7 @@ const Footer = () => {
           
           <div className="flex justify-center space-x-8 mb-8">
             <a 
-              href="mailto:bonjour@pedagoia.fr"
+              href="/contact"
               className="text-gray-300 hover:text-white transition-colors"
             >
               Nous contacter

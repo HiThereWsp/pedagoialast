@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Accordion,
@@ -6,27 +5,53 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '../ui/accordion';
+import { Play } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
+// FAQ réorganisée et simplifiée
 const faqs = [
-  {
-    question: "Comment PedagoIA s'intègre-t-il à mes outils existants ?",
-    answer: "pedagoIA est conçu pour fonctionner en complément de vos outils actuels. Les ressources pédagogiques générées sont importables dans vos outils de traitement de texte habituels."
-  },
-  {
-    question: "Est-il conforme aux programmes de l'Éducation Nationale ?",
-    answer: "Les outils sont conçus pour répondre au mieux aux exigences de l'éducation nationale. Cependant, il est toujours recommandé de vérifier les contenus générés par l'IA."
-  },
-  {
-    question: "Ai-je besoin de compétences techniques pour utiliser PedagoIA ?",
-    answer: "Non, PedagoIA est conçu pour être intuitif et facile à utiliser. Notre interface simple ne nécessite aucune compétence technique particulière. Si vous savez utiliser un navigateur web, vous pouvez utiliser PedagoIA."
-  },
-  {
-    question: "Quelle est la politique de confidentialité concernant les données des élèves ?",
-    answer: "La protection des données est notre priorité. Nous respectons strictement le RGPD et n'utilisons les données que de manière anonymisée pour améliorer nos services. Aucune donnée personnelle d'élève n'est jamais partagée avec des tiers."
-  },
+  // Question la plus populaire (score 4)
   {
     question: "Puis-je essayer PedagoIA avant de m'engager ?",
-    answer: "Oui, nous proposons une période d'essai gratuite qui vous permet d'explorer toutes les fonctionnalités de la plateforme. Aucune carte bancaire n'est requise pour commencer."
+    answer: (
+      <p className="text-left">
+        Oui, nous proposons une période d'essai gratuite de 3 jours qui vous permet d'explorer toutes les fonctionnalités de la plateforme. <Link to="/login" className="text-primary hover:underline">Je souhaite commencer mon essai gratuit</Link>.
+      </p>
+    )
+  },
+  
+  // Question sur le prix (nouvelle)
+  {
+    question: "Quels sont les tarifs de PedagoIA ?",
+    answer: (
+      <div className="text-left">
+        <p>PedagoIA est accessible à partir de 9,90€ par mois. Notre formule mensuelle sans engagement est proposée à 11,90€ par mois.</p>
+        <p className="mt-2">Pour les établissements scolaires, nous proposons des tarifs dégressifs adaptés au nombre d'enseignants. Tous nos abonnements donnent accès à l'ensemble des fonctionnalités sans restriction.</p>
+        <p className="mt-2">Pour en savoir plus sur nos offres, <Link to="/pricing" className="text-primary hover:underline">consultez notre page de tarification</Link>.</p>
+      </div>
+    )
+  },
+  
+  // Question sur l'intégration, reformulée et plus concise
+  {
+    question: "Comment intégrer PedagoIA dans mon quotidien d'enseignant ?",
+    answer: (
+      <div className="text-left">
+        <p>PedagoIA s'adapte à votre flux de travail existant, sans nécessiter de compétences techniques particulières. Notre interface intuitive vous permet de créer des ressources pédagogiques en quelques clics, de les exporter dans vos formats habituels et de gagner un temps précieux sur vos préparations.</p>
+        <div className="mt-3 flex items-center text-primary">
+        </div>
+      </div>
+    )
+  },
+  
+  // Question repositionnée sur le temps gagné, simplifiée
+  {
+    question: "Quels résultats puis-je attendre avec PedagoIA ?",
+    answer: (
+      <p className="text-left">
+        Selon nos utilisateurs actuels, PedagoIA permet de gagner en moyenne 4 à 6 heures par semaine sur la préparation des cours et des exercices. Vous pourrez personnaliser davantage les ressources pour vos élèves et diversifier vos approches pédagogiques, le tout en réduisant considérablement votre charge de travail.
+      </p>
+    )
   }
 ];
 
@@ -55,6 +80,14 @@ export function FAQSection() {
               </AccordionItem>
             ))}
           </Accordion>
+          
+          {/* Note supplémentaire */}
+          <p className="text-center text-muted-foreground mt-8">
+            Vous ne trouvez pas votre réponse ? 
+            <Link to="/contact" className="text-primary ml-1 hover:underline">
+              Contactez-nous
+            </Link>
+          </p>
         </div>
       </div>
     </section>
