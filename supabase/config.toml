@@ -1,11 +1,9 @@
-
 project_id = "jpelncawdaounkidvymu"
 
 [functions]
 [functions.stripe-webhook]
 verify_jwt = false
 import_map = "./supabase/functions/stripe-webhook/import_map.json"
-
 
 [functions.stripe-test-webhook]
 verify_jwt = false

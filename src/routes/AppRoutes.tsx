@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
@@ -42,6 +41,8 @@ const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const UserManagementPage = lazy(() => import('@/pages/UserManagement'));
 const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
 const AdminSubscriptionRepairPage = lazy(() => import('@/pages/AdminSubscriptionRepairPage'));
+const AdminBugReportsPage = lazy(() => import('@/pages/AdminBugReportsPage')); // New import
+const PlanDeClassePage = lazy(() => import('@/pages/PlanDeClassePage'));
 
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
@@ -102,6 +103,7 @@ const AppContent = () => {
           <Route path="/correspondence" element={<CorrespondencePage />} />
           <Route path="/offline-chat" element={<OfflineChatPage />} />
           <Route path="/saved-content" element={<SavedContentPage />} />
+          <Route path="/plan-de-classe" element={<PlanDeClassePage />} />
         </Route>
         
         {/* Routes accessibles sans abonnement */}
@@ -117,6 +119,7 @@ const AppContent = () => {
         {/* Admin routes */}
         <Route path="/admin/brevo-sync" element={<ProtectedRoute><BrevoSyncPage /></ProtectedRoute>} />
         <Route path="/admin/subscription-management" element={<ProtectedRoute><AdminSubscriptionRepairPage /></ProtectedRoute>} />
+        <Route path="/admin/bug-reports" element={<ProtectedRoute><AdminBugReportsPage /></ProtectedRoute>} />
         
         {/* Routes de suivi des conversions */}
         <Route path="/payment-success" element={<PaymentSuccessPage />} />
