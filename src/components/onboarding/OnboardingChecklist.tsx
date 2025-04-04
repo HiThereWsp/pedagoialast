@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useOnboarding } from "@/hooks/useOnboarding";
@@ -17,11 +16,20 @@ export function OnboardingChecklist() {
   const { 
     completedTasks, 
     toggleTask, 
-    isAllCompleted 
+    isAllCompleted,
+    hasBeenShown,
+    markAsShown 
   } = useOnboarding();
   
-  // If all tasks are completed, don't show the checklist
-  if (isAllCompleted) {
+  // Marquer comme montré au premier affichage
+  useEffect(() => {
+    if (!hasBeenShown) {
+      markAsShown();
+    }
+  }, []);
+  
+  // Ne pas afficher si déjà complété ou déjà montré
+  if (isAllCompleted || hasBeenShown) {
     return null;
   }
 

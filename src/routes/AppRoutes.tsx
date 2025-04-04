@@ -1,4 +1,3 @@
-
 import React, { Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
@@ -43,6 +42,7 @@ const UserManagementPage = lazy(() => import('@/pages/UserManagement'));
 const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
 const AdminSubscriptionRepairPage = lazy(() => import('@/pages/AdminSubscriptionRepairPage'));
 const AdminBugReportsPage = lazy(() => import('@/pages/AdminBugReportsPage')); // New import
+const PlanDeClassePage = lazy(() => import('@/pages/PlanDeClassePage'));
 
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
@@ -103,6 +103,7 @@ const AppContent = () => {
           <Route path="/correspondence" element={<CorrespondencePage />} />
           <Route path="/offline-chat" element={<OfflineChatPage />} />
           <Route path="/saved-content" element={<SavedContentPage />} />
+          <Route path="/plan-de-classe" element={<PlanDeClassePage />} />
         </Route>
         
         {/* Routes accessibles sans abonnement */}

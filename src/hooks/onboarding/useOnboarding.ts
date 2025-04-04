@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -9,12 +8,14 @@ import {
 } from "./onboardingStorage";
 import { setupEventListeners } from "./onboardingEvents";
 import { showCompletionCelebration } from "./celebrationEffects";
+import { supabase } from "@/lib/supabase";
 
 export const useOnboarding = () => {
   const { user } = useAuth();
   const [completedTasks, setCompletedTasks] = useState<boolean[]>(Array(TOTAL_TASKS).fill(false));
   const [isAllCompleted, setIsAllCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasBeenShown, setHasBeenShown] = useState(false);
 
   // Check if all tasks are completed
   useEffect(() => {
@@ -91,6 +92,29 @@ export const useOnboarding = () => {
     loadOnboardingData();
   }, [user]);
 
+  // Vérifier si l'onboarding a déjà été montré
+  useEffect(() => {
+    const checkOnboardingShown = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('onboarding_shown')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (data) {
+          setHasBeenShown(data.onboarding_shown);
+        }
+      } catch (error) {
+        console.error('Error checking onboarding shown status:', error);
+      }
+    };
+
+    checkOnboardingShown();
+  }, [user]);
+
   // Toggle a specific task
   const toggleTask = (index: number) => {
     const newCompletedTasks = [...completedTasks];
@@ -121,11 +145,29 @@ export const useOnboarding = () => {
     return cleanup;
   }, [completedTasks]);
 
+  // Marquer l'onboarding comme montré
+  const markAsShown = async () => {
+    if (!user) return;
+    
+    try {
+      await supabase
+        .from('user_profiles')
+        .update({ onboarding_shown: true })
+        .eq('user_id', user.id);
+        
+      setHasBeenShown(true);
+    } catch (error) {
+      console.error('Error marking onboarding as shown:', error);
+    }
+  };
+
   return {
     completedTasks,
     toggleTask,
     isAllCompleted,
     markAllCompleted,
-    isLoading
+    isLoading,
+    hasBeenShown,
+    markAsShown
   };
 };
