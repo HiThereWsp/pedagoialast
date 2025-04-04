@@ -74,8 +74,8 @@ export const PremiumWelcomeDialog: React.FC<PremiumWelcomeDialogProps> = ({ firs
           subscription_type: subscriptionType
         });
         
-        // Mark as shown in localStorage
-        localStorage.setItem('premium_welcome_shown', 'true');
+        // Mark as shown in localStorage - ensure we store with a timestamp
+        localStorage.setItem('premium_welcome_shown', Date.now().toString());
       }, 1000);
       
       return () => clearTimeout(timer);

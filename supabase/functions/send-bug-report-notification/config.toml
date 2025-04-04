@@ -1,2 +1,5 @@
 
-project_id = "jpelncawdaounkidvymu"
+verify_jwt = false
+
+[secrets]
+SENDER_EMAIL = "notifications@pedagogia.app"

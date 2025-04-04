@@ -12,7 +12,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
-import { ArrowLeft, X, Calendar } from "lucide-react";
+import { ArrowLeft, X, Calendar, BugOff } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -340,14 +340,22 @@ export default function UserManagement() {
                     Liste des utilisateurs avec leurs statuts actuels. Utilisez les interrupteurs pour modifier les permissions.
                   </p>
                 </div>
-                <Button
-                    variant="outline"
-                    onClick={() => navigate("/home")}
-                    className="ml-auto"
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Retour
-                </Button>
+                <div className="flex flex-col space-y-2">
+                  <Button
+                      variant="outline"
+                      onClick={() => navigate("/home")}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Retour
+                  </Button>
+                  <Button
+                      variant="outline"
+                      onClick={() => navigate("/admin/bug-reports")}
+                  >
+                    <BugOff className="mr-2 h-4 w-4" />
+                    Signalements de bugs
+                  </Button>
+                </div>
               </div>
 
               <div className="mb-6 relative z-10">
