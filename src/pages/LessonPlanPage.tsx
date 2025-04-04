@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { LessonPlanCreator } from '@/components/lesson-plan/LessonPlanCreator';
 import { useIsMobile } from '@/hooks/use-mobile';
