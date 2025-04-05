@@ -1,0 +1,24 @@
+{
+  "name": "PedagoIA",
+  "short_name": "PedagoIA",
+  "icons": [
+    {
+      "src": "/lovable-uploads/ac7af898-e7af-416e-938d-8a5db71a0b9a.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/lovable-uploads/e4433d2f-148e-4c4f-abb3-f6f725f5139b.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/lovable-uploads/2f4c362b-69ee-48be-884e-89168ba6fe23.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#FF719A",
+  "background_color": "#FFE29F",
+  "display": "standalone"
+} 
