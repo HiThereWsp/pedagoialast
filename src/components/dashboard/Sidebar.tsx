@@ -251,7 +251,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
                         )}
                       >
                         <div className="flex items-center gap-2 w-full">
-                          <MessageSquare className="h-4 w-4 shrink-0 text-blue-500" />
+                          <MessageSquare className="h-4 w-4 shrink-0 text-yellow-500" />
                           <span className="text-sm font-medium truncate">{thread.title}</span>
                         </div>
                       </Button>
