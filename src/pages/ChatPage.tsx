@@ -1,31 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Bot, Send, Loader2, Globe, Brain } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { supabase } from "@/integrations/supabase/client";
-import { Message, Thread } from '@/types/supabase';
+import { supabase, supabaseUrl, supabaseKey } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
 
 export const ChatPage = () => {
-  const {user} = useAuth();
+  const { user } = useAuth();
   const { threadId } = useParams();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [webSearch, setWebSearch] = useState(false);
   const [deepResearch, setDeepResearch] = useState(false);
+  const [streamingContent, setStreamingContent] = useState('');
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     if (threadId) {
       loadThreadMessages();
     } else {
       setMessages([]);
+      setStreamingContent('');
     }
   }, [threadId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, streamingContent]);
+
+  useEffect(() => {
+    console.log('Messages:', messages);
+    console.log('Streaming Content:', streamingContent);
+  }, [messages, streamingContent]);
+
+  useEffect(() => {
+    const streamingMessage = messages.find(msg => msg.metadata?.streaming);
+    if (streamingMessage) {
+      console.log('Streaming message detected:', streamingMessage);
+    }
+  }, [messages]);
 
   const loadThreadMessages = async () => {
     const { data, error } = await supabase
@@ -35,11 +53,13 @@ export const ChatPage = () => {
       .order('created_at', { ascending: true });
 
     if (!error && data) {
-      setMessages(data as Message[]);
+      setMessages(data);
+    } else {
+      console.error('Error loading messages:', error);
     }
   };
 
-  const createThread = async (firstMessage: string): Promise<string> => {
+  const createThread = async (firstMessage) => {
     const { data: thread, error: threadError } = await supabase
       .from('chat_threads')
       .insert({
@@ -54,18 +74,19 @@ export const ChatPage = () => {
       .select()
       .single();
 
-    if (threadError) throw threadError;
-    return (thread as Thread).id;
+    if (threadError) {
+      console.error('Error creating thread:', threadError);
+      throw threadError;
+    }
+    return thread.id;
   };
 
-  const saveMessage = async (content: string, threadId: string, role: 'user' | 'assistant' = 'user'): Promise<Message> => {
-    // First update the thread's last_message_at to trigger a refresh
+  const saveMessage = async (content, threadId, role = 'user', metadata = {}) => {
     await supabase
       .from('chat_threads')
       .update({ last_message_at: new Date().toISOString() })
       .eq('id', threadId);
 
-    // Then save the message
     const { data: message, error } = await supabase
       .from('chat_messages')
       .insert({
@@ -73,42 +94,148 @@ export const ChatPage = () => {
         content,
         role,
         tokens_used: 0,
-        metadata: {}
+        metadata
       })
       .select()
       .single();
 
-    if (error) throw error;
-    return message as Message;
+    if (error) {
+      console.error('Error saving message:', error);
+      throw error;
+    }
+    return message;
   };
 
-  const generateResponse = async (threadId: string, messageId: string, messages: Message[]) => {
-    const { data, error } = await supabase.functions.invoke('chat-completion', {
-      body: {
-        threadId,
-        messageId,
-        messages,
-        webSearchEnabled: webSearch,
-        deepResearchEnabled: deepResearch,
-      },
-    });
+  const generateResponse = async (threadId, messageId, currentMessages) => {
+    try {
+      setIsLoading(true);
 
-    if (error) {
-      throw new Error(error.message);
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/chat-completion`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`
+          },
+          body: JSON.stringify({
+            threadId,
+            messageId,
+            messages: currentMessages,
+            webSearchEnabled: webSearch,
+            deepResearchEnabled: deepResearch,
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Edge function error: ${response.status}`);
+      }
+
+      if (!response.body) {
+        throw new Error('Response body is null');
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullContent = '';
+
+      let streamingMessage = null;
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      while (attempts < maxAttempts && !streamingMessage) {
+        const { data: updatedMessages, error } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .eq('thread_id', threadId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching streaming message:', error);
+          break;
+        }
+
+        streamingMessage = updatedMessages.find(msg =>
+          msg.role === 'assistant' &&
+          msg.metadata?.in_response_to === messageId &&
+          msg.metadata?.streaming
+        );
+
+        if (!streamingMessage) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
+        }
+      }
+
+      if (!streamingMessage) {
+        throw new Error('Streaming message not found in database');
+      }
+
+      setMessages(prev => [...prev, streamingMessage]);
+      setStreamingContent('');
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        console.log('Chunk:', chunk);
+
+        fullContent += chunk;
+        setStreamingContent(fullContent);
+      }
+
+      let finalMessage = null;
+      attempts = 0;
+
+      while (attempts < maxAttempts && !finalMessage) {
+        const { data: updatedMessages, error } = await supabase
+          .from('chat_messages')
+          .select('*')
+          .eq('thread_id', threadId)
+          .order('created_at', { ascending: true });
+
+        if (error) {
+          console.error('Error fetching final message:', error);
+          break;
+        }
+
+        finalMessage = updatedMessages.find(msg =>
+          msg.role === 'assistant' &&
+          msg.metadata?.in_response_to === messageId &&
+          !msg.metadata?.streaming
+        );
+
+        if (!finalMessage) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          attempts++;
+        }
+      }
+
+      if (!finalMessage) {
+        throw new Error('Final message not found in database');
+      }
+
+      setMessages(prev => {
+        const updatedMessages = [...prev];
+        const streamingIndex = updatedMessages.findIndex(msg => msg.metadata?.streaming);
+        if (streamingIndex !== -1) {
+          updatedMessages[streamingIndex] = finalMessage;
+        }
+        return updatedMessages;
+      });
+
+      setStreamingContent('');
+      return finalMessage;
+    } catch (error) {
+      console.error('Streaming error:', error);
+      setMessages(prev => prev.filter(msg => !msg.metadata?.streaming));
+      setStreamingContent('');
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-
-    // Load the latest messages after the response is generated
-    const { data: updatedMessages, error: messagesError } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('thread_id', threadId)
-      .order('created_at', { ascending: true });
-
-    if (messagesError) {
-      throw new Error(messagesError.message);
-    }
-
-    return updatedMessages as Message[];
   };
 
   const handleSend = async () => {
@@ -119,23 +246,18 @@ export const ChatPage = () => {
     setIsLoading(true);
 
     try {
-      // Create a new thread if needed
       const currentThreadId = threadId || await createThread(messageContent);
-      
-      // Save user message
-      const userMessage = await saveMessage(messageContent, currentThreadId);
-      setMessages(prev => [...prev, userMessage]);
+      const userMessage = await saveMessage(messageContent, currentThreadId, 'user');
+      const updatedMessages = [...messages, userMessage];
+      setMessages(updatedMessages);
 
-      // Navigate to thread if it's a new one
       if (!threadId) {
         navigate(`/chat/${currentThreadId}`, { replace: true });
       }
 
-      // Generate response and get updated messages
-      const updatedMessages = await generateResponse(currentThreadId, userMessage.id, [...messages, userMessage]);
-      setMessages(updatedMessages);
+      await generateResponse(currentThreadId, userMessage.id, updatedMessages);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error in handleSend:', error);
     } finally {
       setIsLoading(false);
     }
@@ -143,96 +265,91 @@ export const ChatPage = () => {
 
   return (
     <div className="flex flex-col h-screen max-w-4xl mx-auto p-4">
-      {messages.length === 0 ? (
-        // Center the input when no messages
+      {messages.length === 0 && !isLoading ? (
         <div className="flex-1 flex flex-col items-center justify-center">
           <div className="w-full max-w-2xl space-y-4">
-            <div className="w-full max-w-2xl space-y-4">
-              <div className="flex justify-center mb-8">
-                <Bot className="h-12 w-12 text-[#FFD700]" />
-              </div>
-              <div className="text-center mb-8">
-                <h2 className="text-2xl font-semibold mb-2">Comment puis-je vous aider aujourd'hui?</h2>
-                <p className="text-gray-600">Je suis votre assistant IA, prêt à vous aider dans vos tâches.</p>
-              </div>
-              <div className="relative">
-                <Textarea
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your message..."
-                  className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all"
-                  rows={3}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                />
-                <div className="absolute right-2 bottom-2 flex items-center space-x-2 p-1 rounded-lg bg-white/50 backdrop-blur-sm">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center">
-                          <Switch
-                            checked={webSearch}
-                            onCheckedChange={setWebSearch}
-                            className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
-                          />
-                          <Globe className={`h-4 w-4 ml-1 transition-colors ${webSearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Enable web search</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+            <div className="flex justify-center mb-8">
+              <Bot className="h-12 w-12 text-[#FFD700]" />
+            </div>
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold mb-2">Comment puis-je vous aider aujourd'hui?</h2>
+              <p className="text-gray-600">Je suis votre assistant IA, prêt à vous aider dans vos tâches.</p>
+            </div>
+            <div className="relative">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your message..."
+                className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all"
+                rows={3}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+              />
+              <div className="absolute right-2 bottom-2 flex items-center space-x-2 p-1 rounded-lg bg-white/50 backdrop-blur-sm">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center">
+                        <Switch
+                          checked={webSearch}
+                          onCheckedChange={setWebSearch}
+                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
+                        />
+                        <Globe className={`h-4 w-4 ml-1 transition-colors ${webSearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enable web search</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center">
-                          <Switch
-                            checked={deepResearch}
-                            onCheckedChange={setDeepResearch}
-                            className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
-                          />
-                          <Brain className={`h-4 w-4 ml-1 transition-colors ${deepResearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Enable deep research</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center">
+                        <Switch
+                          checked={deepResearch}
+                          onCheckedChange={setDeepResearch}
+                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
+                        />
+                        <Brain className={`h-4 w-4 ml-1 transition-colors ${deepResearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Enable deep research</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
 
-                  <Button
-                    onClick={handleSend}
-                    disabled={!input.trim() || isLoading}
-                    size="sm"
-                    className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleSend}
+                  disabled={!input.trim() || isLoading}
+                  size="sm"
+                  className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
             </div>
           </div>
         </div>
       ) : (
-        // Show messages and input at bottom when there are messages
         <>
           <div className="flex-1 overflow-y-auto space-y-4 mb-4 p-6 rounded-xl border-0 bg-white/80 backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative">
-            {messages.map((message, index) => (
+            {messages.map((message) => (
               <div
-                key={index}
+                key={message.id}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <span></span>
                 <div
                   className={`max-w-[80%] rounded-xl p-4 shadow-lg transition-shadow hover:shadow-xl ${
                     message.role === 'user'
@@ -241,12 +358,16 @@ export const ChatPage = () => {
                   }`}
                 >
                   <div className={`text-left ${message.role === 'user' ? 'text-white' : 'text-gray-800'}`}>
-                    {message.content}
+                    {message.metadata?.streaming ? (streamingContent || '') : message.content}
+                    {message.metadata?.streaming && (
+                      <span className="inline-block ml-1 animate-pulse">▋</span>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
-            {isLoading && (
+            <div ref={messagesEndRef} />
+            {isLoading && !messages.some(msg => msg.metadata?.streaming) && (
               <div className="flex justify-start">
                 <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-4 mr-4 shadow-lg">
                   <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
