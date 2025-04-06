@@ -51,8 +51,8 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
-  const threadsPerPage = 12; // Load 12 threads per page
-  const threadsToShow = 7; // Show only 7 threads initially
+  const threadsPerPage = 15; // Load 15 threads per page
+  const threadsToShow = 15; // Show 15 threads initially
   const loadingRef = useRef<HTMLDivElement>(null);
   const observer = useRef<IntersectionObserver>();
 
@@ -75,25 +75,25 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
 
   useEffect(() => {
     const currentLoadingRef = loadingRef.current;
-    if (!currentLoadingRef || !isChatRoute || page === 0) return; // Don't observe while loading first page
+    if (!currentLoadingRef || !isChatRoute) return;
 
     const observerCallback = (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
-      if (entry.isIntersecting && hasMore && !loadingThreads && page > 0) {
+      if (entry.isIntersecting && hasMore && !loadingThreads) {
         loadThreads(page + 1);
       }
     };
 
     const observer = new IntersectionObserver(observerCallback, {
       root: null,
-      rootMargin: '50px',
-      threshold: 0.1
+      rootMargin: '0px',
+      threshold: 1.0 // Trigger when the target is fully visible
     });
 
     observer.observe(currentLoadingRef);
 
     return () => observer.disconnect();
-  }, [isChatRoute, page]); // Include page to re-setup observer after first load
+  }, [isChatRoute, hasMore, loadingThreads]);
 
   const loadThreads = async (pageToLoad: number) => {
     if (loadingThreads || (!hasMore && pageToLoad > 0)) return;
@@ -117,7 +117,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
       
       if (data) {
         setThreads(prev => {
-          // If first load, only show 7 threads
+          // For first load, show exactly 15 threads
           if (pageToLoad === 0) {
             return data.slice(0, threadsToShow);
           }
@@ -127,6 +127,8 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
           );
           return [...prev, ...newThreads];
         });
+        
+        // Update hasMore based on whether we got a full page of threads
         setHasMore(data.length === threadsPerPage);
         setPage(pageToLoad);
       }
@@ -213,7 +215,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
           
           {/* Chat threads list container */}
           <div className="flex-1 overflow-hidden"> {/* Parent container */}
-            <div className="h-64 overflow-y-auto"> {/* Fixed height scrollable container */}
+            <div className="h-[600px] overflow-y-auto"> {/* Adjusted height to show 15 threads */}
               <div className="space-y-1 p-2">
                 {loadingThreads && threads.length === 0 ? (
                   <div className="animate-pulse space-y-4 p-4">
@@ -250,14 +252,13 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
                         ref={loadingRef}
                         className="py-4 flex items-center justify-center"
                       >
-                        {loadingThreads && (
-                          <div className="space-y-4 w-full">
-                            <div className="animate-pulse space-y-3">
-                              <div className="h-4 bg-gray-200 rounded w-3/4" />
-                              <div className="h-4 bg-gray-200 rounded w-1/2" />
-                            </div>
-                          </div>
-                        )}
+                        <div 
+                          className="animate-pulse space-y-3"
+                          style={{ height: '100px' }}
+                        >
+                          <div className="h-4 bg-gray-200 rounded w-3/4" />
+                          <div className="h-4 bg-gray-200 rounded w-1/2" />
+                        </div>
                       </div>
                     )}
                   </div>
