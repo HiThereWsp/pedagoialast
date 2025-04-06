@@ -10,6 +10,7 @@ import Bienvenue from '@/pages/Bienvenue';
 import ToolsLayout from '@/components/layout/ToolsLayout';
 import Guide from '@/pages/Guide';
 import { BugReportButton } from '@/components/bug-report/BugReportButton';
+import ChatPage from '@/pages/ChatPage';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
@@ -101,9 +102,10 @@ const AppContent = () => {
           <Route path="/lesson-plan" element={<LessonPlanPage />} />
           <Route path="/image-generation" element={<ImageGenerationPage />} />
           <Route path="/correspondence" element={<CorrespondencePage />} />
-          <Route path="/offline-chat" element={<OfflineChatPage />} />
           <Route path="/saved-content" element={<SavedContentPage />} />
           <Route path="/plan-de-classe" element={<PlanDeClassePage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:threadId" element={<ChatPage />} />
         </Route>
         
         {/* Routes accessibles sans abonnement */}

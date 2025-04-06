@@ -115,7 +115,7 @@ export const ToolsLayout = () => {
         )}
         
         {/* Contenu principal avec marge à gauche pour la sidebar sur desktop */}
-        <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : 'mt-16 mb-16'}`}>
+        <div className={`flex-1 ${!isMobile ? 'ml-0' : 'mt-16 mb-16'}`}>
           <div className="min-h-screen bg-white relative overflow-hidden">
             {/* Grid Pattern Background */}
             <div className="fixed inset-0 overflow-hidden">

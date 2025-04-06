@@ -1,37 +1,100 @@
-
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { 
-  MessageSquare, 
+  Bot,
   Image, 
   BookOpen, 
   FileText, 
   Sparkles, 
   Leaf,
   MessageCircle,
+  Plus,
+  ArrowLeft,
+  MessageSquare,
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import SidebarNavItem from './SidebarNavItem';
 import SidebarNavigationSection from './SidebarNavigationSection';
 import SidebarUserProfile from './SidebarUserProfile';
+import { Database } from '@/types/supabase';
+
+type Thread = Database['public']['Tables']['chat_threads']['Row'];
+
+type ThreadRow = Thread & {
+  created_at: string;
+  updated_at: string;
+  last_message_at: string;
+};
 
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
   firstName: string;
+  onThreadSelect?: (threadId: string) => void;
 }
 
-export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
+export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: SidebarProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { threadId } = useParams();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isChatRoute = location.pathname.startsWith('/chat');
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [loadingThreads, setLoadingThreads] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isChatRoute && user?.id) {
+      loadThreads();
+    }
+  }, [isChatRoute, user?.id, location.pathname]);
+
+  const loadThreads = async () => {
+    try {
+      setLoadingThreads(true);
+      setError(null);
+
+      const { data, error } = await supabase
+        .from('chat_threads')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .order('last_message_at', { ascending: false });
+
+      if (error) throw error;
+      
+      if (data) {
+        setThreads(data as Thread[]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load threads');
+      toast({
+        variant: "destructive",
+        title: "Erreur de chargement",
+        description: "Une erreur est survenue lors du chargement des threads. Veuillez réessayer.",
+      });
+    } finally {
+      setLoadingThreads(false);
+    }
+  };
+
+  const handleThreadClick = (threadId: string) => {
+    if (onThreadSelect) {
+      onThreadSelect(threadId);
+    }
+    navigate(`/chat/${threadId}`, { replace: true });
+  };
 
   const handleLogout = async () => {
     try {
-      // Vérifier d'abord si une session existe
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
         console.error("Erreur lors de la session:", sessionError);
@@ -46,7 +109,6 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
         return;
       }
 
-      // Si on a une session valide, on tente la déconnexion
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -68,80 +130,133 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Chat IA with "Bientôt disponible" badge */}
-      <div className="mb-6 px-4 py-6">
-        <SidebarNavItem 
-          icon={<MessageSquare className="h-5 w-5" />} 
-          label="Chat IA" 
-          notAvailable={true}
-          notAvailableIcon={
-            <span className="ml-auto flex items-center">
-              <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 font-normal px-2 py-0.5 whitespace-nowrap">
-                bientôt disponible
-              </Badge>
-            </span>
-          }
-        />
-      </div>
+    <div className="flex flex-col h-full mt-16">
+      {isChatRoute ? (
+        <div className="flex-1 flex flex-col">
+          <div className="p-4 space-y-4">
+            <Button 
+              variant="ghost"
+              onClick={() => navigate("/tableaudebord")}
+              className="w-full flex items-center justify-start gap-2 text-gray-600 hover:text-gray-900"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              Retour au tableau de bord
+            </Button>
+            <Button 
+              onClick={() => {
+                navigate('/chat');
+              }}
+              className="w-full flex items-center justify-center gap-2"
+            >
+              <Plus className="h-5 w-5" />
+              New Chat
+            </Button>
+          </div>
+          <Separator className="my-4" />
+          
+          {/* Chat threads list */}
+          <div className="flex-1 overflow-y-auto px-2">
+            {loadingThreads ? (
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-32 mb-2" />
+                <div className="h-4 bg-gray-200 rounded w-48" />
+                <div className="h-4 bg-gray-200 rounded w-32 mb-2 mt-4" />
+                <div className="h-4 bg-gray-200 rounded w-48" />
+              </div>
+            ) : error ? (
+              <div className="p-4 text-red-500">
+                {error}
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {threads.map((thread) => (
+                  <Button
+                    key={thread.id}
+                    variant="ghost"
+                    onClick={() => handleThreadClick(thread.id)}
+                    className={cn(
+                      "w-full flex flex-col items-start gap-1 p-3 h-auto",
+                      threadId === thread.id && "bg-blue-50 text-blue-600 hover:bg-blue-50"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 w-full">
+                      <MessageSquare className="h-4 w-4 shrink-0" />
+                      <span className="text-sm font-medium truncate">{thread.title}</span>
+                    </div>
+                    <span className="text-xs text-gray-500 truncate w-full">
+                      {thread.preview}
+                    </span>
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        // Other routes content
+        <>
+          {/* Outils pédagogiques */}
+          <SidebarNavigationSection title="Outils pédagogiques" className="mb-auto">
+            <SidebarNavItem 
+              icon={<Bot className="h-5 w-5" />} 
+              label="Chat AI" 
+              path="/chat"
+              onClick={() => navigate("/chat")}
+            />
+            <SidebarNavItem 
+              icon={<Sparkles className="h-5 w-5" />} 
+              label="Générateur de séquences" 
+              path="/lesson-plan"
+              onClick={() => navigate("/lesson-plan")}
+            />
+            <SidebarNavItem 
+              icon={<Leaf className="h-5 w-5" />} 
+              label="Générateur d'exercices" 
+              path="/exercise"
+              onClick={() => navigate("/exercise")}
+            />
+            <SidebarNavItem 
+              icon={<FileText className="h-5 w-5" />} 
+              label="Assistant administratif" 
+              path="/correspondence"
+              onClick={() => navigate("/correspondence")}
+            />
+            <SidebarNavItem 
+              icon={<Image className="h-5 w-5" />} 
+              label="Générateur d'images" 
+              path="/image-generation"
+              onClick={() => navigate("/image-generation")}
+            />
+          </SidebarNavigationSection>
+          
+          {/* Resources section */}
+          <div className="mt-auto pt-6">
+            <Separator className="mb-6" />
+            
+            <SidebarNavigationSection hasSeparator={true}>
+              <SidebarNavItem 
+                icon={<BookOpen className="h-5 w-5" />} 
+                label="Mes ressources" 
+                path="/saved-content"
+                onClick={() => navigate("/saved-content")}
+              />
+            </SidebarNavigationSection>
+            
+            {/* Feature request section */}
+            <SidebarNavigationSection>
+              <SidebarNavItem 
+                icon={<MessageCircle className="h-5 w-5 text-purple-600" />} 
+                label="Demander des fonctionnalités" 
+                path="/suggestions"
+                onClick={() => navigate("/suggestions")}
+                className="bg-purple-50 text-purple-700 hover:bg-purple-100"
+              />
+            </SidebarNavigationSection>
+          </div>
+        </>
+      )}
       
-      <Separator className="my-6" />
-      
-      {/* Outils pédagogiques */}
-      <SidebarNavigationSection title="Outils pédagogiques" className="mb-auto">
-        <SidebarNavItem 
-          icon={<Sparkles className="h-5 w-5" />} 
-          label="Générateur de séquences" 
-          path="/lesson-plan"
-          onClick={() => navigate("/lesson-plan")}
-        />
-        <SidebarNavItem 
-          icon={<Leaf className="h-5 w-5" />} 
-          label="Générateur d'exercices" 
-          path="/exercise"
-          onClick={() => navigate("/exercise")}
-        />
-        <SidebarNavItem 
-          icon={<FileText className="h-5 w-5" />} 
-          label="Assistant administratif" 
-          path="/correspondence"
-          onClick={() => navigate("/correspondence")}
-        />
-        <SidebarNavItem 
-          icon={<Image className="h-5 w-5" />} 
-          label="Générateur d'images" 
-          path="/image-generation"
-          onClick={() => navigate("/image-generation")}
-        />
-      </SidebarNavigationSection>
-      
-      {/* Resources section */}
-      <div className="mt-auto pt-6">
-        <Separator className="mb-6" />
-        
-        <SidebarNavigationSection hasSeparator={true}>
-          <SidebarNavItem 
-            icon={<BookOpen className="h-5 w-5" />} 
-            label="Mes ressources" 
-            path="/saved-content"
-            onClick={() => navigate("/saved-content")}
-          />
-          {/* Removed Guide d'utilisation item */}
-        </SidebarNavigationSection>
-        
-        {/* Feature request section */}
-        <SidebarNavigationSection>
-          <SidebarNavItem 
-            icon={<MessageCircle className="h-5 w-5 text-purple-600" />} 
-            label="Demander des fonctionnalités" 
-            path="/suggestions"
-            onClick={() => navigate("/suggestions")}
-            className="bg-purple-50 text-purple-700 hover:bg-purple-100"
-          />
-        </SidebarNavigationSection>
-      </div>
-      
-      {/* User profile dropdown */}
+      {/* User profile dropdown - always visible */}
       <SidebarUserProfile 
         firstName={firstName}
         onLogout={handleLogout}
