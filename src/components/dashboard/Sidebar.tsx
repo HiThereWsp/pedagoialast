@@ -271,7 +271,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
         // Other routes content
         <>
           {/* Outils pédagogiques */}
-          <SidebarNavigationSection title="Outils pédagogiques" className="mb-auto">
+          <SidebarNavigationSection title="Outils pédagogiquess" className="mb-auto">
             <SidebarNavItem 
               icon={<Bot className="h-5 w-5" />} 
               label="Chat AI" 
