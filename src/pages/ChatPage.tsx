@@ -149,7 +149,7 @@ export const ChatPage = () => {
           <div className="w-full max-w-2xl space-y-4">
             <div className="w-full max-w-2xl space-y-4">
               <div className="flex justify-center mb-8">
-                <Bot className="h-12 w-12 text-blue-500" />
+                <Bot className="h-12 w-12 text-[#FFD700]" />
               </div>
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-semibold mb-2">Comment puis-je vous aider aujourd'hui?</h2>
@@ -177,9 +177,9 @@ export const ChatPage = () => {
                           <Switch
                             checked={webSearch}
                             onCheckedChange={setWebSearch}
-                            className="data-[state=checked]:bg-blue-500"
+                            className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
                           />
-                          <Globe className={`h-4 w-4 ml-1 transition-colors ${webSearch ? 'text-blue-500' : 'text-gray-400'}`} />
+                          <Globe className={`h-4 w-4 ml-1 transition-colors ${webSearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -195,9 +195,9 @@ export const ChatPage = () => {
                           <Switch
                             checked={deepResearch}
                             onCheckedChange={setDeepResearch}
-                            className="data-[state=checked]:bg-purple-500"
+                            className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
                           />
-                          <Brain className={`h-4 w-4 ml-1 transition-colors ${deepResearch ? 'text-purple-500' : 'text-gray-400'}`} />
+                          <Brain className={`h-4 w-4 ml-1 transition-colors ${deepResearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
                         </div>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -210,7 +210,7 @@ export const ChatPage = () => {
                     onClick={handleSend}
                     disabled={!input.trim() || isLoading}
                     size="sm"
-                    className="px-3 h-8 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
+                    className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md"
                   >
                     {isLoading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -236,7 +236,7 @@ export const ChatPage = () => {
                 <div
                   className={`max-w-[80%] rounded-xl p-4 shadow-lg transition-shadow hover:shadow-xl ${
                     message.role === 'user'
-                      ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white ml-4'
+                      ? 'bg-gradient-to-br from-[#FFD700] to-[#FFA500] text-white ml-4'
                       : 'bg-gradient-to-br from-blue-50 to-white mr-4'
                   }`}
                 >
@@ -277,9 +277,9 @@ export const ChatPage = () => {
                       <Switch
                         checked={webSearch}
                         onCheckedChange={setWebSearch}
-                        className="data-[state=checked]:bg-blue-500"
+                        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
                       />
-                      <Globe className={`h-4 w-4 ml-1 transition-colors ${webSearch ? 'text-blue-500' : 'text-gray-400'}`} />
+                      <Globe className={`h-4 w-4 ml-1 transition-colors ${webSearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -295,9 +295,9 @@ export const ChatPage = () => {
                       <Switch
                         checked={deepResearch}
                         onCheckedChange={setDeepResearch}
-                        className="data-[state=checked]:bg-purple-500"
+                        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
                       />
-                      <Brain className={`h-4 w-4 ml-1 transition-colors ${deepResearch ? 'text-purple-500' : 'text-gray-400'}`} />
+                      <Brain className={`h-4 w-4 ml-1 transition-colors ${deepResearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -310,7 +310,7 @@ export const ChatPage = () => {
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 size="sm"
-                className="px-3 h-8 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-md"
+                className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
