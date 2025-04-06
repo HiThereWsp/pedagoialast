@@ -252,13 +252,13 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
                         ref={loadingRef}
                         className="py-4 flex items-center justify-center"
                       >
-                        <div 
-                          className="animate-pulse space-y-3"
-                          style={{ height: '100px' }}
-                        >
-                          <div className="h-4 bg-gray-200 rounded w-3/4" />
-                          <div className="h-4 bg-gray-200 rounded w-1/2" />
-                        </div>
+                        {loadingThreads && (
+                          <div className="animate-pulse space-y-4">
+                            {Array.from({ length: 2 }).map((_, i) => (
+                              <div key={i} className="h-4 bg-gray-200 rounded w-48 mb-2" />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
