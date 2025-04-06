@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { 
   Bot,
@@ -49,29 +49,86 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loadingThreads, setLoadingThreads] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
+  const threadsPerPage = 12; // Load 12 threads per page
+  const threadsToShow = 7; // Show only 7 threads initially
+  const loadingRef = useRef<HTMLDivElement>(null);
+  const observer = useRef<IntersectionObserver>();
+
+  useEffect(() => {
+    // Refresh threads when entering a chat route
+    if (isChatRoute && user?.id) {
+      loadThreads(0);
+    }
+  }, [location.pathname, isChatRoute, user?.id]);
 
   useEffect(() => {
     if (isChatRoute && user?.id) {
-      loadThreads();
+      // Reset state when route changes
+      setThreads([]);
+      setPage(0);
+      setHasMore(true);
+      loadThreads(0);
     }
-  }, [isChatRoute, user?.id, location.pathname]);
+  }, [isChatRoute, user?.id]);
 
-  const loadThreads = async () => {
+  useEffect(() => {
+    const currentLoadingRef = loadingRef.current;
+    if (!currentLoadingRef || !isChatRoute || page === 0) return; // Don't observe while loading first page
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasMore && !loadingThreads && page > 0) {
+        loadThreads(page + 1);
+      }
+    };
+
+    const observer = new IntersectionObserver(observerCallback, {
+      root: null,
+      rootMargin: '50px',
+      threshold: 0.1
+    });
+
+    observer.observe(currentLoadingRef);
+
+    return () => observer.disconnect();
+  }, [isChatRoute, page]); // Include page to re-setup observer after first load
+
+  const loadThreads = async (pageToLoad: number) => {
+    if (loadingThreads || (!hasMore && pageToLoad > 0)) return;
+
     try {
       setLoadingThreads(true);
       setError(null);
+
+      const from = pageToLoad * threadsPerPage;
+      const to = from + threadsPerPage - 1;
 
       const { data, error } = await supabase
         .from('chat_threads')
         .select('*')
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .order('last_message_at', { ascending: false });
+        .order('last_message_at', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
       
       if (data) {
-        setThreads(data as Thread[]);
+        setThreads(prev => {
+          // If first load, only show 7 threads
+          if (pageToLoad === 0) {
+            return data.slice(0, threadsToShow);
+          }
+          // For subsequent loads, add all new threads
+          const newThreads = data.filter(newThread => 
+            !prev.some(existingThread => existingThread.id === newThread.id)
+          );
+          return [...prev, ...newThreads];
+        });
+        setHasMore(data.length === threadsPerPage);
+        setPage(pageToLoad);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load threads');
@@ -152,44 +209,61 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
               New Chat
             </Button>
           </div>
-          <Separator className="my-4" />
+          {/* <Separator className="my-4" /> */}
           
-          {/* Chat threads list */}
-          <div className="flex-1 overflow-y-auto px-2">
-            {loadingThreads ? (
-              <div className="animate-pulse space-y-4">
-                <div className="h-4 bg-gray-200 rounded w-32 mb-2" />
-                <div className="h-4 bg-gray-200 rounded w-48" />
-                <div className="h-4 bg-gray-200 rounded w-32 mb-2 mt-4" />
-                <div className="h-4 bg-gray-200 rounded w-48" />
-              </div>
-            ) : error ? (
-              <div className="p-4 text-red-500">
-                {error}
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {threads.map((thread) => (
-                  <Button
-                    key={thread.id}
-                    variant="ghost"
-                    onClick={() => handleThreadClick(thread.id)}
-                    className={cn(
-                      "w-full flex flex-col items-start gap-1 p-3 h-auto",
-                      threadId === thread.id && "bg-blue-50 text-blue-600 hover:bg-blue-50"
+          {/* Chat threads list container */}
+          <div className="flex-1 overflow-hidden"> {/* Parent container */}
+            <div className="h-64 overflow-y-auto"> {/* Fixed height scrollable container */}
+              <div className="space-y-1 p-2">
+                {loadingThreads && threads.length === 0 ? (
+                  <div className="animate-pulse space-y-4 p-4">
+                    {/* Show loading states */}
+                    {Array.from({ length: threadsToShow }).map((_, i) => (
+                      <div key={i} className="h-4 bg-gray-200 rounded w-48 mb-2" />
+                    ))}
+                  </div>
+                ) : error ? (
+                  <div className="p-4 text-red-500">
+                    {error}
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {threads.map((thread) => (
+                      <Button
+                        key={thread.id}
+                        variant="ghost"
+                        onClick={() => handleThreadClick(thread.id)}
+                        className={cn(
+                          "w-full flex flex-col items-start gap-1 p-3 h-auto",
+                          threadId === thread.id && "bg-blue-50 text-blue-600 hover:bg-blue-50"
+                        )}
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          <MessageSquare className="h-4 w-4 shrink-0" />
+                          <span className="text-sm font-medium truncate">{thread.title}</span>
+                        </div>
+                      </Button>
+                    ))}
+                    {/* Loading indicator and intersection observer target */}
+                    {hasMore && (
+                      <div 
+                        ref={loadingRef}
+                        className="py-4 flex items-center justify-center"
+                      >
+                        {loadingThreads && (
+                          <div className="space-y-4 w-full">
+                            <div className="animate-pulse space-y-3">
+                              <div className="h-4 bg-gray-200 rounded w-3/4" />
+                              <div className="h-4 bg-gray-200 rounded w-1/2" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )}
-                  >
-                    <div className="flex items-center gap-2 w-full">
-                      <MessageSquare className="h-4 w-4 shrink-0" />
-                      <span className="text-sm font-medium truncate">{thread.title}</span>
-                    </div>
-                    <span className="text-xs text-gray-500 truncate w-full">
-                      {thread.preview}
-                    </span>
-                  </Button>
-                ))}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
         </div>
       ) : (
