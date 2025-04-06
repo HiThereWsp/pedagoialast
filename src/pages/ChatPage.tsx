@@ -7,6 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase, supabaseUrl, supabaseKey } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm'; // For GitHub Flavored Markdown
 
 export const ChatPage = () => {
   const { user } = useAuth();
@@ -358,7 +360,12 @@ export const ChatPage = () => {
                   }`}
                 >
                   <div className={`text-left ${message.role === 'user' ? 'text-white' : 'text-gray-800'}`}>
-                    {message.metadata?.streaming ? (streamingContent || '') : message.content}
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      className="prose max-w-none"
+                    >
+                      {message.metadata?.streaming ? (streamingContent || '') : message.content}
+                    </ReactMarkdown>
                     {message.metadata?.streaming && (
                       <span className="inline-block ml-1 animate-pulse">▋</span>
                     )}
