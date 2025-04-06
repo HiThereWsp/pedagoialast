@@ -1,0 +1,24 @@
+.scrollContainer {
+  height: 600px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #f0940a #F9FAFB;
+}
+
+.scrollContainer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollContainer::-webkit-scrollbar-track {
+  background: #F9FAFB;
+  border-radius: 4px;
+}
+
+.scrollContainer::-webkit-scrollbar-thumb {
+  background: #DC2626;
+  border-radius: 4px;
+}
+
+.scrollContainer::-webkit-scrollbar-thumb:hover {
+  background: #B91C1C;
+}

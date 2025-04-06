@@ -23,6 +23,7 @@ import SidebarNavItem from './SidebarNavItem';
 import SidebarNavigationSection from './SidebarNavigationSection';
 import SidebarUserProfile from './SidebarUserProfile';
 import { Database } from '@/types/supabase';
+import styles from './styles/sidebar.module.css';
 
 type Thread = Database['public']['Tables']['chat_threads']['Row'];
 
@@ -205,17 +206,26 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
               onClick={() => {
                 navigate('/chat');
               }}
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 relative overflow-hidden transition-all duration-300"
+              style={{
+                background: 'linear-gradient(135deg, #FFD700, #FFA500)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.5rem',
+                padding: '0.75rem 1.5rem',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+              }}
             >
-              <Plus className="h-5 w-5" />
-              New Chat
+              <Plus className="h-5 w-5" style={{ fill: 'white' }} />
+              <span className="relative z-10">New Chat</span>
+              <div className="absolute inset-0 bg-[#FF69B4] opacity-0 transition-opacity duration-300 hover:opacity-10" />
             </Button>
           </div>
           {/* <Separator className="my-4" /> */}
           
           {/* Chat threads list container */}
           <div className="flex-1 overflow-hidden"> {/* Parent container */}
-            <div className="h-[600px] overflow-y-auto"> {/* Adjusted height to show 15 threads */}
+            <div className={styles.scrollContainer}>
               <div className="space-y-1 p-2">
                 {loadingThreads && threads.length === 0 ? (
                   <div className="animate-pulse space-y-4 p-4">
@@ -236,12 +246,12 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
                         variant="ghost"
                         onClick={() => handleThreadClick(thread.id)}
                         className={cn(
-                          "w-full flex flex-col items-start gap-1 p-3 h-auto",
+                          "w-full flex flex-col items-start gap-1 p-3 h-auto transition-all duration-200",
                           threadId === thread.id && "bg-blue-50 text-blue-600 hover:bg-blue-50"
                         )}
                       >
                         <div className="flex items-center gap-2 w-full">
-                          <MessageSquare className="h-4 w-4 shrink-0" />
+                          <MessageSquare className="h-4 w-4 shrink-0 text-blue-500" />
                           <span className="text-sm font-medium truncate">{thread.title}</span>
                         </div>
                       </Button>
