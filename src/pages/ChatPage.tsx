@@ -282,7 +282,13 @@ export const ChatPage = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
-                className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all"
+                className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all text-base font-normal leading-7"
+                style={{
+                  fontFamily: 'ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"',
+                  fontWeight: 400,
+                  fontSize: '16px',
+                  lineHeight: '28px'
+                }}
                 rows={3}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -359,7 +365,12 @@ export const ChatPage = () => {
                       : 'bg-gradient-to-br from-blue-50 to-white mr-4'
                   }`}
                 >
-                  <div className={`text-left ${message.role === 'user' ? 'text-white' : 'text-gray-800'}`}>
+                  <div className={`text-left text-base font-normal leading-7 ${message.role === 'user' ? 'text-white' : 'text-gray-800'}`} style={{
+                    fontFamily: 'ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"',
+                    fontWeight: 400,
+                    fontSize: '16px',
+                    lineHeight: '28px'
+                  }}>
                     <ReactMarkdown
                       remarkPlugins={[remarkGfm]}
                       className="prose max-w-none"
@@ -388,7 +399,13 @@ export const ChatPage = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
-              className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all"
+              className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all text-base font-normal leading-7"
+              style={{
+                fontFamily: 'ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"',
+                fontWeight: 400,
+                fontSize: '16px',
+                lineHeight: '28px'
+              }}
               rows={3}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
