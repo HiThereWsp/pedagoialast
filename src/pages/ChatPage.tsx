@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Bot, Send, Loader2, Globe, Brain } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea";
@@ -21,15 +21,34 @@ export const ChatPage = () => {
   const [deepResearch, setDeepResearch] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const messagesEndRef = useRef(null);
+  const [showInitialChat, setShowInitialChat] = useState(true);
+  const [isInitialChatVisible, setIsInitialChatVisible] = useState(false);
+  const [isConversationVisible, setIsConversationVisible] = useState(false);
 
   useEffect(() => {
     if (threadId) {
       loadThreadMessages();
+      setShowInitialChat(false);
+      setIsConversationVisible(true);
     } else {
       setMessages([]);
       setStreamingContent('');
+      setShowInitialChat(true);
+      setIsConversationVisible(false);
     }
   }, [threadId]);
+
+  useEffect(() => {
+    if (showInitialChat) {
+      setIsInitialChatVisible(true);
+    }
+  }, [showInitialChat]);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      setIsConversationVisible(true);
+    }
+  }, [messages]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -267,15 +286,19 @@ export const ChatPage = () => {
 
   return (
     <div className="flex flex-col h-screen max-w-4xl mx-auto p-4">
-      {messages.length === 0 && !isLoading ? (
-        <div className="flex-1 flex flex-col items-center justify-center">
+      {showInitialChat && !isLoading ? (
+        <div 
+          className={`flex-1 flex flex-col items-center justify-center transition-opacity duration-500 ${
+            isInitialChatVisible ? 'opacity-100' : 'opacity-0'
+          }`}
+        >
           <div className="w-full max-w-2xl space-y-4">
             <div className="flex justify-center mb-8">
-              <Bot className="h-12 w-12 text-[#FFD700]" />
+              <Bot className="h-12 w-12 text-[#FFD700] transition-transform duration-500 hover:scale-110" />
             </div>
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-semibold mb-2">Comment puis-je vous aider aujourd'hui?</h2>
-              <p className="text-gray-600">Je suis votre assistant IA, prêt à vous aider dans vos tâches.</p>
+              <h2 className="text-2xl font-semibold mb-2 transition-all duration-500">Comment puis-je vous aider aujourd'hui?</h2>
+              <p className="text-gray-600 transition-all duration-500">Je suis votre assistant IA, prêt à vous aider dans vos tâches.</p>
             </div>
             <div className="relative">
               <Textarea
@@ -305,9 +328,9 @@ export const ChatPage = () => {
                         <Switch
                           checked={webSearch}
                           onCheckedChange={setWebSearch}
-                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
+                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500] transition-colors duration-300"
                         />
-                        <Globe className={`h-4 w-4 ml-1 transition-colors ${webSearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
+                        <Globe className={`h-4 w-4 ml-1 transition-colors duration-300 ${webSearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -323,9 +346,9 @@ export const ChatPage = () => {
                         <Switch
                           checked={deepResearch}
                           onCheckedChange={setDeepResearch}
-                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
+                          className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500] transition-colors duration-300"
                         />
-                        <Brain className={`h-4 w-4 ml-1 transition-colors ${deepResearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
+                        <Brain className={`h-4 w-4 ml-1 transition-colors duration-300 ${deepResearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -338,12 +361,12 @@ export const ChatPage = () => {
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
                   size="sm"
-                  className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md"
+                  className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md transition-all duration-300"
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Send className="h-4 w-4" />
+                    <Send className="h-4 w-4 transition-transform duration-300 hover:scale-110" />
                   )}
                 </Button>
               </div>
@@ -352,7 +375,9 @@ export const ChatPage = () => {
         </div>
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 p-6 rounded-xl border-0 bg-white/80 backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative">
+          <div className={`flex-1 overflow-y-auto space-y-4 mb-4 p-6 rounded-xl border-0 bg-white/80 backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative transition-all duration-500 ${
+            isConversationVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+          }`}>
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -422,9 +447,9 @@ export const ChatPage = () => {
                       <Switch
                         checked={webSearch}
                         onCheckedChange={setWebSearch}
-                        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
+                        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500] transition-colors duration-300"
                       />
-                      <Globe className={`h-4 w-4 ml-1 transition-colors ${webSearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
+                      <Globe className={`h-4 w-4 ml-1 transition-colors duration-300 ${webSearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -440,9 +465,9 @@ export const ChatPage = () => {
                       <Switch
                         checked={deepResearch}
                         onCheckedChange={setDeepResearch}
-                        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500]"
+                        className="data-[state=checked]:bg-gradient-to-r data-[state=checked]:from-[#FFD700] data-[state=checked]:to-[#FFA500] transition-colors duration-300"
                       />
-                      <Brain className={`h-4 w-4 ml-1 transition-colors ${deepResearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
+                      <Brain className={`h-4 w-4 ml-1 transition-colors duration-300 ${deepResearch ? 'text-[#FFD700]' : 'text-gray-400'}`} />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
@@ -455,12 +480,12 @@ export const ChatPage = () => {
                 onClick={handleSend}
                 disabled={!input.trim() || isLoading}
                 size="sm"
-                className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md"
+                className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md transition-all duration-300"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Send className="h-4 w-4" />
+                  <Send className="h-4 w-4 transition-transform duration-300 hover:scale-110" />
                 )}
               </Button>
             </div>
