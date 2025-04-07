@@ -21,21 +21,24 @@ export const ChatPage = () => {
   const [deepResearch, setDeepResearch] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [streaming, setStreaming] = useState(false);
-  const messagesEndRef = useRef(null);
   const [showInitialChat, setShowInitialChat] = useState(true);
   const [isInitialChatVisible, setIsInitialChatVisible] = useState(false);
   const [isConversationVisible, setIsConversationVisible] = useState(false);
+  const [messagesContainerOpacity, setMessagesContainerOpacity] = useState(0);
+  const messagesEndRef = useRef(null);
 
   useEffect(() => {
     if (threadId) {
       loadThreadMessages();
       setShowInitialChat(false);
       setIsConversationVisible(true);
+      setMessagesContainerOpacity(1);
     } else {
       setMessages([]);
       setStreamingContent('');
       setShowInitialChat(true);
       setIsConversationVisible(false);
+      setMessagesContainerOpacity(0);
     }
   }, [threadId]);
 
@@ -48,6 +51,7 @@ export const ChatPage = () => {
   useEffect(() => {
     if (messages.length > 0) {
       setIsConversationVisible(true);
+      setMessagesContainerOpacity(1);
     }
   }, [messages]);
 
@@ -349,9 +353,13 @@ export const ChatPage = () => {
         </div>
       ) : (
         <>
-          <div className={`flex-1 overflow-y-auto space-y-4 mb-4 p-6 rounded-xl border-0 bg-white/80 backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative transition-all duration-500 ${
-            isConversationVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          }`}>
+          <div 
+            className="flex-1 overflow-y-auto space-y-4 mb-4 p-6 rounded-xl border-0 bg-white/80 backdrop-blur-sm shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative transition-all duration-500"
+            style={{
+              opacity: messagesContainerOpacity,
+              transform: `translateY(${messagesContainerOpacity === 0 ? '4px' : '0'})`
+            }}
+          >
             {messages.map((message) => (
               <div
                 key={message.id}
