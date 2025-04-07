@@ -20,6 +20,7 @@ export const ChatPage = () => {
   const [webSearch, setWebSearch] = useState(false);
   const [deepResearch, setDeepResearch] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const [streaming, setStreaming] = useState(false);
   const messagesEndRef = useRef(null);
   const [showInitialChat, setShowInitialChat] = useState(true);
   const [isInitialChatVisible, setIsInitialChatVisible] = useState(false);
@@ -65,6 +66,14 @@ export const ChatPage = () => {
       console.log('Streaming message detected:', streamingMessage);
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (streamingContent) {
+      setStreaming(true);
+    } else {
+      setStreaming(false);
+    }
+  }, [streamingContent]);
 
   const loadThreadMessages = async () => {
     const { data, error } = await supabase
@@ -130,6 +139,29 @@ export const ChatPage = () => {
   const generateResponse = async (threadId, messageId, currentMessages) => {
     try {
       setIsLoading(true);
+      
+      // Create streaming message placeholder immediately
+      const streamingMessage = await saveMessage('Generating response...', threadId, 'assistant', {
+        streaming: true,
+        in_response_to: messageId
+      });
+      
+      // Update messages state with streaming message
+      setMessages(prev => [...prev, streamingMessage]);
+
+      // Get the user's message from the database using the messageId
+      const { data: userMessage } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('id', messageId)
+        .single();
+
+      if (!userMessage) {
+        throw new Error('User message not found');
+      }
+
+      // Include the user's message in the conversation history
+      const conversationHistory = [...messages, userMessage];
 
       const response = await fetch(
         `${supabaseUrl}/functions/v1/chat-completion`,
@@ -142,7 +174,7 @@ export const ChatPage = () => {
           body: JSON.stringify({
             threadId,
             messageId,
-            messages: currentMessages,
+            messages: conversationHistory,
             webSearchEnabled: webSearch,
             deepResearchEnabled: deepResearch,
           })
@@ -160,100 +192,39 @@ export const ChatPage = () => {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullContent = '';
+      let streamingMessageId = streamingMessage.id;
 
-      let streamingMessage = null;
-      let attempts = 0;
-      const maxAttempts = 10;
-
-      while (attempts < maxAttempts && !streamingMessage) {
-        const { data: updatedMessages, error } = await supabase
-          .from('chat_messages')
-          .select('*')
-          .eq('thread_id', threadId)
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          console.error('Error fetching streaming message:', error);
-          break;
-        }
-
-        streamingMessage = updatedMessages.find(msg =>
-          msg.role === 'assistant' &&
-          msg.metadata?.in_response_to === messageId &&
-          msg.metadata?.streaming
-        );
-
-        if (!streamingMessage) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          attempts++;
-        }
-      }
-
-      if (!streamingMessage) {
-        throw new Error('Streaming message not found in database');
-      }
-
-      setMessages(prev => [...prev, streamingMessage]);
-      setStreamingContent('');
-
+      // Update UI immediately with chunks
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
+        
         const chunk = decoder.decode(value, { stream: true });
-        console.log('Chunk:', chunk);
-
         fullContent += chunk;
-        setStreamingContent(fullContent);
+        
+        // Update UI immediately with new content
+        setMessages(prev => {
+          const updatedMessages = [...prev];
+          const streamingIndex = updatedMessages.findIndex(msg => msg.id === streamingMessageId);
+          if (streamingIndex !== -1) {
+            updatedMessages[streamingIndex] = {
+              ...updatedMessages[streamingIndex],
+              content: fullContent
+            };
+          }
+          return updatedMessages;
+        });
       }
 
-      let finalMessage = null;
-      attempts = 0;
-
-      while (attempts < maxAttempts && !finalMessage) {
-        const { data: updatedMessages, error } = await supabase
-          .from('chat_messages')
-          .select('*')
-          .eq('thread_id', threadId)
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          console.error('Error fetching final message:', error);
-          break;
-        }
-
-        finalMessage = updatedMessages.find(msg =>
-          msg.role === 'assistant' &&
-          msg.metadata?.in_response_to === messageId &&
-          !msg.metadata?.streaming
-        );
-
-        if (!finalMessage) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          attempts++;
-        }
-      }
-
-      if (!finalMessage) {
-        throw new Error('Final message not found in database');
-      }
-
-      setMessages(prev => {
-        const updatedMessages = [...prev];
-        const streamingIndex = updatedMessages.findIndex(msg => msg.metadata?.streaming);
-        if (streamingIndex !== -1) {
-          updatedMessages[streamingIndex] = finalMessage;
-        }
-        return updatedMessages;
+      // Only save to database once at the end
+      await saveMessage(fullContent, threadId, 'assistant', {
+        streaming: false,
+        in_response_to: messageId
       });
 
-      setStreamingContent('');
-      return finalMessage;
     } catch (error) {
-      console.error('Streaming error:', error);
-      setMessages(prev => prev.filter(msg => !msg.metadata?.streaming));
-      setStreamingContent('');
-      throw error;
+      console.error('Error generating response:', error);
+      // Handle error gracefully
     } finally {
       setIsLoading(false);
     }
@@ -269,14 +240,17 @@ export const ChatPage = () => {
     try {
       const currentThreadId = threadId || await createThread(messageContent);
       const userMessage = await saveMessage(messageContent, currentThreadId, 'user');
-      const updatedMessages = [...messages, userMessage];
-      setMessages(updatedMessages);
+      
+      // Update messages state with user message
+      setMessages(prev => [...prev, userMessage]);
 
       if (!threadId) {
         navigate(`/chat/${currentThreadId}`, { replace: true });
       }
 
-      await generateResponse(currentThreadId, userMessage.id, updatedMessages);
+      // Start generating response
+      await generateResponse(currentThreadId, userMessage.id, messages);
+      
     } catch (error) {
       console.error('Error in handleSend:', error);
     } finally {
@@ -396,15 +370,19 @@ export const ChatPage = () => {
                     fontSize: '16px',
                     lineHeight: '28px'
                   }}>
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      className="prose max-w-none"
-                    >
-                      {message.metadata?.streaming ? (streamingContent || '') : message.content}
-                    </ReactMarkdown>
-                    {message.metadata?.streaming && (
-                      <span className="inline-block ml-1 animate-pulse">▋</span>
-                    )}
+                    <div className="flex items-center space-x-2">
+                      {message.metadata?.streaming && message.content === 'Generating response...' && (
+                        <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+                      )}
+                      <div className="flex-1">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          className="prose max-w-none"
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
