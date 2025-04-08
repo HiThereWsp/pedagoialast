@@ -51,13 +51,17 @@ serve(async (req) => {
         }
       })
       .select()
-      .single();
+      .single()
 
     if (insertError) {
-      throw new Error(`Error saving initial message: ${insertError.message}`);
+      console.error('Error saving initial message:', insertError)
+      return new Response(JSON.stringify({ error: insertError.message }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
+      })
     }
 
-    const messageIdInDb = initialMessage.id;
+    const messageIdInDb = initialMessage.id
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -86,6 +90,7 @@ serve(async (req) => {
               }
             })
             .eq('id', messageIdInDb)
+            .single()
             .then(({ error }) => {
               if (error) console.error('Error updating final message:', error);
             });
@@ -95,26 +100,16 @@ serve(async (req) => {
           console.error('Streaming error in index.ts:', e);
           controller.error(e);
         }
-      },
-      cancel() {
-        supabaseClient
-          .from('chat_messages')
-          .delete()
-          .eq('id', messageIdInDb)
-          .then(({ error }) => {
-            if (error) console.error('Error cleaning up message:', error);
-          });
-      },
+      }
     });
 
     return new Response(stream, {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-        'Transfer-Encoding': 'chunked'
-      },
+        'Connection': 'keep-alive'
+      }
     });
 
   } catch (error) {

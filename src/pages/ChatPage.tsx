@@ -15,7 +15,7 @@ export const ChatPage = () => {
   const { threadId } = useParams();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [webSearch, setWebSearch] = useState(false);
   const [deepResearch, setDeepResearch] = useState(false);
@@ -80,16 +80,24 @@ export const ChatPage = () => {
   }, [streamingContent]);
 
   const loadThreadMessages = async () => {
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('thread_id', threadId)
-      .order('created_at', { ascending: true });
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('thread_id', threadId)
+        .order('created_at', { ascending: true });
 
-    if (!error && data) {
-      setMessages(data);
-    } else {
-      console.error('Error loading messages:', error);
+      if (error) {
+        throw error;
+      }
+
+      // Set messages in local state
+      setMessages(data || []);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -115,18 +123,14 @@ export const ChatPage = () => {
     return thread.id;
   };
 
-  const saveMessage = async (content, threadId, role = 'user', metadata = {}) => {
-    await supabase
-      .from('chat_threads')
-      .update({ last_message_at: new Date().toISOString() })
-      .eq('id', threadId);
-
+  const saveMessage = async (content, threadId, role, metadata) => {
+    // Save message to database
     const { data: message, error } = await supabase
       .from('chat_messages')
       .insert({
         thread_id: threadId,
-        content,
         role,
+        content,
         tokens_used: 0,
         metadata
       })
@@ -137,6 +141,12 @@ export const ChatPage = () => {
       console.error('Error saving message:', error);
       throw error;
     }
+    
+    // Update local messages state immediately
+    if (message) {
+      setMessages(prev => [...prev, message]);
+    }
+    
     return message;
   };
 
@@ -144,16 +154,7 @@ export const ChatPage = () => {
     try {
       setIsLoading(true);
       
-      // Create streaming message placeholder immediately
-      const streamingMessage = await saveMessage('Generating response...', threadId, 'assistant', {
-        streaming: true,
-        in_response_to: messageId
-      });
-      
-      // Update messages state with streaming message
-      setMessages(prev => [...prev, streamingMessage]);
-
-      // Get the user's message from the database using the messageId
+      // Get the user's message from database to ensure it's included
       const { data: userMessage } = await supabase
         .from('chat_messages')
         .select('*')
@@ -163,9 +164,32 @@ export const ChatPage = () => {
       if (!userMessage) {
         throw new Error('User message not found');
       }
+      
+      // Create a temporary streaming message for UI
+      const tempStreamingMessage = {
+        id: 'temp_' + Date.now(),
+        thread_id: threadId,
+        role: 'assistant',
+        content: 'Streaming in progress...',
+        created_at: new Date().toISOString(),
+        tokens_used: 0,
+        metadata: {
+          streaming: true,
+          in_response_to: messageId
+        }
+      };
 
-      // Include the user's message in the conversation history
-      const conversationHistory = [...messages, userMessage];
+      // Add temporary streaming message to UI
+      setMessages(prev => [...prev, tempStreamingMessage]);
+
+      // Make sure the user message is included in the conversation history
+      // by checking if it's already in the messages array
+      let conversationHistory = [...currentMessages];
+      const userMessageExists = conversationHistory.some(msg => msg.id === userMessage.id);
+      
+      if (!userMessageExists) {
+        conversationHistory = [...conversationHistory, userMessage];
+      }
 
       const response = await fetch(
         `${supabaseUrl}/functions/v1/chat-completion`,
@@ -180,85 +204,98 @@ export const ChatPage = () => {
             messageId,
             messages: conversationHistory,
             webSearchEnabled: webSearch,
-            deepResearchEnabled: deepResearch,
+            deepResearchEnabled: deepResearch
           })
         }
       );
 
       if (!response.ok) {
-        throw new Error(`Edge function error: ${response.status}`);
+        throw new Error('Failed to generate response');
       }
 
-      if (!response.body) {
-        throw new Error('Response body is null');
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No readable stream received');
       }
 
-      const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let fullContent = '';
-      let streamingMessageId = streamingMessage.id;
+      let fullResponse = '';
 
       // Update UI immediately with chunks
       while (true) {
-        const { done, value } = await reader.read();
+        const { value, done } = await reader.read();
         if (done) break;
         
         const chunk = decoder.decode(value, { stream: true });
-        fullContent += chunk;
-        
-        // Update UI immediately with new content
+        fullResponse += chunk;
+
+        // Update UI with streaming content
         setMessages(prev => {
           const updatedMessages = [...prev];
-          const streamingIndex = updatedMessages.findIndex(msg => msg.id === streamingMessageId);
+          const streamingIndex = updatedMessages.findIndex(msg => msg.id === tempStreamingMessage.id);
           if (streamingIndex !== -1) {
             updatedMessages[streamingIndex] = {
               ...updatedMessages[streamingIndex],
-              content: fullContent
+              content: fullResponse
             };
           }
           return updatedMessages;
         });
       }
 
-      // Only save to database once at the end
-      await saveMessage(fullContent, threadId, 'assistant', {
-        streaming: false,
-        in_response_to: messageId
+      // After streaming is complete, update the temporary message with final state
+      setMessages(prev => {
+        const updatedMessages = [...prev];
+        const streamingIndex = updatedMessages.findIndex(msg => msg.id === tempStreamingMessage.id);
+        if (streamingIndex !== -1) {
+          updatedMessages[streamingIndex] = {
+            ...updatedMessages[streamingIndex],
+            metadata: {
+              ...updatedMessages[streamingIndex].metadata,
+              streaming: false
+            }
+          };
+        }
+        return updatedMessages;
       });
 
+      setIsLoading(false);
     } catch (error) {
       console.error('Error generating response:', error);
-      // Handle error gracefully
-    } finally {
+      
+      // Remove temporary message on error
+      setMessages(prev => prev.filter(msg => msg.id !== 'temp_' + Date.now()));
+      
       setIsLoading(false);
     }
   };
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return;
 
-    const messageContent = input.trim();
-    setInput('');
-    setIsLoading(true);
+    const userMessage = inputValue.trim();
+    setInputValue('');
 
     try {
-      const currentThreadId = threadId || await createThread(messageContent);
-      const userMessage = await saveMessage(messageContent, currentThreadId, 'user');
+      // Create a new thread if we don't have one
+      const currentThreadId = threadId || await createThread(userMessage);
       
-      // Update messages state with user message
-      setMessages(prev => [...prev, userMessage]);
+      // Save user message to database and update local state
+      const savedMessage = await saveMessage(userMessage, currentThreadId, 'user', {
+        web_search_used: webSearch,
+        deep_research_used: deepResearch
+      });
 
+      // Navigate to the new thread if we just created one
       if (!threadId) {
         navigate(`/chat/${currentThreadId}`, { replace: true });
       }
 
-      // Start generating response
-      await generateResponse(currentThreadId, userMessage.id, messages);
-      
+      // Generate response using the saved message
+      await generateResponse(currentThreadId, savedMessage.id, messages);
     } catch (error) {
-      console.error('Error in handleSend:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Error sending message:', error);
     }
   };
 
@@ -280,8 +317,8 @@ export const ChatPage = () => {
             </div>
             <div className="relative">
               <Textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 placeholder="Type your message..."
                 className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all text-base font-normal leading-7"
                 style={{
@@ -294,7 +331,7 @@ export const ChatPage = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    handleSend();
+                    handleSendMessage();
                   }
                 }}
               />
@@ -336,8 +373,8 @@ export const ChatPage = () => {
                 </TooltipProvider>
 
                 <Button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim() || isLoading}
                   size="sm"
                   className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md transition-all duration-300"
                 >
@@ -379,7 +416,7 @@ export const ChatPage = () => {
                     lineHeight: '28px'
                   }}>
                     <div className="flex items-center space-x-2">
-                      {message.metadata?.streaming && message.content === 'Generating response...' && (
+                      {message.metadata?.streaming && message.content === 'Streaming in progress...' && (
                         <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                       )}
                       <div className="flex-1">
@@ -407,8 +444,8 @@ export const ChatPage = () => {
 
           <div className="relative">
             <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your message..."
               className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all text-base font-normal leading-7"
               style={{
@@ -421,7 +458,7 @@ export const ChatPage = () => {
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
-                  handleSend();
+                  handleSendMessage();
                 }
               }}
             />
@@ -463,8 +500,8 @@ export const ChatPage = () => {
               </TooltipProvider>
 
               <Button
-                onClick={handleSend}
-                disabled={!input.trim() || isLoading}
+                onClick={handleSendMessage}
+                disabled={!inputValue.trim() || isLoading}
                 size="sm"
                 className="px-3 h-8 bg-gradient-to-r from-[#FFD700] to-[#FFA500] hover:from-[#FFA500] hover:to-[#FF8C00] text-white shadow-md transition-all duration-300"
               >

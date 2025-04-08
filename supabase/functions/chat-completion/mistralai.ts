@@ -25,7 +25,7 @@ export async function streamMistralResponse(
   if (!mistralApiKey) {
     throw new Error('MISTRAL_API_KEY environment variable is not set');
   }
-
+  console.log("Messages", messages)
   // Validate messages
   if (!messages || messages.length === 0) {
     throw new Error('Messages array cannot be empty');
