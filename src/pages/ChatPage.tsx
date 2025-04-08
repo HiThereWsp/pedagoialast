@@ -40,6 +40,9 @@ export const ChatPage = () => {
       setShowInitialChat(false);
       setIsConversationVisible(true);
       setMessagesContainerOpacity(1);
+      // Reset streaming state when changing threads
+      setStreaming(false);
+      setStreamingContent('');
     } else {
       setMessages([]);
       setStreamingContent('');
@@ -87,16 +90,20 @@ export const ChatPage = () => {
   }, [streamingContent]);
 
   const loadThreadMessages = async () => {
-    setIsLoading(true);
+    if (!threadId) return;
+    
     try {
+      setIsLoading(true);
+      
       const { data, error } = await supabase
         .from('chat_messages')
         .select('*')
         .eq('thread_id', threadId)
         .order('created_at', { ascending: true });
-
+        
       if (error) {
-        throw error;
+        console.error('Error fetching messages:', error);
+        return;
       }
 
       // Set messages in local state
@@ -160,6 +167,7 @@ export const ChatPage = () => {
   const generateResponse = async (threadId, messageId, currentMessages) => {
     try {
       setIsLoading(true);
+      console.log('Starting response generation for thread:', threadId, 'message:', messageId);
       
       // Get the user's message from database to ensure it's included
       const { data: userMessage } = await supabase
@@ -171,10 +179,13 @@ export const ChatPage = () => {
       if (!userMessage) {
         throw new Error('User message not found');
       }
+      console.log('Found user message:', userMessage);
       
-      // Create a temporary streaming message for UI
+      // Create a fixed ID for the temporary message that won't change
+      const tempId = `temp_${threadId}_${messageId}`;
+      console.log('Creating temp message with ID:', tempId);
       const tempStreamingMessage = {
-        id: 'temp_' + Date.now(),
+        id: tempId,
         thread_id: threadId,
         role: 'assistant',
         content: 'Streaming in progress...',
@@ -186,18 +197,32 @@ export const ChatPage = () => {
         }
       };
 
-      // Add temporary streaming message to UI
-      setMessages(prev => [...prev, tempStreamingMessage]);
+      // Add temporary streaming message to UI - use function form to ensure we're working with the latest state
+      console.log('Adding temp message to UI');
+      setMessages(prevMessages => {
+        // First check if this temp message already exists
+        const existingIndex = prevMessages.findIndex(msg => msg.id === tempId);
+        if (existingIndex >= 0) {
+          console.log('Temp message already exists, updating it');
+          const updatedMessages = [...prevMessages];
+          updatedMessages[existingIndex] = tempStreamingMessage;
+          return updatedMessages;
+        } else {
+          console.log('Adding new temp message');
+          return [...prevMessages, tempStreamingMessage];
+        }
+      });
 
       // Make sure the user message is included in the conversation history
-      // by checking if it's already in the messages array
       let conversationHistory = [...currentMessages];
       const userMessageExists = conversationHistory.some(msg => msg.id === userMessage.id);
       
       if (!userMessageExists) {
         conversationHistory = [...conversationHistory, userMessage];
       }
+      console.log('Conversation history for API:', conversationHistory.length, 'messages');
 
+      console.log('Sending API request to:', `${supabaseUrl}/functions/v1/chat-completion`);
       const response = await fetch(
         `${supabaseUrl}/functions/v1/chat-completion`,
         {
@@ -217,8 +242,10 @@ export const ChatPage = () => {
       );
 
       if (!response.ok) {
+        console.error('API response not OK:', response.status, response.statusText);
         throw new Error('Failed to generate response');
       }
+      console.log('API response received, starting to read stream');
 
       // Handle streaming response
       const reader = response.body?.getReader();
@@ -230,49 +257,83 @@ export const ChatPage = () => {
       let fullResponse = '';
 
       // Update UI immediately with chunks
+      console.log('Starting to read stream chunks');
       while (true) {
         const { value, done } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log('Stream reading complete');
+          break;
+        }
         
         const chunk = decoder.decode(value, { stream: true });
         fullResponse += chunk;
+        console.log('Received chunk, current length:', fullResponse.length);
 
-        // Update UI with streaming content
-        setMessages(prev => {
-          const updatedMessages = [...prev];
-          const streamingIndex = updatedMessages.findIndex(msg => msg.id === tempStreamingMessage.id);
+        // Update UI with streaming content - use function form to ensure we're working with the latest state
+        setMessages(prevMessages => {
+          const streamingIndex = prevMessages.findIndex(msg => msg.id === tempId);
+          console.log('Updating streaming message at index:', streamingIndex);
+          
           if (streamingIndex !== -1) {
+            const updatedMessages = [...prevMessages];
             updatedMessages[streamingIndex] = {
               ...updatedMessages[streamingIndex],
               content: fullResponse
             };
+            return updatedMessages;
+          } else {
+            console.warn('Could not find streaming message with ID:', tempId);
+            // If we can't find the message, add it
+            return [...prevMessages, {
+              ...tempStreamingMessage,
+              content: fullResponse
+            }];
           }
-          return updatedMessages;
         });
       }
 
       // After streaming is complete, update the temporary message with final state
-      setMessages(prev => {
-        const updatedMessages = [...prev];
-        const streamingIndex = updatedMessages.findIndex(msg => msg.id === tempStreamingMessage.id);
+      console.log('Finalizing message after streaming');
+      setMessages(prevMessages => {
+        const streamingIndex = prevMessages.findIndex(msg => msg.id === tempId);
+        console.log('Finalizing streaming message at index:', streamingIndex);
+        
         if (streamingIndex !== -1) {
+          const updatedMessages = [...prevMessages];
           updatedMessages[streamingIndex] = {
             ...updatedMessages[streamingIndex],
+            content: fullResponse,
             metadata: {
               ...updatedMessages[streamingIndex].metadata,
               streaming: false
             }
           };
+          return updatedMessages;
+        } else {
+          console.warn('Could not find streaming message with ID:', tempId);
+          // If we can't find the message, add it as a completed message
+          return [...prevMessages, {
+            ...tempStreamingMessage,
+            content: fullResponse,
+            metadata: {
+              ...tempStreamingMessage.metadata,
+              streaming: false
+            }
+          }];
         }
-        return updatedMessages;
       });
 
       setIsLoading(false);
+      console.log('Response generation complete');
     } catch (error) {
       console.error('Error generating response:', error);
       
       // Remove temporary message on error
-      setMessages(prev => prev.filter(msg => msg.id !== 'temp_' + Date.now()));
+      setMessages(prevMessages => {
+        console.log('Removing temporary message on error');
+        const updatedMessages = prevMessages.filter(msg => !msg.id.startsWith('temp_'));
+        return updatedMessages;
+      });
       
       setIsLoading(false);
     }
@@ -283,26 +344,38 @@ export const ChatPage = () => {
 
     const userMessage = inputValue.trim();
     setInputValue('');
+    console.log('Sending message:', userMessage);
+    
+    // Set loading state immediately
+    setIsLoading(true);
 
     try {
       // Create a new thread if we don't have one
       const currentThreadId = threadId || await createThread(userMessage);
+      console.log('Using thread ID:', currentThreadId);
       
       // Save user message to database and update local state
       const savedMessage = await saveMessage(userMessage, currentThreadId, 'user', {
         web_search_used: webSearch,
         deep_research_used: deepResearch
       });
+      console.log('Saved user message:', savedMessage);
 
       // Navigate to the new thread if we just created one
       if (!threadId) {
+        console.log('Navigating to new thread:', currentThreadId);
         navigate(`/chat/${currentThreadId}`, { replace: true });
+        
+        // Wait a short time to ensure navigation completes
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
 
       // Generate response using the saved message
+      console.log('Generating response with messages:', messages);
       await generateResponse(currentThreadId, savedMessage.id, messages);
     } catch (error) {
       console.error('Error sending message:', error);
+      setIsLoading(false);
     }
   };
 
