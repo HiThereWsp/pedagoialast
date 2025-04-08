@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Bot, Send, Loader2, Globe, Brain } from 'lucide-react';
+import { Bot, Send, Loader2, Globe, Brain, ThumbsUp, ThumbsDown, Pencil, X, Copy, Check } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { supabase, supabaseUrl, supabaseKey } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
@@ -26,6 +27,12 @@ export const ChatPage = () => {
   const [isConversationVisible, setIsConversationVisible] = useState(false);
   const [messagesContainerOpacity, setMessagesContainerOpacity] = useState(0);
   const messagesEndRef = useRef(null);
+
+  // Feedback state
+  const [feedbackDialogOpen, setFeedbackDialogOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
+  const [currentFeedbackMessageId, setCurrentFeedbackMessageId] = useState(null);
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
 
   useEffect(() => {
     if (threadId) {
@@ -299,6 +306,25 @@ export const ChatPage = () => {
     }
   };
 
+  const saveFeedback = async (messageId, type, text = null) => {
+    try {
+      const { error } = await supabase
+        .from('message_feedback')
+        .insert({
+          message_id: messageId,
+          user_id: user?.id,
+          feedback_type: type, // 'thumbs_up', 'thumbs_down', or 'text'
+          feedback_text: text
+        });
+
+      if (error) {
+        console.error('Error saving feedback:', error);
+      }
+    } catch (error) {
+      console.error('Error in saveFeedback:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen max-w-4xl mx-auto p-4">
       {showInitialChat && !isLoading ? (
@@ -429,6 +455,97 @@ export const ChatPage = () => {
                       </div>
                     </div>
                   </div>
+                  
+                  {message.role === 'assistant' && !message.metadata?.streaming && (
+                    <div className="flex justify-start items-center mt-4 space-x-2">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => {
+                                navigator.clipboard.writeText(message.content);
+                                setCopiedMessageId(message.id);
+                                setTimeout(() => setCopiedMessageId(null), 2000);
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 rounded-full opacity-50 hover:opacity-100 hover:bg-gradient-to-r hover:from-[#FFD700] hover:to-[#FFA500] hover:text-white transition-all duration-300"
+                            >
+                              {copiedMessageId === message.id ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Copy to clipboard</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => {
+                                setCurrentFeedbackMessageId(message.id);
+                                setFeedbackDialogOpen(true);
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 rounded-full opacity-50 hover:opacity-100 hover:bg-gradient-to-r hover:from-[#FFD700] hover:to-[#FFA500] hover:text-white transition-all duration-300"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Provide text feedback</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => {
+                                saveFeedback(message.id, 'thumbs_up');
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 rounded-full opacity-50 hover:opacity-100 hover:bg-gradient-to-r hover:from-[#FFD700] hover:to-[#FFA500] hover:text-white transition-all duration-300"
+                            >
+                              <ThumbsUp className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>This was helpful</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={() => {
+                                saveFeedback(message.id, 'thumbs_down');
+                              }}
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 rounded-full opacity-50 hover:opacity-100 hover:bg-gradient-to-r hover:from-[#FFD700] hover:to-[#FFA500] hover:text-white transition-all duration-300"
+                            >
+                              <ThumbsDown className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>This was not helpful</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -513,6 +630,44 @@ export const ChatPage = () => {
               </Button>
             </div>
           </div>
+
+          <Dialog
+            open={feedbackDialogOpen}
+            onOpenChange={(open) => setFeedbackDialogOpen(open)}
+          >
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Provide Feedback</DialogTitle>
+              </DialogHeader>
+              <Textarea
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                placeholder="Type your feedback..."
+                className="pr-[120px] shadow-lg bg-white/90 backdrop-blur-sm rounded-xl border-0 resize-none focus-visible:ring-1 focus-visible:ring-blue-200 transition-all text-base font-normal leading-7"
+                style={{
+                  fontFamily: 'ui-sans-serif, -apple-system, system-ui, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"',
+                  fontWeight: 400,
+                  fontSize: '16px',
+                  lineHeight: '28px'
+                }}
+                rows={3}
+              />
+              <DialogFooter>
+                <Button
+                  onClick={() => {
+                    // Send feedback
+                    saveFeedback(currentFeedbackMessageId, 'text', feedbackText);
+                    setFeedbackText('');
+                    setFeedbackDialogOpen(false);
+                  }}
+                  size="sm"
+                  className="px-3 h-8 bg-blue-500 hover:bg-blue-600 text-white shadow-md transition-all duration-300"
+                >
+                  Send Feedback
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       )}
     </div>
