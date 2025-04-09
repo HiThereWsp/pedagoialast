@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -9,6 +8,8 @@ import {
   Sparkles, 
   Leaf,
   MessageCircle,
+  Layout,
+  Armchair,
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -112,6 +113,20 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
           label="Générateur d'images" 
           path="/image-generation"
           onClick={() => navigate("/image-generation")}
+        />
+        <SidebarNavItem 
+          icon={<Armchair className="h-5 w-5" />} 
+          label="Plan de classe"
+          path="/plan-de-classe"
+          onClick={() => navigate("/plan-de-classe")}
+          badge={
+            <Badge 
+              variant="outline" 
+              className="text-xs bg-green-50 text-green-700 border-green-200 font-normal px-2 py-0.5 whitespace-nowrap"
+            >
+              nouveau
+            </Badge>
+          }
         />
       </SidebarNavigationSection>
       

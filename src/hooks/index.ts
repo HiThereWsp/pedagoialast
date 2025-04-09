@@ -1,4 +1,3 @@
-
 // Export hooks from this file to make imports cleaner
 
 // Authentication & User
@@ -8,6 +7,7 @@ export { useIsMobile } from './use-mobile';
 export { useSavedContent } from './useSavedContent';
 export { useToolMetrics } from './useToolMetrics';
 export { useBugReport } from './bug-report';
+export { useAnalytics } from './useAnalytics';
 
 // Feature-specific hooks
 export * from './subscription';
