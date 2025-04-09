@@ -615,16 +615,8 @@ const PlanDeClassePage: React.FC = () => {
       </Helmet>
 
       <div className="container mx-auto py-4 px-4">
-        {/* En-tête */}
-        <div className="text-center mb-4">
-          <h1 className="text-4xl font-extrabold mb-1 tracking-tight text-balance max-w-lg mx-auto">
-            <span className="bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent">
-              Plan de classe
-            </span>
-          </h1>
-          <p className="max-w-2xl mx-auto text-slate-500 text-sm">
-            Organisez votre classe comme vous le souhaitez et générez automatiquement un plan optimal
-          </p>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Plan de classe</h1>
         </div>
 
         <div className="max-w-6xl mx-auto space-y-6">
