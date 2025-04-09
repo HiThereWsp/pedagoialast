@@ -10,6 +10,7 @@ import Bienvenue from '@/pages/Bienvenue';
 import ToolsLayout from '@/components/layout/ToolsLayout';
 import Guide from '@/pages/Guide';
 import { BugReportButton } from '@/components/bug-report/BugReportButton';
+import { useAnalytics } from '@/hooks';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
@@ -62,6 +63,7 @@ const LoadingPage = () => (
 const AppContent = () => {
   const location = useLocation();
   const isBienvenuePage = location.pathname === '/bienvenue';
+  const { logEvent } = useAnalytics();
   
   return (
     <>

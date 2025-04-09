@@ -1,10 +1,10 @@
-
 import React from "react";
 import { SubscriptionLoading } from "@/components/subscription/SubscriptionLoading";
 import { SubscriptionError } from "@/components/subscription/SubscriptionError";
 import { LimitedAccessCard } from "@/components/subscription/LimitedAccessCard";
 import { useSubscriptionRouteLogic } from "@/hooks/subscription/useSubscriptionRouteLogic";
 import {useAuth} from "@/hooks";
+// import { SubscriptionRedirect } from "@/components/subscription/SubscriptionRedirect";
 
 interface SubscriptionRouteProps {
   children: JSX.Element;
@@ -57,10 +57,10 @@ export const SubscriptionRoute = ({ children }: SubscriptionRouteProps) => {
   }
   
   // If no active subscription, show subscription required message
-  // if (!isSubscribed) {
-  //   return <LimitedAccessCard />;
-  // }
+  if (!isSubscribed) {
+    return <LimitedAccessCard />;
+  }
   
   // User has a valid subscription, show content
-  return <LimitedAccessCard />;
+  return children;
 };

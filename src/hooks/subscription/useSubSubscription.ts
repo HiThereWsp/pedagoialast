@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { SubscriptionStatus, initialStatus, REFRESH_INTERVAL } from './types';
@@ -130,17 +129,15 @@ export const useSubSubscription = () => {
       if (status.special_handling) {
         console.log("Special handling detected, granting access");
       }
-      return false;
+      return true;
     }
     
     if (!status.isActive) {
-      toast.error("Abonnement requis pour accéder à cette fonctionnalité");
-      safeNavigate('/pricing');
       return false;
     }
     
     return true;
-  }, [status, safeNavigate]);
+  }, [status]);
 
   return {
     isSubscribed: status.isActive,
