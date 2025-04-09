@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Settings, HelpCircle, LogOut, Mail, Users, Bug } from 'lucide-react';
+import { Settings, HelpCircle, LogOut, Mail, Users, Bug, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
@@ -60,6 +59,10 @@ export const SidebarUserProfile = ({ firstName, onLogout }: SidebarUserProfilePr
                   <DropdownMenuItem onClick={() => navigate('/admin/bug-reports')} className="cursor-pointer">
                     <Bug className="mr-2 h-4 w-4" />
                     <span>Signalements de bugs</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/admin/suggestions')} className="cursor-pointer">
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    <span>Gestion des suggestions</span>
                   </DropdownMenuItem>
                 </>
               )}
