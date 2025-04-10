@@ -1,9 +1,6 @@
 const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
 const mistralApiKey = "nRLOGoiJ40AxdwDgyKSQPuFaAXDvgKs5";
 
-
-
-
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -19,8 +16,8 @@ interface MistralRequest {
 export async function streamMistralResponse(
   request: MistralRequest,
   onChunk: (chunk: string) => void,
-  onError: (error: Error) => void
-): Promise<string> {
+  onDone: () => void
+): Promise<void> {
   const { messages, webSearchEnabled, deepResearchEnabled } = request;
   if (!mistralApiKey) {
     throw new Error('MISTRAL_API_KEY environment variable is not set');
@@ -50,8 +47,8 @@ You are a helpful AI assistant. Follow these instructions for all responses:
    - Do not assist with illegal activities or provide instructions that could be used to harm individuals, systems, or networks.
    - If a request is ambiguous or potentially unsafe, respond with a clarification or a safe alternative.
 3. **Contextual Awareness**:
-   - Today's date is April 06, 2025. Use this date for any time-sensitive information or context.
-   - If web search is enabled (${webSearchEnabled}), you may reference recent information up to April 06, 2025.
+   - Today's date is April 11, 2025. Use this date for any time-sensitive information or context.
+   - If web search is enabled (${webSearchEnabled}), you may reference recent information up to April 11, 2025.
    - If deep research is enabled (${deepResearchEnabled}), provide more detailed and analytical responses.
 4. **Tone and Style**:
    - Be professional, concise, and clear.
@@ -80,94 +77,92 @@ Now, respond to the user's message in Markdown format.
 
   console.log('Mistral API request payload:', JSON.stringify(payload));
 
-  // Call Mistral API with streaming
-  let mistralResponse = await fetch(MISTRAL_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${mistralApiKey}`,
-      'Content-Type': 'application/json',
-      'Accept': 'text/event-stream'
-    },
-    body: JSON.stringify(payload)
-  });
-
-  if (!mistralResponse.ok) {
-    let errorBody = 'Unable to read response body';
-    try {
-      errorBody = await mistralResponse.text();
-    } catch (e) {
-      console.error('Error reading Mistral response body:', e);
-    }
-    const errorMessage = `Mistral API error: ${mistralResponse.status} ${mistralResponse.statusText}\nResponse body: ${errorBody}`;
-    console.error(errorMessage);
-
-    // Fallback to non-streaming request to debug
-    console.log('Falling back to non-streaming request to debug...');
-    payload.stream = false;
-    mistralResponse = await fetch(MISTRAL_API_URL, {
+  try {
+    // Call Mistral API with streaming
+    const mistralResponse = await fetch(MISTRAL_API_URL, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${mistralApiKey}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream'
       },
       body: JSON.stringify(payload)
     });
 
     if (!mistralResponse.ok) {
-      let nonStreamingErrorBody = 'Unable to read response body';
+      let errorBody = 'Unable to read response body';
       try {
-        nonStreamingErrorBody = await mistralResponse.text();
+        errorBody = await mistralResponse.text();
       } catch (e) {
-        console.error('Error reading non-streaming Mistral response body:', e);
+        console.error('Error reading Mistral response body:', e);
       }
-      throw new Error(`Mistral API non-streaming error: ${mistralResponse.status} ${mistralResponse.statusText}\nResponse body: ${nonStreamingErrorBody}`);
+      const errorMessage = `Mistral API error: ${mistralResponse.status} ${mistralResponse.statusText}\nResponse body: ${errorBody}`;
+      console.error(errorMessage);
+      throw new Error(errorMessage);
     }
 
-    const nonStreamingData = await mistralResponse.json();
-    console.log('Non-streaming Mistral response:', nonStreamingData);
-    const content = nonStreamingData.choices[0]?.message?.content || '';
-    onChunk(content);
-    return content;
-  }
+    if (!mistralResponse.body) {
+      throw new Error('Mistral API response body is null');
+    }
 
-  if (!mistralResponse.body) {
-    throw new Error('Mistral API response body is null');
-  }
+    const reader = mistralResponse.body.getReader();
+    const decoder = new TextDecoder();
 
-  let fullResponse = '';
-  const reader = mistralResponse.body.getReader();
-  const decoder = new TextDecoder();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
 
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
-
-          try {
-            const parsed = JSON.parse(data);
-            const content = parsed.choices[0]?.delta?.content || '';
-            if (content) {
-              fullResponse += content;
-              onChunk(content);
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices[0]?.delta?.content || '';
+              if (content) {
+                onChunk(content);
+              }
+            } catch (e) {
+              console.error('Error parsing Mistral stream chunk:', e, 'Raw chunk:', data);
             }
-          } catch (e) {
-            console.error('Error parsing Mistral stream chunk:', e, 'Raw chunk:', data);
-            onError(new Error(`Error parsing Mistral stream chunk: ${e.message}`));
           }
         }
       }
+    } finally {
+      reader.releaseLock();
+      // Signal that we're done streaming
+      onDone();
     }
-  } finally {
-    reader.releaseLock();
+  } catch (error) {
+    console.error('Error in streamMistralResponse:', error);
+    // Generate a fallback response in case of error
+    const errorResponse = "I apologize, but I encountered an error while processing your request. Please try again later.";
+    onChunk(errorResponse);
+    onDone();
   }
+}
 
-  return fullResponse;
+// Function to generate a completion from Mistral AI (non-streaming)
+export async function generateMistralCompletion(messages: any[]): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let fullResponse = '';
+    
+    streamMistralResponse(
+      { messages, webSearchEnabled: false, deepResearchEnabled: false },
+      (chunk) => {
+        fullResponse += chunk;
+      },
+      () => {
+        resolve(fullResponse);
+      }
+    ).catch(error => {
+      console.error('Error in generateMistralCompletion:', error);
+      reject(error);
+    });
+  });
 }

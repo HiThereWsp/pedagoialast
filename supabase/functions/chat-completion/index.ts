@@ -1,15 +1,16 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { streamMistralResponse } from './mistralai.ts'
+import { searchWithExa } from './exaai.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
 interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
 }
 
@@ -19,83 +20,176 @@ interface RequestBody {
   messages: ChatMessage[];
   webSearchEnabled: boolean;
   deepResearchEnabled: boolean;
+  searchOnly?: boolean;
+  existingSearchResults?: ExaSearchResult[];
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
+interface ExaSearchResult {
+  id: string;
+  title: string;
+  url: string;
+  publishedDate?: string;
+  author?: string;
+  score: number;
+  text: string;
+  favicon?: string;
+  image?: string;
+  extras?: {
+    links?: string[];
+  };
+}
 
+const handler = async (req: Request): Promise<Response> => {
   try {
-    const reqData = await req.json() as RequestBody
-    const { threadId, messageId, messages, webSearchEnabled, deepResearchEnabled } = reqData
-
-    const supabaseClient = createClient(
+    // Parse the request body
+    const { threadId, messageId, messages, webSearchEnabled = false, deepResearchEnabled = false, searchOnly = false, existingSearchResults = [] } = await req.json();
+    
+    console.log(`Processing request for thread ${threadId}, message ${messageId}`);
+    console.log(`Web search enabled: ${webSearchEnabled}, Deep research enabled: ${deepResearchEnabled}, Search only: ${searchOnly}`);
+    console.log(`Messages count: ${messages?.length || 0}`);
+    
+    // Create Supabase client
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Save the initial message with a placeholder content
-    const { data: initialMessage, error: insertError } = await supabaseClient
-      .from('chat_messages')
-      .insert({
-        thread_id: threadId,
-        role: 'assistant',
-        content: 'Streaming in progress...',
-        tokens_used: 0,
-        metadata: {
-          in_response_to: messageId,
-          web_search_used: webSearchEnabled,
-          deep_research_used: deepResearchEnabled,
-          streaming: true
-        }
-      })
-      .select()
-      .single()
+    let exaResults: ExaSearchResult[] | null = existingSearchResults?.length > 0 ? existingSearchResults : null;
 
-    if (insertError) {
-      console.error('Error saving initial message:', insertError)
-      return new Response(JSON.stringify({ error: insertError.message }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
-      })
+    // Get the last user message
+    const lastUserMessage = messages?.filter(m => m.role === 'user').pop();
+    
+    if (!lastUserMessage) {
+      console.error('No user messages found in the conversation');
+      return new Response(
+        JSON.stringify({ error: 'No user messages found in the conversation' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    console.log('Last user message:', lastUserMessage.content);
+
+    // Step 1: If web search is enabled and we don't have existing results, perform search with Exa
+    if (webSearchEnabled && !exaResults) {
+      try {
+        console.log('Web search enabled, performing Exa search');
+        
+        // Perform search with Exa
+        console.log('Searching with Exa for:', lastUserMessage.content);
+        const searchResults = await searchWithExa({
+          query: lastUserMessage.content,
+          numResults: 5
+        });
+        
+        if (searchResults && searchResults.results) {
+          exaResults = searchResults.results;
+          console.log('Exa search returned', exaResults.length, 'results');
+        } else {
+          console.log('No search results returned from Exa');
+        }
+      } catch (error) {
+        console.error('Error during Exa search:', error);
+        // Continue without search results if there's an error
+      }
+    } else {
+      console.log('Web search disabled or using existing results, skipping Exa search');
     }
 
-    const messageIdInDb = initialMessage.id
+    // If this is a search-only request, return the sources and exit
+    if (searchOnly) {
+      console.log('Search only request, returning sources');
+      return new Response(
+        JSON.stringify({
+          sources: exaResults || []
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
+    // Format messages for Mistral AI
+    const formatMessagesForMistral = (messages: any[], exaResults: ExaSearchResult[] | null): any[] => {
+      const formattedMessages = messages.map(message => ({ 
+        role: message.role, 
+        content: message.content 
+      }));
+      
+      // If we have Exa results, add them as context in a system message
+      if (exaResults && exaResults.length > 0) {
+        console.log('Adding Exa results to Mistral context');
+        
+        // Format the results for better readability
+        const formattedResults = exaResults.map(result => ({
+          id: result.id || `result-${Math.random().toString(36).substring(2, 9)}`,
+          title: result.title || 'Untitled Source',
+          url: result.url || '#',
+          publishedDate: result.publishedDate || new Date().toISOString(),
+          author: result.author || '',
+          score: result.score || 0,
+          text: result.text || '',
+          favicon: result.favicon || ''
+        }));
+        
+        const exaContext = `I found the following information that might help answer the query:\n\n${formattedResults
+          .map((result, index) => `[${index + 1}] ${result.title}\n${result.text}\nSource: ${result.url}`)
+          .join('\n\n')}`;
+        
+        // Add the Exa context as a system message before the last user message
+        formattedMessages.push({
+          role: 'system',
+          content: exaContext
+        });
+        
+        // Replace the exaResults with the formatted results
+        exaResults = formattedResults;
+      }
+      
+      return formattedMessages;
+    };
+
+    // Step 2: Generate response with Mistral AI
+    console.log('Generating response with Mistral AI');
+    
+    // Format the messages for Mistral
+    const formattedMessages = formatMessagesForMistral(messages, exaResults);
+    
+    // Generate the response
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const fullResponse = await streamMistralResponse(
-            { messages, webSearchEnabled, deepResearchEnabled },
+          let fullResponse = '';
+          await streamMistralResponse(
+            { messages: formattedMessages, webSearchEnabled, deepResearchEnabled },
             (chunk) => {
               controller.enqueue(new TextEncoder().encode(chunk));
+              fullResponse += chunk;
             },
-            (error) => {
-              console.error('Mistral streaming error:', error);
-              controller.error(error);
+            () => {
+              // Save the final response as a new message
+              supabaseAdmin
+                .from('chat_messages')
+                .insert({
+                  thread_id: threadId,
+                  role: 'assistant',
+                  content: fullResponse,
+                  metadata: {
+                    in_response_to: messageId,
+                    web_search_used: webSearchEnabled,
+                    deep_research_used: deepResearchEnabled,
+                    sources: exaResults || []
+                  }
+                })
+                .then(({ data, error }) => {
+                  if (error) {
+                    console.error('Error saving final message:', error);
+                  } else {
+                    console.log('Successfully saved message with ID:', data.id);
+                    console.log('Message includes sources:', (exaResults || []).length);
+                  }
+                  // Close the stream after saving the message
+                  controller.close();
+                });
             }
           );
-
-          // Update the message with the final content and remove streaming flag
-          await supabaseClient
-            .from('chat_messages')
-            .update({
-              content: fullResponse,
-              metadata: {
-                in_response_to: messageId,
-                web_search_used: webSearchEnabled,
-                deep_research_used: deepResearchEnabled,
-                streaming: false
-              }
-            })
-            .eq('id', messageIdInDb)
-            .single()
-            .then(({ error }) => {
-              if (error) console.error('Error updating final message:', error);
-            });
-
-          controller.close();
         } catch (e) {
           console.error('Streaming error in index.ts:', e);
           controller.error(e);
@@ -111,18 +205,19 @@ serve(async (req) => {
         'Connection': 'keep-alive'
       }
     });
-
   } catch (error) {
-    console.error('Error in index.ts:', error);
+    console.error('Error handling request:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
-    )
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  return await handler(req);
 })
