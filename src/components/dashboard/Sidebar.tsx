@@ -24,6 +24,7 @@ import SidebarNavigationSection from './SidebarNavigationSection';
 import SidebarUserProfile from './SidebarUserProfile';
 import { Database } from '@/types/supabase';
 import styles from './styles/sidebar.module.css';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 type Thread = Database['public']['Tables']['chat_threads']['Row'];
 
@@ -46,6 +47,8 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
   const { threadId } = useParams();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { profile } = useUserProfile(user);
+  const isAdmin = profile?.is_admin === true;
   const isChatRoute = location.pathname.startsWith('/chat');
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loadingThreads, setLoadingThreads] = useState(false);
@@ -282,12 +285,14 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
         <>
           {/* Outils pédagogiques */}
           <SidebarNavigationSection title="Outils pédagogiquess" className="mb-auto">
-            <SidebarNavItem 
-              icon={<Bot className="h-5 w-5" />} 
-              label="Chat AI" 
-              path="/chat"
-              onClick={() => navigate("/chat")}
-            />
+            {isAdmin && (
+              <SidebarNavItem 
+                icon={<Bot className="h-5 w-5" />} 
+                label="Chat AI" 
+                path="/chat"
+                onClick={() => navigate("/chat")}
+              />
+            )}
             <SidebarNavItem 
               icon={<Sparkles className="h-5 w-5" />} 
               label="Générateur de séquences" 
