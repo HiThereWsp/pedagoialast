@@ -143,7 +143,7 @@ export const PricingPlans = ({
         if (isSubscribed) {
             if (subscriptionType === planType ||
                 (subscriptionType === 'yearly' && planType === 'monthly')) {
-                return "Votre abonnement actuel";
+                return "Déjà abonné";
             }
             return planType === 'yearly' ? "Passer à l'annuel" : "Changer de formule";
         }
@@ -163,50 +163,62 @@ export const PricingPlans = ({
     };
 
     return (
-        <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
-            <PricingCard
-                title="Plan mensuel"
-                price="11,90€"
-                period="/mois"
-                features={[
-                    "Accédez à l'assistant pédagogique via le chat sans limite",
-                    "Utilisez plus de 10 outils pédagogiques",
-                    "Sauvegardez tous vos supports de cours générés",
-                    "Exploitez tous les outils sans limitation",
-                    "Économisez plus de 14h par semaine grâce aux outils IA"
-                ]}
-                ctaText={getButtonText('monthly')}
-                onSubscribe={handleMonthlySubscription}
-                disabled={isButtonDisabled('monthly')}
-            />
-            <PricingCard
-                title="Plan annuel"
-                price="119€"
-                originalPrice="142,80€"
-                badge="2 mois offerts"
-                isPremium
-                features={[
-                    "Bénéficiez de tous les avantages du plan mensuel",
-                    "Votez pour de nouveaux outils tous les mois",
-                    "Recevez les mises à jour en avant-première",
-                    "Accédez à la communauté privée d'enseignants 3.0"
-                ]}
-                ctaText={getButtonText('yearly')}
-                onSubscribe={handleYearlySubscription}
-                disabled={isButtonDisabled('yearly')}
-            />
-            <PricingCard
-                title="Établissement scolaire"
-                price="Sur mesure"
-                features={[
-                    "Bénéficiez de tout ce qui est inclus dans le plan annuel",
-                    "Créez des outils personnalisés pour votre établissement",
-                    "Accédez au tableau de suivi pour la direction",
-                    "Adaptez les outils à votre projet d'établissement"
-                ]}
-                ctaText="Prendre contact"
-                onSubscribe={onSchoolContactRequest}
-            />
-        </div>
+        <>
+            {isSubscribed && (
+                <div className="max-w-3xl mx-auto mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-center text-blue-800">
+                        Vous êtes déjà abonné au plan {subscriptionType === 'yearly' ? 'annuel' : 'mensuel'}.
+                        {subscriptionType === 'monthly' && (
+                            <span> Vous pouvez passer au plan annuel pour économiser 2 mois d'abonnement.</span>
+                        )}
+                    </p>
+                </div>
+            )}
+            <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
+                <PricingCard
+                    title="Plan mensuel"
+                    price="11,90€"
+                    period="/mois"
+                    features={[
+                        "Accédez à l'assistant pédagogique via le chat sans limite",
+                        "Utilisez plus de 10 outils pédagogiques",
+                        "Sauvegardez tous vos supports de cours générés",
+                        "Exploitez tous les outils sans limitation",
+                        "Économisez plus de 14h par semaine grâce aux outils IA"
+                    ]}
+                    ctaText={getButtonText('monthly')}
+                    onSubscribe={handleMonthlySubscription}
+                    disabled={isButtonDisabled('monthly')}
+                />
+                <PricingCard
+                    title="Plan annuel"
+                    price="119€"
+                    originalPrice="142,80€"
+                    badge="2 mois offerts"
+                    isPremium
+                    features={[
+                        "Bénéficiez de tous les avantages du plan mensuel",
+                        "Votez pour de nouveaux outils tous les mois",
+                        "Recevez les mises à jour en avant-première",
+                        "Accédez à la communauté privée d'enseignants 3.0"
+                    ]}
+                    ctaText={getButtonText('yearly')}
+                    onSubscribe={handleYearlySubscription}
+                    disabled={isButtonDisabled('yearly')}
+                />
+                <PricingCard
+                    title="Établissement scolaire"
+                    price="Sur mesure"
+                    features={[
+                        "Bénéficiez de tout ce qui est inclus dans le plan annuel",
+                        "Créez des outils personnalisés pour votre établissement",
+                        "Accédez au tableau de suivi pour la direction",
+                        "Adaptez les outils à votre projet d'établissement"
+                    ]}
+                    ctaText="Prendre contact"
+                    onSubscribe={onSchoolContactRequest}
+                />
+            </div>
+        </>
     );
 };

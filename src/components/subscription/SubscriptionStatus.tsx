@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { useSubSubscription } from "@/hooks/subscription";
 import { toast } from "sonner";
 import { SubscriptionLoading } from "./SubscriptionLoading";
 import { SubscriptionError } from "./SubscriptionError";
-import { LimitedAccessCard } from "./LimitedAccessCard";
+import { SubscriptionRedirect } from "./SubscriptionRedirect";
 import { ActiveSubscriptionCard } from "./ActiveSubscriptionCard";
 import { getSubscriptionInfo } from "./utils";
 import { clearSubscriptionCache } from "@/hooks/subscription/useSubscriptionCache";
@@ -53,7 +52,7 @@ export function SubscriptionStatus() {
   }
   
   if (!isSubscribed) {
-    return <LimitedAccessCard />;
+    return <SubscriptionRedirect />;
   }
   
   // Determine subscription type and corresponding display

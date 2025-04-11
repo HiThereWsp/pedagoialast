@@ -1,26 +1,57 @@
-
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useSubscription } from "@/hooks/useSubscription";
 
 export function LimitedAccessCard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { isSubscribed } = useSubscription();
   
+  // Déclencher la redirection après un délai
+  useEffect(() => {
+    // Si l'utilisateur est abonné, ne pas rediriger
+    if (isSubscribed) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      // Si l'utilisateur est connecté, rediriger vers /pricing
+      // Sinon, rediriger vers /login avec un paramètre de redirection
+      if (user) {
+        navigate('/pricing');
+      } else {
+        navigate('/login?redirect=/pricing');
+      }
+    }, 2000);
+    
+    return () => clearTimeout(timer);
+  }, [navigate, user, isSubscribed]);
+
   return (
-    <div className="max-w-4xl mx-auto p-6 my-8">
-      <Alert className="bg-amber-50 border-amber-200 mb-6">
-        <Info className="h-5 w-5 text-amber-800" />
-        <AlertTitle className="text-amber-800 font-medium">Accès limité</AlertTitle>
-        <AlertDescription className="text-amber-700">
-          Abonnez vous pour avoir accès à toutes les fonctionnalités de PedagoIA.
-          <div className="mt-2">Redirection vers la page d'abonnement...</div>
-        </AlertDescription>
-      </Alert>
-      <div className="flex justify-center">
-        <Button onClick={() => navigate('/pricing')}>
-          Voir les offres d'abonnement
-        </Button>
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+      <div className="max-w-md w-full text-center">
+        {/* Logo avec animation de pulse */}
+        <div className="mb-8 logo-entrance">
+          <img 
+            src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png"
+            alt="PedagoIA" 
+            className="h-32 w-auto mx-auto animate-pulse" 
+          />
+        </div>
+
+        {/* Message avec animation de fade-in */}
+        <div className="space-y-4 animate-fade-in">
+          <p className="text-xl font-medium text-gray-900">
+            Cette fonctionnalité nécessite un accès payant
+          </p>
+          <p className="text-sm text-gray-500">
+            {user ? 
+              "Redirection vers les offres d'abonnement..." :
+              "Redirection vers la page de connexion..."
+            }
+          </p>
+        </div>
       </div>
     </div>
   );

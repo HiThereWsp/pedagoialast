@@ -87,126 +87,68 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         console.log("Démarrage de la vérification d'authentification...");
 
-        if (authCheckCompleted.current) {
-          console.log("Vérification d'auth déjà effectuée, ignorée");
-          return;
-        }
-
-        // Check local storage for session
-        const storedSession = localStorage.getItem("supabase.auth.token");
-        console.log("Stored session in local storage:", storedSession ? "Found" : "Not found");
-
-        // Restore session from local storage
-        console.log("Fetching session from Supabase...");
+        // Vérifier d'abord la session Supabase
         const { data: sessionData, error: sessionError } = await fetchWithTimeout(
-            supabase.auth.getSession(),
-            5000
+          supabase.auth.getSession(),
+          5000
         );
-        console.log("GetSession response:", { sessionData, sessionError });
+
         if (sessionError) throw sessionError;
+
+        // Si nous avons une session, définir l'utilisateur immédiatement
         if (sessionData.session) {
-          console.log("Session found, setting user:", sessionData.session.user.email);
-          setUser(sessionData.session.user);
+          if (mounted) {
+            setUser(sessionData.session.user);
+            setAuthReady(true);
+            setLoading(false);
+          }
         } else {
-          console.log("No session found");
-        }
-
-        if (isPublicPage()) {
-          console.log("Page publique détectée, vérification minimale");
-          setUser(null);
-          setAuthReady(true);
-          setLoading(false);
-          authCheckCompleted.current = true;
-          return;
-        }
-
-        const checkSession = debounce(async () => {
-          console.log("Fetching user from Supabase...");
-          const { data, error } = await fetchWithTimeout(supabase.auth.getUser(), 5000);
-          console.log("GetUser response:", { data, error });
-
-          if (error || !data.user) {
-            console.log("No user found or error:", error?.message || "No user data");
+          // Si pas de session et page publique, c'est OK
+          if (isPublicPage()) {
             if (mounted) {
               setUser(null);
               setAuthReady(true);
               setLoading(false);
-              authCheckCompleted.current = true;
-              if (!isPublicPage()) {
-                toast({
-                  title: "Erreur d'authentification",
-                  description: "Veuillez vous reconnecter.",
-                  variant: "destructive",
-                });
-              }
             }
-            return;
-          }
-
-          const currentUserJSON = JSON.stringify(data.user);
-          const previousUserJSON = previousSession.current
-              ? JSON.stringify(previousSession.current)
-              : null;
-
-          if (currentUserJSON !== previousUserJSON) {
-            previousSession.current = data.user;
-
-            if (mounted && data.user) {
-              setUser(data.user);
-              authCheckCompleted.current = true;
+          } else {
+            // Si pas de session et page privée, rediriger
+            if (mounted) {
+              setUser(null);
               setAuthReady(true);
               setLoading(false);
+              toast({
+                title: "Session expirée",
+                description: "Veuillez vous reconnecter.",
+                variant: "destructive",
+              });
             }
-          } else if (mounted) {
-            authCheckCompleted.current = true;
-            setAuthReady(true);
-            setLoading(false);
           }
-        }, 1000);
-
-        checkSession();
+        }
       } catch (error) {
         console.error("Exception lors de la vérification de l'utilisateur:", error);
-        if (!isPublicPage() && mounted) {
-          toast({
-            title: "Erreur d'authentification",
-            description: "Une erreur est survenue lors de la vérification de votre session.",
-            variant: "destructive",
-          });
-        }
-
         if (mounted) {
           setUser(null);
-          setLoading(false);
           setAuthReady(true);
-          authCheckCompleted.current = true;
+          setLoading(false);
         }
       }
     };
 
     const setupAuthListener = async () => {
-      try {
-        await checkUser();
+      await checkUser();
 
-        if (mounted) {
-          const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log("Auth state changed:", event);
-            if (mounted) {
-              setUser(session?.user ?? null);
-              setLoading(false);
-              setAuthReady(true);
-            }
-          });
+      if (mounted) {
+        const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log("Auth state changed:", event);
+          if (mounted) {
+            // Mettre à jour l'utilisateur de manière synchrone
+            setUser(session?.user ?? null);
+            setLoading(false);
+            setAuthReady(true);
+          }
+        });
 
-          subscription = data.subscription;
-        }
-      } catch (err) {
-        console.error("Erreur dans setupAuthListener:", err);
-        if (mounted) {
-          setUser(null);
-          setLoading(false);
-          setAuthReady(true);
-        }
+        subscription = data.subscription;
       }
     };
 

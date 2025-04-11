@@ -1,6 +1,5 @@
-
-import React, { Suspense } from 'react'
-import { BrowserRouter } from 'react-router-dom'
+import React, { Suspense, useEffect, useState } from 'react'
+import { BrowserRouter, useLocation } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import AppRoutes from '@/routes/AppRoutes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -8,6 +7,8 @@ import { AuthProvider } from '@/hooks/useAuth'
 import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import '@/App.css'
+import { SuggestionButton } from '@/components/feedback'
+import { BugReportButton } from '@/components/bug-report/BugReportButton'
 
 // Create a client with more retries for better resilience
 const queryClient = new QueryClient({
@@ -20,6 +21,39 @@ const queryClient = new QueryClient({
   },
 })
 
+// Composant pour l'affichage conditionnel des boutons flottants
+function FloatingButtons() {
+  const location = useLocation();
+  const [shouldShowSuggestion, setShouldShowSuggestion] = useState(true);
+  
+  useEffect(() => {
+    // Liste des chemins où le bouton de suggestion doit être masqué
+    const excludedPaths = ['/correspondence', '/plan-de-classe'];
+    const currentPath = location.pathname;
+    
+    // Vérifier si le chemin actuel fait partie des exclusions
+    const shouldShow = !excludedPaths.some(path => currentPath === path);
+    setShouldShowSuggestion(shouldShow);
+  }, [location.pathname]);
+  
+  return (
+    <>
+      <BugReportButton />
+      {shouldShowSuggestion && <SuggestionButton />}
+    </>
+  );
+}
+
+function AppContent() {
+  return (
+    <>
+      <AppRoutes />
+      <Toaster />
+      <FloatingButtons />
+    </>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary fallback={<div className="p-8 text-center">Une erreur est survenue. Merci de rafraîchir la page.</div>}>
@@ -28,8 +62,7 @@ function App() {
           <BrowserRouter>
             <AuthProvider>
               <Suspense fallback={<div className="flex items-center justify-center h-screen">Chargement...</div>}>
-                <AppRoutes />
-                <Toaster />
+                <AppContent />
               </Suspense>
             </AuthProvider>
           </BrowserRouter>
