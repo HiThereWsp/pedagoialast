@@ -1,5 +1,13 @@
-const MISTRAL_API_URL = 'https://api.mistral.ai/v1/chat/completions';
-const mistralApiKey = "nRLOGoiJ40AxdwDgyKSQPuFaAXDvgKs5";
+// Deno namespace declaration for TypeScript
+declare namespace Deno {
+  export interface Env {
+    get(key: string): string | undefined;
+  }
+  export const env: Env;
+}
+
+const MISTRAL_API_URL = Deno.env.get('MISTRAL_API_URL') ?? 'https://api.mistral.ai/v1/chat/completions';
+const mistralApiKey = Deno.env.get('MISTRAL_API_KEY') ?? '';
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';

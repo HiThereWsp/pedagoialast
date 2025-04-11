@@ -1,6 +1,15 @@
+// Deno namespace declaration for TypeScript
+declare namespace Deno {
+  export interface Env {
+    get(key: string): string | undefined;
+  }
+  export const env: Env;
+}
+
 // Exa AI API client for web search
 const EXA_API_URL = 'https://api.exa.ai/search';
-const exaApiKey = "563548e7-528f-47b9-a477-2d92d9c65260"; // In production, use environment variables
+// Use environment variable for API key
+const exaApiKey = Deno.env.get("EXA_API_KEY");
 
 interface ExaSearchOptions {
   query: string;
