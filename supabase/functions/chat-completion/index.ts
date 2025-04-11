@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { streamMistralResponse } from './mistralai.ts'
 import { searchWithExa } from './exaai.ts'
+import { SYSTEM_PROMPT, formatPrompt } from './prompt.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -149,16 +150,39 @@ const handler = async (req: Request): Promise<Response> => {
     // Step 2: Generate response with Mistral AI
     console.log('Generating response with Mistral AI');
     
-    // Format the messages for Mistral
+    // Format messages for Mistral
     const formattedMessages = formatMessagesForMistral(messages, exaResults);
     
-    // Generate the response
+    // Get the last user message for prompt formatting
+    const userMessageForPrompt = messages.find(msg => msg.role === 'user');
+    const userMessageContent = userMessageForPrompt ? userMessageForPrompt.content : '';
+    
+    // Format search results for the prompt
+    let exaResultsText = '';
+    if (exaResults && exaResults.length > 0) {
+      exaResultsText = exaResults.map((result, index) => 
+        `Source ${index + 1}: ${result.title}\n${result.text}\nURL: ${result.url}`
+      ).join('\n\n');
+    }
+    
+    // Create a custom prompt using the formatPrompt function
+    const customPrompt = formatPrompt(userMessageContent, exaResultsText);
+    
+    // Create a readable stream for the response
     const stream = new ReadableStream({
-      async start(controller) {
+      start(controller) {
+        console.log('Starting stream');
+        
+        // Stream the response from Mistral
         try {
           let fullResponse = '';
-          await streamMistralResponse(
-            { messages: formattedMessages, webSearchEnabled, deepResearchEnabled },
+          streamMistralResponse(
+            { 
+              messages: formattedMessages, 
+              webSearchEnabled, 
+              deepResearchEnabled,
+              prompt: customPrompt
+            },
             (chunk) => {
               controller.enqueue(new TextEncoder().encode(chunk));
               fullResponse += chunk;

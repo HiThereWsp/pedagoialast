@@ -6,6 +6,8 @@ declare namespace Deno {
   export const env: Env;
 }
 
+import { SYSTEM_PROMPT } from './prompt.ts';
+
 const MISTRAL_API_URL = Deno.env.get('MISTRAL_API_URL') ?? 'https://api.mistral.ai/v1/chat/completions';
 const mistralApiKey = Deno.env.get('MISTRAL_API_KEY') ?? '';
 
@@ -19,6 +21,7 @@ interface MistralRequest {
   messages: ChatMessage[];
   webSearchEnabled: boolean;
   deepResearchEnabled: boolean;
+  prompt?: string;
 }
 
 export async function streamMistralResponse(
@@ -26,7 +29,7 @@ export async function streamMistralResponse(
   onChunk: (chunk: string) => void,
   onDone: () => void
 ): Promise<void> {
-  const { messages, webSearchEnabled, deepResearchEnabled } = request;
+  const { messages, webSearchEnabled, deepResearchEnabled, prompt } = request;
   if (!mistralApiKey) {
     throw new Error('MISTRAL_API_KEY environment variable is not set');
   }
@@ -44,26 +47,8 @@ export async function streamMistralResponse(
     }
   }
 
-  // System prompt with formatting, security rules, and current date
-  const systemPrompt = `
-You are a helpful AI assistant. Follow these instructions for all responses:
-
-1. **Formatting**: Format your response in Markdown for better readability. Use headings, lists, bold, italic, and code blocks where appropriate.
-2. **Security Rules**:
-   - Do not generate or share any malicious code, exploits, or harmful content.
-   - Avoid sharing personal or sensitive information, even if requested.
-   - Do not assist with illegal activities or provide instructions that could be used to harm individuals, systems, or networks.
-   - If a request is ambiguous or potentially unsafe, respond with a clarification or a safe alternative.
-3. **Contextual Awareness**:
-   - Today's date is April 11, 2025. Use this date for any time-sensitive information or context.
-   - If web search is enabled (${webSearchEnabled}), you may reference recent information up to April 11, 2025.
-   - If deep research is enabled (${deepResearchEnabled}), provide more detailed and analytical responses.
-4. **Tone and Style**:
-   - Be professional, concise, and clear.
-   - Avoid speculative or unverified information. If unsure, state that the information is not available or suggest where the user might find it.
-
-Now, respond to the user's message in Markdown format.
-`;
+  // Use the prompt from prompt.ts or the provided prompt parameter
+  const systemPrompt = prompt || SYSTEM_PROMPT;
 
   // Prepend the system prompt to the messages and strip extra fields
   const messagesWithSystemPrompt = [
