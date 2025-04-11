@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -26,8 +25,15 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2">
-            <img src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" alt="PedagoIA Logo" className="h-20 w-auto" />
+          <Link 
+            to="/" 
+            className="flex items-center gap-2 transition-transform duration-300 hover:scale-105"
+          >
+            <img 
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+              alt="PedagoIA - Assistant pédagogique intelligent" 
+              className="h-20 w-auto object-contain" 
+            />
           </Link>
         </div>
 

@@ -1,111 +1,11 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Landing pages -->
-  <url>
-    <loc>https://pedagoia.fr/</loc>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://pedagoia.fr/main-sitemap.xml</loc>
     <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/bienvenue</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://pedagoia.fr/full-sitemap.xml</loc>
     <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-  
-  <!-- Authentication -->
-  <url>
-    <loc>https://pedagoia.fr/login</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- Legal pages -->
-  <url>
-    <loc>https://pedagoia.fr/legal</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/privacy</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/terms</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <!-- Main application pages -->
-  <url>
-    <loc>https://pedagoia.fr/tableaudebord</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/guide</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- Tool pages -->
-  <url>
-    <loc>https://pedagoia.fr/lesson-plan</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/exercise</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/image-generation</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/correspondence</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/saved-content</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/suggestions</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <!-- Pricing and contact -->
-  <url>
-    <loc>https://pedagoia.fr/pricing</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://pedagoia.fr/contact</loc>
-    <lastmod>2024-07-10</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-</urlset>
+  </sitemap>
+</sitemapindex>

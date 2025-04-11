@@ -10,7 +10,7 @@ interface SEOProps {
 export const SEO = ({ 
   title = "PedagoIA - L'assistant qui révolutionne la préparation des cours",
   description = "Créez des contenus pédagogiques personnalisés et innovants en quelques clics grâce à l'intelligence artificielle.",
-  image = '/lovable-uploads/938303ce-e4da-498e-898b-f45a47cd942c.png',
+  image = '/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png',
   article = false 
 }: SEOProps) => {
   const siteUrl = window.location.origin;
@@ -20,20 +20,41 @@ export const SEO = ({
       {/* Balises meta générales */}
       <title>{title}</title>
       <meta name="description" content={description} />
-      <meta name="robots" content="index, follow" />
+      <meta name="robots" content="max-image-preview:large" />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={article ? 'article' : 'website'} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={`${siteUrl}${image}`} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
       <meta property="og:url" content={window.location.href} />
+      <meta property="og:site_name" content="PedagoIA" />
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={`${siteUrl}${image}`} />
+
+      {/* Schema.org pour Google */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "PedagoIA",
+          "url": siteUrl,
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${siteUrl}${image}`,
+            "width": "1200",
+            "height": "630"
+          },
+          "image": `${siteUrl}${image}`,
+          "description": description
+        })}
+      </script>
 
       {/* Autres balises importantes pour le SEO */}
       <link rel="canonical" href={window.location.href} />

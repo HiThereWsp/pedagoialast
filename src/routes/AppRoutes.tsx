@@ -129,6 +129,7 @@ const AppContent = () => {
         <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
         <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />
         <Route path="/checkout-canceled" element={<CheckoutCanceledPage />} />
+        <Route path="/generateur-exercices" element={<Navigate to="/exercise" replace />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       
