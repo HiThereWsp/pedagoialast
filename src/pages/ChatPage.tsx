@@ -10,6 +10,7 @@ import { supabase, supabaseUrl, supabaseKey } from "@/integrations/supabase/clie
 import { useAuth } from '@/hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm'; // For GitHub Flavored Markdown
+import "../styles/markdown.css"; // Import markdown styles
 
 // Source display components
 const SourcesDisplay = ({ sources }) => {
@@ -791,7 +792,7 @@ export const ChatPage = () => {
                       {message.metadata?.streaming && message.content === 'Streaming in progress...' && (
                         <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
                       )}
-                      <div className="flex-1">
+                      <div className="flex-1 message-content">
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           className="prose max-w-none"

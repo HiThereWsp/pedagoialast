@@ -65,7 +65,7 @@ export async function searchWithExa(options: ExaSearchOptions): Promise<ExaSearc
     defaultStartDate.setDate(defaultStartDate.getDate() - 7);
     
     const payload = {
-      query: options.query,
+      query: options.query + "France",
 
       numResults: options.numResults || 5,
       contents: {
@@ -76,7 +76,7 @@ export async function searchWithExa(options: ExaSearchOptions): Promise<ExaSearc
         }
       }
     };
-
+    
     console.log('Exa search request payload:', JSON.stringify(payload));
 
     const response = await fetch(EXA_API_URL, {
