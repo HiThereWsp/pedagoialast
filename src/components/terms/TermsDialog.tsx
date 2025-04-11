@@ -16,14 +16,14 @@ export function TermsDialog() {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold mb-4">
-            Conditions Générales d'Utilisation - Pedagoia
+            Conditions Générales d'Utilisation - PedagoIA
           </DialogTitle>
         </DialogHeader>
         <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-6">
             <section>
               <h3 className="text-lg font-semibold mb-2">1. Service</h3>
-              <p>Pedagoia est un assistant pédagogique basé sur l'intelligence artificielle, actuellement proposé en version beta.</p>
+              <p>PedagoIA est un assistant pédagogique basé sur l'intelligence artificielle, actuellement proposé en version beta.</p>
             </section>
 
             <section>
