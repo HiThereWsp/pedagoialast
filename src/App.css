@@ -40,3 +40,8 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Ajouter ce style pour l'effet d'éclairage */
+.lightbulb-glow {
+  filter: drop-shadow(0 0 3px rgba(253, 224, 71, 0.8));
+}

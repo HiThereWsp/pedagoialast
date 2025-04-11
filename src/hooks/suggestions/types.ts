@@ -1,4 +1,3 @@
-
 import { User } from "@supabase/supabase-js";
 
 export interface Suggestion {
@@ -10,6 +9,8 @@ export interface Suggestion {
   author: string;
   author_id?: string;
   created_at: string;
+  type?: 'feature_request' | 'tool_improvement';
+  tool_name?: string;
 }
 
 export interface SuggestionVote {
@@ -23,6 +24,15 @@ export interface SuggestionVote {
 export interface NewSuggestionForm {
   title: string;
   description: string;
+}
+
+export interface Comment {
+  id: string;
+  suggestion_id: string;
+  user_id: string;
+  author: string;
+  text: string;
+  created_at: string;
 }
 
 export interface UseSuggestionsResult {
@@ -46,6 +56,8 @@ export interface UseSuggestionsResult {
   canVote: boolean;
   isAuthenticated: boolean;
   isOwnSuggestion: (suggestionId: string) => boolean;
+  comments: Record<string, Comment[]>;
+  addComment: (suggestionId: string, text: string) => Promise<Comment | null>;
 }
 
 export interface SuggestionStateResult {

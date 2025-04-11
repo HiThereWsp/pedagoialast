@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Lightbulb, Plus } from 'lucide-react';
 
 interface HeroSectionProps {
   onNewSuggestion: () => void;
@@ -10,35 +9,34 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ onNewSuggestion, isAuthenticated }: HeroSectionProps) => {
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm">
-      <div className="flex flex-col md:flex-row items-center gap-4">
-        <div className="flex-1 space-y-4 text-center md:text-left">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-800 leading-tight tracking-tight text-balance">
-            Vos suggestions pour améliorer PedagoIA
-          </h1>
-          <p className="text-base text-gray-600">
-            Partagez vos idées pour enrichir notre plateforme éducative.
-          </p>
-          
-          <div className="flex flex-col md:flex-row items-center gap-4">
-            <Button 
-              onClick={onNewSuggestion}
-              className="w-full md:w-auto bg-[#FF9633] text-white hover:bg-[#FF9633]/90 transition-all duration-200 shadow-sm rounded-lg"
-              disabled={!isAuthenticated}
-              title={isAuthenticated ? "Proposer une nouvelle idée" : "Vous devez être connecté pour proposer une idée"}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Proposer une idée
-            </Button>
-            
-            {!isAuthenticated && (
-              <p className="text-sm text-amber-600">
-                Connectez-vous pour proposer et voter pour des idées.
-              </p>
-            )}
+    <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-8 shadow-sm border border-blue-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="bg-blue-100 p-2 rounded-full">
+              <Lightbulb className="h-6 w-6 text-blue-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-800">Vos idées</h1>
           </div>
+          <p className="text-gray-600 max-w-md mb-4 md:mb-0 text-sm md:text-base">
+            Proposez et votez pour les fonctionnalités qui vous intéressent. Nous prenons en compte vos suggestions pour améliorer PedagoIA.
+          </p>
         </div>
+        <Button 
+          onClick={onNewSuggestion} 
+          disabled={!isAuthenticated}
+          className="bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Proposer une idée
+        </Button>
       </div>
+      
+      {!isAuthenticated && (
+        <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 text-sm">
+          Vous devez être connecté pour proposer une nouvelle idée ou voter.
+        </div>
+      )}
     </div>
   );
 };

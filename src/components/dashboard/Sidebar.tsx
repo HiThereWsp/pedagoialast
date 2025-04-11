@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -9,6 +8,8 @@ import {
   Sparkles, 
   Leaf,
   MessageCircle,
+  Layout,
+  Armchair,
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -69,20 +70,15 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Chat IA with "Bientôt disponible" badge */}
-      <div className="mb-6 px-4 py-6">
-        <SidebarNavItem 
-          icon={<MessageSquare className="h-5 w-5" />} 
-          label="Chat IA" 
-          notAvailable={true}
-          notAvailableIcon={
-            <span className="ml-auto flex items-center">
-              <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 font-normal px-2 py-0.5 whitespace-nowrap">
-                bientôt disponible
-              </Badge>
-            </span>
-          }
-        />
+      {/* Chatbot IA with "Bientôt disponible" badge */}
+      <div className="mb-3 px-4 py-6">
+        <div className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-gray-700 opacity-70 cursor-not-allowed">
+          <MessageSquare className="h-5 w-5" />
+          <span className="flex-1 whitespace-nowrap">Chatbot IA</span>
+          <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 font-normal px-2 py-0.5 whitespace-nowrap">
+            Bientôt disponible
+          </Badge>
+        </div>
       </div>
       
       <Separator className="my-6" />
@@ -112,6 +108,20 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
           label="Générateur d'images" 
           path="/image-generation"
           onClick={() => navigate("/image-generation")}
+        />
+        <SidebarNavItem 
+          icon={<Armchair className="h-5 w-5" />} 
+          label="Plan de classe"
+          path="/plan-de-classe"
+          onClick={() => navigate("/plan-de-classe")}
+          badge={
+            <Badge 
+              variant="outline" 
+              className="text-xs bg-green-50 text-green-700 border-green-200 font-normal px-2 py-0.5 whitespace-nowrap"
+            >
+              nouveau
+            </Badge>
+          }
         />
       </SidebarNavigationSection>
       

@@ -26,15 +26,30 @@ export function useSubscriptionRouteLogic() {
       return;
     }
 
-    if (profileError || !profile) {
-      console.log("Profile error or not found, defaulting to subscription check");
-      setShowContent(false); // Default to subscription check if profile fails
+    // En mode développement, toujours montrer le contenu
+    if (import.meta.env.DEV) {
+      console.log("Development mode, showing content");
+      setShowContent(true);
       return;
     }
 
-    // Allow access if user is beta, ambassador, or admin
-    setShowContent(profile.is_beta || profile.is_ambassador || profile.is_admin || profile.is_paid_user);
-  }, [authReady, profile, profileLoading, profileError]);
+    // Si l'utilisateur est abonné, montrer le contenu
+    if (isSubscribed) {
+      console.log("User is subscribed, showing content");
+      setShowContent(true);
+      return;
+    }
+
+    // Si le profil a des accès spéciaux, montrer le contenu
+    if (profile && (profile.is_beta || profile.is_ambassador || profile.is_admin || profile.is_paid_user)) {
+      console.log("Special access granted via profile");
+      setShowContent(true);
+      return;
+    }
+
+    // Par défaut, ne pas montrer le contenu
+    setShowContent(false);
+  }, [authReady, profile, profileLoading, isSubscribed]);
 
   // Reduce display time - only show verification if it takes unusually long
   useEffect(() => {
@@ -49,12 +64,7 @@ export function useSubscriptionRouteLogic() {
 
   // Effect for handling non-subscribed users
   useEffect(() => {
-    // This effect is only for redirecting unsubscribed users
     if (!isLoading && !error && !isSubscribed && !showContent) {
-      const redirectTimer = setTimeout(() => {
-        safeNavigate("/pricing");
-      }, 1500);
-
       // Log in PostHog for analytics, but only in production
       if (!import.meta.env.DEV) {
         posthog.capture("subscription_required_view", {
@@ -62,8 +72,6 @@ export function useSubscriptionRouteLogic() {
           subscription_type: subscriptionType,
         });
       }
-
-      return () => clearTimeout(redirectTimer);
     }
   }, [isLoading, error, isSubscribed, showContent, location.pathname, subscriptionType]);
 

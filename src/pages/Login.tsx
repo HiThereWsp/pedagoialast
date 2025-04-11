@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { supabase } from "@/integrations/supabase/client"
@@ -46,6 +45,26 @@ export default function Login() {
 
     verifyMagicLink();
   }, []);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // Récupérer l'URL de redirection depuis les paramètres
+          const params = new URLSearchParams(window.location.search);
+          const redirectUrl = params.get('redirect') || '/tableaudebord';
+          
+          navigate(redirectUrl, { replace: true });
+        }
+      } catch (error) {
+        console.error("Erreur de session:", error);
+      }
+    };
+
+    checkUser();
+  }, [navigate]);
 
   useEffect(() => {
     const checkUser = async () => {

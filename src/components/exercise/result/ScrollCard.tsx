@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Copy } from 'lucide-react';
@@ -34,12 +33,6 @@ export const ScrollCard = ({
   const { toast } = useToast();
   const contentRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'student' | 'correction'>(showCorrection ? 'correction' : 'student');
-
-  useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [exercises]);
 
   // Effet pour mettre à jour l'onglet actif lorsque showCorrection change
   useEffect(() => {
