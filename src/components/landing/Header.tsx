@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '../ui/button';
@@ -15,7 +14,22 @@ export function Header() {
   
   // Définition des liens de navigation
   const links = [
-    // Vous pouvez ajouter des liens ici si nécessaire
+    {
+      name: "Bienvenue",
+      href: "/bienvenue"
+    },
+    {
+      name: "Générateur de séquences",
+      href: "/lesson-plan"
+    },
+    {
+      name: "Générateur d'exercices",
+      href: "/exercise"
+    },
+    {
+      name: "Contactez-nous",
+      href: "/contact"
+    }
   ];
   
   const handleDashboardClick = () => {
@@ -27,7 +41,10 @@ export function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center gap-2">
-            <img src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" alt="PedagoIA Logo" className="h-20 w-auto" />
+            <img 
+              src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+              alt="PedagoIA Logo" 
+              className="h-24 w-24 object-contain" />
           </Link>
         </div>
 
@@ -88,7 +105,10 @@ export function Header() {
             <div className="container flex h-16 items-center justify-between">
               <div className="flex items-center gap-2">
                 <Link to="/" className="flex items-center gap-2">
-                  <img src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" alt="PedagoIA Logo" className="h-16 w-auto" />
+                  <img 
+                    src="/lovable-uploads/03e0c631-6214-4562-af65-219e8210fdf1.png" 
+                    alt="PedagoIA Logo" 
+                    className="h-20 w-20 object-contain" />
                 </Link>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setMobileMenuOpen(false)}>

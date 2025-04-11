@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { ArrowRight, Star } from 'lucide-react'
 import { Button } from '../ui/button'
@@ -33,9 +32,8 @@ export function HeroSection() {
             </span>
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold mb-4 sm:mb-6 bg-clip-text">
-            <span className="text-foreground block mb-2 sm:mb-4">L'assistant pédagogique</span>
-            <span className="text-foreground">qui vous aide à </span>
-            <DynamicText />
+            <span className="text-foreground block mb-2 sm:mb-4">PedagoIA</span>
+            <span className="text-foreground">L'IA au service des enseignants</span>
           </h1>
           <div className="flex flex-col items-center gap-4 sm:gap-6 mb-6 sm:mb-8">
             <Button 
@@ -53,7 +51,7 @@ export function HeroSection() {
             </p>
           </div>
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Rejoignez la communauté des premiers utilisateurs et transformez votre façon d'enseigner
+            Crée des séquences, des séances, QCM et tes ressources automatiquement. Personnalise tes documents comme les exercices en français pour adapter au mieux tes outils d'apprentissage.
           </p>
         </div>
       </div>

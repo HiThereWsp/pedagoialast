@@ -2,16 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from "react-helmet-async";
 import { DashboardWrapper } from "@/components/dashboard/DashboardWrapper";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Save, Folder, Trash2, Eye, X } from "lucide-react";
+import { RefreshCw, Save, Folder, Trash2, Eye, X, UserX, Users, Users2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
 
 interface Student {
   id: string;
   name: string;
   color: string;
+  isAbsent?: boolean;
 }
 
 interface SeparationRule {
@@ -123,26 +126,29 @@ const PlanDeClassePage: React.FC = () => {
   const isValidPlacement = (
     plan: (Student | null)[][],
     studentPositions: Map<string, Position>,
-    newStudent: Student,
+    student: Student,
     row: number,
     col: number
   ): boolean => {
-    // Vérifier les règles de séparation
     for (const rule of separationRules) {
-      if (rule.student1 === newStudent.id) {
-        const pos2 = studentPositions.get(rule.student2);
-        if (pos2 && areAdjacent({ row, col }, pos2)) {
-          return false;
-        }
-      }
-      if (rule.student2 === newStudent.id) {
-        const pos1 = studentPositions.get(rule.student1);
-        if (pos1 && areAdjacent({ row, col }, pos1)) {
+      if (rule.student1 === student.id || rule.student2 === student.id) {
+        const otherStudentId = rule.student1 === student.id ? rule.student2 : rule.student1;
+        const otherPos = studentPositions.get(otherStudentId);
+        if (otherPos && Math.abs(otherPos.row - row) <= 1 && Math.abs(otherPos.col - col) <= 1) {
           return false;
         }
       }
     }
     return true;
+  };
+
+  // Fonction utilitaire pour diviser les élèves en groupes
+  const chunkArray = (array: Student[], size: number) => {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
   };
 
   // Modifier la fonction de génération du plan pour respecter exactement le nombre de rangées
@@ -152,15 +158,12 @@ const PlanDeClassePage: React.FC = () => {
     
     while (attempt < maxAttempts) {
       try {
-        // Créer un plan vide avec EXACTEMENT le nombre de rangées et colonnes spécifié
         const plan: (Student | null)[][] = Array(rows).fill(null)
           .map(() => Array(columns).fill(null));
         
-        // Copier et mélanger la liste des élèves
         const shuffledStudents = [...students]
           .sort(() => Math.random() - 0.5);
         
-        // Créer la liste des positions disponibles
         const availablePositions: Position[] = [];
         for (let i = 0; i < rows; i++) {
           for (let j = 0; j < columns; j++) {
@@ -168,29 +171,75 @@ const PlanDeClassePage: React.FC = () => {
           }
         }
 
-        // Mélanger les positions disponibles
-        const shuffledPositions = availablePositions
-          .sort(() => Math.random() - 0.5);
-        
-        // Placer chaque élève
-        for (let i = 0; i < shuffledStudents.length && i < shuffledPositions.length; i++) {
-          const student = shuffledStudents[i];
-          const position = shuffledPositions[i];
-          plan[position.row][position.col] = student;
+        const isGroupLayout = columns * rows >= Math.ceil(students.length / 2) * 2 || 
+                            columns * rows >= Math.ceil(students.length / 4) * 4;
+
+        if (isGroupLayout) {
+          const studentPositions = new Map<string, Position>();
+          
+          for (let i = 0; i < shuffledStudents.length; i += 2) {
+            const student1 = shuffledStudents[i];
+            const student2 = shuffledStudents[i + 1];
+            
+            let placed = false;
+            for (let row = 0; row < rows && !placed; row++) {
+              for (let col = 0; col < columns - 1 && !placed; col++) {
+                if (!plan[row][col] && !plan[row][col + 1]) {
+                  const canPlace = isValidPlacement(plan, studentPositions, student1, row, col) &&
+                                 (!student2 || isValidPlacement(plan, studentPositions, student2, row, col + 1));
+                  
+                  if (canPlace) {
+                    plan[row][col] = student1;
+                    studentPositions.set(student1.id, { row, col });
+                    
+                    if (student2) {
+                      plan[row][col + 1] = student2;
+                      studentPositions.set(student2.id, { row, col: col + 1 });
+                    }
+                    placed = true;
+                  }
+                }
+              }
+            }
+            
+            if (!placed) {
+              throw new Error("Impossible de placer les élèves adjacents");
+            }
+          }
+        } else {
+          const studentPositions = new Map<string, Position>();
+          
+          for (let i = 0; i < shuffledStudents.length; i++) {
+            const student = shuffledStudents[i];
+            let placed = false;
+            
+            for (const pos of availablePositions) {
+              if (!plan[pos.row][pos.col] && isValidPlacement(plan, studentPositions, student, pos.row, pos.col)) {
+                plan[pos.row][pos.col] = student;
+                studentPositions.set(student.id, pos);
+                placed = true;
+                break;
+              }
+            }
+            
+            if (!placed) {
+              throw new Error("Impossible de placer l'élève");
+            }
+          }
         }
         
-        // Si on arrive ici, on a trouvé une solution valide
-        console.log(`Plan généré avec ${rows} rangées et ${columns} colonnes`);
         setSeatingPlan(plan);
         return;
-        
       } catch (error) {
         attempt++;
         console.log(`Tentative ${attempt} échouée, nouvel essai...`);
       }
     }
     
-    alert("Impossible de générer un plan respectant toutes les contraintes.");
+    toast({
+      variant: "destructive",
+      description: "Impossible de générer un plan respectant toutes les contraintes."
+    });
   };
 
   // Ajouter une validation pour les entrées
@@ -314,14 +363,15 @@ const PlanDeClassePage: React.FC = () => {
     }
   };
 
-  // Modifier le composant SeatCell pour un meilleur équilibre de taille
+  // Modifier le composant SeatCell pour mieux afficher les absents
   const SeatCell: React.FC<{
     student: Student | null;
     row: number;
     col: number;
   }> = ({ student, row, col }) => {
     const isEmpty = !student && spaceType === 'empty';
-
+    const isGroupBorder = row % 2 === 1; // Ajoute une bordure en bas des groupes de 4
+    
     return (
       <div 
         draggable={!!student}
@@ -329,21 +379,40 @@ const PlanDeClassePage: React.FC = () => {
         onDrop={(e) => handleDrop(e, row, col)}
         onDragOver={handleDragOver}
         className={`
-          aspect-square rounded-lg p-2 flex items-center justify-center
+          aspect-square rounded-lg p-2
+          flex flex-col items-center justify-center
           ${isEmpty ? 'bg-gray-100 border-2 border-dashed border-gray-200' : 
             student ? 'shadow-sm border cursor-move' : 'bg-transparent'}
+          ${isGroupBorder ? 'border-b-4 border-b-gray-200' : ''}
           transition-all duration-200 hover:shadow-md
-          w-full
+          w-full relative
+          ${student?.isAbsent ? 'bg-opacity-40' : ''}
         `}
-        style={student ? { backgroundColor: student.color, borderColor: student.color } : {}}
+        style={student ? { 
+          backgroundColor: student.color, 
+          borderColor: student.color,
+          ...(isGroupBorder && { borderBottomColor: '#e5e7eb' }) // Couleur de séparation des groupes
+        } : {}}
       >
-        {student ? (
-          <div className="text-center w-full">
-            <span className="font-medium text-gray-900 text-base">{student.name}</span>
-          </div>
-        ) : (
-          isEmpty && <div className="text-gray-400 text-sm">Vide</div>
+        {student && (
+          <>
+            <span className="font-medium text-gray-900 text-base z-10">
+              {student.name}
+            </span>
+            {student.isAbsent && (
+              <>
+                <div className="absolute inset-0 bg-white bg-opacity-60 rounded-lg"></div>
+                <div className="absolute top-1 right-1">
+                  <UserX className="h-5 w-5 text-red-500" />
+                </div>
+                <span className="text-xs text-red-500 mt-1 font-medium">
+                  ABSENT
+                </span>
+              </>
+            )}
+          </>
         )}
+        {isEmpty && <div className="text-gray-400 text-sm">Vide</div>}
       </div>
     );
   };
@@ -460,6 +529,84 @@ const PlanDeClassePage: React.FC = () => {
     }
   }, []);
 
+  // Modifier la fonction de génération des dispositions prédéfinies
+  const generatePairsLayout = () => {
+    // Mélanger les élèves
+    const shuffledStudents = [...students].sort(() => Math.random() - 0.5);
+    
+    // Diviser en binômes
+    const pairs = chunkArray(shuffledStudents, 2);
+    
+    // Calculer les dimensions nécessaires
+    const neededRows = Math.ceil(pairs.length / 2); // 2 binômes par ligne
+    const neededColumns = 4; // 2 élèves + 1 espace + 2 élèves
+
+    setRows(neededRows);
+    setColumns(neededColumns);
+    
+    // Créer le plan
+    const plan: (Student | null)[][] = Array(neededRows).fill(null)
+      .map(() => Array(neededColumns).fill(null));
+
+    // Placer les binômes
+    pairs.forEach((pair, index) => {
+      const row = Math.floor(index / 2);
+      const isSecondPair = index % 2 === 1;
+      
+      // Position de départ pour ce binôme
+      const startCol = isSecondPair ? 2 : 0;
+      
+      // Placer les élèves du binôme
+      pair.forEach((student, studentIndex) => {
+        plan[row][startCol + studentIndex] = student;
+      });
+    });
+
+    setSeatingPlan(plan);
+  };
+
+  const generateGroupsOfFour = () => {
+    // Mélanger les élèves
+    const shuffledStudents = [...students].sort(() => Math.random() - 0.5);
+    
+    // Diviser en groupes de 4
+    const groups = chunkArray(shuffledStudents, 4);
+    
+    // Calculer les dimensions nécessaires
+    const neededRows = groups.length * 2; // Chaque groupe prend 2 lignes
+    const neededColumns = 2; // 2 colonnes pour chaque groupe
+
+    setRows(neededRows);
+    setColumns(neededColumns);
+    
+    // Créer le plan
+    const plan: (Student | null)[][] = Array(neededRows).fill(null)
+      .map(() => Array(neededColumns).fill(null));
+
+    // Placer les groupes
+    groups.forEach((group, groupIndex) => {
+      const baseRow = groupIndex * 2;
+      
+      // Placer les 4 élèves en carré
+      group.forEach((student, studentIndex) => {
+        const row = baseRow + Math.floor(studentIndex / 2);
+        const col = studentIndex % 2;
+        plan[row][col] = student;
+      });
+    });
+
+    setSeatingPlan(plan);
+  };
+
+  // Ajouter la fonction pour gérer l'absence
+  const toggleAbsence = (studentId: string) => {
+    setStudents(students.map(student => 
+      student.id === studentId 
+        ? { ...student, isAbsent: !student.isAbsent }
+        : student
+    ));
+  };
+
   return (
     <DashboardWrapper>
       <Helmet>
@@ -468,16 +615,8 @@ const PlanDeClassePage: React.FC = () => {
       </Helmet>
 
       <div className="container mx-auto py-4 px-4">
-        {/* En-tête */}
-        <div className="text-center mb-4">
-          <h1 className="text-4xl font-extrabold mb-1 tracking-tight text-balance max-w-lg mx-auto">
-            <span className="bg-gradient-to-r from-[#FFE29F] to-[#FF719A] bg-clip-text text-transparent">
-              Plan de classe
-            </span>
-          </h1>
-          <p className="max-w-2xl mx-auto text-slate-500 text-sm">
-            Organisez votre classe comme vous le souhaitez et générez automatiquement un plan optimal
-          </p>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Plan de classe</h1>
         </div>
 
         <div className="max-w-6xl mx-auto space-y-6">
@@ -488,49 +627,20 @@ const PlanDeClassePage: React.FC = () => {
             </TabsList>
             
             <TabsContent value="editor">
-              {/* Configuration de la salle */}
-              <div className="bg-white rounded-lg shadow-sm p-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Rangées (1-10)
-                    </label>
-                    <Input
-                      type="number"
-                      value={rows}
-                      onChange={handleRowsChange}
-                      className="w-full"
-                      min="1"
-                      max="10"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Colonnes (1-10)
-                    </label>
-                    <Input
-                      type="number"
-                      value={columns}
-                      onChange={handleColumnsChange}
-                      className="w-full"
-                      min="1"
-                      max="10"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Espaces vides</label>
-                    <select
-                      value={spaceType}
-                      onChange={(e) => setSpaceType(e.target.value as 'empty' | 'none')}
-                      className="w-full p-2 border rounded-md"
-                    >
-                      <option value="empty">Afficher les tables vides</option>
-                      <option value="none">Masquer les espaces vides</option>
-                    </select>
-                  </div>
+              {/* 1. Aperçu du plan */}
+              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <div className="flex flex-col items-center mb-4 relative">
+                  <h2 className="text-xl font-semibold">Aperçu du plan</h2>
+                  <Button
+                    onClick={() => setShowSaveDialog(true)}
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 hover:bg-gray-100"
+                    title="Sauvegarder le plan"
+                  >
+                    <Save className="h-5 w-5" />
+                  </Button>
                 </div>
-                
-                {/* Plan de classe */}
                 <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <div 
                     className="grid gap-2" 
@@ -551,116 +661,171 @@ const PlanDeClassePage: React.FC = () => {
                     ))}
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-3 flex justify-end gap-2">
+              {/* 2. Liste des élèves avec gestion des absents */}
+              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 className="text-xl font-semibold mb-4">Liste des élèves</h2>
+                <div className="flex gap-2 mb-4">
+                  <Input
+                    type="text"
+                    value={newStudentName}
+                    onChange={(e) => setNewStudentName(e.target.value)}
+                    placeholder="Nom de l'élève"
+                    className="flex-1"
+                    onKeyPress={(e) => e.key === 'Enter' && addStudent()}
+                  />
                   <Button
-                    onClick={() => setShowSaveDialog(true)}
+                    onClick={addStudent}
                     variant="outline"
-                    className="flex items-center gap-2"
+                    className="px-4 hover:bg-gray-50"
                   >
-                    <Save className="h-4 w-4" />
-                    Sauvegarder le plan
+                    Ajouter
                   </Button>
-                  <Button
-                    onClick={generateSeatingPlan}
-                    className="bg-gradient-to-r from-[#FFE29F] to-[#FF719A] text-black hover:from-[#FFD166] hover:to-[#FF5E8F] flex items-center gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Générer un nouveau plan
-                  </Button>
+                </div>
+                <div className="max-h-[200px] overflow-y-auto space-y-2">
+                  {students.map(student => (
+                    <div 
+                      key={student.id} 
+                      className={`flex justify-between items-center p-2 bg-gray-50 rounded-md ${
+                        student.isAbsent ? 'opacity-60' : ''
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        {student.name}
+                        {student.isAbsent && <UserX className="h-4 w-4 text-gray-400" />}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleAbsence(student.id)}
+                          className={`text-gray-400 hover:text-gray-600 ${
+                            student.isAbsent ? 'text-red-400 hover:text-red-600' : ''
+                          }`}
+                          title={student.isAbsent ? "Marquer présent" : "Marquer absent"}
+                        >
+                          <UserX className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => removeStudent(student.id)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* Configuration en deux colonnes */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                {/* Colonne de gauche */}
-                <div className="space-y-3">
-                  <div className="bg-white rounded-lg shadow-sm p-4">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Liste des élèves</h2>
-                    <div className="flex gap-2 mb-4">
-                      <Input
-                        type="text"
-                        value={newStudentName}
-                        onChange={(e) => setNewStudentName(e.target.value)}
-                        placeholder="Nom de l'élève"
-                        className="flex-1"
-                        onKeyPress={(e) => e.key === 'Enter' && addStudent()}
-                      />
-                      <Button
-                        onClick={addStudent}
-                        className="bg-gradient-to-r from-[#FFE29F] to-[#FF719A] text-black hover:from-[#FFD166] hover:to-[#FF5E8F] px-4"
-                      >
-                        +
-                      </Button>
-                    </div>
-                    <div className="max-h-[200px] overflow-y-auto space-y-2">
-                      {students.map(student => (
-                        <div key={student.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-md">
-                          <span>{student.name}</span>
-                          <button
-                            onClick={() => removeStudent(student.id)}
-                            className="text-gray-400 hover:text-red-500"
-                            aria-label="Supprimer l'élève"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+              {/* 3. Configuration de la salle */}
+              <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                <h2 className="text-xl font-semibold mb-4">Configuration de la salle</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Rangées (1-10)
+                    </label>
+                    <Input
+                      type="number"
+                      value={rows}
+                      onChange={handleRowsChange}
+                      className="w-full"
+                      min="1"
+                      max="10"
+                    />
                   </div>
-                </div>
-
-                {/* Colonne de droite */}
-                <div className="bg-white rounded-lg shadow-sm p-4">
-                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Élèves à séparer</h2>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4">
-                      <select
-                        value={selectedStudent1}
-                        onChange={(e) => setSelectedStudent1(e.target.value)}
-                        className="p-2 border rounded-md"
-                      >
-                        <option value="">1er élève</option>
-                        {students.map(student => (
-                          <option key={student.id} value={student.id}>{student.name}</option>
-                        ))}
-                      </select>
-                      <select
-                        value={selectedStudent2}
-                        onChange={(e) => setSelectedStudent2(e.target.value)}
-                        className="p-2 border rounded-md"
-                      >
-                        <option value="">2e élève</option>
-                        {students.map(student => (
-                          <option key={student.id} value={student.id}>{student.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <Button
-                      onClick={addSeparationRule}
-                      className="w-full bg-gradient-to-r from-[#FFE29F] to-[#FF719A] text-black hover:from-[#FFD166] hover:to-[#FF5E8F]"
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Colonnes (1-10)
+                    </label>
+                    <Input
+                      type="number"
+                      value={columns}
+                      onChange={handleColumnsChange}
+                      className="w-full"
+                      min="1"
+                      max="10"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Espaces vides
+                    </label>
+                    <select
+                      value={spaceType}
+                      onChange={(e) => setSpaceType(e.target.value as 'empty' | 'none')}
+                      className="w-full p-2 border rounded-md"
                     >
-                      Ajouter la séparation
-                    </Button>
-                    <div className="max-h-[200px] overflow-y-auto space-y-2">
-                      {separationRules.map((rule, index) => (
-                        <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded-md">
-                          <span>
-                            {students.find(s => s.id === rule.student1)?.name} + {students.find(s => s.id === rule.student2)?.name}
-                          </span>
-                          <button
-                            onClick={() => removeSeparationRule(index)}
-                            className="text-gray-400 hover:text-red-500"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      ))}
-                    </div>
+                      <option value="empty">Afficher les tables vides</option>
+                      <option value="none">Masquer les espaces vides</option>
+                    </select>
                   </div>
                 </div>
+              </div>
+
+              {/* 4. Règles de séparation (Accordéon) */}
+              <Collapsible className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <CollapsibleTrigger className="w-full p-6 flex justify-between items-center hover:bg-gray-50">
+                  <h2 className="text-xl font-semibold">Règles de séparation</h2>
+                  <ChevronDown className="h-5 w-5" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="px-6 pb-6">
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <select
+                      value={selectedStudent1}
+                      onChange={(e) => setSelectedStudent1(e.target.value)}
+                      className="p-2 border rounded-md"
+                    >
+                      <option value="">Sélectionner le 1er élève</option>
+                      {students.map(student => (
+                        <option key={student.id} value={student.id}>{student.name}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={selectedStudent2}
+                      onChange={(e) => setSelectedStudent2(e.target.value)}
+                      className="p-2 border rounded-md"
+                    >
+                      <option value="">Sélectionner le 2e élève</option>
+                      {students.map(student => (
+                        <option key={student.id} value={student.id}>{student.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <Button
+                    onClick={addSeparationRule}
+                    variant="outline"
+                    className="w-full mb-4"
+                  >
+                    Ajouter une règle de séparation
+                  </Button>
+                  <div className="max-h-[150px] overflow-y-auto space-y-2">
+                    {separationRules.map((rule, index) => (
+                      <div key={index} className="flex justify-between items-center p-2 bg-gray-50 rounded-md">
+                        <span>
+                          {students.find(s => s.id === rule.student1)?.name} et {students.find(s => s.id === rule.student2)?.name}
+                        </span>
+                        <button
+                          onClick={() => removeSeparationRule(index)}
+                          className="text-gray-400 hover:text-red-500"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Bouton de génération en bas de page */}
+              <div className="flex justify-end mt-6">
+                <Button
+                  onClick={generateSeatingPlan}
+                  className="h-10 bg-gradient-to-r from-[#FFE29F] to-[#FF719A] text-black hover:opacity-90 flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Générer le plan
+                </Button>
               </div>
             </TabsContent>
             
