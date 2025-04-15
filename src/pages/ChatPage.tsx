@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase, supabaseUrl, supabaseKey } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
 import ReactMarkdown from 'react-markdown';
@@ -138,9 +139,10 @@ const SourcesDisplay = ({ sources }) => {
 };
 
 export const ChatPage = () => {
-  const { user } = useAuth();
   const { threadId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -604,20 +606,92 @@ export const ChatPage = () => {
 
   const saveFeedback = async (messageId, type, text = null) => {
     try {
-      const { error } = await supabase
-        .from('message_feedback')
-        .insert({
-          message_id: messageId,
-          user_id: user?.id,
-          feedback_type: type, // 'thumbs_up', 'thumbs_down', or 'text'
-          feedback_text: text
-        });
-
+      // Show loading state
+      setIsLoading(true);
+      
+      // First check if the message exists and belongs to the current thread
+      const { data: message, error: fetchError } = await supabase
+        .from('chat_messages')
+        .select('id, thread_id, role')
+        .eq('id', messageId)
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching message:', fetchError);
+        throw new Error('Unable to find the message. Please try again.');
+      }
+      
+      // Only allow feedback on assistant messages
+      if (message.role !== 'assistant') {
+        throw new Error('Feedback can only be provided for assistant messages');
+      }
+      
+      // Check if the thread belongs to the current user
+      const { data: thread, error: threadError } = await supabase
+        .from('chat_threads')
+        .select('user_id')
+        .eq('id', message.thread_id)
+        .single();
+      
+      if (threadError) {
+        console.error('Error fetching thread:', threadError);
+        throw new Error('Unable to verify message ownership. Please try again.');
+      }
+      
+      if (thread.user_id !== user?.id) {
+        throw new Error('You do not have permission to provide feedback for this message');
+      }
+      
+      // Now update the message with feedback
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .update({
+          feedback_type: type,
+          feedback_text: type === 'text' ? text : null,
+          feedback_submitted_at: new Date().toISOString()
+        })
+        .eq('id', messageId)
+        .select();
+      
       if (error) {
         console.error('Error saving feedback:', error);
+        throw new Error(error.message || 'Failed to save feedback');
       }
+      
+      console.log('Feedback saved successfully:', data);
+      
+      // Update the local state to reflect the feedback change
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          msg.id === messageId 
+            ? { 
+                ...msg, 
+                feedback_type: type, 
+                feedback_text: type === 'text' ? text : null,
+                feedback_submitted_at: new Date().toISOString()
+              } 
+            : msg
+        )
+      );
+      
+      // Show success message
+      toast({
+        title: "Feedback Submitted",
+        description: "Thank you for your feedback!",
+        variant: "default"
+      });
+      
     } catch (error) {
       console.error('Error in saveFeedback:', error);
+      
+      // Show error message
+      toast({
+        title: "Error Submitting Feedback",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -877,14 +951,18 @@ export const ChatPage = () => {
                                 saveFeedback(message.id, 'thumbs_up');
                               }}
                               size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0 rounded-full opacity-50 hover:opacity-100 hover:bg-gradient-to-r hover:from-[#FFD700] hover:to-[#FFA500] hover:text-white transition-all duration-300"
+                              variant={message.feedback_type === 'thumbs_up' ? 'default' : 'ghost'}
+                              className={`h-8 w-8 p-0 rounded-full transition-all duration-300 ${
+                                message.feedback_type === 'thumbs_up'
+                                  ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-white opacity-100'
+                                  : 'opacity-50 hover:opacity-100 hover:bg-gradient-to-r hover:from-[#FFD700] hover:to-[#FFA500] hover:text-white'
+                              }`}
                             >
                               <ThumbsUp className="h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>This was helpful</p>
+                            <p>{message.feedback_type === 'thumbs_up' ? 'You found this helpful' : 'This was helpful'}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -897,14 +975,18 @@ export const ChatPage = () => {
                                 saveFeedback(message.id, 'thumbs_down');
                               }}
                               size="sm"
-                              variant="ghost"
-                              className="h-8 w-8 p-0 rounded-full opacity-50 hover:opacity-100 hover:bg-gradient-to-r hover:from-[#FFD700] hover:to-[#FFA500] hover:text-white transition-all duration-300"
+                              variant={message.feedback_type === 'thumbs_down' ? 'default' : 'ghost'}
+                              className={`h-8 w-8 p-0 rounded-full transition-all duration-300 ${
+                                message.feedback_type === 'thumbs_down'
+                                  ? 'bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-white opacity-100'
+                                  : 'opacity-50 hover:opacity-100 hover:bg-gradient-to-r hover:from-[#FFD700] hover:to-[#FFA500] hover:text-white'
+                              }`}
                             >
                               <ThumbsDown className="h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>This was not helpful</p>
+                            <p>{message.feedback_type === 'thumbs_down' ? 'You found this not helpful' : 'This was not helpful'}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
