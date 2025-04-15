@@ -41,6 +41,11 @@
   color: #888;
 }
 
+/* Ajouter ce style pour l'effet d'éclairage */
+.lightbulb-glow {
+  filter: drop-shadow(0 0 3px rgba(253, 224, 71, 0.8));
+}
+
 /* Global styles for markdown content */
 .message-content {
   text-align: left;
@@ -52,7 +57,7 @@
 }
 
 /* Ensure lists are properly displayed */
-.message-content ul, 
+.message-content ul,
 .message-content ol {
   text-align: left;
   padding-left: 1.5rem;

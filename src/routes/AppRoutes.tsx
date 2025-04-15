@@ -11,6 +11,7 @@ import ToolsLayout from '@/components/layout/ToolsLayout';
 import Guide from '@/pages/Guide';
 import { BugReportButton } from '@/components/bug-report/BugReportButton';
 import ChatPage from '@/pages/ChatPage';
+import { useAnalytics } from '@/hooks';
 
 // Chargement paresseux des pages
 const LoginPage = lazy(() => import('@/pages/Login'));
@@ -44,6 +45,8 @@ const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
 const AdminSubscriptionRepairPage = lazy(() => import('@/pages/AdminSubscriptionRepairPage'));
 const AdminBugReportsPage = lazy(() => import('@/pages/AdminBugReportsPage')); // New import
 const PlanDeClassePage = lazy(() => import('@/pages/PlanDeClassePage'));
+const SuggestionsManagementPage = lazy(() => import('@/pages/admin/SuggestionsManagementPage'));
+const SuggestionDetailPage = lazy(() => import('@/pages/SuggestionDetailPage'));
 
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
@@ -63,7 +66,8 @@ const LoadingPage = () => (
 const AppContent = () => {
   const location = useLocation();
   const isBienvenuePage = location.pathname === '/bienvenue';
-  
+  const { logEvent } = useAnalytics();
+
   return (
     <>
       <Routes>
@@ -122,7 +126,8 @@ const AppContent = () => {
         <Route path="/admin/brevo-sync" element={<ProtectedRoute><BrevoSyncPage /></ProtectedRoute>} />
         <Route path="/admin/subscription-management" element={<ProtectedRoute><AdminSubscriptionRepairPage /></ProtectedRoute>} />
         <Route path="/admin/bug-reports" element={<ProtectedRoute><AdminBugReportsPage /></ProtectedRoute>} />
-        
+        <Route path="/admin/suggestions" element={<ProtectedRoute><SuggestionsManagementPage /></ProtectedRoute>} />
+
         {/* Routes de suivi des conversions */}
         <Route path="/payment-success" element={<PaymentSuccessPage />} />
         <Route path="/payment-failure" element={<PaymentFailurePage />} />
@@ -131,6 +136,7 @@ const AppContent = () => {
         <Route path="/subscription-success" element={<SubscriptionSuccessPage />} />
         <Route path="/subscription-failed" element={<SubscriptionFailedPage />} />
         <Route path="/checkout-canceled" element={<CheckoutCanceledPage />} />
+        <Route path="/suggestion/:id" element={<ProtectedRoute><SuggestionDetailPage /></ProtectedRoute>} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       

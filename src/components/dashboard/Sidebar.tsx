@@ -8,6 +8,8 @@ import {
   Sparkles, 
   Leaf,
   MessageCircle,
+  Layout,
+  Armchair,
   Plus,
   ArrowLeft,
   MessageSquare,
@@ -118,7 +120,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
         .range(from, to);
 
       if (error) throw error;
-      
+
       if (data) {
         setThreads(prev => {
           // For first load, show exactly 15 threads
@@ -126,12 +128,12 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
             return data.slice(0, threadsToShow);
           }
           // For subsequent loads, add all new threads
-          const newThreads = data.filter(newThread => 
+          const newThreads = data.filter(newThread =>
             !prev.some(existingThread => existingThread.id === newThread.id)
           );
           return [...prev, ...newThreads];
         });
-        
+
         // Update hasMore based on whether we got a full page of threads
         setHasMore(data.length === threadsPerPage);
         setPage(pageToLoad);
@@ -197,7 +199,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
       {isChatRoute ? (
         <div className="flex-1 flex flex-col">
           <div className="p-4 space-y-4">
-            <Button 
+            <Button
               variant="ghost"
               onClick={() => navigate("/tableaudebord")}
               className="w-full flex items-center justify-start gap-2 text-gray-600 hover:text-gray-900"
@@ -205,7 +207,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
               <ArrowLeft className="h-5 w-5" />
               Retour au tableau de bord
             </Button>
-            <Button 
+            <Button
               onClick={() => {
                 navigate('/chat');
               }}
@@ -225,7 +227,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
             </Button>
           </div>
           {/* <Separator className="my-4" /> */}
-          
+
           {/* Chat threads list container */}
           <div className="flex-1 overflow-hidden"> {/* Parent container */}
             <div className={styles.scrollContainer}>
@@ -261,7 +263,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
                     ))}
                     {/* Loading indicator and intersection observer target */}
                     {hasMore && (
-                      <div 
+                      <div
                         ref={loadingRef}
                         className="py-4 flex items-center justify-center"
                       >
@@ -286,57 +288,57 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
           {/* Outils pédagogiques */}
           <SidebarNavigationSection title="Outils pédagogiquess" className="mb-auto">
             {isAdmin && (
-              <SidebarNavItem 
-                icon={<Bot className="h-5 w-5" />} 
-                label="Chat AI" 
+              <SidebarNavItem
+                icon={<Bot className="h-5 w-5" />}
+                label="Chat AI"
                 path="/chat"
                 onClick={() => navigate("/chat")}
               />
             )}
-            <SidebarNavItem 
-              icon={<Sparkles className="h-5 w-5" />} 
-              label="Générateur de séquences" 
+            <SidebarNavItem
+              icon={<Sparkles className="h-5 w-5" />}
+              label="Générateur de séquences"
               path="/lesson-plan"
               onClick={() => navigate("/lesson-plan")}
             />
-            <SidebarNavItem 
-              icon={<Leaf className="h-5 w-5" />} 
-              label="Générateur d'exercices" 
+            <SidebarNavItem
+              icon={<Leaf className="h-5 w-5" />}
+              label="Générateur d'exercices"
               path="/exercise"
               onClick={() => navigate("/exercise")}
             />
-            <SidebarNavItem 
-              icon={<FileText className="h-5 w-5" />} 
-              label="Assistant administratif" 
+            <SidebarNavItem
+              icon={<FileText className="h-5 w-5" />}
+              label="Assistant administratif"
               path="/correspondence"
               onClick={() => navigate("/correspondence")}
             />
-            <SidebarNavItem 
-              icon={<Image className="h-5 w-5" />} 
-              label="Générateur d'images" 
+            <SidebarNavItem
+              icon={<Image className="h-5 w-5" />}
+              label="Générateur d'images"
               path="/image-generation"
               onClick={() => navigate("/image-generation")}
             />
           </SidebarNavigationSection>
-          
+
           {/* Resources section */}
           <div className="mt-auto pt-6">
             <Separator className="mb-6" />
-            
+
             <SidebarNavigationSection hasSeparator={true}>
-              <SidebarNavItem 
-                icon={<BookOpen className="h-5 w-5" />} 
-                label="Mes ressources" 
+              <SidebarNavItem
+                icon={<BookOpen className="h-5 w-5" />}
+                label="Mes ressources"
                 path="/saved-content"
                 onClick={() => navigate("/saved-content")}
               />
             </SidebarNavigationSection>
-            
+
             {/* Feature request section */}
             <SidebarNavigationSection>
-              <SidebarNavItem 
-                icon={<MessageCircle className="h-5 w-5 text-purple-600" />} 
-                label="Demander des fonctionnalités" 
+              <SidebarNavItem
+                icon={<MessageCircle className="h-5 w-5 text-purple-600" />}
+                label="Demander des fonctionnalités"
                 path="/suggestions"
                 onClick={() => navigate("/suggestions")}
                 className="bg-purple-50 text-purple-700 hover:bg-purple-100"
@@ -345,7 +347,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
           </div>
         </>
       )}
-      
+
       {/* User profile dropdown - always visible */}
       <SidebarUserProfile 
         firstName={firstName}

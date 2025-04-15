@@ -47,8 +47,8 @@ const Bienvenue = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <SEO 
-        title="Pedago.ia - L'IA au service des enseignants" 
-        description="Libérez du temps. Enseignez pleinement. Pedago.ia vous aide à reprendre le contrôle sur votre temps."
+        title="PedagoIA - L'IA au service des enseignants" 
+        description="Libérez du temps. Enseignez pleinement. PedagoIA vous aide à reprendre le contrôle sur votre temps."
       />
       <Header />
       

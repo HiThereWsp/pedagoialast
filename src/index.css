@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -140,4 +139,6 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+
+  /* Animation pour le logo */
 }

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, FolderKanban } from 'lucide-react';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
@@ -117,6 +116,22 @@ export const BottomBar = ({ firstName }: BottomBarProps) => {
                       🖼️
                     </span>
                     Générateur d'images
+                  </span>
+                </Button>
+                
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start text-left"
+                  onClick={() => navigateToPage('/plan-de-classe')}
+                >
+                  <span className="flex items-center">
+                    <span className="w-6 h-6 flex items-center justify-center mr-3 rounded-full bg-green-100">
+                      🪑
+                    </span>
+                    Plan de classe
+                    <span className="ml-2 text-xs bg-green-50 text-green-700 border border-green-200 rounded px-1.5 py-0.5">
+                      nouveau
+                    </span>
                   </span>
                 </Button>
                 
