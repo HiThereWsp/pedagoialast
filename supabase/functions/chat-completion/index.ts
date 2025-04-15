@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
         // Perform search with Exa
         console.log('Searching with Exa for:', lastUserMessage.content);
         const searchResults = await searchWithExa({
-          query: lastUserMessage.content,
+          query: lastUserMessage.content + " related to France",
           numResults: 5
         });
         
@@ -109,39 +109,54 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Format messages for Mistral AI
     const formatMessagesForMistral = (messages: any[], exaResults: ExaSearchResult[] | null): any[] => {
-      const formattedMessages = messages.map(message => ({ 
+      // Get the last 5 messages for conversation history
+      const lastFiveMessages = messages.slice(-5).map(message => ({ 
         role: message.role, 
         content: message.content 
       }));
+      
+      // Start with a system message containing the prompt
+      const formattedMessages = [{
+        role: 'system',
+        content: SYSTEM_PROMPT
+      }];
+      
+      // Add the conversation history
+      formattedMessages.push(...lastFiveMessages);
       
       // If we have Exa results, add them as context in a system message
       if (exaResults && exaResults.length > 0) {
         console.log('Adding Exa results to Mistral context');
         
-        // Format the results for better readability
-        const formattedResults = exaResults.map(result => ({
-          id: result.id || `result-${Math.random().toString(36).substring(2, 9)}`,
-          title: result.title || 'Untitled Source',
-          url: result.url || '#',
-          publishedDate: result.publishedDate || new Date().toISOString(),
-          author: result.author || '',
-          score: result.score || 0,
-          text: result.text || '',
-          favicon: result.favicon || ''
-        }));
+        // Format the results for better readability and ensure type safety
+        const formattedResults = exaResults
+          .filter((result): result is ExaSearchResult => result !== null && result !== undefined)
+          .map(result => ({
+            id: result.id || `result-${Math.random().toString(36).substring(2, 9)}`,
+            title: result.title || 'Untitled Source',
+            url: result.url || '#',
+            publishedDate: result.publishedDate || new Date().toISOString(),
+            author: result.author || '',
+            score: result.score || 0,
+            text: result.text || '',
+            favicon: result.favicon || ''
+          }));
         
-        const exaContext = `I found the following information that might help answer the query:\n\n${formattedResults
-          .map((result, index) => `[${index + 1}] ${result.title}\n${result.text}\nSource: ${result.url}`)
-          .join('\n\n')}`;
-        
-        // Add the Exa context as a system message before the last user message
-        formattedMessages.push({
-          role: 'system',
-          content: exaContext
-        });
-        
-        // Replace the exaResults with the formatted results
-        exaResults = formattedResults;
+        // Only proceed if we have valid results after filtering
+        if (formattedResults.length > 0) {
+          const exaContext = `I found the following information that might help answer the query:\n\n${formattedResults
+            .map((result, index) => `[${index + 1}] ${result.title}\n${result.text}\nSource: ${result.url}`)
+            .join('\n\n')}`;
+          
+          // Add the Exa context as a system message before the last user message
+          formattedMessages.push({
+            role: 'system',
+            content: exaContext
+          });
+          
+          // Replace the exaResults with the formatted results
+          exaResults = formattedResults;
+        }
       }
       
       return formattedMessages;
@@ -196,31 +211,31 @@ const handler = async (req: Request): Promise<Response> => {
                   role: 'assistant',
                   content: fullResponse,
                   metadata: {
-                    in_response_to: messageId,
-                    web_search_used: webSearchEnabled,
-                    deep_research_used: deepResearchEnabled,
-                    sources: exaResults || []
+                    mistral_payload: {
+                      messages: formattedMessages,
+                      webSearchEnabled,
+                      deepResearchEnabled,
+                      prompt: customPrompt
+                    }
                   }
                 })
-                .then(({ data, error }) => {
-                  if (error) {
-                    console.error('Error saving final message:', error);
-                  } else {
-                    console.log('Successfully saved message with ID:', data.id);
-                    console.log('Message includes sources:', (exaResults || []).length);
-                  }
-                  // Close the stream after saving the message
-                  controller.close();
+                .then(() => {
+                  console.log('Saved assistant message to database');
+                })
+                .catch((error) => {
+                  console.error('Error saving assistant message to database:', error);
                 });
+              
+              controller.close();
             }
           );
-        } catch (e) {
-          console.error('Streaming error in index.ts:', e);
-          controller.error(e);
+        } catch (error) {
+          console.error('Error in stream start:', error);
+          controller.error(error);
         }
       }
     });
-
+    
     return new Response(stream, {
       headers: {
         ...corsHeaders,
@@ -230,7 +245,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
     });
   } catch (error) {
-    console.error('Error handling request:', error);
+    console.error('Error in handler:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -243,5 +258,5 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  return await handler(req);
+  return handler(req)
 })

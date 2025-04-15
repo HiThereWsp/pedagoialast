@@ -796,6 +796,23 @@ export const ChatPage = () => {
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           className="prose max-w-none"
+                          components={{
+                            // Add custom components to improve markdown rendering during streaming
+                            pre: ({ node, className, children, ...props }) => (
+                              <pre 
+                                className={`bg-gray-100 p-4 rounded-md overflow-auto my-4 ${className || ''}`}
+                                {...props}
+                              >
+                                {children}
+                              </pre>
+                            ),
+                            code: ({ node, className, children, ...props }) => {
+                              const isInline = !className;
+                              return isInline 
+                                ? <code className="bg-gray-100 px-1 py-0.5 rounded text-sm" {...props}>{children}</code>
+                                : <code className={className} {...props}>{children}</code>;
+                            }
+                          }}
                         >
                           {message.content}
                         </ReactMarkdown>

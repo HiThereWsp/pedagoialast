@@ -1,0 +1,4 @@
+streamlit==1.31.0
+mistralai==0.0.10
+exa-py==1.0.6
+python-dotenv==1.0.0

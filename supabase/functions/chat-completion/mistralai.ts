@@ -61,11 +61,11 @@ export async function streamMistralResponse(
 
   // Prepare the request payload
   const payload = {
-    model: 'mistral-small-latest', // Using a known valid model
+    model: 'codestral-latest', // Updated to match Streamlit app
     messages: messagesWithSystemPrompt,
     stream: true,
-    temperature: 0.7,
-    max_tokens: 500
+    temperature: 0.3,
+    max_tokens: 3000
   };
 
   console.log('Mistral API request payload:', JSON.stringify(payload));
@@ -118,6 +118,7 @@ export async function streamMistralResponse(
               const parsed = JSON.parse(data);
               const content = parsed.choices[0]?.delta?.content || '';
               if (content) {
+                // Send the content chunk to the callback
                 onChunk(content);
               }
             } catch (e) {
