@@ -18,7 +18,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // Détermine si la page actuelle est une page publique d'authentification
   const isAuthPage = () => {
-    const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password', '/confirm-email', '/user-management'];
+    const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password', '/confirm-email', '/user-management' , '/chat'];
     return authPaths.some(path => location.pathname.startsWith(path));
   };
 

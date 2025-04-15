@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SEO } from "@/components/SEO";
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -71,7 +70,7 @@ export const ToolsLayout = () => {
       <div className="flex min-h-screen bg-gray-50">
         {/* Sidebar fixe sur desktop uniquement */}
         {!isMobile && (
-          <div className="fixed left-0 top-0 z-40 h-screen w-64 bg-white border-r border-gray-200 shadow-lg">
+          <div className="fixed left-0 top-0 z-10 h-screen w-64 bg-white border-r border-gray-200 shadow-lg">
             <div className="flex flex-col h-full">
               {/* Logo centré avec taille réduite */}
               <div className="flex justify-center items-center py-4 border-b border-gray-200">
@@ -92,7 +91,7 @@ export const ToolsLayout = () => {
         
         {/* Barre de navigation mobile */}
         {isMobile && (
-          <div className="fixed top-0 left-0 right-0 z-40 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4">
+          <div className="fixed top-0 left-0 right-0 z-10 h-16 bg-white border-b border-gray-200 shadow-sm flex items-center px-4">
             <Button 
               variant="ghost" 
               size="icon" 
@@ -115,7 +114,7 @@ export const ToolsLayout = () => {
         )}
         
         {/* Contenu principal avec marge à gauche pour la sidebar sur desktop */}
-        <div className={`flex-1 ${!isMobile ? 'ml-0 md:ml-64' : 'mt-16 mb-16'}`}>
+        <div className={`flex-1 ${!isMobile ? 'ml-64' : 'mt-16 mb-16'}`}>
           <div className="min-h-screen bg-white relative overflow-hidden">
             {/* Grid Pattern Background */}
             <div className="fixed inset-0 overflow-hidden">
@@ -128,7 +127,7 @@ export const ToolsLayout = () => {
             </div>
             
             {/* Contenu de la page */}
-            <div className="relative z-10">
+            <div className="relative z-10 px-4 sm:px-6 lg:px-8">
               <Outlet />
             </div>
           </div>

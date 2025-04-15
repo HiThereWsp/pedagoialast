@@ -1,8 +1,10 @@
-
 import posthog from 'posthog-js'
 
+// Temporarily disable PostHog
+const POSTHOG_DISABLED = false;
+
 // Initialize PostHog with your project API key
-if (typeof window !== 'undefined') { // Check for browser environment
+if (typeof window !== 'undefined' && !POSTHOG_DISABLED) { // Check for browser environment
   posthog.init(
     import.meta.env.VITE_POSTHOG_KEY || '', 
     {
@@ -31,4 +33,17 @@ if (typeof window !== 'undefined') { // Check for browser environment
   }
 }
 
-export { posthog }
+// Create a mock posthog object when disabled
+const mockPosthog = {
+  capture: () => {},
+  identify: () => {},
+  reset: () => {},
+  people: {
+    set: () => {}
+  },
+  opt_out_capturing: () => {}
+};
+
+// Export the appropriate posthog instance
+const exportedPosthog = POSTHOG_DISABLED ? mockPosthog : posthog;
+export { exportedPosthog as posthog };

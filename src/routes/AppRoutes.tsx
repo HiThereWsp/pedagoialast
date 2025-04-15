@@ -10,6 +10,7 @@ import Bienvenue from '@/pages/Bienvenue';
 import ToolsLayout from '@/components/layout/ToolsLayout';
 import Guide from '@/pages/Guide';
 import { BugReportButton } from '@/components/bug-report/BugReportButton';
+import ChatPage from '@/pages/ChatPage';
 import { useAnalytics } from '@/hooks';
 
 // Chargement paresseux des pages
@@ -66,7 +67,7 @@ const AppContent = () => {
   const location = useLocation();
   const isBienvenuePage = location.pathname === '/bienvenue';
   const { logEvent } = useAnalytics();
-  
+
   return (
     <>
       <Routes>
@@ -105,9 +106,10 @@ const AppContent = () => {
           <Route path="/lesson-plan" element={<LessonPlanPage />} />
           <Route path="/image-generation" element={<ImageGenerationPage />} />
           <Route path="/correspondence" element={<CorrespondencePage />} />
-          <Route path="/offline-chat" element={<OfflineChatPage />} />
           <Route path="/saved-content" element={<SavedContentPage />} />
           <Route path="/plan-de-classe" element={<PlanDeClassePage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:threadId" element={<ChatPage />} />
         </Route>
         
         {/* Routes accessibles sans abonnement */}
@@ -125,7 +127,7 @@ const AppContent = () => {
         <Route path="/admin/subscription-management" element={<ProtectedRoute><AdminSubscriptionRepairPage /></ProtectedRoute>} />
         <Route path="/admin/bug-reports" element={<ProtectedRoute><AdminBugReportsPage /></ProtectedRoute>} />
         <Route path="/admin/suggestions" element={<ProtectedRoute><SuggestionsManagementPage /></ProtectedRoute>} />
-        
+
         {/* Routes de suivi des conversions */}
         <Route path="/payment-success" element={<PaymentSuccessPage />} />
         <Route path="/payment-failure" element={<PaymentFailurePage />} />
