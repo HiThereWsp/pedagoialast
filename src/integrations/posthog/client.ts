@@ -1,7 +1,7 @@
 import posthog from 'posthog-js'
 
 // Temporarily disable PostHog
-const POSTHOG_DISABLED = true;
+const POSTHOG_DISABLED = false;
 
 // Initialize PostHog with your project API key
 if (typeof window !== 'undefined' && !POSTHOG_DISABLED) { // Check for browser environment
