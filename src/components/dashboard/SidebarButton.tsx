@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Clock } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
@@ -11,6 +10,7 @@ interface SidebarButtonProps {
   small?: boolean;
   notAvailable?: boolean;
   notAvailableIcon?: React.ReactNode;
+  badge?: React.ReactNode;
   onClick?: () => void;
   className?: string;
 }
@@ -26,6 +26,7 @@ export const SidebarButton = ({
     <Clock className="h-3.5 w-3.5 text-amber-500" />
     <span className="ml-1 text-amber-500">bientôt disponible</span>
   </span>,
+  badge,
   onClick = () => {},
   className = ""
 }: SidebarButtonProps) => {
@@ -53,6 +54,7 @@ export const SidebarButton = ({
     >
       {icon}
       <span className="flex-1 text-left">{label}</span>
+      {badge && !notAvailable && badge}
       {notAvailable && notAvailableIcon}
     </button>
   );

@@ -30,6 +30,7 @@ export const SidebarNavItem = ({
       onClick={onClick}
       notAvailable={notAvailable}
       notAvailableIcon={notAvailableIcon}
+      badge={badge}
       className={className}
     />
   );
