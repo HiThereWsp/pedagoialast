@@ -13,6 +13,7 @@ import {
   Plus,
   ArrowLeft,
   MessageSquare,
+  ListOrdered,
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
@@ -288,12 +289,20 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
           {/* Outils pédagogiques */}
           <SidebarNavigationSection title="Outils pédagogiquess" className="mb-auto">
             {isAdmin && (
-              <SidebarNavItem
-                icon={<Bot className="h-5 w-5" />}
-                label="Chat AI"
-                path="/chat"
-                onClick={() => navigate("/chat")}
-              />
+              <>
+                <SidebarNavItem
+                  icon={<Bot className="h-5 w-5" />}
+                  label="Chat AI"
+                  path="/chat"
+                  onClick={() => navigate("/chat")}
+                />
+                <SidebarNavItem
+                  icon={<ListOrdered className="h-5 w-5" />}
+                  label="Séquences"
+                  onClick={() => window.open("https://app.pedagoia.fr/sequence", "_blank")}
+                  badge={<span className="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-0.5">Test</span>}
+                />
+              </>
             )}
             <SidebarNavItem
               icon={<Sparkles className="h-5 w-5" />}
