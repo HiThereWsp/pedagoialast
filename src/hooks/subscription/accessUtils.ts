@@ -1,4 +1,3 @@
-
 /**
  * Utilitaire pour ajouter un timeout aux promesses
  * @param promise La promesse à exécuter
@@ -54,7 +53,6 @@ export const isSpecialEmail = (
 export const hasAdminAccess = (email: string | undefined | null): boolean => {
   const adminEmails = [
     'andyguitteaud@gmail.com',
-    'andyguitteaud@gmail.co',
     'ag.tradeunion@gmail.com',
     'moienseignant3.0@gmail.com'
   ];
