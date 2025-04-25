@@ -137,6 +137,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (sessionData.session) {
           console.log("Session found, setting user:", sessionData.session.user.email);
           setUser(sessionData.session.user);
+          
+          // Stocker l'email pour les vérifications futures
+          try {
+            localStorage.setItem('last_user_email', sessionData.session.user.email);
+            console.log("Email utilisateur stocké dans localStorage:", sessionData.session.user.email);
+          } catch (e) {
+            console.error("Erreur lors du stockage de l'email utilisateur:", e);
+          }
+          
           setAuthReady(true);
           setLoading(false);
           authCheckCompleted.current = true;

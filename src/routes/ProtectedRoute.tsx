@@ -3,6 +3,7 @@ import { Navigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { Button } from "@/components/ui/button";
+import { hasStoredAdminAccess } from "@/hooks/subscription/accessUtils";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -15,11 +16,45 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const [showLoadingTimeout, setShowLoadingTimeout] = useState(false);
   const initialLoadComplete = useRef(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Détermine si la page actuelle est une page publique d'authentification
   const isAuthPage = () => {
     const authPaths = ['/login', '/signup', '/forgot-password', '/reset-password', '/confirm-email', '/user-management' , '/chat'];
     return authPaths.some(path => location.pathname.startsWith(path));
+  };
+
+  // Vérifier si l'utilisateur a un accès spécial
+  const hasSpecialAccess = () => {
+    // Vérification admin dans localStorage
+    if (hasStoredAdminAccess()) {
+      console.log("Accès administrateur détecté dans localStorage");
+      return true;
+    }
+    
+    // Vérification email connu
+    const lastEmail = localStorage.getItem('last_user_email');
+    if (lastEmail === 'andyguitteaud@gmail.com') {
+      console.log("Email administrateur connu détecté");
+      return true;
+    }
+    
+    // Vérification de l'état de l'abonnement en cache
+    try {
+      const cachedStatus = localStorage.getItem('subscription_status');
+      if (cachedStatus) {
+        const parsed = JSON.parse(cachedStatus);
+        if (parsed.isActive || parsed.type === 'admin' || parsed.type === 'paid' || 
+            parsed.type === 'beta' || parsed.type === 'ambassador') {
+          console.log("Statut d'abonnement valide en cache");
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error("Erreur lors de la vérification du cache d'abonnement:", e);
+    }
+    
+    return false;
   };
 
   // Montrer le chargement seulement après un délai pour éviter les flashs
@@ -49,11 +84,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   useEffect(() => {
     console.log("ProtectedRoute - État d'authentification:", { 
       user: user ? "connecté" : "non connecté", 
+      email: user?.email,
       loading, 
       authReady,
       path: location.pathname,
       isAuthPage: isAuthPage(),
-      initialLoadComplete: initialLoadComplete.current
+      initialLoadComplete: initialLoadComplete.current,
+      hasSpecialAccess: hasSpecialAccess()
     });
     
     if (authReady && !loading) {
@@ -63,7 +100,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   // Ajoutez cette fonction pour gérer la redirection après un délai
   const handleRedirectToPayment = () => {
-    setTimeout(() => {
+    // Nettoyage des timeouts existants
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+    }
+    
+    // Une dernière vérification avant de planifier la redirection
+    if (hasSpecialAccess()) {
+      console.log("Redirection évitée grâce à un accès spécial détecté");
+      return;
+    }
+    
+    redirectTimeoutRef.current = setTimeout(() => {
+      // Vérification finale juste avant la redirection
+      if (hasSpecialAccess()) {
+        console.log("Redirection annulée au dernier moment - accès spécial détecté");
+        window.location.reload(); // Plutôt que rediriger, rechargement
+        return;
+      }
+      
       window.location.href = '/pricing';
     }, 2000); // 2 secondes de délai
   };
@@ -72,11 +127,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const diagnoseAuthIssue = () => {
     const authDebug = {
       user: user ? "connecté" : "non connecté",
+      email: user?.email,
       authReady,
+      specialAccess: hasSpecialAccess(),
       cookies: document.cookie.split(';').map(c => c.trim()),
       localStorage: {
         hasAuthToken: !!localStorage.getItem('supabase.auth.token'),
-        hasSubStatus: !!localStorage.getItem('subscription_status')
+        hasSubStatus: !!localStorage.getItem('subscription_status'),
+        lastUserEmail: localStorage.getItem('last_user_email'),
+        isAdminUser: localStorage.getItem('is_admin_user')
       },
       url: window.location.href,
       timestamp: new Date().toString()
@@ -90,6 +149,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return authDebug;
   };
 
+  // Nettoyage des timeouts à la démonter
+  useEffect(() => {
+    return () => {
+      if (redirectTimeoutRef.current) {
+        clearTimeout(redirectTimeoutRef.current);
+      }
+    };
+  }, []);
+
   // État de chargement initial, afficher l'indicateur de chargement seulement après le délai
   if ((loading || !authReady) && !initialLoadComplete.current) {
     return (
@@ -102,16 +170,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
+  // Si l'utilisateur a un accès spécial, montrer directement le contenu
+  if (hasSpecialAccess()) {
+    console.log("Accès spécial détecté, contenu affiché directement");
+    return <>{children}</>;
+  }
+
   // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, 
   // rediriger vers la page de connexion avec un message approprié
   if (!user && authReady && !loading && !isAuthPage()) {
     // Diagnostiquez avant de rediriger
     diagnoseAuthIssue();
     
-    // Déclencher la redirection, mais ajoutez un délai plus long
-    setTimeout(() => {
-      window.location.href = '/pricing';
-    }, 500); // Délai plus court pour une meilleure expérience
+    // Déclencher la redirection avec délai plus long
+    handleRedirectToPayment();
 
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
@@ -140,6 +212,5 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   // Si l'utilisateur est authentifié ou si c'est une page d'authentification, afficher le contenu
-
   return <>{children}</>;
 };

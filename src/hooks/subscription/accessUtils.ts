@@ -1,4 +1,3 @@
-
 /**
  * Utilitaire pour ajouter un timeout aux promesses
  * @param promise La promesse à exécuter
@@ -41,9 +40,21 @@ export const isSpecialEmail = (
   if (!email) return false;
   
   const normalizedEmail = email.toLowerCase().trim();
-  return specialEmails.some(specialEmail => 
+  console.log("Vérification email spécial:", normalizedEmail);
+  
+  const isSpecial = specialEmails.some(specialEmail => 
     specialEmail.toLowerCase().trim() === normalizedEmail
   );
+  
+  console.log("Résultat vérification email spécial:", { 
+    email: normalizedEmail, 
+    isSpecial, 
+    matchedWith: isSpecial 
+      ? specialEmails.find(e => e.toLowerCase().trim() === normalizedEmail) 
+      : null 
+  });
+  
+  return isSpecial;
 };
 
 /**
@@ -52,12 +63,46 @@ export const isSpecialEmail = (
  * @returns true si l'email a un accès prioritaire
  */
 export const hasAdminAccess = (email: string | undefined | null): boolean => {
+  if (!email) return false;
+  
+  // Vérification directe pour les emails critiques (évite tout problème de timing/cache)
+  if (email.toLowerCase().trim() === 'andyguitteaud@gmail.com') {
+    console.log("Accès admin accordé directement pour email critique:", email);
+    return true;
+  }
+  
   const adminEmails = [
-    'andyguitteaud@gmail.com',
-    'andyguitteaud@gmail.co',
+    'andyguitteaud@gmail.com', // Correction de la faute de frappe
     'ag.tradeunion@gmail.com',
     'moienseignant3.0@gmail.com'
   ];
   
-  return isSpecialEmail(email, adminEmails);
+  console.log("Vérification admin pour:", email);
+  const result = isSpecialEmail(email, adminEmails);
+  
+  if (result) {
+    // Stocker l'information en localStorage pour éviter les pertes d'accès
+    try {
+      localStorage.setItem('is_admin_user', 'true');
+      localStorage.setItem('admin_email', email);
+      console.log("Statut admin stocké en localStorage pour:", email);
+    } catch (e) {
+      console.error("Erreur lors du stockage du statut admin:", e);
+    }
+  }
+  
+  return result;
+};
+
+/**
+ * Vérifie si l'utilisateur a un accès admin stocké localement
+ * Utilisé comme fallback en cas d'échec de la vérification principale
+ */
+export const hasStoredAdminAccess = (): boolean => {
+  try {
+    return localStorage.getItem('is_admin_user') === 'true';
+  } catch (e) {
+    console.error("Erreur lors de la vérification du statut admin en localStorage:", e);
+    return false;
+  }
 };

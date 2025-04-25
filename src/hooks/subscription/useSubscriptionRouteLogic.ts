@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { posthog } from "@/integrations/posthog/client";
 import { supabase } from "@/integrations/supabase/client";
+import { hasStoredAdminAccess } from "./accessUtils";
 
 export function useSubscriptionRouteLogic() {
   const { user, authReady } = useAuth();
@@ -23,12 +24,65 @@ export function useSubscriptionRouteLogic() {
   useEffect(() => {
     if (!authReady || profileLoading) {
       console.log("Waiting for auth or profile to load...");
+      
+      // Vérification du localStorage pour éviter les redirections erronées
+      const cachedStatus = localStorage.getItem('subscription_status');
+      if (cachedStatus) {
+        try {
+          const parsed = JSON.parse(cachedStatus);
+          // Si un statut valide est en cache, autoriser l'accès temporairement
+          if (parsed.isActive || parsed.type === 'admin' || parsed.type === 'paid' || 
+              parsed.type === 'beta' || parsed.type === 'ambassador') {
+            console.log("Utilisation du cache pour autoriser l'accès temporairement");
+            setShowContent(true);
+          }
+        } catch (e) {
+          console.error("Erreur lors de l'analyse du cache:", e);
+        }
+      }
+      
+      // Vérification du statut admin stocké
+      if (hasStoredAdminAccess()) {
+        console.log("Accès admin détecté dans le localStorage, accès accordé");
+        setShowContent(true);
+        return;
+      }
+      
+      // Vérification de l'email utilisateur stocké
+      try {
+        const lastEmail = localStorage.getItem('last_user_email');
+        if (lastEmail === 'andyguitteaud@gmail.com') {
+          console.log("Email admin détecté dans le localStorage, accès accordé");
+          setShowContent(true);
+          return;
+        }
+      } catch (e) {
+        console.error("Erreur lors de la vérification de l'email utilisateur:", e);
+      }
+      
       return;
+    }
+
+    // Stocker l'email pour les vérifications futures
+    if (user?.email) {
+      try {
+        localStorage.setItem('last_user_email', user.email);
+        console.log("Email utilisateur stocké pour vérifications futures:", user.email);
+      } catch (e) {
+        console.error("Erreur lors du stockage de l'email utilisateur:", e);
+      }
     }
 
     // En mode développement, toujours montrer le contenu
     if (import.meta.env.DEV) {
       console.log("Development mode, showing content");
+      setShowContent(true);
+      return;
+    }
+
+    // Vérification directe pour les emails d'administrateur connus
+    if (user?.email && user.email.toLowerCase() === 'andyguitteaud@gmail.com') {
+      console.log("Utilisateur admin connu, accès accordé directement");
       setShowContent(true);
       return;
     }
@@ -42,14 +96,26 @@ export function useSubscriptionRouteLogic() {
 
     // Si le profil a des accès spéciaux, montrer le contenu
     if (profile && (profile.is_beta || profile.is_ambassador || profile.is_admin || profile.is_paid_user)) {
-      console.log("Special access granted via profile");
+      console.log("Special access granted via profile:", {
+        is_beta: profile.is_beta,
+        is_ambassador: profile.is_ambassador,
+        is_admin: profile.is_admin,
+        is_paid_user: profile.is_paid_user
+      });
+      setShowContent(true);
+      return;
+    }
+
+    // Vérification du statut admin stocké (double vérification)
+    if (hasStoredAdminAccess()) {
+      console.log("Accès admin détecté dans le localStorage (seconde vérification), accès accordé");
       setShowContent(true);
       return;
     }
 
     // Par défaut, ne pas montrer le contenu
     setShowContent(false);
-  }, [authReady, profile, profileLoading, isSubscribed]);
+  }, [authReady, profile, profileLoading, isSubscribed, user]);
 
   // Reduce display time - only show verification if it takes unusually long
   useEffect(() => {
