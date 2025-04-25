@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -9,8 +8,11 @@ import {
   Sparkles, 
   Leaf,
   MessageCircle,
+  ListOrdered,
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +29,9 @@ interface SidebarProps {
 export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { profile } = useUserProfile(user);
+  const isAdmin = profile?.is_admin === true;
 
   const handleLogout = async () => {
     try {
@@ -89,6 +94,14 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName }: SidebarProps) => {
       
       {/* Outils pédagogiques */}
       <SidebarNavigationSection title="Outils pédagogiques" className="mb-auto">
+        {isAdmin && (
+          <SidebarNavItem
+            icon={<ListOrdered className="h-5 w-5" />}
+            label="Séquences"
+            onClick={() => window.open("https://app.pedagoia.fr/sequence", "_blank")}
+            badge={<span className="text-xs bg-blue-100 text-blue-800 rounded-full px-2 py-0.5">Test</span>}
+          />
+        )}
         <SidebarNavItem 
           icon={<Sparkles className="h-5 w-5" />} 
           label="Générateur de séquences" 

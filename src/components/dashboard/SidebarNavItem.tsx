@@ -1,4 +1,3 @@
-
 import React from 'react';
 import SidebarButton from './SidebarButton';
 
@@ -9,6 +8,7 @@ interface SidebarNavItemProps {
   onClick?: () => void;
   notAvailable?: boolean;
   notAvailableIcon?: React.ReactNode;
+  badge?: React.ReactNode;
   className?: string;
 }
 
@@ -19,6 +19,7 @@ export const SidebarNavItem = ({
   onClick, 
   notAvailable = false,
   notAvailableIcon,
+  badge,
   className = ""
 }: SidebarNavItemProps) => {
   return (
@@ -29,6 +30,7 @@ export const SidebarNavItem = ({
       onClick={onClick}
       notAvailable={notAvailable}
       notAvailableIcon={notAvailableIcon}
+      badge={badge}
       className={className}
     />
   );

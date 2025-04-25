@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
+import { writeSharedSessionCookies, clearSharedSessionCookies } from "@/utils/session-cookies";
 
 type AuthContextType = {
   user: User | null;
@@ -107,6 +108,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (sessionData.session) {
           console.log("Session found, setting user:", sessionData.session.user.email);
           setUser(sessionData.session.user);
+          setAuthReady(true);
+          setLoading(false);
+          authCheckCompleted.current = true;
+          
+          // Ajouter les cookies partagés au chargement initial s'il y a une session
+          writeSharedSessionCookies(sessionData.session);
         } else {
           console.log("No session found");
         }
@@ -191,7 +198,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (mounted) {
           const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log("Auth state changed:", event);
+            
+            // Mettre à jour les cookies partagés à chaque changement de session
+            if (session) {
+              writeSharedSessionCookies(session);
+            } else if (event === 'SIGNED_OUT') {
+              // Utiliser la fonction de nettoyage des cookies
+              clearSharedSessionCookies();
+            }
+            
             if (mounted) {
+              // Mettre à jour l'utilisateur de manière synchrone
               setUser(session?.user ?? null);
               setLoading(false);
               setAuthReady(true);

@@ -1,8 +1,8 @@
-
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { AuthError, AuthApiError } from "@supabase/supabase-js"
 import { isUserExistsError } from "@/utils/auth-error-handler"
+import { writeSharedSessionCookies } from "@/utils/session-cookies"
 
 interface AuthFormState {
   email: string
@@ -40,13 +40,18 @@ export const useAuthForm = () => {
         throw new Error("Email et mot de passe requis")
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formState.email,
         password: formState.password,
       })
 
       if (error) {
         throw error
+      }
+      
+      // Écrire les cookies partagés après connexion réussie
+      if (data.session) {
+        writeSharedSessionCookies(data.session);
       }
 
     } catch (error) {
