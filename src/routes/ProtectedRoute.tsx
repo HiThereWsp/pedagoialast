@@ -68,6 +68,28 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }, 2000); // 2 secondes de délai
   };
 
+  // Ajoutez une fonction de diagnostic
+  const diagnoseAuthIssue = () => {
+    const authDebug = {
+      user: user ? "connecté" : "non connecté",
+      authReady,
+      cookies: document.cookie.split(';').map(c => c.trim()),
+      localStorage: {
+        hasAuthToken: !!localStorage.getItem('supabase.auth.token'),
+        hasSubStatus: !!localStorage.getItem('subscription_status')
+      },
+      url: window.location.href,
+      timestamp: new Date().toString()
+    };
+    
+    console.error("AUTH_DIAGNOSIS:", authDebug);
+    
+    // Stockez en localStorage pour référence
+    localStorage.setItem('auth_diagnosis', JSON.stringify(authDebug));
+    
+    return authDebug;
+  };
+
   // État de chargement initial, afficher l'indicateur de chargement seulement après le délai
   if ((loading || !authReady) && !initialLoadComplete.current) {
     return (
@@ -83,8 +105,13 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   // Si l'authentification est terminée et qu'aucun utilisateur n'est connecté, 
   // rediriger vers la page de connexion avec un message approprié
   if (!user && authReady && !loading && !isAuthPage()) {
-    // Déclencher la redirection
-    handleRedirectToPayment();
+    // Diagnostiquez avant de rediriger
+    diagnoseAuthIssue();
+    
+    // Déclencher la redirection, mais ajoutez un délai plus long
+    setTimeout(() => {
+      window.location.href = '/pricing';
+    }, 500); // Délai plus court pour une meilleure expérience
 
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">

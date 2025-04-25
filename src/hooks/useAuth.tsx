@@ -52,6 +52,25 @@ const fetchWithTimeout = async (promise: Promise<any>, timeoutMs: number) => {
   return Promise.race([promise, timeout]);
 };
 
+// Fonction pour vérifier les cookies d'authentification existants
+const checkForExistingCookies = () => {
+  try {
+    const cookies = document.cookie.split(';').map(c => c.trim());
+    const authCookie = cookies.find(c => c.startsWith('sb-jpelncawdaounkidvymu-auth-token='));
+    
+    console.error("AUTH_DEBUG: Vérification des cookies", { 
+      cookiesFound: cookies.length,
+      authCookieFound: !!authCookie,
+      cookies: cookies.map(c => c.split('=')[0])
+    });
+    
+    return !!authCookie;
+  } catch (err) {
+    console.error("Erreur lors de la vérification des cookies:", err);
+    return false;
+  }
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,6 +110,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (authCheckCompleted.current) {
           console.log("Vérification d'auth déjà effectuée, ignorée");
           return;
+        }
+
+        // Check for existing cookies and force session check if found
+        if (checkForExistingCookies() && !authCheckCompleted.current) {
+          console.log("Cookie d'authentification trouvé, tentative de restauration de session");
+          // Force refresh session to handle cookies from other domains
+          const { data: refreshData, error: refreshError } = await supabase.auth.getSession();
+          if (refreshData?.session && !refreshError) {
+            console.log("Session restaurée depuis les cookies:", refreshData.session.user.email);
+          }
         }
 
         // Check local storage for session
