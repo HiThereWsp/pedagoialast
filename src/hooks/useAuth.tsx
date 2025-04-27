@@ -4,6 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
+import { 
+  syncAuthStateCrossDomain, 
+  checkCrossDomainAuth, 
+  clearCrossDomainAuth 
+} from "@/utils/cross-domain-auth";
 
 type AuthContextType = {
   user: User | null;
@@ -87,7 +92,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       try {
         console.log("Démarrage de la vérification d'authentification...");
 
-        // Vérifier d'abord la session Supabase
+        if (authCheckCompleted.current) {
+          console.log("Vérification d'auth déjà effectuée, ignorée");
+          return;
+        }
+
+        // Vérifier les cookies cross-domaine avant tout
+        if (checkCrossDomainAuth() && !authCheckCompleted.current) {
+          console.log("Cookie d'authentification cross-domaine détecté, tentative de restauration de session");
+          // Force refresh session to handle cookies from other domains
+          try {
+            const { data: refreshData, error: refreshError } = await supabase.auth.getSession();
+            if (refreshData?.session && !refreshError) {
+              console.log("Session restaurée depuis les cookies cross-domaine:", refreshData.session.user.email);
+            }
+          } catch (err) {
+            console.error("Erreur lors de la restauration de session depuis cookies:", err);
+          }
+        }
+
+        // Continuer avec la vérification standard
         const { data: sessionData, error: sessionError } = await fetchWithTimeout(
           supabase.auth.getSession(),
           5000
@@ -95,12 +119,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         if (sessionError) throw sessionError;
 
-        // Si nous avons une session, définir l'utilisateur immédiatement
+        // Si nous avons une session, définir l'utilisateur et synchroniser les cookies
         if (sessionData.session) {
           if (mounted) {
             setUser(sessionData.session.user);
             setAuthReady(true);
             setLoading(false);
+            authCheckCompleted.current = true;
+            
+            // Synchroniser les cookies cross-domaine
+            syncAuthStateCrossDomain(sessionData.session);
           }
         } else {
           // Si pas de session et page publique, c'est OK
@@ -109,6 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setUser(null);
               setAuthReady(true);
               setLoading(false);
+              authCheckCompleted.current = true;
             }
           } else {
             // Si pas de session et page privée, rediriger
@@ -116,6 +145,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               setUser(null);
               setAuthReady(true);
               setLoading(false);
+              authCheckCompleted.current = true;
               toast({
                 title: "Session expirée",
                 description: "Veuillez vous reconnecter.",
@@ -130,6 +160,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(null);
           setAuthReady(true);
           setLoading(false);
+          authCheckCompleted.current = true;
         }
       }
     };
@@ -140,6 +171,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (mounted) {
         const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
           console.log("Auth state changed:", event);
+          
+          // Synchroniser les cookies cross-domaine à chaque changement d'état
+          if (session) {
+            syncAuthStateCrossDomain(session);
+          } else if (event === 'SIGNED_OUT') {
+            clearCrossDomainAuth();
+          }
+          
           if (mounted) {
             // Mettre à jour l'utilisateur de manière synchrone
             setUser(session?.user ?? null);

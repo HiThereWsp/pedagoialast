@@ -47,6 +47,7 @@ const AdminBugReportsPage = lazy(() => import('@/pages/AdminBugReportsPage')); /
 const PlanDeClassePage = lazy(() => import('@/pages/PlanDeClassePage'));
 const SuggestionsManagementPage = lazy(() => import('@/pages/admin/SuggestionsManagementPage'));
 const SuggestionDetailPage = lazy(() => import('@/pages/SuggestionDetailPage'));
+const AuthDebugPage = lazy(() => import('@/pages/admin/AuthDebugPage'));
 
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
@@ -127,6 +128,7 @@ const AppContent = () => {
         <Route path="/admin/subscription-management" element={<ProtectedRoute><AdminSubscriptionRepairPage /></ProtectedRoute>} />
         <Route path="/admin/bug-reports" element={<ProtectedRoute><AdminBugReportsPage /></ProtectedRoute>} />
         <Route path="/admin/suggestions" element={<ProtectedRoute><SuggestionsManagementPage /></ProtectedRoute>} />
+        <Route path="/admin/auth-debug" element={<ProtectedRoute><AuthDebugPage /></ProtectedRoute>} />
 
         {/* Routes de suivi des conversions */}
         <Route path="/payment-success" element={<PaymentSuccessPage />} />

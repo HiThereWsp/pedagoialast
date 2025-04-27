@@ -2,6 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { posthog } from '@/integrations/posthog/client';
+import { 
+  syncSubscriptionStateCrossDomain, 
+  getSubscriptionStatusFromCookie 
+} from '@/utils/cross-domain-auth';
 
 type SubscriptionStatus = {
   isActive: boolean;
@@ -42,6 +46,9 @@ export const useSubscription = () => {
         ...statusToCache,
         timestamp: Date.now()
       }));
+      
+      // Également synchroniser avec les cookies cross-domaine
+      syncSubscriptionStateCrossDomain();
     } catch (err) {
       console.log('Error caching status:', err);
       // Continue even if caching fails
@@ -54,14 +61,23 @@ export const useSubscription = () => {
    */
   const getCachedStatus = useCallback((): SubscriptionStatus | null => {
     try {
+      // D'abord vérifier localStorage comme avant
       const cached = localStorage.getItem(CACHE_KEY);
-      if (!cached) return null;
+      if (cached) {
+        const parsedCache = JSON.parse(cached) as SubscriptionStatus;
+        
+        // Check cache age
+        if (parsedCache.timestamp && (Date.now() - parsedCache.timestamp) < CACHE_DURATION) {
+          console.log("Utilisation du statut d'abonnement depuis localStorage");
+          return parsedCache;
+        }
+      }
       
-      const parsedCache = JSON.parse(cached) as SubscriptionStatus;
-      
-      // Check cache age
-      if (parsedCache.timestamp && (Date.now() - parsedCache.timestamp) < CACHE_DURATION) {
-        return parsedCache;
+      // Si pas de cache valide dans localStorage, essayer le cookie
+      const cookieStatus = getSubscriptionStatusFromCookie();
+      if (cookieStatus) {
+        console.log("Utilisation du statut d'abonnement depuis cookie cross-domaine");
+        return cookieStatus;
       }
     } catch (err) {
       console.log('Error retrieving cache:', err);

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
+import { syncAuthStateCrossDomain, clearCrossDomainAuth } from '@/utils/cross-domain-auth';
 
 const SUPABASE_URL = 'https://jpelncawdaounkidvymu.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpwZWxuY2F3ZGFvdW5raWR2eW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzI4MzgxNTEsImV4cCI6MjA0ODQxNDE1MX0.tzGxd93BPGQa8w4BRb6AOujbIjvI-XEIgU7SlnlZZt4';
@@ -62,10 +63,15 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('Token de session:', session.access_token ? 'Présent' : 'Absent');
     console.log('Expiration:', new Date(session.expires_at * 1000).toLocaleString());
     console.log('ID session:', session.user?.id);
+    
+    // Synchroniser l'état d'authentification via les cookies cross-domaine
+    syncAuthStateCrossDomain(session);
   } else {
     console.log('Aucune session active');
     if (event === 'SIGNED_OUT') {
       console.log('Déconnexion effectuée');
+      // Nettoyer les cookies cross-domaine lors de la déconnexion
+      clearCrossDomainAuth();
     } else if (event === 'TOKEN_REFRESHED') {
       console.log('Token rafraîchi');
     } else if (event === 'USER_UPDATED') {

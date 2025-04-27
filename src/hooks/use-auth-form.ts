@@ -1,8 +1,8 @@
-
 import { useState } from "react"
 import { supabase } from "@/integrations/supabase/client"
 import { AuthError, AuthApiError } from "@supabase/supabase-js"
 import { isUserExistsError } from "@/utils/auth-error-handler"
+import { syncAuthStateCrossDomain } from "@/utils/cross-domain-auth"
 
 interface AuthFormState {
   email: string
@@ -40,13 +40,19 @@ export const useAuthForm = () => {
         throw new Error("Email et mot de passe requis")
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formState.email,
         password: formState.password,
       })
 
       if (error) {
         throw error
+      }
+
+      // Synchroniser la session avec les cookies cross-domaine
+      if (data?.session) {
+        syncAuthStateCrossDomain(data.session);
+        console.log("Session synchronisée avec cookies cross-domaine après connexion");
       }
 
     } catch (error) {
@@ -75,7 +81,7 @@ export const useAuthForm = () => {
         hasFirstName: !!formState.firstName
       })
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: formState.email,
         password: formState.password,
         options: {
@@ -95,6 +101,12 @@ export const useAuthForm = () => {
           return
         }
         throw error
+      }
+
+      // Synchroniser la session avec les cookies cross-domaine
+      if (data?.session) {
+        syncAuthStateCrossDomain(data.session);
+        console.log("Session synchronisée avec cookies cross-domaine après inscription");
       }
 
       console.log("Inscription réussie")
