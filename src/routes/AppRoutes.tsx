@@ -128,7 +128,9 @@ const AppContent = () => {
         <Route path="/admin/subscription-management" element={<ProtectedRoute><AdminSubscriptionRepairPage /></ProtectedRoute>} />
         <Route path="/admin/bug-reports" element={<ProtectedRoute><AdminBugReportsPage /></ProtectedRoute>} />
         <Route path="/admin/suggestions" element={<ProtectedRoute><SuggestionsManagementPage /></ProtectedRoute>} />
-        <Route path="/admin/auth-debug" element={<ProtectedRoute><AuthDebugPage /></ProtectedRoute>} />
+        
+        {/* Route de débogage accessible sans vérification d'abonnement */}
+        <Route path="/debug/auth" element={<ProtectedRoute><AuthDebugPage /></ProtectedRoute>} />
 
         {/* Routes de suivi des conversions */}
         <Route path="/payment-success" element={<PaymentSuccessPage />} />

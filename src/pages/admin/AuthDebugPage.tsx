@@ -17,6 +17,7 @@ export default function AuthDebugPage() {
   const { isSubscribed, subscriptionType } = useSubscription();
   const [cookies, setCookies] = useState<string[]>([]);
   const [localStorageData, setLocalStorageData] = useState<Record<string, string>>({});
+  const isDev = import.meta.env.DEV;
   
   // Fonction pour rafraîchir les données
   const refreshData = () => {
@@ -84,6 +85,13 @@ export default function AuthDebugPage() {
     <div className="container mx-auto py-6">
       <h1 className="text-2xl font-bold mb-4">Débogage d'authentification cross-domaine</h1>
       
+      {isDev && (
+        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6">
+          <p className="font-bold">Mode développement détecté</p>
+          <p>En développement, toutes les fonctionnalités premium sont automatiquement disponibles.</p>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -97,6 +105,7 @@ export default function AuthDebugPage() {
               <p><strong>Auth Ready:</strong> {authReady ? 'Oui' : 'Non'}</p>
               <p><strong>Abonnement:</strong> {isSubscribed ? 'Actif' : 'Inactif'}</p>
               <p><strong>Type d'abonnement:</strong> {subscriptionType || 'Aucun'}</p>
+              <p><strong>Mode développement:</strong> {isDev ? 'Oui' : 'Non'}</p>
             </div>
           </CardContent>
           <CardFooter className="flex gap-2">
