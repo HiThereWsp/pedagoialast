@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { pricingEvents } from "@/integrations/posthog/events";
 import { SEO } from "@/components/SEO";
@@ -15,6 +14,7 @@ import { PricingHeader } from "@/components/pricing/PricingHeader";
 import { PricingPlans } from "@/components/pricing/PricingPlans";
 import { FeatureHighlights } from "@/components/pricing/FeatureHighlights";
 import { PricingPageTracking } from "@/components/pricing/PricingPageTracking";
+import MinimalPromoBanner from "@/components/pricing/MinimalPromoBanner";
 
 const Pricing = () => {
   const [showContactDialog, setShowContactDialog] = useState(false);
@@ -49,6 +49,9 @@ const Pricing = () => {
       
       <main className="container mx-auto px-4 py-20 relative z-10">
         <PricingHeader />
+        
+        {/* Bannière promotionnelle minimaliste */}
+        <MinimalPromoBanner />
         
         <PricingPlans 
           isSubscribed={isSubscribed}

@@ -9,6 +9,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import '@/App.css'
 import { SuggestionButton } from '@/components/feedback'
 import { BugReportButton } from '@/components/bug-report/BugReportButton'
+import StandalonePromoBanner from '@/components/common/StandalonePromoBanner'
 
 // Create a client with more retries for better resilience
 const queryClient = new QueryClient({
@@ -47,6 +48,7 @@ function FloatingButtons() {
 function AppContent() {
   return (
     <>
+      <StandalonePromoBanner />
       <AppRoutes />
       <Toaster />
       <FloatingButtons />

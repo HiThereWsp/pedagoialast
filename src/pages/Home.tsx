@@ -14,6 +14,7 @@ import { Tiles } from "@/components/ui/tiles"
 import { useAuth } from "@/hooks/useAuth"
 
 const Home = () => {
+  console.log("Rendering Home page");
   const [firstName, setFirstName] = useState<string>("")
   const [isProfileLoading, setIsProfileLoading] = useState(true)
   const navigate = useNavigate()
@@ -134,6 +135,8 @@ const Home = () => {
   if (authLoading || (authReady && user && isProfileLoading)) {
     return <HomeSkeleton />;
   }
+
+  console.log("Home page ready to render with main content");
 
   return (
     <>

@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface PricingCardProps {
   title: string;
@@ -33,9 +33,18 @@ export const PricingCard = ({
   return (
     <div className="relative pt-5">
       {badge && (
-        <Badge className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 px-4 py-1.5 bg-gradient-to-r from-[#FFA500] to-[#FF69B4] text-white font-semibold border-none shadow-md z-10">
-          {badge}
-        </Badge>
+        <div className="absolute left-1/2 -translate-x-1/2 top-0 -translate-y-1/2 z-10 animate-pulse-subtle">
+          <Badge 
+            className={cn(
+              "px-4 py-1.5 bg-gradient-to-r from-[#FFA500] to-[#FF69B4] text-white font-semibold border-none shadow-md",
+              "text-base relative overflow-hidden"
+            )}
+          >
+            {/* Effet de brillance */}
+            <span className="absolute -inset-x-10 h-full top-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 animate-shimmer-slow pointer-events-none"></span>
+            {badge}
+          </Badge>
+        </div>
       )}
       
       <Card
