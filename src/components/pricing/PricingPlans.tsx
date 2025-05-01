@@ -98,42 +98,8 @@ export const PricingPlans = ({
         // Tracking Facebook
         facebookEvents.initiateCheckout('yearly', 9.00);
 
-        // Call the Supabase Edge Function to create a Stripe Checkout Session
-        try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const {data, error} = await supabase.functions.invoke('create-checkout-session', {
-                body: {
-                    priceId: priceIDs.yearly,
-                    subscriptionType: "yearly",
-                    productId: productIDs.yearly, // Replace with your actual product ID
-                    testMode: import.meta.env.DEV, // Use test mode in development
-                }
-            })
-            // const response = await fetch(
-            //     "https://your-supabase-url.functions.supabase.co/create-checkout-session",
-            //     {
-            //         method: "POST",
-            //         headers: {
-            //             "Content-Type": "application/json",
-            //             Authorization: `Bearer ${session?.access_token}`,
-            //         },
-            //         body: JSON.stringify(),
-            //     }
-            // );
-
-            // const data = await response.json();
-
-            if (error) {
-                throw new Error(data.error);
-            }
-
-            // Redirect to the Stripe Checkout Session URL
-            window.location.href = data.url;
-        } catch (error) {
-            toast.error("Erreur lors de la création de la session de paiement", {
-                description: error.message,
-            });
-        }
+        // Redirection directe vers le checkout avec le code promo déjà appliqué
+        window.location.href = "https://checkout.stripe.com/c/pay/cs_live_b1ImBUC9LMUcyCxeZklBiMufFBhNOUh7FwoTQeVexulvk2qDRqIKERGO0i";
     };
 
     // Texte du bouton selon l'état de l'abonnement
@@ -174,17 +140,23 @@ export const PricingPlans = ({
                     </p>
                 </div>
             )}
-            <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto mb-20">
+            
+            {/* Section des plans individuels */}
+            <div className="grid md:grid-cols-2 gap-6 lg:gap-10 max-w-5xl mx-auto mb-16">
                 <PricingCard
                     title="Plan mensuel"
                     price="11,90€"
                     period="/mois"
                     features={[
-                        "Accédez à l'assistant pédagogique via le chat sans limite",
-                        "Utilisez plus de 10 outils pédagogiques",
-                        "Sauvegardez tous vos supports de cours générés",
-                        "Exploitez tous les outils sans limitation",
-                        "Économisez plus de 14h par semaine grâce aux outils IA"
+                        "Accès à plus de 10 outils pédagogiques pensés pour chaque étape de la préparation de classe",
+                        "Création instantanée de séquences, séances, évaluations, images, cartes mentales, dictées et plus encore",
+                        "Sauvegarde illimitée de tous les supports générés",
+                        "Utilisation sans limite de tous les outils, à tout moment",
+                        "Plus de 14h de travail économisées chaque semaine grâce à l'IA",
+                        "Organisation centralisée de ses contenus pédagogiques",
+                        "Interface pensée pour une prise en main rapide, sans formation nécessaire",
+                        "Support prioritaire en cas de besoin",
+                        "Sans engagement – résiliable à tout moment"
                     ]}
                     ctaText={getButtonText('monthly')}
                     onSubscribe={handleMonthlySubscription}
@@ -192,28 +164,50 @@ export const PricingPlans = ({
                 />
                 <PricingCard
                     title="Plan annuel"
-                    price="119€"
+                    price="71,40€"
                     originalPrice="142,80€"
-                    badge="2 mois offerts"
+                    badge="En ce moment -40%"
                     isPremium
                     features={[
-                        "Bénéficiez de tous les avantages du plan mensuel",
-                        "Votez pour de nouveaux outils tous les mois",
-                        "Recevez les mises à jour en avant-première",
-                        "Accédez à la communauté privée d'enseignants 3.0"
+                        "Tous les avantages du plan mensuel inclus, et en plus :",
+                        "Participation exclusive aux votes pour les prochains outils",
+                        "Accès en avant-première aux nouveautés et évolutions de la plateforme",
+                        "Intégration dans la communauté privée des enseignants 3.0",
+                        "Priorité sur les suggestions de fonctionnalités personnalisées",
+                        "Accès à des contenus exclusifs chaque mois (fiches prêtes à l'emploi, ressources, astuces IA)",
+                        "Bonus de productivité : outils expérimentaux et fonctionnalités anticipées testables en priorité",
+                        "Réduction de plus de 5 mois de paiement – investissement optimisé à long terme",
+                        "Tranquillité pour l'année entière, sans renouvellement mensuel à gérer"
                     ]}
                     ctaText={getButtonText('yearly')}
                     onSubscribe={handleYearlySubscription}
                     disabled={isButtonDisabled('yearly')}
                 />
+            </div>
+            
+            {/* Séparateur */}
+            <div className="max-w-3xl mx-auto mb-16 text-center">
+                <div className="flex items-center justify-center gap-4">
+                    <div className="h-px bg-border flex-1"></div>
+                    <h3 className="text-xl font-semibold text-muted-foreground">Pour les établissements</h3>
+                    <div className="h-px bg-border flex-1"></div>
+                </div>
+            </div>
+            
+            {/* Section pour établissement scolaire */}
+            <div className="max-w-lg mx-auto mb-20">
                 <PricingCard
                     title="Établissement scolaire"
-                    price="Sur mesure"
+                    price="Offre sur mesure"
                     features={[
-                        "Bénéficiez de tout ce qui est inclus dans le plan annuel",
-                        "Créez des outils personnalisés pour votre établissement",
-                        "Accédez au tableau de suivi pour la direction",
-                        "Adaptez les outils à votre projet d'établissement"
+                        "Tous les avantages du plan annuel pour chaque enseignant de l'équipe",
+                        "Outils pédagogiques adaptés à vos priorités (projet d'établissement, évaluations, différenciation…)",
+                        "Création de modules sur demande : outils spécifiques à vos pratiques ou besoins collectifs",
+                        "Tableau de bord de suivi pour la direction : usages, impacts, progression",
+                        "Accompagnement personnalisé à la mise en œuvre pédagogique de l'IA",
+                        "Intégration possible dans la stratégie numérique de votre établissement",
+                        "Devis adapté selon la taille de l'équipe et les objectifs",
+                        "Solution dédiée aux établissements publics, privés ou associatifs"
                     ]}
                     ctaText="Prendre contact"
                     onSubscribe={onSchoolContactRequest}
