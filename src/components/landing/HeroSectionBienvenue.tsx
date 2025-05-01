@@ -1,10 +1,11 @@
-
 import React from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Tiles } from "@/components/ui/tiles";
 import { AnimatedText } from "@/components/ui/animated-text";
+import { PromoButton } from "@/components/ui/promo-button";
+
 export function HeroSectionBienvenue() {
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
       <div className="absolute inset-0 opacity-25">
@@ -44,6 +45,10 @@ export function HeroSectionBienvenue() {
           <p className="mt-4 text-sm text-muted-foreground">
             Tarif préférentiel pour les 2000 premiers enseignants.
           </p>
+
+          <div className="mt-4 flex justify-center">
+            <PromoButton />
+          </div>
         </div>
       </div>
     </section>;

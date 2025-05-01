@@ -7,6 +7,7 @@ import { SEO } from "@/components/SEO"
 import { Shield, Clock, RefreshCw } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
+import PricingPromoBanner from "@/components/pricing/PricingPromoBanner"
 
 // Stripe Payment Links
 const PAYMENT_LINKS = {
@@ -73,6 +74,7 @@ const PricingPage = () => {
           description="Choisissez l'offre qui vous convient pour bénéficier des outils pédagogiques IA qui vous feront gagner du temps."
         />
         <main className="container mx-auto px-4 py-20 relative z-10">
+          <PricingPromoBanner />
           <div className="max-w-3xl mx-auto text-center mb-16">
             <h1 className="text-5xl font-extrabold mb-4 leading-tight tracking-tight text-balance">
               La magie de l'IA

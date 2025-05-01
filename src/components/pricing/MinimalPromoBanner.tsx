@@ -7,7 +7,7 @@ const MinimalPromoBanner = () => {
       <span className="absolute -inset-x-40 h-full top-0 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 animate-shimmer-slow pointer-events-none"></span>
       
       <p className="font-medium">
-        Pour la fête du travail, profitez de <span className="font-bold">-40 % de remise immédiate</span>.
+        Pour la fête du travail, profitez de <span className="font-bold">-40 % de remise immédiate</span> avec le code <span className="font-bold bg-white/20 px-2 py-1 rounded">TRAVAILLEQUIPEUT</span>.
       </p>
     </div>
   );
