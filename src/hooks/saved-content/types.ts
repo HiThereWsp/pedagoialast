@@ -1,4 +1,3 @@
-
 import type { SavedContent } from "@/types/saved-content";
 
 export interface ContentErrors {
@@ -6,6 +5,7 @@ export interface ContentErrors {
   lessonPlans?: string;
   correspondences?: string;
   images?: string;
+  musicLessons?: string;
   delete?: string;
 }
 

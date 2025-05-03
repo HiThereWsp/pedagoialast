@@ -52,6 +52,7 @@ const AuthDebugPage = lazy(() => import('@/pages/admin/AuthDebugPage'));
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
 const PaymentFailurePage = lazy(() => import('@/pages/PaymentFailurePage'));
+const MusicLessonPage = lazy(() => import('@/pages/MusicLessonPage'));
 
 // Composant de chargement pour Suspense
 const LoadingPage = () => (
@@ -109,6 +110,7 @@ const AppContent = () => {
           <Route path="/correspondence" element={<CorrespondencePage />} />
           <Route path="/saved-content" element={<SavedContentPage />} />
           <Route path="/plan-de-classe" element={<PlanDeClassePage />} />
+          <Route path="/music-lesson" element={<MusicLessonPage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/:threadId" element={<ChatPage />} />
         </Route>

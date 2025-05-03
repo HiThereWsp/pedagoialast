@@ -1,4 +1,3 @@
-
 import React, { useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { BackButton } from "@/components/settings/BackButton";
@@ -9,32 +8,39 @@ import { useIsMobile } from '@/hooks/use-mobile';
 // Définition des onglets pour réutilisation
 export const savedContentTabs = [{
   id: 'sequences',
-  label: 'Mes séquences',
+  label: 'Séquences',
   buttonText: 'Créer une nouvelle séquence',
   path: '/lesson-plan',
   color: 'from-[#FFE29F] to-[#FF719A]',
   displayType: 'Séquence'
 }, {
   id: 'exercises',
-  label: 'Mes exercices',
+  label: 'Exercices',
   buttonText: 'Générer un nouvel exercice',
   path: '/exercise',
   color: 'from-[#F97316] to-[#FF8E7C]',
   displayType: 'Exercice'
 }, {
   id: 'images',
-  label: 'Mes images',
+  label: 'Images',
   buttonText: 'Générer une nouvelle image',
   path: '/image-generation',
   color: 'from-[#0EA5E9] to-[#38BDF8]',
   displayType: 'Image'
 }, {
   id: 'correspondence',
-  label: 'Mes correspondances',
+  label: 'Correspondances',
   buttonText: 'Générer une correspondance',
   path: '/correspondence',
   color: 'from-[#9b87f5] to-[#6E59A5]',
   displayType: 'Correspondance'
+}, {
+  id: 'music-lessons',
+  label: 'Chansons',
+  buttonText: 'Générer une chanson pédagogique',
+  path: '/music-lesson',
+  color: 'from-[#F47C7C] to-[#AC7AB5]',
+  displayType: 'Chanson'
 }] as const;
 
 interface SavedContentHeaderProps {

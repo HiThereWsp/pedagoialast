@@ -1,4 +1,3 @@
-
 import React, { useMemo, useCallback, useState } from "react";
 import { type SavedContent } from "@/types/saved-content";
 import { ResourceCard } from "./ResourceCard";
@@ -69,6 +68,8 @@ export const SavedContentList = React.memo(({
         return item.type === 'Image';
       case 'correspondence':
         return item.type === 'correspondence';
+      case 'music-lessons':
+        return item.type === 'music-lesson';
       default:
         return true;
     }

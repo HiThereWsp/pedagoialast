@@ -13,6 +13,7 @@ import {
   Plus,
   ArrowLeft,
   MessageSquare,
+  Mic,
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
@@ -318,6 +319,18 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
               label="Générateur d'images"
               path="/image-generation"
               onClick={() => navigate("/image-generation")}
+            />
+            <SidebarNavItem
+              icon={<Mic className="h-5 w-5" />}
+              label="Chansons"
+              path="/music-lesson"
+              onClick={() => navigate("/music-lesson")}
+            />
+            <SidebarNavItem
+              icon={<Armchair className="h-5 w-5" />}
+              label="Plan de classe"
+              path="/plan-de-classe"
+              onClick={() => navigate("/plan-de-classe")}
             />
           </SidebarNavigationSection>
 

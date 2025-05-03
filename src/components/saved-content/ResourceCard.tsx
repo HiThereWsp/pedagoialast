@@ -80,6 +80,8 @@ export const ResourceCard = React.memo(({
         return 'Image';
       case 'correspondence':
         return 'Correspondance';
+      case 'music-lesson':
+        return 'Chanson';
       default:
         return type || '';
     }

@@ -1,4 +1,3 @@
-
 import { useFetchContent } from "./useFetchContent";
 import { useContentCache } from "./useContentCache";
 import { useContentErrors } from "./useContentErrors";
@@ -16,6 +15,7 @@ import { useExerciseRetrieval } from "./retrieval/useExerciseRetrieval";
 import { useLessonPlanRetrieval } from "./retrieval/useLessonPlanRetrieval";
 import { useCorrespondenceRetrieval } from "./retrieval/useCorrespondenceRetrieval";
 import { useImageRetrieval } from "./retrieval/useImageRetrieval";
+import { useMusicLessonRetrieval } from "./retrieval/useMusicLessonRetrieval";
 import { useRetryHandler } from "./retrieval/useRetryHandler";
 
 export {
@@ -37,5 +37,6 @@ export {
   useLessonPlanRetrieval,
   useCorrespondenceRetrieval,
   useImageRetrieval,
+  useMusicLessonRetrieval,
   useRetryHandler
 };

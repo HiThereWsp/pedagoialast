@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,24 @@ export const ContentPreviewSheet = React.memo(({
   // Always declare hooks at the top level, before any conditionals
   const [activeTab, setActiveTab] = useState('student');
   const { toast } = useToast();
+
+  // Fonction pour formater les dates
+  const formatDate = useCallback((dateString: string) => {
+    if (!dateString) return "Date inconnue";
+    
+    try {
+      const date = new Date(dateString);
+      return new Intl.DateTimeFormat('fr-FR', { 
+        day: '2-digit', 
+        month: 'short', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch (e) {
+      return "Date invalide";
+    }
+  }, []);
 
   const handleCopy = useCallback(async () => {
     if (!content) return;
@@ -51,19 +68,28 @@ export const ContentPreviewSheet = React.memo(({
     setActiveTab(value);
   }, []);
 
-  // Now we can have our conditional rendering after all hooks are defined
-  if (!content || !isOpen) return null;
-
-  const renderContent = () => {
+  const renderContent = useCallback(() => {
+    if (!content) return null;
+    
     switch (content.type) {
-      case 'Image':
+      case 'music-lesson':
         return (
-          <div className="mt-6">
-            <img 
-              src={content.content} 
-              alt={content.title} 
-              className="w-full rounded-lg object-contain max-h-[80vh]"
-            />
+          <div className="prose max-w-none">
+            <h3 className="text-xl font-semibold mb-4">Chanson</h3>
+            {content.lyrics ? (
+              <pre className="whitespace-pre-wrap font-sans text-base bg-gray-50 p-4 rounded-md border border-gray-200">
+                {content.lyrics}
+              </pre>
+            ) : (
+              <div className="text-gray-500">
+                <p>Contenu des paroles non disponible</p>
+              </div>
+            )}
+            <div className="mt-6 text-sm text-gray-500">
+              <p>Créé le {formatDate(content.created_at)}</p>
+              {content.subject && <p>Matière: {content.subject}</p>}
+              {content.class_level && <p>Niveau: {content.class_level}</p>}
+            </div>
           </div>
         );
       case 'exercise':
@@ -90,8 +116,19 @@ export const ContentPreviewSheet = React.memo(({
             </div>
           </>
         );
+      case 'Image':
+        return (
+          <div className="mt-6">
+            <img 
+              src={content.content} 
+              alt={content.title} 
+              className="w-full rounded-lg object-contain max-h-[80vh]"
+            />
+          </div>
+        );
       case 'lesson-plan':
       case 'correspondence':
+      default:
         return (
           <div className="mt-6">
             <ScrollCard 
@@ -102,11 +139,11 @@ export const ContentPreviewSheet = React.memo(({
             />
           </div>
         );
-      default:
-        console.warn('Type de contenu non reconnu:', content.type);
-        return null;
     }
-  };
+  }, [content, activeTab, handleTabChange, formatDate]);
+
+  // Now we can have our conditional rendering after all hooks are defined
+  if (!content || !isOpen) return null;
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>

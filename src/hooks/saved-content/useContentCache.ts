@@ -1,4 +1,3 @@
-
 import { useRef, useCallback } from "react";
 import type { SavedContent } from "@/types/saved-content";
 
@@ -10,6 +9,7 @@ export function useContentCache() {
   const pendingContentRef = useRef<SavedContent[] | null>(null);
   const dataWasReceivedRef = useRef(false);
   const contentHistory = useRef<SavedContent[][]>([]);
+  const cachedMusicLessonsRef = useRef<SavedContent[]>([]);
 
   // Fonction pour vérifier si le contenu a changé
   const hasContentChanged = useCallback((oldContent: SavedContent[], newContent: SavedContent[]): boolean => {
@@ -33,7 +33,7 @@ export function useContentCache() {
     const countByType = (content: SavedContent[], type: string) => 
       content.filter(item => item.type === type).length;
     
-    const types = ['lesson-plan', 'exercise', 'Image', 'correspondence'];
+    const types = ['lesson-plan', 'exercise', 'Image', 'correspondence', 'music-lesson'];
     for (const type of types) {
       const oldCount = countByType(oldContent, type);
       const newCount = countByType(newContent, type);
@@ -117,12 +117,26 @@ export function useContentCache() {
     return dataWasReceivedRef.current;
   }, []);
 
+  // Méthodes pour les leçons en musique
+  const getCachedMusicLessons = useCallback(() => {
+    return cachedMusicLessonsRef.current;
+  }, []);
+
+  const updateMusicLessonsCache = useCallback((musicLessons: SavedContent[]) => {
+    if (musicLessons.length > 0) {
+      console.log(`🎵 Mise à jour du cache des leçons en musique avec ${musicLessons.length} éléments`);
+    }
+    cachedMusicLessonsRef.current = [...musicLessons];
+    return cachedMusicLessonsRef.current;
+  }, []);
+
   // Méthode pour invalider le cache
   const invalidateCache = useCallback(() => {
     console.log("🧹 Invalidation manuelle du cache");
     cachedContentRef.current = [];
     pendingContentRef.current = null;
     dataWasReceivedRef.current = false;
+    cachedMusicLessonsRef.current = [];
   }, []);
 
   return {
@@ -133,6 +147,9 @@ export function useContentCache() {
     setDataReceived,
     hasDataReceived,
     invalidateCache,
-    hasContentChanged
+    hasContentChanged,
+    // Nouvelles méthodes pour les leçons en musique
+    getCachedMusicLessons,
+    updateMusicLessonsCache
   };
 }

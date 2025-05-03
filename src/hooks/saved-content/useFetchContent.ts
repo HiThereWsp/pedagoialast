@@ -1,4 +1,3 @@
-
 import { useCallback, useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -51,6 +50,7 @@ export function useFetchContent() {
     retrieveLessonPlans,
     retrieveCorrespondences,
     retrieveImages,
+    retrieveMusicLessons,
     isContentLoading
   } = useContentRetrieval();
 
@@ -145,6 +145,9 @@ export function useFetchContent() {
       // 4. Récupérer les images
       const images = await retrieveImages(abortSignal, forceRefresh, currentRequest);
       
+      // 5. Récupérer les leçons en musique
+      const musicLessons = await retrieveMusicLessons(abortSignal, forceRefresh, currentRequest);
+      
       // CORRECTION CRITIQUE: Même si la requête est annulée, utiliser les données partielles
       if (abortSignal.aborted) {
         console.log(`🛑 [Requête ${currentRequest}] Requête annulée avant finalisation`);
@@ -169,7 +172,8 @@ export function useFetchContent() {
         exercises: exercises?.length || 0,
         lessonPlans: lessonPlans?.length || 0,
         correspondences: correspondences?.length || 0,
-        images: images?.length || 0
+        images: images?.length || 0,
+        musicLessons: musicLessons?.length || 0
       });
       
       // Combiner toutes les données et les trier par date
@@ -177,7 +181,8 @@ export function useFetchContent() {
         ...exercises, 
         ...lessonPlans, 
         ...correspondences,
-        ...images
+        ...images,
+        ...musicLessons
       ].filter(Boolean);
 
       // Trier et finaliser le contenu
@@ -239,6 +244,7 @@ export function useFetchContent() {
     retrieveLessonPlans,
     retrieveCorrespondences,
     retrieveImages,
+    retrieveMusicLessons,
     getPendingContent,
     updatePendingContent,
     processFinalContent,

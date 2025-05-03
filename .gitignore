@@ -25,3 +25,6 @@ dist-ssr
 supabase/.env
 supabase/.branches
 supabase/.temp
+
+# MCP configuration
+.cursor/

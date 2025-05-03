@@ -1,4 +1,3 @@
-
 export interface SavedContent {
   id: string
   title: string
@@ -7,7 +6,7 @@ export interface SavedContent {
   subject_matter?: string
   class_level?: string
   created_at: string
-  type: 'lesson-plan' | 'exercise' | 'Image' | 'correspondence'
+  type: 'lesson-plan' | 'exercise' | 'Image' | 'correspondence' | 'music-lesson'
   displayType?: string
   exercise_category?: 'standard' | 'differentiated'
   source_type?: 'direct' | 'from_lesson_plan'
@@ -19,6 +18,7 @@ export interface SavedContent {
   exercise_type?: string
   difficulty_level?: string
   summary?: string
+  lyrics?: string
   tags: Array<{
     label: string
     color: string
