@@ -28,6 +28,10 @@ import { Database } from '@/types/supabase';
 import styles from './styles/sidebar.module.css';
 import { useUserProfile } from '@/hooks/useUserProfile';
 
+// Clé pour localStorage et liste des chemins "nouveaux"
+const SEEN_FEATURES_KEY = 'pedagoia_seen_features';
+const NEW_FEATURES_PATHS = ['/lesson-plan', '/exercise'];
+
 type Thread = Database['public']['Tables']['chat_threads']['Row'];
 
 type ThreadRow = Thread & {
@@ -61,6 +65,32 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
   const threadsToShow = 15; // Show 15 threads initially
   const loadingRef = useRef<HTMLDivElement>(null);
   const observer = useRef<IntersectionObserver>();
+
+  // État pour stocker les fonctionnalités vues
+  const [seenFeatures, setSeenFeatures] = useState<Record<string, boolean>>({});
+
+  // Lire localStorage au montage
+  useEffect(() => {
+    const storedSeenFeatures = localStorage.getItem(SEEN_FEATURES_KEY);
+    if (storedSeenFeatures) {
+      try {
+        setSeenFeatures(JSON.parse(storedSeenFeatures));
+      } catch (e) {
+        console.error("Failed to parse seen features from localStorage", e);
+        localStorage.removeItem(SEEN_FEATURES_KEY); // Clear invalid data
+      }
+    }
+  }, []);
+
+  // Fonction pour marquer une fonctionnalité comme vue et naviguer
+  const handleNavigateAndMarkSeen = (path: string) => {
+    if (NEW_FEATURES_PATHS.includes(path) && !seenFeatures[path]) {
+      const updatedSeenFeatures = { ...seenFeatures, [path]: true };
+      setSeenFeatures(updatedSeenFeatures);
+      localStorage.setItem(SEEN_FEATURES_KEY, JSON.stringify(updatedSeenFeatures));
+    }
+    navigate(path);
+  };
 
   useEffect(() => {
     // Refresh threads when entering a chat route
@@ -194,6 +224,22 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
     }
   };
 
+  // Helper pour créer le label avec ou sans point
+  const createLabelWithIndicator = (label: string, path: string) => {
+    const isNew = NEW_FEATURES_PATHS.includes(path);
+    const hasBeenSeen = seenFeatures[path];
+
+    if (isNew && !hasBeenSeen) {
+      return (
+        <span>
+          {label}
+          <span className="ml-2 h-2 w-2 bg-orange-500 rounded-full inline-block animate-pulse shadow-md shadow-orange-500/50 blur-[1px]"></span>
+        </span>
+      );
+    }
+    return label; // Retourne juste le string si pas nouveau ou déjà vu
+  };
+
   return (
     <div className="flex flex-col h-full mt-16">
       {isChatRoute ? (
@@ -292,32 +338,32 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
                 icon={<Bot className="h-5 w-5" />}
                 label="Chat AI"
                 path="/chat"
-                onClick={() => navigate("/chat")}
+                onClick={() => handleNavigateAndMarkSeen("/chat")}
               />
             )}
             <SidebarNavItem
               icon={<Sparkles className="h-5 w-5" />}
-              label="Générateur de séquences"
+              label={createLabelWithIndicator('Générateur de séquences', '/lesson-plan')}
               path="/lesson-plan"
-              onClick={() => navigate("/lesson-plan")}
+              onClick={() => handleNavigateAndMarkSeen("/lesson-plan")}
             />
             <SidebarNavItem
               icon={<Leaf className="h-5 w-5" />}
-              label="Générateur d'exercices"
+              label={createLabelWithIndicator('Générateur d\'exercices', '/exercise')}
               path="/exercise"
-              onClick={() => navigate("/exercise")}
+              onClick={() => handleNavigateAndMarkSeen("/exercise")}
             />
             <SidebarNavItem
               icon={<FileText className="h-5 w-5" />}
               label="Assistant administratif"
               path="/correspondence"
-              onClick={() => navigate("/correspondence")}
+              onClick={() => handleNavigateAndMarkSeen("/correspondence")}
             />
             <SidebarNavItem
               icon={<Image className="h-5 w-5" />}
               label="Générateur d'images"
               path="/image-generation"
-              onClick={() => navigate("/image-generation")}
+              onClick={() => handleNavigateAndMarkSeen("/image-generation")}
             />
           </SidebarNavigationSection>
 
@@ -330,7 +376,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
                 icon={<BookOpen className="h-5 w-5" />}
                 label="Mes ressources"
                 path="/saved-content"
-                onClick={() => navigate("/saved-content")}
+                onClick={() => handleNavigateAndMarkSeen("/saved-content")}
               />
             </SidebarNavigationSection>
 
@@ -340,7 +386,7 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
                 icon={<MessageCircle className="h-5 w-5 text-purple-600" />}
                 label="Demander des fonctionnalités"
                 path="/suggestions"
-                onClick={() => navigate("/suggestions")}
+                onClick={() => handleNavigateAndMarkSeen("/suggestions")}
                 className="bg-purple-50 text-purple-700 hover:bg-purple-100"
               />
             </SidebarNavigationSection>

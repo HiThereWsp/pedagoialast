@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Clock } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 
 interface SidebarButtonProps {
   icon: React.ReactNode;
-  label: string;
+  label: React.ReactNode;
   path?: string;
   active?: boolean;
   small?: boolean;

@@ -4,6 +4,7 @@ export enum EventType {
   FIRST_LOGIN = "first_login",
   TOOL_OPENED = "tool_opened",
   SEQUENCE_GENERATED = "sequence_generated",
+  SEQUENCE_MODIFIED = "sequence_modified",
   GENERATION_FEEDBACK = "generation_feedback",
   SEQUENCE_SAVED = "sequence_saved",
   DIFFERENTIATE_TAB_CLICKED = "differentiate_tab_clicked",
@@ -16,7 +17,8 @@ export enum EventType {
   IMAGE_REGENERATED = "image_regenerated",
   PAGE_VISIT = "page_visit",
   SUBSCRIPTION_STARTED = "subscription_started",
-  EXERCISE_GENERATED = "exercise_generated"
+  EXERCISE_GENERATED = "exercise_generated",
+  EXERCISE_MODIFIED = "exercise_modified"
 }
 
 // Type d'outil

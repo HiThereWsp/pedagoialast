@@ -3,7 +3,7 @@ import SidebarButton from './SidebarButton';
 
 interface SidebarNavItemProps {
   icon: React.ReactNode;
-  label: string;
+  label: React.ReactNode;
   path?: string;
   onClick?: () => void;
   notAvailable?: boolean;

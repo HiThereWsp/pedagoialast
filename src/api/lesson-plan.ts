@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 interface LessonPlanParams {
@@ -8,6 +7,11 @@ interface LessonPlanParams {
   total_sessions: number;
   additional_instructions?: string;
   text?: string;
+}
+
+interface ModifyLessonPlanParams extends LessonPlanParams {
+  original_lesson_plan: string;
+  modification_instructions: string;
 }
 
 /**
@@ -34,6 +38,34 @@ export async function generateLessonPlan(params: LessonPlanParams): Promise<stri
     return data.lessonPlan;
   } catch (error) {
     console.error('Exception in generateLessonPlan:', error);
+    throw error;
+  }
+}
+
+/**
+ * Modifies an existing lesson plan based on user instructions
+ */
+export async function modifyLessonPlan(params: ModifyLessonPlanParams): Promise<string> {
+  console.log('Sending lesson plan modification request with instructions');
+  
+  try {
+    const { data, error } = await supabase.functions.invoke('modify-lesson-plan', {
+      body: params
+    });
+
+    if (error) {
+      console.error('Error modifying lesson plan:', error);
+      throw new Error(error.message);
+    }
+
+    if (!data?.lessonPlan) {
+      console.error('No modified lesson plan returned from the API');
+      throw new Error('No lesson plan data received');
+    }
+
+    return data.lessonPlan;
+  } catch (error) {
+    console.error('Exception in modifyLessonPlan:', error);
     throw error;
   }
 }

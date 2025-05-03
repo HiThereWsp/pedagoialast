@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useExerciseGeneration } from "./useExerciseGeneration";
 import type { ExerciseFormData } from "@/types/saved-content";
+import { useToast } from "@/hooks/use-toast";
 
 // Default form data
 export const defaultFormData: ExerciseFormData = {
@@ -23,7 +23,9 @@ export const defaultFormData: ExerciseFormData = {
 export function useExercisePageState() {
   const { 
     generateExercises, 
+    modifyExercises,
     isLoading, 
+    isModifying,
     isSaving,
     lastSaveError,
     getExerciseCacheState,
@@ -32,6 +34,7 @@ export function useExercisePageState() {
     lastGeneratedId
   } = useExerciseGeneration();
   
+  const { toast } = useToast();
   const [exercises, setExercises] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"create" | "differentiate">("create");
   const [formData, setFormData] = useState<ExerciseFormData>(defaultFormData);
@@ -92,6 +95,40 @@ export function useExercisePageState() {
     }
   };
 
+  const handleModifyExercise = async (modificationInstructions: string) => {
+    if (!exercises || !modificationInstructions) {
+      toast({
+        variant: "destructive",
+        description: "Impossible de modifier l'exercice. Données manquantes."
+      });
+      return;
+    }
+
+    console.log('Modification de l\'exercice...');
+    
+    // Keep current result in case of failure
+    const currentExercises = exercises;
+    
+    const result = await modifyExercises(
+      formData,
+      exercises,
+      modificationInstructions,
+      activeTab === "differentiate"
+    );
+    
+    if (result) {
+      console.log('Exercice modifié avec succès, mise à jour de l\'affichage');
+      setExercises(result);
+      toast({
+        description: "Votre exercice a été modifié avec succès."
+      });
+    } else {
+      // If error, restore previous state
+      console.log('Échec de la modification, restauration de l\'état précédent');
+      setExercises(currentExercises);
+    }
+  };
+
   const handleTabChange = (tab: string) => {
     if (tab === activeTab) return;
     
@@ -130,6 +167,7 @@ export function useExercisePageState() {
     activeTab,
     formData,
     isLoading,
+    isModifying,
     isSaving,
     lastSaveError,
     lastGeneratedId,
@@ -137,6 +175,7 @@ export function useExercisePageState() {
     handleSubmit,
     handleTabChange,
     handleRetrySave,
+    handleModifyExercise,
     isCachedDataLoaded
   };
 }

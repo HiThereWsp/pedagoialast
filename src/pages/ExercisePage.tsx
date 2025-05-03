@@ -1,10 +1,10 @@
-
 import { ResultDisplay } from "@/components/exercise";
 import { useExercisePageState } from "@/hooks/exercise/useExercisePageState";
 import { SaveErrorAlert } from "@/components/exercise/form/SaveErrorAlert";
 import { ExerciseFormTabs } from "@/components/exercise/form/ExerciseFormTabs";
 import { ExercisePageHeader } from "@/components/exercise/ExercisePageHeader";
 import { SEO } from "@/components/SEO";
+import { useEffect } from "react";
 
 export default function ExercisePage() {
   const {
@@ -12,14 +12,31 @@ export default function ExercisePage() {
     activeTab,
     formData,
     isLoading,
+    isModifying,
     isSaving,
     lastSaveError,
     lastGeneratedId,
     handleInputChange,
     handleSubmit,
     handleTabChange,
-    handleRetrySave
+    handleRetrySave,
+    handleModifyExercise,
   } = useExercisePageState();
+
+  // Log pour le débogage - s'assurer que handleModifyExercise est disponible
+  useEffect(() => {
+    if (exercises) {
+      console.log("Fonction de modification disponible:", !!handleModifyExercise);
+    }
+  }, [exercises, handleModifyExercise]);
+
+  // Fonction explicite pour la modification
+  const onModifyRequest = (instructions: string) => {
+    console.log("Demande de modification reçue avec instructions:", instructions);
+    if (handleModifyExercise) {
+      handleModifyExercise(instructions);
+    }
+  };
 
   return (
     <>
@@ -46,7 +63,16 @@ export default function ExercisePage() {
             isLoading={isLoading}
           />
 
-          {exercises && <ResultDisplay exercises={exercises} exerciseId={lastGeneratedId} />}
+          {exercises && (
+            <>
+              <ResultDisplay 
+                exercises={exercises} 
+                exerciseId={lastGeneratedId} 
+                isModifying={isModifying}
+                onModifyRequest={onModifyRequest}
+              />
+            </>
+          )}
         </div>
       </div>
     </>

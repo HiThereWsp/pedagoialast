@@ -1,8 +1,8 @@
-
 import { useCallback } from 'react';
 import { useSavedContent } from '@/hooks/useSavedContent';
 import { useToolMetrics } from '@/hooks/useToolMetrics';
 import { LessonPlanFormData, SaveLessonPlanParams } from './types';
+import { trackEvent, EventType } from '@/utils/analytics';
 
 export function useLessonPlanUtils() {
   const { saveLessonPlan } = useSavedContent();
@@ -38,8 +38,17 @@ export function useLessonPlanUtils() {
     await logToolUsage('lesson_plan', 'generate', lessonPlan.length, roundedGenerationTime);
   }, [formatTitle, saveLessonPlan, logToolUsage]);
 
+  // Fonction pour suivre les modifications
+  const trackModification = useCallback((modificationTime: number, contentLength: number) => {
+    trackEvent(EventType.SEQUENCE_MODIFIED, {
+      processingTime: Math.round(modificationTime),
+      contentLength: contentLength
+    });
+  }, []);
+
   return {
     formatTitle,
-    savePlan
+    savePlan,
+    trackModification
   };
 }
