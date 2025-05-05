@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,12 +6,16 @@ import { facebookEvents } from "@/integrations/meta-pixel/client";
 import { subscriptionEvents } from "@/integrations/posthog/events";
 import { useToast } from "@/hooks/use-toast";
 import { SEO } from "@/components/SEO";
+import { useAuth } from "@/hooks/useAuth";
+import metaConversionsService from "@/services/metaConversionsService";
 
 const SubscriptionSuccessPage = () => {
   const location = useLocation();
   const { toast } = useToast();
+  const { user } = useAuth();
   const queryParams = new URLSearchParams(location.search);
   const subscriptionType = queryParams.get("type") as "monthly" | "yearly" || "monthly";
+  const subscriptionIdParam = queryParams.get("subscription_id");
   
   const subscriptionDetails = {
     monthly: {
@@ -35,6 +38,30 @@ const SubscriptionSuccessPage = () => {
       details.yearlyValue
     );
     
+    // Envoyer l'événement de succès d'abonnement via l'API Conversions (Serveur)
+    if (user) {
+      const testEventCode = import.meta.env.VITE_META_TEST_EVENT_CODE || undefined;
+      console.log(`[Meta CAPI] Sending Subscription Success event (Test Code: ${testEventCode || 'None'})`);
+      metaConversionsService.sendSubscriptionSuccessEvent(
+        {
+          email: user.email,
+          firstName: user.user_metadata?.firstName,
+          subscriptionId: subscriptionIdParam || undefined
+        },
+        subscriptionType,
+        details.price,
+        details.yearlyValue,
+        {
+          event_source_url: window.location.href,
+          test_event_code: testEventCode
+        }
+      ).catch(error => {
+        console.error(`[Meta CAPI] Failed to send Subscription Success event (Test Code: ${testEventCode || 'None'}):`, error);
+      });
+    } else {
+      console.warn('[Meta CAPI] User data not available, skipping server-side event.');
+    }
+    
     // Tracking PostHog
     subscriptionEvents.subscriptionCompleted(
       subscriptionType, 
@@ -47,7 +74,7 @@ const SubscriptionSuccessPage = () => {
       description: "Votre compte a été activé avec succès.",
       duration: 5000,
     });
-  }, [subscriptionType, details.price, details.yearlyValue, toast]);
+  }, [subscriptionType, details.price, details.yearlyValue, toast, user, subscriptionIdParam]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">

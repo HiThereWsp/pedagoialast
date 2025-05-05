@@ -9,6 +9,7 @@ import {
   checkCrossDomainAuth, 
   clearCrossDomainAuth 
 } from "@/utils/cross-domain-auth";
+import metaConversionsService from "@/services/metaConversionsService";
 
 type AuthContextType = {
   user: User | null;
@@ -64,6 +65,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const previousSession = useRef<any>(null);
   const { toast } = useToast();
   const location = useLocation();
+  const previousUserRef = useRef<User | null>(null);
 
   const isPublicPage = () => {
     const publicPaths = [
@@ -86,7 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     let mounted = true;
-    let subscription: { unsubscribe: () => void } | null = null;
+    let subscription: any = null;
 
     const checkUser = async () => {
       try {
@@ -170,7 +172,39 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (mounted) {
         const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
-          console.log("Auth state changed:", event);
+          console.log("Auth state changed:", event, "Session:", !!session);
+          const currentUser = session?.user ?? null;
+
+          // Détecter un nouvel utilisateur connecté après une absence d'utilisateur
+          if (!previousUserRef.current && currentUser && event === 'SIGNED_IN') {
+            console.log('[Auth Event] New user signed in:', currentUser.email);
+            
+            // Vérifier si c'est une inscription (créé très récemment)
+            // Heuristique: créé il y a moins de 60 secondes
+            const createdAt = currentUser.created_at ? new Date(currentUser.created_at).getTime() : 0;
+            const now = Date.now();
+            const isRecentSignup = (now - createdAt) < 60000; 
+
+            if (isRecentSignup) {
+               console.log('[Meta CAPI] Detected recent signup, sending CompleteRegistration event for:', currentUser.email);
+               const testEventCode = import.meta.env.VITE_META_TEST_EVENT_CODE || undefined;
+               metaConversionsService.sendSignupCompletedEvent(
+                 {
+                   email: currentUser.email,
+                   firstName: currentUser.user_metadata?.firstName,
+                 },
+                 {
+                   test_event_code: testEventCode
+                   // pixel_id: FB_PIXEL_IDS.SIGNUP // Déjà géré par la méthode du service
+                 }
+               ).catch(error => {
+                 console.error('[Meta CAPI] Failed to send CompleteRegistration event:', error);
+               });
+            }
+          }
+
+          // Mettre à jour la référence de l'utilisateur précédent
+          previousUserRef.current = currentUser;
           
           // Synchroniser les cookies cross-domaine à chaque changement d'état
           if (session) {

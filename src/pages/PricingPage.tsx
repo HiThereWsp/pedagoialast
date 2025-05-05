@@ -8,6 +8,9 @@ import { Shield, Clock, RefreshCw } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client"
 import { toast } from "sonner"
 import PricingPromoBanner from "@/components/pricing/PricingPromoBanner"
+import metaConversionsService from "@/services/metaConversionsService"
+import { useAuth } from "@/hooks/useAuth"
+import { FB_PIXEL_IDS } from "@/integrations/meta-pixel/client"
 
 // Stripe Payment Links
 const PAYMENT_LINKS = {
@@ -16,6 +19,8 @@ const PAYMENT_LINKS = {
 };
 
 const PricingPage = () => {
+  const { user } = useAuth()
+
   useEffect(() => {
     // Tracking PostHog
     pricingEvents.viewPricing()
@@ -37,32 +42,62 @@ const PricingPage = () => {
     return true;
   };
 
-  const handleMonthlySubscription = async () => {
-    if (!await checkAuth()) return;
+  // Fonction pour gérer l'initiation du checkout (Pixel + CAPI)
+  const handleInitiateCheckout = async (plan: 'monthly' | 'yearly', price: number) => {
+    if (!await checkAuth()) return false;
     
     // Tracking PostHog
     pricingEvents.selectPlan('premium');
-    subscriptionEvents.subscriptionStarted('monthly', 11.90);
+    subscriptionEvents.subscriptionStarted(plan, price);
     
-    // Tracking Facebook
-    facebookEvents.initiateCheckout('monthly', 11.90);
+    // Tracking Facebook Pixel (Client)
+    facebookEvents.initiateCheckout(plan, price);
     
-    // Redirect to Stripe Payment Link
-    window.location.href = PAYMENT_LINKS.monthly;
+    // Tracking Facebook CAPI (Serveur) via Edge Function
+    if (user) {
+      const testEventCode = import.meta.env.VITE_META_TEST_EVENT_CODE || undefined;
+      console.log(`[Meta CAPI] Sending InitiateCheckout event (Plan: ${plan}, Test Code: ${testEventCode || 'None'})`);
+      // Note: On utilise `sendEvent` générique ici car pas de méthode spécifique pour InitiateCheckout
+      metaConversionsService.sendEvent(
+        'InitiateCheckout' as any, // Le type EventName est strict, on force ici
+        {
+          email: user.email,
+          firstName: user.user_metadata?.firstName,
+          // D'autres données utilisateur pourraient être ajoutées si disponibles
+        },
+        { // customData
+          content_name: `premium_${plan}`,
+          value: price,
+          currency: 'EUR',
+          subscription_type: plan
+        },
+        { // options
+          event_source_url: window.location.href,
+          test_event_code: testEventCode,
+          pixel_id: FB_PIXEL_IDS.SUBSCRIBE // Assurer d'envoyer au bon pixel
+        }
+      ).catch(error => {
+        console.error(`[Meta CAPI] Failed to send InitiateCheckout event (Plan: ${plan}):`, error);
+      });
+    } else {
+      console.warn('[Meta CAPI] User not available for InitiateCheckout server-side event.');
+    }
+    
+    return true; // Indiquer que l'authentification et le tracking sont OK
+  };
+
+  const handleMonthlySubscription = async () => {
+    const proceed = await handleInitiateCheckout('monthly', 11.90);
+    if (proceed) {
+      window.location.href = PAYMENT_LINKS.monthly;
+    }
   }
 
   const handleYearlySubscription = async () => {
-    if (!await checkAuth()) return;
-    
-    // Tracking PostHog
-    pricingEvents.selectPlan('premium');
-    subscriptionEvents.subscriptionStarted('yearly', 9.90);
-    
-    // Tracking Facebook
-    facebookEvents.initiateCheckout('yearly', 9.00);
-    
-    // Redirect to Stripe Payment Link
-    window.location.href = PAYMENT_LINKS.yearly;
+    const proceed = await handleInitiateCheckout('yearly', 9.00);
+    if (proceed) {
+      window.location.href = PAYMENT_LINKS.yearly;
+    }
   }
 
   return (
