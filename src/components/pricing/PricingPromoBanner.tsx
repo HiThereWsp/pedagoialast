@@ -57,7 +57,7 @@ const PricingPromoBanner = () => {
         <div className="flex items-center">
           <span className="text-xl mr-2">🎁</span>
           <span className="font-medium">
-            <span className="font-bold">-40% sur l'abonnement annuel</span> pour la Fête du Travail avec le code <span className="font-bold bg-white/20 px-2 py-1 rounded">TRAVAILLEQUIPEUT</span>
+            <span className="font-bold">Prix de lancement</span> • Profitez de 4 mois offerts avec l'abonnement annuel
           </span>
         </div>
         

@@ -47,7 +47,7 @@ export function HeroSection() {
               <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              🎁 <span className="font-medium">Offre de lancement</span> • Accès prioritaire et tarif exclusif
+              🎁 <span className="font-medium">Prix de lancement</span> • Accès prioritaire et tarif exclusif
             </p>
           </div>
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Tiles } from "@/components/ui/tiles";
 import { AnimatedText } from "@/components/ui/animated-text";
-import { PromoButton } from "@/components/ui/promo-button";
 
 export function HeroSectionBienvenue() {
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-white">
@@ -28,7 +27,7 @@ export function HeroSectionBienvenue() {
             </div>
           </div>
           
-          <h1 className="text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight md:text-5xl">L'assistant pédagogique IA pour travailler 15x plus vite</h1>
+          <h1 className="text-5xl font-extrabold mb-6 text-balance leading-tight tracking-tight md:text-5xl">L'assistant IA pour une pédagogie 10x plus productive</h1>
           
           <h2 className="text-2xl md:text-3xl mb-6">
             Avec des outils IA conçus pour <br className="hidden sm:block" /> 
@@ -41,14 +40,6 @@ export function HeroSectionBienvenue() {
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </Link>
-          
-          <p className="mt-4 text-sm text-muted-foreground">
-            Tarif préférentiel pour les 2000 premiers enseignants.
-          </p>
-
-          <div className="mt-4 flex justify-center">
-            <PromoButton />
-          </div>
         </div>
       </div>
     </section>;

@@ -29,7 +29,7 @@ export function PromoButton({
         {/* Effet de brillance */}
         <span className="absolute -inset-x-10 h-full top-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12 animate-shimmer-slow pointer-events-none"></span>
         
-        <span>-40 % pour la fête du travail <span className="ml-1">💁</span></span>
+        <span>Prix de lancement <span className="ml-1">✨</span></span>
       </button>
     </div>
   );

@@ -10,46 +10,57 @@ import { Link } from 'react-router-dom';
 
 // FAQ réorganisée et simplifiée
 const faqs = [
-  // Question la plus populaire (score 4)
+  // Nouvelle question en première position
   {
-    question: "Puis-je essayer PedagoIA avant de m'engager ?",
+    question: "Pourquoi PedagoIA alors que j'ai déjà ChatGPT ?",
     answer: (
       <p className="text-left">
-        Oui, nous proposons une période d'essai gratuite de 3 jours qui vous permet d'explorer toutes les fonctionnalités de la plateforme. <Link to="/login" className="text-primary hover:underline">Je souhaite commencer mon essai gratuit</Link>.
+        PedagoIA est un outil conçu pour les enseignants français, intégrant des IA spécialisées et adaptées aux besoins pédagogiques concrets. Contrairement à ChatGPT, une IA généraliste, PedagoIA évolue en continu grâce aux retours directs des enseignants.
       </p>
     )
   },
   
-  // Question sur le prix (nouvelle)
+  // Question sur le prix
   {
-    question: "Quels sont les tarifs de PedagoIA ?",
-    answer: (
-      <div className="text-left">
-        <p>PedagoIA est accessible à partir de 9,90€ par mois. Notre formule mensuelle sans engagement est proposée à 11,90€ par mois.</p>
-        <p className="mt-2">Pour les établissements scolaires, nous proposons des tarifs dégressifs adaptés au nombre d'enseignants. Tous nos abonnements donnent accès à l'ensemble des fonctionnalités sans restriction.</p>
-        <p className="mt-2">Pour en savoir plus sur nos offres, <Link to="/pricing" className="text-primary hover:underline">consultez notre page de tarification</Link>.</p>
-      </div>
-    )
-  },
-  
-  // Question sur l'intégration, reformulée et plus concise
-  {
-    question: "Comment intégrer PedagoIA dans mon quotidien d'enseignant ?",
-    answer: (
-      <div className="text-left">
-        <p>PedagoIA s'adapte à votre flux de travail existant, sans nécessiter de compétences techniques particulières. Notre interface intuitive vous permet de créer des ressources pédagogiques en quelques clics, de les exporter dans vos formats habituels et de gagner un temps précieux sur vos préparations.</p>
-        <div className="mt-3 flex items-center text-primary">
-        </div>
-      </div>
-    )
-  },
-  
-  // Question repositionnée sur le temps gagné, simplifiée
-  {
-    question: "Quels résultats puis-je attendre avec PedagoIA ?",
+    question: "Combien ça coûte ?",
     answer: (
       <p className="text-left">
-        Selon nos utilisateurs actuels, PedagoIA permet de gagner en moyenne 4 à 6 heures par semaine sur la préparation des cours et des exercices. Vous pourrez personnaliser davantage les ressources pour vos élèves et diversifier vos approches pédagogiques, le tout en réduisant considérablement votre charge de travail.
+        PedagoIA, c'est à partir de 9,90€/mois (engagement annuel) ou 11,90€/mois sans engagement.
+        Tu choisis ce qui te convient.
+      </p>
+    )
+  },
+  
+  // Question sur l'essai
+  {
+    question: "Je peux essayer avant de m'abonner ?",
+    answer: (
+      <p className="text-left">
+        Bien sûr ! Tu as 3 jours d'essai gratuit pour tout tester sans limite.
+        <br />
+        👉 <Link to="/login" className="text-primary hover:underline">Clique ici pour découvrir la plateforme</Link>.
+      </p>
+    )
+  },
+  
+  // Question sur la formation
+  {
+    question: "Faut-il se former pour utiliser PedagoIA ?",
+    answer: (
+      <p className="text-left">
+        Pas du tout. Tout est pensé pour être ultra simple à prendre en main, même si tu n'as aucune compétence technique.
+      </p>
+    )
+  },
+  
+  // Question sur les résultats concrets
+  {
+    question: "Et concrètement, ça change quoi ?",
+    answer: (
+      <p className="text-left">
+        Nos utilisateurs gagnent en moyenne 4 à 6 heures par semaine sur la préparation.
+        <br />
+        Résultat : plus de temps pour les élèves, des contenus plus personnalisés et moins de charge mentale.
       </p>
     )
   }

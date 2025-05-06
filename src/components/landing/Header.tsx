@@ -5,7 +5,6 @@ import { Dialog, DialogTrigger, DialogContent } from '../ui/dialog';
 import { X, Menu, LogIn, LayoutDashboard } from 'lucide-react';
 import { LoginDialog } from './auth/LoginDialog';
 import { useAuth } from '@/hooks/useAuth';
-import { PromoButton } from '../ui/promo-button';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,9 +31,9 @@ export function Header() {
           </Link>
         </div>
         
-        {/* Section centrale avec bouton promo */}
+        {/* Section centrale - bouton promo supprimé */}
         <div className="flex-1 flex justify-center">
-          <PromoButton className="hidden md:inline-flex" />
+          {/* PromoButton supprimé */}
         </div>
 
         {/* Actions de droite (login/dashboard) */}
@@ -87,8 +86,7 @@ export function Header() {
               </Button>
             </div>
             <nav className="container mt-4 flex flex-col gap-4">
-              {/* Bouton promo mobile */}
-              <PromoButton className="mx-auto" />
+              {/* Bouton promo mobile supprimé */}
               
               <div className="flex flex-col gap-2 mt-4">
                 {user ? (
