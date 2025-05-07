@@ -43,7 +43,7 @@ const ContactPage = lazy(() => import('@/pages/ContactPage'));
 const UserManagementPage = lazy(() => import('@/pages/UserManagement'));
 const BrevoSyncPage = lazy(() => import('@/pages/admin/BrevoSyncPage'));
 const AdminSubscriptionRepairPage = lazy(() => import('@/pages/AdminSubscriptionRepairPage'));
-const AdminBugReportsPage = lazy(() => import('@/pages/AdminBugReportsPage')); // New import
+const AdminBugReportsPage = lazy(() => import('@/pages/AdminBugReportsPage'));
 const PlanDeClassePage = lazy(() => import('@/pages/PlanDeClassePage'));
 const SuggestionsManagementPage = lazy(() => import('@/pages/admin/SuggestionsManagementPage'));
 const SuggestionDetailPage = lazy(() => import('@/pages/SuggestionDetailPage'));
@@ -52,6 +52,9 @@ const AuthDebugPage = lazy(() => import('@/pages/admin/AuthDebugPage'));
 // New payment pages
 const PaymentSuccessPage = lazy(() => import('@/pages/PaymentSuccessPage'));
 const PaymentFailurePage = lazy(() => import('@/pages/PaymentFailurePage'));
+
+// Add lazy import for YouTubeLessonGenerator
+const YouTubeLessonGenerator = lazy(() => import('@/components/youtube/YouTubeLessonGenerator'));
 
 // Composant de chargement pour Suspense
 const LoadingPage = () => (
@@ -111,6 +114,8 @@ const AppContent = () => {
           <Route path="/plan-de-classe" element={<PlanDeClassePage />} />
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/chat/:threadId" element={<ChatPage />} />
+          {/* Route for YouTube lesson generator */}
+          <Route path="/lecon-via-youtube" element={<YouTubeLessonGenerator />} />
         </Route>
         
         {/* Routes accessibles sans abonnement */}

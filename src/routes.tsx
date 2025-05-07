@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Navigate } from "react-router-dom";
 import { SubscriptionRoute } from "./routes/SubscriptionRoute";
@@ -10,6 +9,7 @@ import { ProtectedRoute } from "./routes/ProtectedRoute";
 import AdminSubscriptionRepairPage from "./pages/AdminSubscriptionRepairPage";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Suspense } from "react";
+import { YouTubeLessonGenerator } from '@/components/youtube/YouTubeLessonGenerator';
 
 // Wrap component with error boundary and suspense
 const withErrorBoundary = (Component) => (
@@ -50,6 +50,14 @@ export const routes = [
     element: withErrorBoundary(
       <ProtectedRoute>
         <Home />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/lecon-via-youtube",
+    element: withErrorBoundary(
+      <ProtectedRoute>
+        <YouTubeLessonGenerator />
       </ProtectedRoute>
     ),
   },

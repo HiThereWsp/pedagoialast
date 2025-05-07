@@ -13,6 +13,7 @@ import {
   Plus,
   ArrowLeft,
   MessageSquare,
+  Youtube
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
@@ -318,6 +319,12 @@ export const Sidebar = ({ isOpen, toggleSidebar, firstName, onThreadSelect }: Si
               label="Générateur d'images"
               path="/image-generation"
               onClick={() => navigate("/image-generation")}
+            />
+            <SidebarNavItem
+              icon={<Youtube className="h-5 w-5 text-red-600" />}
+              label="Générateur de leçon YouTube"
+              path="/lecon-via-youtube"
+              onClick={() => navigate("/lecon-via-youtube")}
             />
           </SidebarNavigationSection>
 
