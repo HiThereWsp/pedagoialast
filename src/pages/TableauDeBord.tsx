@@ -9,6 +9,7 @@ import { MobileContent } from "@/components/dashboard/MobileContent";
 import { useMediaQuery } from "@/hooks/use-mobile";
 import { LoadingIndicator } from "@/components/ui/loading-indicator";
 import { PremiumWelcomeDialog } from "@/components/premium/PremiumWelcomeDialog";
+import { MainContent } from "@/components/main-content";
 
 const capitalizeName = (name) => {
   if (!name) return '';
@@ -118,10 +119,10 @@ const TableauDeBord = () => {
       />
       
       {/* Main Content Area */}
-      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-0 md:ml-0' : 'ml-0'}`}>
-        {/* Mobile Header Menu Button */}
+      <div className="ml-0 md:ml-64 transition-all duration-300">
+        {/* Le bouton de menu mobile est positionné fixed, donc non affecté par la marge */}
         {isMobile && (
-          <div className="fixed top-0 left-0 z-30 p-4">
+          <div className="fixed top-0 left-0 z-30 p-4 md:hidden">
             <button 
               onClick={toggleSidebar} 
               className="p-2 rounded-md bg-white shadow-md"
@@ -133,13 +134,7 @@ const TableauDeBord = () => {
             </button>
           </div>
         )}
-        
-        {/* Content based on device */}
-        {isMobile ? (
-          <MobileContent firstName={firstName} isLoading={isProfileLoading} />
-        ) : (
-          <DesktopContent firstName={firstName} isLoading={isProfileLoading} />
-        )}
+        <MainContent />
       </div>
     </DashboardWrapper>
   );

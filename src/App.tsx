@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter, useLocation } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import AppRoutes from '@/routes/AppRoutes'
@@ -63,15 +63,13 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <BrowserRouter>
             <AuthProvider>
-              <Suspense fallback={<div className="flex items-center justify-center h-screen">Chargement...</div>}>
-                <AppContent />
-              </Suspense>
+              <AppContent />
             </AuthProvider>
           </BrowserRouter>
         </QueryClientProvider>
       </HelmetProvider>
     </ErrorBoundary>
-  )
+  );
 }
 
 export default App
