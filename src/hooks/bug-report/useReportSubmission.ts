@@ -84,7 +84,7 @@ export const useReportSubmission = (
       
       // Create the bug report in the database
       const bugReport: BugReport = {
-        user_id: user?.id,
+        // user_id: user?.id,  // Supprimé temporairement pour éviter la vérification de la clé étrangère
         description,
         screenshot_url: screenshotUrl,
         browser_info: browserInfo,
