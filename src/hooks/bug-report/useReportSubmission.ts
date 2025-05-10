@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
@@ -105,6 +104,8 @@ export const useReportSubmission = (
       if (data && Array.isArray(data) && data.length > 0 && data[0] && 'id' in data[0]) {
         const reportId = data[0].id;
         
+        // TEMPORAIREMENT DÉSACTIVÉ - Problème d'accès à auth.users
+        /* 
         try {
           // Notify administrator by email via our edge function
           const notificationResponse = await supabase.functions.invoke('send-bug-report-notification', {
@@ -135,6 +136,13 @@ export const useReportSubmission = (
             errorMessage: 'Notification failed'
           });
         }
+        */
+        
+        // Seulement tracker l'événement sans appeler l'edge function
+        bugReportEvents.reportSubmitted({
+          reportId,
+          success: true
+        });
         
         return data;
       } else {
@@ -142,16 +150,22 @@ export const useReportSubmission = (
       }
     } catch (error) {
       console.error('Erreur lors de la soumission du rapport de bug:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      // Gestion améliorée des erreurs
+      let errorMessage = 'Une erreur inconnue est survenue';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
       setSubmissionError(errorMessage);
-      
       // Track failed submission
       bugReportEvents.reportSubmitted({
         reportId: 'failed',
         success: false,
         errorMessage
       });
-      
       throw error;
     } finally {
       setIsSubmitting(false);
