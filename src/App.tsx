@@ -24,25 +24,9 @@ const queryClient = new QueryClient({
 
 // Composant pour l'affichage conditionnel des boutons flottants
 function FloatingButtons() {
-  const location = useLocation();
-  const [shouldShowSuggestion, setShouldShowSuggestion] = useState(true);
-  
-  useEffect(() => {
-    // Liste des chemins où le bouton de suggestion doit être masqué
-    const excludedPaths = ['/correspondence', '/plan-de-classe'];
-    const currentPath = location.pathname;
-    
-    // Vérifier si le chemin actuel fait partie des exclusions
-    const shouldShow = !excludedPaths.some(path => currentPath === path);
-    setShouldShowSuggestion(shouldShow);
-  }, [location.pathname]);
-  
-  return (
-    <>
-      <BugReportButton />
-      {shouldShowSuggestion && <SuggestionButton />}
-    </>
-  );
+  // Les boutons flottants ont été temporairement masqués
+  // et remplacés par une option dans le menu déroulant
+  return null;
 }
 
 function AppContent() {

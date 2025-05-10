@@ -44,6 +44,10 @@ export const SidebarUserProfile = ({ firstName, onLogout }: SidebarUserProfilePr
                 <span>Nous contacter</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/contact')} className="cursor-pointer">
+                <Bug className="mr-2 h-4 w-4" />
+                <span>Reporter un bug</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/contact')} className="cursor-pointer">
                 <HelpCircle className="mr-2 h-4 w-4" />
                 <span>Aide</span>
               </DropdownMenuItem>

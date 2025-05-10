@@ -144,8 +144,7 @@ const AppContent = () => {
         <Route path="*" element={<NotFound />} />
       </Routes>
       
-      {/* Only show BugReportButton when not on Bienvenue page */}
-      {!isBienvenuePage && <BugReportButton />}
+      {/* Les boutons flottants ont été temporairement masqués */}
     </>
   );
 };
