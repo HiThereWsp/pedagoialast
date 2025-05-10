@@ -59,7 +59,6 @@ export const SuggestionDialog = ({ open, onOpenChange }: SuggestionDialogProps) 
         votes: 0,
         status: 'créé',
         author: user?.email?.split('@')[0] || "Utilisateur",
-        author_id: user?.id,
         created_at: new Date().toISOString(),
         type: 'tool_improvement',
         tool_name: toolInfo?.name || selectedTool
