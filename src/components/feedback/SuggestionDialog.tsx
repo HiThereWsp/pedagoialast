@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -59,6 +59,7 @@ export const SuggestionDialog = ({ open, onOpenChange }: SuggestionDialogProps) 
         votes: 0,
         status: 'créé',
         author: user?.email?.split('@')[0] || "Utilisateur",
+        user_id: user?.id || '00000000-0000-0000-0000-000000000000',
         created_at: new Date().toISOString(),
         type: 'tool_improvement',
         tool_name: toolInfo?.name || selectedTool
@@ -104,6 +105,9 @@ export const SuggestionDialog = ({ open, onOpenChange }: SuggestionDialogProps) 
             <Lightbulb className="h-5 w-5 text-amber-500" />
             Suggérer une amélioration
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Formulaire pour suggérer une amélioration de l'outil
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">

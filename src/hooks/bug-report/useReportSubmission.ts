@@ -84,7 +84,7 @@ export const useReportSubmission = (
       
       // Create the bug report in the database
       const bugReport: BugReport = {
-        // user_id: user?.id,  // Supprimé temporairement pour éviter la vérification de la clé étrangère
+        user_id: user?.id || '00000000-0000-0000-0000-000000000000', // Obligatoire pour la RLS
         description,
         screenshot_url: screenshotUrl,
         browser_info: browserInfo,
@@ -105,7 +105,8 @@ export const useReportSubmission = (
         const reportId = data[0].id;
         
         // TEMPORAIREMENT DÉSACTIVÉ - Problème d'accès à auth.users
-        /* 
+        // Ne pas tenter de décommenter cette section, elle provoque des erreurs de permission
+        /*
         try {
           // Notify administrator by email via our edge function
           const notificationResponse = await supabase.functions.invoke('send-bug-report-notification', {

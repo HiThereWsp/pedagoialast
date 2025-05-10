@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Camera, Upload, Loader2, AlertCircle } from 'lucide-react';
@@ -60,6 +59,9 @@ export const BugReportDialog = ({ open, onOpenChange }: BugReportDialogProps) =>
           <DialogTitle className="text-xl font-extrabold leading-tight tracking-tight text-balance">
             Signaler un problème
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Formulaire pour signaler un problème ou un bug dans l'application
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
