@@ -32,6 +32,7 @@ export const ToolImprovementButton = ({
     setIsSubmitting(true);
     try {
       const suggestion = {
+        id: `suggestion-${Date.now()}`,
         title: `Amélioration pour ${toolName}`,
         description: description,
         votes: 0,

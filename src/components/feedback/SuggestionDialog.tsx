@@ -53,6 +53,7 @@ export const SuggestionDialog = ({ open, onOpenChange }: SuggestionDialogProps) 
       const toolInfo = AVAILABLE_TOOLS.find(tool => tool.id === selectedTool);
       
       const suggestion = {
+        id: `suggestion-${Date.now()}`,
         title: `Amélioration pour ${toolInfo?.name || selectedTool}`,
         description: description.trim(),
         votes: 0,
@@ -79,7 +80,14 @@ export const SuggestionDialog = ({ open, onOpenChange }: SuggestionDialogProps) 
       onOpenChange(false);
     } catch (error) {
       console.error('Erreur lors de l\'envoi de la suggestion:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Une erreur inconnue est survenue';
+      let errorMessage = 'Une erreur inconnue est survenue';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (error && typeof error === 'object' && 'message' in error) {
+        errorMessage = String(error.message);
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
       setSubmissionError(errorMessage);
     } finally {
       setIsSubmitting(false);
